@@ -1,10 +1,9 @@
-import React from 'react';
-import Papa from 'papaparse';
+
 import type { Data } from 'plotly.js';
 import SideMenu from './components/SideMenu';
 import PlotArea from './components/PlotArea';
+import TopMenuBar from './components/TopMenuBar';
 import { useAppStore } from './store';
-import type { PlotData } from './DataStructure';
 import './App.css';
 
 function App() {
@@ -12,35 +11,9 @@ function App() {
     data,
     columns,
     plotArea,
-    setPlotData,
-    setColumns,
     setXAxis,
     setYAxis
   } = useAppStore();
-
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      Papa.parse(file, {
-        header: true,
-        dynamicTyping: true,
-        complete: (results) => {
-          const parsedData = results.data as PlotData[];
-          if (parsedData.length > 0) {
-            setPlotData(parsedData);
-            const cols = Object.keys(parsedData[0]);
-            setColumns(cols);
-            // Default to first two columns if available
-            if (cols.length > 0) setXAxis(cols[0]);
-            if (cols.length > 1) setYAxis(cols[1]);
-          }
-        },
-        error: (error) => {
-          console.error('Error parsing CSV:', error);
-        }
-      });
-    }
-  };
 
   const getPlotData = (): Data[] => {
     const { xAxis, yAxis } = plotArea.axisMenuData;
@@ -61,13 +34,11 @@ function App() {
 
   return (
     <div className="container-fluid vh-100 d-flex flex-column p-0">
-      <nav className="navbar navbar-dark bg-primary shadow-sm px-4">
-        <span className="navbar-brand mb-0 h1">WebPlots CSV Visualizer</span>
-      </nav>
+      <TopMenuBar />
 
       <div className="row flex-grow-1 g-0">
         <SideMenu
-          onFileUpload={handleFileUpload}
+          onFileUpload={() => { }} // No-op, handled by TopMenuBar
           columns={columns}
           xAxis={xAxis}
           setXAxis={setXAxis}

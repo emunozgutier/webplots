@@ -14,6 +14,7 @@ interface AppState {
     setYAxis: (yAxis: string) => void;
     setEnableLogAxis: (enable: boolean) => void;
     setPlotTitle: (title: string) => void;
+    loadProject: (state: Partial<AppState>) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -63,5 +64,7 @@ export const useAppStore = create<AppState>((set) => ({
             ...state.plotArea,
             plotTitle
         }
-    }))
+    })),
+
+    loadProject: (state) => set(state)
 }));
