@@ -1,5 +1,5 @@
-
 import { create } from 'zustand';
+import type { Layout, Data } from 'plotly.js';
 import type { PlotArea, PlotData } from './DataStructure';
 
 interface AppState {
@@ -68,3 +68,39 @@ export const useAppStore = create<AppState>((set) => ({
 
     loadProject: (state) => set(state)
 }));
+
+export const selectPlotConfig = (state: AppState) => {
+    const { data, plotArea } = state;
+    const { xAxis, yAxis } = plotArea.axisMenuData;
+    const hasData = data.length > 0 && !!xAxis && !!yAxis;
+
+    if (!hasData) {
+        return {
+            plotData: [] as Data[],
+            layout: {},
+            hasData: false
+        };
+    }
+
+    const x = data.map(row => row[xAxis]);
+    const y = data.map(row => row[yAxis]);
+
+    return {
+        plotData: [{
+            x: x,
+            y: y,
+            mode: 'lines',
+            type: 'scatter'
+        }] as Data[],
+        layout: {
+            width: undefined,
+            height: undefined,
+            title: { text: `Plot: ${yAxis} vs ${xAxis}` },
+            xaxis: { title: { text: xAxis } },
+            yaxis: { title: { text: yAxis } },
+            autosize: true,
+            margin: { l: 50, r: 50, b: 50, t: 50 }
+        } as Partial<Layout>,
+        hasData: true
+    };
+};
