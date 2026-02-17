@@ -69,8 +69,7 @@ export const useAppStore = create<AppState>((set) => ({
     loadProject: (state) => set(state)
 }));
 
-export const selectPlotConfig = (state: AppState) => {
-    const { data, plotArea } = state;
+export const createPlotConfig = (data: PlotData[], plotArea: PlotArea) => {
     const { xAxis, yAxis } = plotArea.axisMenuData;
     const hasData = data.length > 0 && !!xAxis && !!yAxis;
 
