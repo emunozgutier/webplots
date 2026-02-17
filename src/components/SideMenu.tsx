@@ -1,15 +1,15 @@
-import React from 'react';
-import { useAppStore } from '../store';
+import React, { useMemo } from 'react';
+import { useAppStore, createSideMenuConfig } from '../store';
 
 const SideMenu: React.FC = () => {
     const {
-        columns,
+        columns: storeColumns,
         plotArea,
         setXAxis,
         setYAxis
     } = useAppStore();
 
-    const { xAxis, yAxis } = plotArea.axisMenuData;
+    const { columns, xAxis, yAxis, hasColumns } = useMemo(() => createSideMenuConfig(storeColumns, plotArea), [storeColumns, plotArea]);
 
     return (
         <div className="col-md-3 col-lg-2 bg-light border-end p-4">
@@ -18,7 +18,7 @@ const SideMenu: React.FC = () => {
                     Data Configuration
                 </div>
                 <div className="card-body">
-                    {columns.length > 0 ? (
+                    {hasColumns ? (
                         <>
                             <div className="mb-3">
                                 <label className="form-label fw-bold">X-Axis Column</label>

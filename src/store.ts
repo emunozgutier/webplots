@@ -103,3 +103,12 @@ export const createPlotConfig = (data: PlotData[], plotArea: PlotArea) => {
         hasData: true
     };
 };
+
+export const createSideMenuConfig = (columns: string[], plotArea: PlotArea) => {
+    return {
+        columns,
+        xAxis: plotArea.axisMenuData.xAxis,
+        yAxis: plotArea.axisMenuData.yAxis,
+        hasColumns: columns.length > 0
+    };
+};
