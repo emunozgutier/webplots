@@ -2,27 +2,38 @@
 import React from 'react';
 import Plot from 'react-plotly.js';
 import type { Data } from 'plotly.js';
+import { useAppStore } from '../store';
 
-interface PlotAreaProps {
-    data: Data[];
-    xAxis: string;
-    yAxis: string;
-    hasData: boolean;
-}
+const PlotArea: React.FC = () => {
+    const {
+        data,
+        plotArea
+    } = useAppStore();
 
-const PlotArea: React.FC<PlotAreaProps> = ({
-    data,
-    xAxis,
-    yAxis,
-    hasData
-}) => {
+    const { xAxis, yAxis } = plotArea.axisMenuData;
+    const hasData = data.length > 0 && !!xAxis && !!yAxis;
+
+    const getPlotData = (): Data[] => {
+        if (!hasData) return [];
+
+        const x = data.map(row => row[xAxis]);
+        const y = data.map(row => row[yAxis]);
+
+        return [{
+            x: x,
+            y: y,
+            mode: 'lines',
+            type: 'scatter'
+        } as Data];
+    };
+
     return (
         <div className="col-md-9 col-lg-10 p-4">
             <div className="card h-100 shadow-sm">
                 <div className="card-body p-0 position-relative">
                     {hasData ? (
                         <Plot
-                            data={data}
+                            data={getPlotData()}
                             layout={{
                                 width: undefined,
                                 height: undefined,
@@ -40,7 +51,7 @@ const PlotArea: React.FC<PlotAreaProps> = ({
                         <div className="d-flex flex-column justify-content-center align-items-center h-100 text-muted">
                             <div className="display-1 mb-3">📊</div>
                             <h4>No Data Loaded</h4>
-                            <p>Please upload a CSV file from the sidebar to generate a plot.</p>
+                            <p>Please load a CSV file or Project from the <strong>File</strong> menu to generate a plot.</p>
                         </div>
                     )}
                 </div>

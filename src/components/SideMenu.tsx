@@ -1,23 +1,16 @@
-
 import React from 'react';
+import { useAppStore } from '../store';
 
-interface SideMenuProps {
-    onFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    columns: string[];
-    xAxis: string;
-    setXAxis: (value: string) => void;
-    yAxis: string;
-    setYAxis: (value: string) => void;
-}
+const SideMenu: React.FC = () => {
+    const {
+        columns,
+        plotArea,
+        setXAxis,
+        setYAxis
+    } = useAppStore();
 
-const SideMenu: React.FC<SideMenuProps> = ({
-    onFileUpload,
-    columns,
-    xAxis,
-    setXAxis,
-    yAxis,
-    setYAxis
-}) => {
+    const { xAxis, yAxis } = plotArea.axisMenuData;
+
     return (
         <div className="col-md-3 col-lg-2 bg-light border-end p-4">
             <div className="card shadow-sm mb-4">
@@ -25,17 +18,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
                     Data Configuration
                 </div>
                 <div className="card-body">
-                    <div className="mb-3">
-                        <label className="form-label fw-bold">Upload CSV File</label>
-                        <input
-                            type="file"
-                            className="form-control"
-                            accept=".csv"
-                            onChange={onFileUpload}
-                        />
-                    </div>
-
-                    {columns.length > 0 && (
+                    {columns.length > 0 ? (
                         <>
                             <div className="mb-3">
                                 <label className="form-label fw-bold">X-Axis Column</label>
@@ -63,12 +46,14 @@ const SideMenu: React.FC<SideMenuProps> = ({
                                 </select>
                             </div>
                         </>
+                    ) : (
+                        <p className="text-muted small">Please load a CSV file or Project from the <strong>File</strong> menu to configure axes.</p>
                     )}
                 </div>
             </div>
 
             <div className="alert alert-info">
-                <small>Upload a CSV file to visualize data points dynamically.</small>
+                <small>Use the Top Menu to load data.</small>
             </div>
         </div>
     );
