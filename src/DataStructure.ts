@@ -9,3 +9,7 @@ export interface PlotArea {
     plotTitle: string;
     axisMenuData: AxisMenuData;
 }
+
+export interface PlotData {
+    [key: string]: string | number;
+}

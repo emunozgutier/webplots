@@ -1,19 +1,22 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Papa from 'papaparse';
 import type { Data } from 'plotly.js';
 import SideMenu from './components/SideMenu';
 import PlotArea from './components/PlotArea';
+import { useAppStore } from './store';
+import type { PlotData } from './DataStructure';
 import './App.css';
 
-interface PlotData {
-  [key: string]: string | number;
-}
-
 function App() {
-  const [data, setData] = useState<PlotData[]>([]);
-  const [columns, setColumns] = useState<string[]>([]);
-  const [xAxis, setXAxis] = useState<string>('');
-  const [yAxis, setYAxis] = useState<string>('');
+  const {
+    data,
+    columns,
+    plotArea,
+    setPlotData,
+    setColumns,
+    setXAxis,
+    setYAxis
+  } = useAppStore();
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -24,7 +27,7 @@ function App() {
         complete: (results) => {
           const parsedData = results.data as PlotData[];
           if (parsedData.length > 0) {
-            setData(parsedData);
+            setPlotData(parsedData);
             const cols = Object.keys(parsedData[0]);
             setColumns(cols);
             // Default to first two columns if available
@@ -40,6 +43,7 @@ function App() {
   };
 
   const getPlotData = (): Data[] => {
+    const { xAxis, yAxis } = plotArea.axisMenuData;
     if (!data.length || !xAxis || !yAxis) return [];
 
     const x = data.map(row => row[xAxis]);
@@ -52,6 +56,8 @@ function App() {
       type: 'scatter'
     } as Data];
   };
+
+  const { xAxis, yAxis } = plotArea.axisMenuData;
 
   return (
     <div className="container-fluid vh-100 d-flex flex-column p-0">
