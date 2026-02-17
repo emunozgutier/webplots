@@ -1,8 +1,9 @@
 
 import React, { useState } from 'react';
-import Plot from 'react-plotly.js';
 import Papa from 'papaparse';
 import type { Data } from 'plotly.js';
+import SideMenu from './components/SideMenu';
+import PlotArea from './components/PlotArea';
 
 interface PlotData {
     [key: string]: string | number;
@@ -53,93 +54,26 @@ const CsvPlotter: React.FC = () => {
     };
 
     return (
-        <div style={{ display: 'flex', height: '100vh', width: '100%' }}>
-            {/* Sidebar */}
-            <div style={{
-                width: '300px',
-                padding: '20px',
-                borderRight: '1px solid #ccc',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '15px',
-                backgroundColor: '#f5f5f5'
-            }}>
-                <h2>Data Settings</h2>
+        <div className="container-fluid vh-100 d-flex flex-column p-0">
+            <nav className="navbar navbar-dark bg-primary shadow-sm px-4">
+                <span className="navbar-brand mb-0 h1">WebPlots CSV Visualizer</span>
+            </nav>
 
-                <div>
-                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-                        Upload CSV File
-                    </label>
-                    <input
-                        type="file"
-                        accept=".csv"
-                        onChange={handleFileUpload}
-                        style={{ width: '100%' }}
-                    />
-                </div>
-
-                {columns.length > 0 && (
-                    <>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-                                X-Axis Column
-                            </label>
-                            <select
-                                value={xAxis}
-                                onChange={(e) => setXAxis(e.target.value)}
-                                style={{ width: '100%', padding: '5px' }}
-                            >
-                                {columns.map(col => (
-                                    <option key={col} value={col}>{col}</option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-                                Y-Axis Column
-                            </label>
-                            <select
-                                value={yAxis}
-                                onChange={(e) => setYAxis(e.target.value)}
-                                style={{ width: '100%', padding: '5px' }}
-                            >
-                                {columns.map(col => (
-                                    <option key={col} value={col}>{col}</option>
-                                ))}
-                            </select>
-                        </div>
-                    </>
-                )}
-            </div>
-
-            {/* Main Plot Area */}
-            <div style={{ flex: 1, padding: '20px' }}>
-                {data.length > 0 ? (
-                    <Plot
-                        data={getPlotData()}
-                        layout={{
-                            width: undefined,
-                            height: undefined,
-                            title: { text: `Plot: ${yAxis} vs ${xAxis}` },
-                            xaxis: { title: { text: xAxis } },
-                            yaxis: { title: { text: yAxis } },
-                            autosize: true
-                        }}
-                        useResizeHandler={true}
-                        style={{ width: '100%', height: '100%' }}
-                    />
-                ) : (
-                    <div style={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        height: '100%',
-                        color: '#666'
-                    }}>
-                        Please upload a CSV file to generate a plot
-                    </div>
-                )}
+            <div className="row flex-grow-1 g-0">
+                <SideMenu
+                    onFileUpload={handleFileUpload}
+                    columns={columns}
+                    xAxis={xAxis}
+                    setXAxis={setXAxis}
+                    yAxis={yAxis}
+                    setYAxis={setYAxis}
+                />
+                <PlotArea
+                    data={getPlotData()}
+                    xAxis={xAxis}
+                    yAxis={yAxis}
+                    hasData={data.length > 0}
+                />
             </div>
         </div>
     );
