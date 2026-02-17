@@ -1,10 +1,10 @@
-
-import React from 'react';
+import React, { useMemo } from 'react';
 import Plot from 'react-plotly.js';
-import { useAppStore, selectPlotConfig } from '../store';
+import { useAppStore, createPlotConfig } from '../store';
 
 const PlotArea: React.FC = () => {
-    const { plotData, layout, hasData } = useAppStore(selectPlotConfig);
+    const { data, plotArea } = useAppStore();
+    const { plotData, layout, hasData } = useMemo(() => createPlotConfig(data, plotArea), [data, plotArea]);
 
     return (
         <div className="col-md-9 col-lg-10 p-4">
