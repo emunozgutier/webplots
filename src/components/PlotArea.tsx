@@ -25,11 +25,23 @@ const PlotArea: React.FC = () => {
         return () => clearTimeout(timer);
     }, [isSideMenuOpen]);
 
+    const { setPopupContent } = useAppStateStore();
+
+    const handleOpenSettings = () => {
+        setPopupContent(<Settings />);
+    };
+
+    const handleOpenDebug = () => {
+        // We pass receipt here. Debug component uses it.
+        // Wait, receipt comes from useMemo above.
+        setPopupContent(<Debug receipt={receipt || ''} />);
+    };
+
     return (
         <div className="flex-grow-1 p-4 d-flex flex-column position-relative" style={{ minWidth: 0 }}>
             <div className="card shadow-sm flex-grow-1 mb-3">
                 <div className="card-header bg-white d-flex justify-content-end align-items-center py-2">
-                    <ControllerButtons />
+                    <ControllerButtons onOpenSettings={handleOpenSettings} onOpenDebug={handleOpenDebug} />
                 </div>
                 <div className="card-body p-0 position-relative">
                     {hasData ? (
@@ -49,9 +61,6 @@ const PlotArea: React.FC = () => {
                     )}
                 </div>
             </div>
-
-            <Debug receipt={receipt || ''} />
-            <Settings />
         </div>
     );
 };

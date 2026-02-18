@@ -3,13 +3,15 @@ import SideMenu from './components/SideMenu';
 import PlotArea from './components/PlotArea';
 import TopMenuBar from './components/TopMenuBar';
 import { useAppStateStore } from './store/AppStateStore';
+import PopupMenu from './components/PopupMenu';
 import './App.css';
 
 function App() {
   const { isTopMenuBarOpen } = useAppStateStore();
 
   return (
-    <div className="container-fluid vh-100 d-flex flex-column p-0">
+    <div className="container-fluid vh-100 d-flex flex-column p-0 position-relative">
+      <PopupMenu />
       {isTopMenuBarOpen && <TopMenuBar />}
 
       <div className="d-flex flex-row flex-grow-1 overflow-hidden">

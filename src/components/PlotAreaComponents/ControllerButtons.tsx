@@ -4,8 +4,13 @@ import { usePlotDataStore } from '../../store/PlotDataStore';
 import { useSideMenuStore } from '../../store/SideMenuStore';
 
 
-const ControllerButtons: React.FC = () => {
-    const { plotLayout, toggleReceipt, toggleSettings } = usePlotLayoutStore();
+interface ControllerButtonsProps {
+    onOpenSettings: () => void;
+    onOpenDebug: () => void;
+}
+
+const ControllerButtons: React.FC<ControllerButtonsProps> = ({ onOpenSettings, onOpenDebug }) => {
+    const { plotLayout } = usePlotLayoutStore();
     const { data } = usePlotDataStore();
     const { sideMenuData } = useSideMenuStore();
 
@@ -44,8 +49,8 @@ const ControllerButtons: React.FC = () => {
     return (
         <div className="btn-group">
             <button
-                className={`btn btn-sm ${plotLayout.showReceipt ? 'btn-warning' : 'btn-outline-secondary'}`}
-                onClick={toggleReceipt}
+                className="btn btn-sm btn-outline-secondary"
+                onClick={onOpenDebug}
                 title="Toggle Code Receipt"
             >
                 Debug Trace
@@ -58,8 +63,8 @@ const ControllerButtons: React.FC = () => {
                 Save as interactive HTML
             </button>
             <button
-                className={`btn btn-sm ${plotLayout.isSettingsOpen ? 'btn-primary' : 'btn-outline-secondary'}`}
-                onClick={toggleSettings}
+                className="btn btn-sm btn-outline-secondary"
+                onClick={onOpenSettings}
                 title="Open Settings"
             >
                 Settings

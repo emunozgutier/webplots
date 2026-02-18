@@ -10,8 +10,6 @@ export interface PlotLayout {
     yAxisTitle: string;
     xRange: [number, number] | null;
     yRange: [number, number] | null;
-    showReceipt: boolean;
-    isSettingsOpen: boolean;
 }
 
 interface PlotLayoutState {
@@ -22,8 +20,6 @@ interface PlotLayoutState {
     setYAxisTitle: (title: string) => void;
     setXRange: (range: [number, number] | null) => void;
     setYRange: (range: [number, number] | null) => void;
-    toggleReceipt: () => void;
-    toggleSettings: () => void;
     loadProject: (plotLayout: PlotLayout) => void;
 }
 
@@ -33,10 +29,8 @@ export const usePlotLayoutStore = create<PlotLayoutState>((set) => ({
         plotTitle: '',
         xAxisTitle: '',
         yAxisTitle: '',
-        xRange: null,
         yRange: null,
-        showReceipt: false, // Default to hidden
-        isSettingsOpen: false
+        xRange: null
     },
     setEnableLogAxis: (enableLogAxis) => set((state) => ({
         plotLayout: { ...state.plotLayout, enableLogAxis }
@@ -55,12 +49,6 @@ export const usePlotLayoutStore = create<PlotLayoutState>((set) => ({
     })),
     setYRange: (yRange) => set((state) => ({
         plotLayout: { ...state.plotLayout, yRange }
-    })),
-    toggleReceipt: () => set((state) => ({
-        plotLayout: { ...state.plotLayout, showReceipt: !state.plotLayout.showReceipt }
-    })),
-    toggleSettings: () => set((state) => ({
-        plotLayout: { ...state.plotLayout, isSettingsOpen: !state.plotLayout.isSettingsOpen }
     })),
     loadProject: (plotLayout) => set({ plotLayout })
 }));
