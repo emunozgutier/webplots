@@ -2,18 +2,19 @@ import React, { useMemo } from 'react';
 import Plot from 'react-plotly.js';
 import { usePlotDataStore } from '../store/PlotDataStore';
 import { useSideMenuStore } from '../store/SideMenuStore';
-import { usePlotAreaStore, createPlotConfig } from '../store/PlotAreaStore';
+import { usePlotAreaStore } from '../store/PlotAreaStore';
+import { generatePlotConfig } from '../utils/PlotlyHelpers';
 
 const PlotArea: React.FC = () => {
     const { data } = usePlotDataStore();
     const { sideMenuData } = useSideMenuStore();
     const { plotArea } = usePlotAreaStore();
 
-    const { plotData, layout, hasData } = useMemo(() => createPlotConfig(data, sideMenuData, plotArea), [data, sideMenuData, plotArea]);
+    const { plotData, layout, hasData, receipt } = useMemo(() => generatePlotConfig(data, sideMenuData, plotArea), [data, sideMenuData, plotArea]);
 
     return (
-        <div className="flex-grow-1 p-4" style={{ minWidth: 0 }}>
-            <div className="card h-100 shadow-sm">
+        <div className="flex-grow-1 p-4 d-flex flex-column" style={{ minWidth: 0 }}>
+            <div className="card shadow-sm flex-grow-1 mb-3">
                 <div className="card-body p-0 position-relative">
                     {hasData ? (
                         <Plot
@@ -32,6 +33,19 @@ const PlotArea: React.FC = () => {
                     )}
                 </div>
             </div>
+
+            {hasData && receipt && (
+                <div className="card shadow-sm" style={{ height: '200px' }}>
+                    <div className="card-header bg-light fw-bold small text-uppercase text-muted">
+                        Plotly Code Receipt
+                    </div>
+                    <div className="card-body p-0 overflow-auto bg-dark">
+                        <pre className="m-0 p-3 text-white small font-monospace">
+                            {receipt}
+                        </pre>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
