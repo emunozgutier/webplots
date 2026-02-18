@@ -87,7 +87,7 @@ const SideMenu: React.FC = () => {
                                 Available Columns
                             </div>
                             <div className="card-body p-2 overflow-hidden d-flex flex-column">
-                                <SideMenuSearch />
+                                <SearchColumn />
                             </div>
                         </div>
                     </div>
