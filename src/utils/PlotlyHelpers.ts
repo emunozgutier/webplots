@@ -2,12 +2,15 @@ import type { Layout, Data } from 'plotly.js';
 import type { PlotData } from '../store/PlotDataStore';
 import type { SideMenuData } from '../store/SideMenuStore';
 import type { PlotLayout } from '../store/PlotLayoutStore';
+import type { TraceConfig } from '../store/TraceConfigStore';
 
-import { getPaletteColor } from './ColorPalettes';
-
-export const generatePlotConfig = (data: PlotData[], sideMenuData: SideMenuData, plotLayout: PlotLayout) => {
+export const generatePlotConfig = (data: PlotData[], sideMenuData: SideMenuData, plotLayout: PlotLayout, traceConfig: TraceConfig) => {
     const { xAxis, yAxis } = sideMenuData;
-    const { enableLogAxis, plotTitle, xAxisTitle, yAxisTitle, xRange, yRange, traceCustomizations, colorPalette } = plotLayout;
+    const { enableLogAxis, plotTitle, xAxisTitle, yAxisTitle, xRange, yRange } = plotLayout;
+
+    // Trace config from the new store
+    const { traceCustomizations, currentPaletteColors } = traceConfig;
+
     const hasData = data.length > 0 && !!xAxis && yAxis.length > 0;
 
     if (!hasData) {
@@ -21,10 +24,16 @@ export const generatePlotConfig = (data: PlotData[], sideMenuData: SideMenuData,
 
     const x = data.map(row => row[xAxis]);
 
+    // Helper to get color from current palette array (cycling if needed)
+    const getColor = (index: number) => {
+        if (!currentPaletteColors || currentPaletteColors.length === 0) return '#000000';
+        return currentPaletteColors[index % currentPaletteColors.length];
+    };
+
     // Create a trace for each Y-axis column
     const plotData: Data[] = yAxis.map((yCol, index) => {
         const customization = traceCustomizations?.[yCol] || {};
-        const baseColor = getPaletteColor(colorPalette || 'Default', index);
+        const baseColor = getColor(index);
 
         return {
             x: x,
@@ -70,7 +79,7 @@ export const generatePlotConfig = (data: PlotData[], sideMenuData: SideMenuData,
     const tracesReceipt = yAxis.map((yCol, index) => {
         const traceVar = `trace${index + 1}`;
         const customization = traceCustomizations?.[yCol] || {};
-        const baseColor = getPaletteColor(colorPalette || 'Default', index);
+        const baseColor = getColor(index);
         const finalColor = customization.color || baseColor;
         const finalName = customization.displayName || yCol;
 
