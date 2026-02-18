@@ -10,10 +10,18 @@ import Debug from './PlotAreaComponents/Debug';
 
 const PlotArea: React.FC = () => {
     const { data } = usePlotDataStore();
-    const { sideMenuData } = useSideMenuStore();
+    const { sideMenuData, isMenuOpen } = useSideMenuStore();
     const { plotArea } = usePlotAreaStore();
 
     const { plotData, layout, hasData, receipt } = useMemo(() => generatePlotConfig(data, sideMenuData, plotArea), [data, sideMenuData, plotArea]);
+
+    // Force Plotly resize when side menu toggles
+    React.useEffect(() => {
+        const timer = setTimeout(() => {
+            window.dispatchEvent(new Event('resize'));
+        }, 300); // Wait for transition to finish
+        return () => clearTimeout(timer);
+    }, [isMenuOpen]);
 
     return (
         <div className="flex-grow-1 p-4 d-flex flex-column position-relative" style={{ minWidth: 0 }}>
