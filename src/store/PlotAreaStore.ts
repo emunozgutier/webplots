@@ -32,7 +32,7 @@ export const usePlotAreaStore = create<PlotAreaState>((set) => ({
 export const createPlotConfig = (data: PlotData[], sideMenuData: SideMenuData, plotArea: PlotArea) => {
     const { xAxis, yAxis } = sideMenuData;
     const { enableLogAxis, plotTitle } = plotArea;
-    const hasData = data.length > 0 && !!xAxis && !!yAxis;
+    const hasData = data.length > 0 && !!xAxis && yAxis.length > 0;
 
     if (!hasData) {
         return {
@@ -43,29 +43,33 @@ export const createPlotConfig = (data: PlotData[], sideMenuData: SideMenuData, p
     }
 
     const x = data.map(row => row[xAxis]);
-    const y = data.map(row => row[yAxis]);
+
+    // Create a trace for each Y-axis column
+    const plotData: Data[] = yAxis.map(yCol => ({
+        x: x,
+        y: data.map(row => row[yCol]),
+        mode: 'lines',
+        type: 'scatter',
+        name: yCol
+    }));
 
     return {
-        plotData: [{
-            x: x,
-            y: y,
-            mode: 'lines',
-            type: 'scatter'
-        }] as Data[],
+        plotData,
         layout: {
             width: undefined,
             height: undefined,
-            title: { text: plotTitle || `Plot: ${yAxis} vs ${xAxis}` },
+            title: { text: plotTitle || `Plot: ${yAxis.join(', ')} vs ${xAxis}` },
             xaxis: {
                 title: { text: xAxis },
                 type: enableLogAxis ? 'log' : 'linear'
             },
             yaxis: {
-                title: { text: yAxis },
+                title: { text: yAxis.length === 1 ? yAxis[0] : 'Values' },
                 type: enableLogAxis ? 'log' : 'linear'
             },
             autosize: true,
-            margin: { l: 50, r: 50, b: 50, t: 50 }
+            margin: { l: 50, r: 50, b: 50, t: 50 },
+            showlegend: yAxis.length > 1
         } as Partial<Layout>,
         hasData: true
     };

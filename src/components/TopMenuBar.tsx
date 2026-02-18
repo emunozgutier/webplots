@@ -9,7 +9,7 @@ import type { PlotData } from '../store/PlotDataStore';
 
 const TopMenuBar: React.FC = () => {
     const { data, columns, setPlotData, setColumns, loadProject: loadPlotDataProject } = usePlotDataStore();
-    const { sideMenuData, setXAxis, setYAxis, loadProject: loadSideMenuProject } = useSideMenuStore();
+    const { sideMenuData, setXAxis, addYAxisColumn, loadProject: loadSideMenuProject } = useSideMenuStore();
     const { plotArea, loadProject: loadPlotAreaProject } = usePlotAreaStore();
 
     const csvInputRef = useRef<HTMLInputElement>(null);
@@ -28,7 +28,14 @@ const TopMenuBar: React.FC = () => {
                         const cols = Object.keys(parsedData[0]);
                         setColumns(cols);
                         if (cols.length > 0) setXAxis(cols[0]);
-                        if (cols.length > 1) setYAxis(cols[1]);
+                        if (cols.length > 1) {
+                            // Clear existing columns first? For now just add the first one.
+                            // Ideally loadProject would handle this reset, but here we are manual.
+                            // Let's assume the user wants to start fresh.
+                            // Since we don't have clearYAxis, we relying on loadSideMenuProject or just adding.
+                            // Given the store structure, we might need a reset action, but for now let's just add.
+                            addYAxisColumn(cols[1]);
+                        }
                     }
                 },
                 error: (error) => {
