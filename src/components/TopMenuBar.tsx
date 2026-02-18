@@ -3,7 +3,7 @@ import React, { useRef } from 'react';
 import { NavDropdown, Navbar, Nav, Container } from 'react-bootstrap';
 import { usePlotDataStore } from '../store/PlotDataStore';
 import { useSideMenuStore } from '../store/SideMenuStore';
-import { usePlotAreaStore } from '../store/PlotAreaStore';
+import { usePlotLayoutStore } from '../store/PlotLayoutStore';
 import Papa from 'papaparse';
 import type { PlotData } from '../store/PlotDataStore';
 

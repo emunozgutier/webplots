@@ -1,16 +1,16 @@
 import React from 'react';
-import { usePlotAreaStore, createPlotConfig } from '../../store/PlotAreaStore';
+import { usePlotLayoutStore, createPlotConfig } from '../../store/PlotLayoutStore';
 import { usePlotDataStore } from '../../store/PlotDataStore';
 import { useSideMenuStore } from '../../store/SideMenuStore';
 
 
 const ControllerButtons: React.FC = () => {
-    const { plotArea, toggleReceipt, toggleSettings } = usePlotAreaStore();
+    const { plotLayout, toggleReceipt, toggleSettings } = usePlotLayoutStore();
     const { data } = usePlotDataStore();
     const { sideMenuData } = useSideMenuStore();
 
     const handleSaveHTML = () => {
-        const { plotData, layout } = createPlotConfig(data, sideMenuData, plotArea);
+        const { plotData, layout } = createPlotConfig(data, sideMenuData, plotLayout);
 
         // Basic HTML template to render the plot
         const htmlContent = `
@@ -44,25 +44,25 @@ const ControllerButtons: React.FC = () => {
     return (
         <div className="btn-group">
             <button
-                className={`btn btn-sm ${plotArea.showReceipt ? 'btn-warning' : 'btn-outline-secondary'}`}
+                className={`btn btn-sm ${plotLayout.showReceipt ? 'btn-warning' : 'btn-outline-secondary'}`}
                 onClick={toggleReceipt}
                 title="Toggle Code Receipt"
             >
-                bug
+                Debug Trace
             </button>
             <button
                 className="btn btn-sm btn-outline-secondary"
                 onClick={handleSaveHTML}
                 title="Save as Interactive HTML"
             >
-                html
+                Save as interactive HTML
             </button>
             <button
-                className={`btn btn-sm ${plotArea.isSettingsOpen ? 'btn-primary' : 'btn-outline-secondary'}`}
+                className={`btn btn-sm ${plotLayout.isSettingsOpen ? 'btn-primary' : 'btn-outline-secondary'}`}
                 onClick={toggleSettings}
                 title="Open Settings"
             >
-                settings
+                Settings
             </button>
         </div>
     );

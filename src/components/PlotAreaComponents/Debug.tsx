@@ -1,14 +1,14 @@
 import React from 'react';
-import { usePlotAreaStore } from '../../store/PlotAreaStore';
+import { usePlotLayoutStore } from '../../store/PlotLayoutStore';
 
 interface DebugProps {
     receipt: string;
 }
 
 const Debug: React.FC<DebugProps> = ({ receipt }) => {
-    const { plotArea, toggleReceipt } = usePlotAreaStore();
+    const { plotLayout, toggleReceipt } = usePlotLayoutStore();
 
-    if (!plotArea.showReceipt) return null;
+    if (!plotLayout.showReceipt) return null;
 
     return (
         <div className="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center" style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050 }}>

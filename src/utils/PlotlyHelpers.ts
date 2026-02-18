@@ -1,11 +1,11 @@
 import type { Layout, Data } from 'plotly.js';
 import type { PlotData } from '../store/PlotDataStore';
 import type { SideMenuData } from '../store/SideMenuStore';
-import type { PlotArea } from '../store/PlotAreaStore';
+import type { PlotLayout } from '../store/PlotLayoutStore';
 
-export const generatePlotConfig = (data: PlotData[], sideMenuData: SideMenuData, plotArea: PlotArea) => {
+export const generatePlotConfig = (data: PlotData[], sideMenuData: SideMenuData, plotLayout: PlotLayout) => {
     const { xAxis, yAxis } = sideMenuData;
-    const { enableLogAxis, plotTitle, xAxisTitle, yAxisTitle, xRange, yRange } = plotArea;
+    const { enableLogAxis, plotTitle, xAxisTitle, yAxisTitle, xRange, yRange } = plotLayout;
     const hasData = data.length > 0 && !!xAxis && yAxis.length > 0;
 
     if (!hasData) {

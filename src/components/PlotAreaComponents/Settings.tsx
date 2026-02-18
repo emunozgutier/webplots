@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
-import { usePlotAreaStore } from '../../store/PlotAreaStore';
+import { usePlotLayoutStore } from '../../store/PlotLayoutStore';
 
 const Settings: React.FC = () => {
-    const { plotArea, setPlotTitle, setXAxisTitle, setYAxisTitle, setXRange, setYRange, toggleSettings } = usePlotAreaStore();
+    const { plotLayout, setPlotTitle, setXAxisTitle, setYAxisTitle, setXRange, setYRange, toggleSettings } = usePlotLayoutStore();
 
     // Local state for inputs to avoid too many re-renders while typing
-    const [localPlotTitle, setLocalPlotTitle] = useState(plotArea.plotTitle || '');
-    const [localXTitle, setLocalXTitle] = useState(plotArea.xAxisTitle || '');
-    const [localYTitle, setLocalYTitle] = useState(plotArea.yAxisTitle || '');
-    const [localXMin, setLocalXMin] = useState(plotArea.xRange ? plotArea.xRange[0].toString() : '');
-    const [localXMax, setLocalXMax] = useState(plotArea.xRange ? plotArea.xRange[1].toString() : '');
-    const [localYMin, setLocalYMin] = useState(plotArea.yRange ? plotArea.yRange[0].toString() : '');
-    const [localYMax, setLocalYMax] = useState(plotArea.yRange ? plotArea.yRange[1].toString() : '');
+    const [localPlotTitle, setLocalPlotTitle] = useState(plotLayout.plotTitle || '');
+    const [localXTitle, setLocalXTitle] = useState(plotLayout.xAxisTitle || '');
+    const [localYTitle, setLocalYTitle] = useState(plotLayout.yAxisTitle || '');
+    const [localXMin, setLocalXMin] = useState(plotLayout.xRange ? plotLayout.xRange[0].toString() : '');
+    const [localXMax, setLocalXMax] = useState(plotLayout.xRange ? plotLayout.xRange[1].toString() : '');
+    const [localYMin, setLocalYMin] = useState(plotLayout.yRange ? plotLayout.yRange[0].toString() : '');
+    const [localYMax, setLocalYMax] = useState(plotLayout.yRange ? plotLayout.yRange[1].toString() : '');
 
     const handleSave = () => {
         setPlotTitle(localPlotTitle);
@@ -33,7 +33,7 @@ const Settings: React.FC = () => {
         toggleSettings();
     };
 
-    if (!plotArea.isSettingsOpen) return null;
+    if (!plotLayout.isSettingsOpen) return null;
 
     return (
         <div className="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center" style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050 }}>
