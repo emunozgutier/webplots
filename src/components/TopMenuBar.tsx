@@ -10,7 +10,7 @@ import type { PlotData } from '../store/PlotDataStore';
 const TopMenuBar: React.FC = () => {
     const { data, columns, setPlotData, setColumns, loadProject: loadPlotDataProject } = usePlotDataStore();
     const { sideMenuData, setXAxis, addYAxisColumn, loadProject: loadSideMenuProject } = useSideMenuStore();
-    const { plotArea, loadProject: loadPlotAreaProject } = usePlotAreaStore();
+    const { plotLayout, loadProject: loadPlotLayoutProject } = usePlotLayoutStore();
 
     const csvInputRef = useRef<HTMLInputElement>(null);
     const projectInputRef = useRef<HTMLInputElement>(null);
@@ -52,7 +52,7 @@ const TopMenuBar: React.FC = () => {
             data,
             columns,
             sideMenuData,
-            plotArea
+            plotLayout
         };
         const blob = new Blob([JSON.stringify(projectState, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -85,10 +85,13 @@ const TopMenuBar: React.FC = () => {
                         loadSideMenuProject(projectState.plotArea.axisMenuData.xAxis, projectState.plotArea.axisMenuData.yAxis);
                     }
 
-                    if (projectState.plotArea) {
+                    if (projectState.plotLayout) {
+                        loadPlotLayoutProject(projectState.plotLayout);
+                    } else if (projectState.plotArea) {
                         // Clean up old axisMenuData if present in the loaded object before setting
                         const { axisMenuData, ...cleanPlotArea } = projectState.plotArea;
-                        loadPlotAreaProject(cleanPlotArea);
+                        // Map old PlotArea to PlotLayout (typescript should be lenient with extra/missing optional props)
+                        loadPlotLayoutProject(cleanPlotArea as any); // Cast to avoid strict type issues with migration
                     }
                 } catch (error) {
                     console.error('Error loading project:', error);
