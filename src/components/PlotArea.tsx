@@ -6,6 +6,7 @@ import { usePlotAreaStore } from '../store/PlotAreaStore';
 import { generatePlotConfig } from '../utils/PlotlyHelpers';
 import ControllerButtons from './PlotAreaComponents/ControllerButtons';
 import Settings from './PlotAreaComponents/Settings';
+import Debug from './PlotAreaComponents/Debug';
 
 const PlotArea: React.FC = () => {
     const { data } = usePlotDataStore();
@@ -17,8 +18,7 @@ const PlotArea: React.FC = () => {
     return (
         <div className="flex-grow-1 p-4 d-flex flex-column position-relative" style={{ minWidth: 0 }}>
             <div className="card shadow-sm flex-grow-1 mb-3">
-                <div className="card-header bg-white d-flex justify-content-between align-items-center py-2">
-                    <span className="fw-bold">{layout.title?.text || 'Plot Area'}</span>
+                <div className="card-header bg-white d-flex justify-content-end align-items-center py-2">
                     <ControllerButtons />
                 </div>
                 <div className="card-body p-0 position-relative">
@@ -40,19 +40,7 @@ const PlotArea: React.FC = () => {
                 </div>
             </div>
 
-            {hasData && plotArea.showReceipt && (
-                <div className="card shadow-sm" style={{ height: '200px' }}>
-                    <div className="card-header bg-light fw-bold small text-uppercase text-muted">
-                        Plotly Code Receipt
-                    </div>
-                    <div className="card-body p-0 overflow-auto bg-dark">
-                        <pre className="m-0 p-3 text-white small font-monospace">
-                            {receipt}
-                        </pre>
-                    </div>
-                </div>
-            )}
-
+            <Debug receipt={receipt || ''} />
             <Settings />
         </div>
     );
