@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { usePlotDataStore } from '../store/PlotDataStore';
 import { useSideMenuStore, createSideMenuConfig } from '../store/SideMenuStore';
-import SideMenuSearch from './subcomponents1/SideMenuSearch';
+import SideMenuSearch from './SideMenuComponents/SideMenuSearch';
 
 const SideMenu: React.FC = () => {
     const { columns: storeColumns } = usePlotDataStore();
