@@ -2,29 +2,43 @@ import { create } from 'zustand';
 
 export interface SideMenuData {
     xAxis: string;
-    yAxis: string;
+    yAxis: string[];
 }
 
 interface SideMenuState {
     sideMenuData: SideMenuData;
     isMenuOpen: boolean;
     setXAxis: (xAxis: string) => void;
-    setYAxis: (yAxis: string) => void;
-    loadProject: (xAxis: string, yAxis: string) => void;
+    addYAxisColumn: (column: string) => void;
+    removeYAxisColumn: (column: string) => void;
+    loadProject: (xAxis: string, yAxis: string[]) => void;
     toggleMenu: () => void;
 }
 
 export const useSideMenuStore = create<SideMenuState>((set) => ({
     sideMenuData: {
         xAxis: '',
-        yAxis: ''
+        yAxis: []
     },
     isMenuOpen: true,
     setXAxis: (xAxis) => set((state) => ({
         sideMenuData: { ...state.sideMenuData, xAxis }
     })),
-    setYAxis: (yAxis) => set((state) => ({
-        sideMenuData: { ...state.sideMenuData, yAxis }
+    addYAxisColumn: (column) => set((state) => {
+        if (state.sideMenuData.yAxis.includes(column)) return state;
+        if (state.sideMenuData.yAxis.length >= 8) return state;
+        return {
+            sideMenuData: {
+                ...state.sideMenuData,
+                yAxis: [...state.sideMenuData.yAxis, column]
+            }
+        };
+    }),
+    removeYAxisColumn: (column) => set((state) => ({
+        sideMenuData: {
+            ...state.sideMenuData,
+            yAxis: state.sideMenuData.yAxis.filter(c => c !== column)
+        }
     })),
     loadProject: (xAxis, yAxis) => set(() => ({
         sideMenuData: { xAxis, yAxis }

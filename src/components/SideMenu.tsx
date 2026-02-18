@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { usePlotDataStore } from '../store/PlotDataStore';
 import { useSideMenuStore, createSideMenuConfig } from '../store/SideMenuStore';
+import SideMenuSearch from './subcomponents1/SideMenuSearch';
 
 const SideMenu: React.FC = () => {
     const { columns: storeColumns } = usePlotDataStore();
@@ -8,11 +9,38 @@ const SideMenu: React.FC = () => {
         sideMenuData,
         isMenuOpen,
         setXAxis,
-        setYAxis,
+        addYAxisColumn,
+        removeYAxisColumn,
         toggleMenu
     } = useSideMenuStore();
 
-    const { columns, xAxis, yAxis, hasColumns } = useMemo(() => createSideMenuConfig(storeColumns, sideMenuData), [storeColumns, sideMenuData]);
+    const { xAxis, yAxis, hasColumns } = useMemo(() => createSideMenuConfig(storeColumns, sideMenuData), [storeColumns, sideMenuData]);
+    const [dragOverX, setDragOverX] = useState(false);
+    const [dragOverY, setDragOverY] = useState(false);
+
+    const handleDragOver = (e: React.DragEvent<HTMLDivElement>, setDragOver: (val: boolean) => void) => {
+        e.preventDefault();
+        setDragOver(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent<HTMLDivElement>, setDragOver: (val: boolean) => void) => {
+        e.preventDefault();
+        setDragOver(false);
+    };
+
+    const handleDropX = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setDragOverX(false);
+        const colName = e.dataTransfer.getData('text/plain');
+        if (colName) setXAxis(colName);
+    };
+
+    const handleDropY = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setDragOverY(false);
+        const colName = e.dataTransfer.getData('text/plain');
+        if (colName) addYAxisColumn(colName);
+    };
 
     return (
         <div
@@ -44,56 +72,87 @@ const SideMenu: React.FC = () => {
             </div>
 
             <div
-                className="flex-grow-1 p-3"
+                className="flex-grow-1 p-3 d-flex flex-column h-100"
                 style={{
                     opacity: isMenuOpen ? 1 : 0,
                     transition: 'opacity 0.2s',
                     visibility: isMenuOpen ? 'visible' : 'hidden',
-                    overflowY: 'auto'
+                    overflow: 'hidden'
                 }}
             >
-                <div className="card shadow-sm mb-4">
+                <div className="card shadow-sm mb-3 flex-shrink-0">
                     <div className="card-header bg-white fw-bold">
-                        Data Configuration
+                        Axes Configuration
                     </div>
                     <div className="card-body">
                         {hasColumns ? (
                             <>
                                 <div className="mb-3">
-                                    <label className="form-label fw-bold">X-Axis Column</label>
-                                    <select
-                                        className="form-select"
-                                        value={xAxis}
-                                        onChange={(e) => setXAxis(e.target.value)}
+                                    <label className="form-label fw-bold">X-Axis</label>
+                                    <div
+                                        className={`border rounded p-2 ${dragOverX ? 'bg-info bg-opacity-10 border-info' : 'bg-white'}`}
+                                        onDragOver={(e) => handleDragOver(e, setDragOverX)}
+                                        onDragLeave={(e) => handleDragLeave(e, setDragOverX)}
+                                        onDrop={handleDropX}
+                                        style={{ minHeight: '40px', transition: 'all 0.2s' }}
                                     >
-                                        {columns.map(col => (
-                                            <option key={col} value={col}>{col}</option>
-                                        ))}
-                                    </select>
+                                        {xAxis ? (
+                                            <div className="d-flex justify-content-between align-items-center">
+                                                <span className="badge bg-primary text-truncate mw-100">{xAxis}</span>
+                                                <button className="btn btn-sm btn-link text-danger p-0 ms-1" onClick={() => setXAxis('')}>&times;</button>
+                                            </div>
+                                        ) : (
+                                            <div className="text-muted small fst-italic text-center">Drag column here</div>
+                                        )}
+                                    </div>
                                 </div>
 
-                                <div className="mb-3">
-                                    <label className="form-label fw-bold">Y-Axis Column</label>
-                                    <select
-                                        className="form-select"
-                                        value={yAxis}
-                                        onChange={(e) => setYAxis(e.target.value)}
+                                <div className="mb-0">
+                                    <label className="form-label fw-bold">Y-Axis <small className="text-muted fw-normal">({yAxis.length}/8)</small></label>
+                                    <div
+                                        className={`border rounded p-2 ${dragOverY ? 'bg-info bg-opacity-10 border-info' : 'bg-white'}`}
+                                        onDragOver={(e) => handleDragOver(e, setDragOverY)}
+                                        onDragLeave={(e) => handleDragLeave(e, setDragOverY)}
+                                        onDrop={handleDropY}
+                                        style={{ minHeight: '40px', transition: 'all 0.2s' }}
                                     >
-                                        {columns.map(col => (
-                                            <option key={col} value={col}>{col}</option>
-                                        ))}
-                                    </select>
+                                        {yAxis.length > 0 ? (
+                                            <div className="d-flex flex-wrap gap-1">
+                                                {yAxis.map(col => (
+                                                    <div key={col} className="d-flex align-items-center badge bg-success text-truncate mw-100 mb-1">
+                                                        <span className="text-truncate">{col}</span>
+                                                        <button
+                                                            className="btn btn-sm btn-link text-white p-0 ms-1 opacity-75 hover-opacity-100"
+                                                            onClick={() => removeYAxisColumn(col)}
+                                                            style={{ textDecoration: 'none', lineHeight: 1 }}
+                                                        >
+                                                            &times;
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="text-muted small fst-italic text-center">Drag column here</div>
+                                        )}
+                                    </div>
                                 </div>
                             </>
                         ) : (
-                            <p className="text-muted small">Please load a CSV file or Project from the <strong>File</strong> menu to configure axes.</p>
+                            <p className="text-muted small mb-0">Please load data first.</p>
                         )}
                     </div>
                 </div>
 
-                <div className="alert alert-info">
-                    <small>Use the Top Menu to load data.</small>
-                </div>
+                {hasColumns && (
+                    <div className="card shadow-sm flex-grow-1 overflow-hidden d-flex flex-column">
+                        <div className="card-header bg-white fw-bold">
+                            Available Columns
+                        </div>
+                        <div className="card-body p-2 overflow-hidden d-flex flex-column">
+                            <SideMenuSearch />
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
