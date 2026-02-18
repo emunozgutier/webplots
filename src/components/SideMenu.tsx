@@ -102,26 +102,6 @@ const SideMenu: React.FC = () => {
                             {hasColumns ? (
                                 <>
                                     <div className="mb-3">
-                                        <label className="form-label fw-bold">X-Axis</label>
-                                        <div
-                                            className={`border rounded p-2 ${dragOverX ? 'bg-info bg-opacity-10 border-info' : 'bg-white'}`}
-                                            onDragOver={(e) => handleDragOver(e, setDragOverX)}
-                                            onDragLeave={(e) => handleDragLeave(e, setDragOverX)}
-                                            onDrop={handleDropX}
-                                            style={{ minHeight: '40px', transition: 'all 0.2s' }}
-                                        >
-                                            {xAxis ? (
-                                                <div className="d-flex justify-content-between align-items-center">
-                                                    <span className="badge bg-primary text-truncate mw-100">{xAxis}</span>
-                                                    <button className="btn btn-sm btn-link text-danger p-0 ms-1" onClick={() => setXAxis('')}>&times;</button>
-                                                </div>
-                                            ) : (
-                                                <div className="text-muted small fst-italic text-center">Drag column here</div>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    <div className="mb-0">
                                         <label className="form-label fw-bold">Y-Axis <small className="text-muted fw-normal">({yAxis.length}/8)</small></label>
                                         <div
                                             className={`border rounded p-2 ${dragOverY ? 'bg-info bg-opacity-10 border-info' : 'bg-white'}`}
@@ -144,6 +124,26 @@ const SideMenu: React.FC = () => {
                                                             </button>
                                                         </div>
                                                     ))}
+                                                </div>
+                                            ) : (
+                                                <div className="text-muted small fst-italic text-center">Drag column here</div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="mb-0">
+                                        <label className="form-label fw-bold">X-Axis</label>
+                                        <div
+                                            className={`border rounded p-2 ${dragOverX ? 'bg-info bg-opacity-10 border-info' : 'bg-white'}`}
+                                            onDragOver={(e) => handleDragOver(e, setDragOverX)}
+                                            onDragLeave={(e) => handleDragLeave(e, setDragOverX)}
+                                            onDrop={handleDropX}
+                                            style={{ minHeight: '40px', transition: 'all 0.2s' }}
+                                        >
+                                            {xAxis ? (
+                                                <div className="d-flex justify-content-between align-items-center">
+                                                    <span className="badge bg-primary text-truncate mw-100">{xAxis}</span>
+                                                    <button className="btn btn-sm btn-link text-danger p-0 ms-1" onClick={() => setXAxis('')}>&times;</button>
                                                 </div>
                                             ) : (
                                                 <div className="text-muted small fst-italic text-center">Drag column here</div>
