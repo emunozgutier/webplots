@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { usePlotDataStore } from '../../store/PlotDataStore';
-import SideMenuDragableColumn from './SideMenuDragableColumn';
+import DragableColumn from './DragableColumn';
 
-const SideMenuSearch: React.FC = () => {
+const SearchColumn: React.FC = () => {
     const { columns } = usePlotDataStore();
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -37,7 +37,7 @@ const SideMenuSearch: React.FC = () => {
                 {filteredColumns.length > 0 ? (
                     <div className="list-group">
                         {filteredColumns.map(col => (
-                            <SideMenuDragableColumn
+                            <DragableColumn
                                 key={col}
                                 columnName={col}
                                 onDragStart={handleDragStart}
@@ -54,4 +54,4 @@ const SideMenuSearch: React.FC = () => {
     );
 };
 
-export default SideMenuSearch;
+export default SearchColumn;

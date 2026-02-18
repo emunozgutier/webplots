@@ -1,11 +1,11 @@
 import React from 'react';
 
-interface SideMenuDragableColumnProps {
+interface DragableColumnProps {
     columnName: string;
     onDragStart: (e: React.DragEvent<HTMLDivElement>, colName: string) => void;
 }
 
-const SideMenuDragableColumn: React.FC<SideMenuDragableColumnProps> = ({ columnName, onDragStart }) => {
+const DragableColumn: React.FC<DragableColumnProps> = ({ columnName, onDragStart }) => {
     return (
         <div
             draggable
@@ -22,4 +22,4 @@ const SideMenuDragableColumn: React.FC<SideMenuDragableColumnProps> = ({ columnN
     );
 };
 
-export default SideMenuDragableColumn;
+export default DragableColumn;
