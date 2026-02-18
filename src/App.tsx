@@ -9,7 +9,7 @@ function App() {
     <div className="container-fluid vh-100 d-flex flex-column p-0">
       <TopMenuBar />
 
-      <div className="row flex-grow-1 g-0">
+      <div className="d-flex flex-row flex-grow-1 overflow-hidden">
         <SideMenu />
         <PlotArea />
       </div>

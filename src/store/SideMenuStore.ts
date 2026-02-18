@@ -7,9 +7,11 @@ export interface SideMenuData {
 
 interface SideMenuState {
     sideMenuData: SideMenuData;
+    isMenuOpen: boolean;
     setXAxis: (xAxis: string) => void;
     setYAxis: (yAxis: string) => void;
     loadProject: (xAxis: string, yAxis: string) => void;
+    toggleMenu: () => void;
 }
 
 export const useSideMenuStore = create<SideMenuState>((set) => ({
@@ -17,6 +19,7 @@ export const useSideMenuStore = create<SideMenuState>((set) => ({
         xAxis: '',
         yAxis: ''
     },
+    isMenuOpen: true,
     setXAxis: (xAxis) => set((state) => ({
         sideMenuData: { ...state.sideMenuData, xAxis }
     })),
@@ -25,7 +28,8 @@ export const useSideMenuStore = create<SideMenuState>((set) => ({
     })),
     loadProject: (xAxis, yAxis) => set(() => ({
         sideMenuData: { xAxis, yAxis }
-    }))
+    })),
+    toggleMenu: () => set((state) => ({ isMenuOpen: !state.isMenuOpen }))
 }));
 
 export const createSideMenuConfig = (columns: string[], sideMenuData: SideMenuData) => {

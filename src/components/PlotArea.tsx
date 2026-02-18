@@ -12,7 +12,7 @@ const PlotArea: React.FC = () => {
     const { plotData, layout, hasData } = useMemo(() => createPlotConfig(data, sideMenuData, plotArea), [data, sideMenuData, plotArea]);
 
     return (
-        <div className="col-md-9 col-lg-10 p-4">
+        <div className="flex-grow-1 p-4" style={{ minWidth: 0 }}>
             <div className="card h-100 shadow-sm">
                 <div className="card-body p-0 position-relative">
                     {hasData ? (
