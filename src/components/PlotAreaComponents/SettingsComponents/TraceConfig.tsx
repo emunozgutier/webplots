@@ -1,5 +1,5 @@
 import React from 'react';
-import { usePlotLayoutStore } from '../../../store/PlotLayoutStore';
+import { useTraceConfigStore } from '../../../store/TraceConfigStore';
 import { useSideMenuStore } from '../../../store/SideMenuStore';
 import { useAppStateStore } from '../../../store/AppStateStore';
 import { COLOR_PALETTES } from '../../../utils/ColorPalettes';
@@ -8,12 +8,12 @@ import { HexColorPicker } from 'react-colorful';
 import { OverlayTrigger, Popover, Dropdown } from 'react-bootstrap';
 
 const TraceConfig: React.FC = () => {
-    const { plotLayout, setTraceCustomization, setColorPalette, setPaletteColorOrder, updatePaletteColor } = usePlotLayoutStore();
+    const { traceConfig, setTraceCustomization, setColorPalette, setPaletteColorOrder, updatePaletteColor } = useTraceConfigStore();
     const { sideMenuData } = useSideMenuStore();
     const { closePopup } = useAppStateStore();
 
     // Use currentPaletteColors directly from store, fallback to empty array
-    const currentColors = plotLayout.currentPaletteColors || [];
+    const currentColors = traceConfig.currentPaletteColors || [];
     const activeTraceCount = sideMenuData.yAxis.length;
 
     const handleTraceChange = (column: string, field: 'displayName' | 'color', value: string) => {
@@ -47,12 +47,12 @@ const TraceConfig: React.FC = () => {
                     <label className="form-label small fw-bold">Color Palette Base</label>
                     <Dropdown onSelect={(eventKey) => eventKey && setColorPalette(eventKey)}>
                         <Dropdown.Toggle variant="outline-secondary" size="sm" className="w-100 d-flex justify-content-between align-items-center">
-                            {plotLayout.colorPalette || 'Default'}
+                            {traceConfig.colorPalette || 'Default'}
                         </Dropdown.Toggle>
 
                         <Dropdown.Menu className="w-100 shadow-sm" style={{ maxHeight: '200px', overflowY: 'auto' }}>
                             {Object.keys(COLOR_PALETTES).map(paletteName => (
-                                <Dropdown.Item key={paletteName} eventKey={paletteName} active={plotLayout.colorPalette === paletteName}>
+                                <Dropdown.Item key={paletteName} eventKey={paletteName} active={traceConfig.colorPalette === paletteName}>
                                     <div className="d-flex align-items-center justify-content-between">
                                         <span>{paletteName}</span>
                                         <div className="d-flex ms-2">
@@ -150,7 +150,7 @@ const TraceConfig: React.FC = () => {
                 <div className="list-group list-group-flush border rounded">
                     {sideMenuData.yAxis.length === 0 && <div className="p-3 text-muted small text-center">No traces selected</div>}
                     {sideMenuData.yAxis.map((col, idx) => {
-                        const custom = plotLayout.traceCustomizations?.[col] || {};
+                        const custom = traceConfig.traceCustomizations?.[col] || {};
                         const assignedColor = currentColors[idx % currentColors.length] || '#000000';
                         const effectiveColor = custom.color || assignedColor;
 

@@ -4,6 +4,7 @@ import { usePlotDataStore } from '../store/PlotDataStore';
 import { useSideMenuStore } from '../store/SideMenuStore';
 import { useAppStateStore } from '../store/AppStateStore';
 import { usePlotLayoutStore } from '../store/PlotLayoutStore';
+import { useTraceConfigStore } from '../store/TraceConfigStore';
 import { generatePlotConfig } from '../utils/PlotlyHelpers';
 import ControllerButtons from './PlotAreaComponents/ControllerButtons';
 import Settings from './PlotAreaComponents/Settings';
@@ -14,8 +15,9 @@ const PlotArea: React.FC = () => {
     const { sideMenuData } = useSideMenuStore();
     const { isSideMenuOpen } = useAppStateStore();
     const { plotLayout } = usePlotLayoutStore();
+    const { traceConfig } = useTraceConfigStore();
 
-    const { plotData, layout, hasData, receipt } = useMemo(() => generatePlotConfig(data, sideMenuData, plotLayout), [data, sideMenuData, plotLayout]);
+    const { plotData, layout, hasData, receipt } = useMemo(() => generatePlotConfig(data, sideMenuData, plotLayout, traceConfig), [data, sideMenuData, plotLayout, traceConfig]);
 
     // Force Plotly resize when side menu toggles
     React.useEffect(() => {

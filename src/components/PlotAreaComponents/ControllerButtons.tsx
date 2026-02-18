@@ -1,5 +1,7 @@
 import React from 'react';
-import { usePlotLayoutStore, createPlotConfig } from '../../store/PlotLayoutStore';
+import { usePlotLayoutStore } from '../../store/PlotLayoutStore';
+import { useTraceConfigStore } from '../../store/TraceConfigStore';
+import { generatePlotConfig } from '../../utils/PlotlyHelpers';
 import { usePlotDataStore } from '../../store/PlotDataStore';
 import { useSideMenuStore } from '../../store/SideMenuStore';
 
@@ -11,11 +13,12 @@ interface ControllerButtonsProps {
 
 const ControllerButtons: React.FC<ControllerButtonsProps> = ({ onOpenSettings, onOpenDebug }) => {
     const { plotLayout } = usePlotLayoutStore();
+    const { traceConfig } = useTraceConfigStore();
     const { data } = usePlotDataStore();
     const { sideMenuData } = useSideMenuStore();
 
     const handleSaveHTML = () => {
-        const { plotData, layout } = createPlotConfig(data, sideMenuData, plotLayout);
+        const { plotData, layout } = generatePlotConfig(data, sideMenuData, plotLayout, traceConfig);
 
         // Basic HTML template to render the plot
         const htmlContent = `
