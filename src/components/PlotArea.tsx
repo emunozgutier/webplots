@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import Plot from 'react-plotly.js';
 import { usePlotDataStore } from '../store/PlotDataStore';
 import { useSideMenuStore } from '../store/SideMenuStore';
+import { useAppStateStore } from '../store/AppStateStore';
 import { usePlotLayoutStore } from '../store/PlotLayoutStore';
 import { generatePlotConfig } from '../utils/PlotlyHelpers';
 import ControllerButtons from './PlotAreaComponents/ControllerButtons';
@@ -10,7 +11,8 @@ import Debug from './PlotAreaComponents/Debug';
 
 const PlotArea: React.FC = () => {
     const { data } = usePlotDataStore();
-    const { sideMenuData, isMenuOpen } = useSideMenuStore();
+    const { sideMenuData } = useSideMenuStore();
+    const { isSideMenuOpen } = useAppStateStore();
     const { plotLayout } = usePlotLayoutStore();
 
     const { plotData, layout, hasData, receipt } = useMemo(() => generatePlotConfig(data, sideMenuData, plotLayout), [data, sideMenuData, plotLayout]);
@@ -21,7 +23,7 @@ const PlotArea: React.FC = () => {
             window.dispatchEvent(new Event('resize'));
         }, 300); // Wait for transition to finish
         return () => clearTimeout(timer);
-    }, [isMenuOpen]);
+    }, [isSideMenuOpen]);
 
     return (
         <div className="flex-grow-1 p-4 d-flex flex-column position-relative" style={{ minWidth: 0 }}>
