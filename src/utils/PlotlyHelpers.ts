@@ -31,19 +31,46 @@ export const generatePlotConfig = (data: PlotData[], sideMenuData: SideMenuData,
     };
 
     // Create a trace for each Y-axis column
+    // Create a trace for each Y-axis column
     const plotData: Data[] = yAxis.map((yCol, index) => {
         const customization = traceCustomizations?.[yCol] || {};
         const baseColor = getColor(index);
 
+        // Default mode is 'lines' unless specified
+        let mode: 'lines' | 'markers' | 'lines+markers' = customization.mode || 'lines';
+        const marker: any = {};
+
+        // If specific symbol is set
+        if (customization.symbol) {
+            // If user selected a symbol, we ensure markers are visible
+            if (mode === 'lines') {
+                mode = 'lines+markers';
+            }
+            marker.symbol = customization.symbol;
+            marker.size = 8; // Default size for symbols
+        }
+
+        // If explicit mode is 'markers', we force markers
+        if (customization.mode === 'markers') {
+            mode = 'markers';
+            if (!customization.symbol) {
+                marker.symbol = 'circle'; // Default marker
+            }
+        }
+
         return {
             x: x,
             y: data.map(row => row[yCol]),
-            mode: 'lines',
+            mode: mode,
             type: 'scatter',
             name: customization.displayName || yCol,
             line: {
-                color: customization.color || baseColor
-            }
+                color: customization.color || baseColor,
+                // If dot is selected, maybe we want a dotted line too? 
+                // Using dash for dot symbol might look better if user intended line style.
+                // But for now, sticking to marker interpretation.
+            },
+            marker: marker
         };
     });
 
@@ -83,13 +110,28 @@ export const generatePlotConfig = (data: PlotData[], sideMenuData: SideMenuData,
         const finalColor = customization.color || baseColor;
         const finalName = customization.displayName || yCol;
 
+        let mode = customization.mode || 'lines';
+        let markerParams = '';
+
+        if (customization.symbol) {
+            if (mode === 'lines') mode = 'lines+markers';
+            markerParams = `, marker: { symbol: '${customization.symbol}', size: 8 }`;
+        }
+
+        if (customization.mode === 'markers') {
+            mode = 'markers';
+            if (!customization.symbol) {
+                markerParams = `, marker: { symbol: 'circle' }`;
+            }
+        }
+
         return `var ${traceVar} = {
   // x: data.map(r => r['${xAxis}']), // Data not shown
   // y: data.map(r => r['${yCol}']), // Data not shown
-  mode: 'lines',
+  mode: '${mode}',
   type: 'scatter',
   name: '${finalName}',
-  line: { color: '${finalColor}' }
+  line: { color: '${finalColor}' }${markerParams}
 };`;
     }).join('\n\n');
 

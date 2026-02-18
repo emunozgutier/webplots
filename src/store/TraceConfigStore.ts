@@ -2,14 +2,24 @@ import { create } from 'zustand';
 import { COLOR_PALETTES } from '../utils/ColorPalettes';
 
 export interface TraceConfig {
-    traceCustomizations: Record<string, { displayName?: string; color?: string }>;
+    traceCustomizations: Record<string, {
+        displayName?: string;
+        color?: string;
+        mode?: 'lines' | 'markers' | 'lines+markers';
+        symbol?: string; // allow any plotly symbol string
+    }>;
     colorPalette: string;
     currentPaletteColors: string[];
 }
 
 interface TraceConfigState {
     traceConfig: TraceConfig;
-    setTraceCustomization: (columnName: string, settings: { displayName?: string; color?: string }) => void;
+    setTraceCustomization: (columnName: string, settings: {
+        displayName?: string;
+        color?: string;
+        mode?: 'lines' | 'markers' | 'lines+markers';
+        symbol?: string;
+    }) => void;
     setColorPalette: (paletteName: string) => void;
     setPaletteColorOrder: (colors: string[]) => void;
     updatePaletteColor: (index: number, color: string) => void;
