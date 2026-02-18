@@ -3,7 +3,7 @@ import { useTraceConfigStore } from '../../../store/TraceConfigStore';
 import { useSideMenuStore } from '../../../store/SideMenuStore';
 import { useAppStateStore } from '../../../store/AppStateStore';
 import { COLOR_PALETTES } from '../../../utils/ColorPalettes';
-import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { HexColorPicker } from 'react-colorful';
 import { OverlayTrigger, Popover, Dropdown } from 'react-bootstrap';
 
