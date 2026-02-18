@@ -7,8 +7,11 @@ const SideMenuSearch: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
 
     const filteredColumns = useMemo(() => {
-        if (!searchTerm) return columns;
-        return columns.filter(col =>
+        // Filter out blank or whitespace-only columns
+        const validColumns = columns.filter(col => col && col.trim().length > 0);
+
+        if (!searchTerm) return validColumns;
+        return validColumns.filter(col =>
             col.toLowerCase().includes(searchTerm.toLowerCase())
         );
     }, [columns, searchTerm]);
