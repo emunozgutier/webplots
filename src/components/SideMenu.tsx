@@ -1,15 +1,16 @@
 import React, { useMemo } from 'react';
-import { useAppStore, createSideMenuConfig } from '../store';
+import { usePlotDataStore } from '../store/PlotDataStore';
+import { useSideMenuStore, createSideMenuConfig } from '../store/SideMenuStore';
 
 const SideMenu: React.FC = () => {
+    const { columns: storeColumns } = usePlotDataStore();
     const {
-        columns: storeColumns,
-        plotArea,
+        sideMenuData,
         setXAxis,
         setYAxis
-    } = useAppStore();
+    } = useSideMenuStore();
 
-    const { columns, xAxis, yAxis, hasColumns } = useMemo(() => createSideMenuConfig(storeColumns, plotArea), [storeColumns, plotArea]);
+    const { columns, xAxis, yAxis, hasColumns } = useMemo(() => createSideMenuConfig(storeColumns, sideMenuData), [storeColumns, sideMenuData]);
 
     return (
         <div className="col-md-3 col-lg-2 bg-light border-end p-4">

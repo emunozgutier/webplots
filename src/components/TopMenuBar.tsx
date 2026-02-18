@@ -1,21 +1,16 @@
 
 import React, { useRef } from 'react';
 import { NavDropdown, Navbar, Nav, Container } from 'react-bootstrap';
-import { useAppStore } from '../store';
+import { usePlotDataStore } from '../store/PlotDataStore';
+import { useSideMenuStore } from '../store/SideMenuStore';
+import { usePlotAreaStore } from '../store/PlotAreaStore';
 import Papa from 'papaparse';
-import type { PlotData } from '../DataStructure';
+import type { PlotData } from '../store/PlotDataStore';
 
 const TopMenuBar: React.FC = () => {
-    const {
-        data,
-        columns,
-        plotArea,
-        setPlotData,
-        setColumns,
-        setXAxis,
-        setYAxis,
-        loadProject
-    } = useAppStore();
+    const { data, columns, setPlotData, setColumns, loadProject: loadPlotDataProject } = usePlotDataStore();
+    const { sideMenuData, setXAxis, setYAxis, loadProject: loadSideMenuProject } = useSideMenuStore();
+    const { plotArea, loadProject: loadPlotAreaProject } = usePlotAreaStore();
 
     const csvInputRef = useRef<HTMLInputElement>(null);
     const projectInputRef = useRef<HTMLInputElement>(null);
@@ -49,6 +44,7 @@ const TopMenuBar: React.FC = () => {
         const projectState = {
             data,
             columns,
+            sideMenuData,
             plotArea
         };
         const blob = new Blob([JSON.stringify(projectState, null, 2)], { type: 'application/json' });
@@ -70,7 +66,23 @@ const TopMenuBar: React.FC = () => {
                 try {
                     const content = e.target?.result as string;
                     const projectState = JSON.parse(content);
-                    loadProject(projectState);
+
+                    if (projectState.data && projectState.columns) {
+                        loadPlotDataProject(projectState.data, projectState.columns);
+                    }
+
+                    if (projectState.sideMenuData) {
+                        loadSideMenuProject(projectState.sideMenuData.xAxis, projectState.sideMenuData.yAxis);
+                    } else if (projectState.plotArea && projectState.plotArea.axisMenuData) {
+                        // Migration for old project files
+                        loadSideMenuProject(projectState.plotArea.axisMenuData.xAxis, projectState.plotArea.axisMenuData.yAxis);
+                    }
+
+                    if (projectState.plotArea) {
+                        // Clean up old axisMenuData if present in the loaded object before setting
+                        const { axisMenuData, ...cleanPlotArea } = projectState.plotArea;
+                        loadPlotAreaProject(cleanPlotArea);
+                    }
                 } catch (error) {
                     console.error('Error loading project:', error);
                     alert('Invalid project file.');

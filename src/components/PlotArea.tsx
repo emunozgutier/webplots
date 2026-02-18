@@ -1,10 +1,15 @@
 import React, { useMemo } from 'react';
 import Plot from 'react-plotly.js';
-import { useAppStore, createPlotConfig } from '../store';
+import { usePlotDataStore } from '../store/PlotDataStore';
+import { useSideMenuStore } from '../store/SideMenuStore';
+import { usePlotAreaStore, createPlotConfig } from '../store/PlotAreaStore';
 
 const PlotArea: React.FC = () => {
-    const { data, plotArea } = useAppStore();
-    const { plotData, layout, hasData } = useMemo(() => createPlotConfig(data, plotArea), [data, plotArea]);
+    const { data } = usePlotDataStore();
+    const { sideMenuData } = useSideMenuStore();
+    const { plotArea } = usePlotAreaStore();
+
+    const { plotData, layout, hasData } = useMemo(() => createPlotConfig(data, sideMenuData, plotArea), [data, sideMenuData, plotArea]);
 
     return (
         <div className="col-md-9 col-lg-10 p-4">
