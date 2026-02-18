@@ -28,9 +28,30 @@ const Settings: React.FC = () => {
         });
 
         if (values.length === 0) return { min: '', max: '' };
+
+        const minVal = Math.min(...values);
+        const maxVal = Math.max(...values);
+
+        const roundTo3SigFigs = (num: number, direction: 'min' | 'max') => {
+            if (num === 0) return 0;
+            const d = Math.ceil(Math.log10(num < 0 ? -num : num));
+            const power = 3 - d;
+            const magnitude = Math.pow(10, power);
+
+            // To handle floating point precision issues (e.g. 0.300000000004), 
+            // round slightly before floor/ceil, but keep enough precision
+            const shifted = Math.round(num * magnitude * 1e9) / 1e9;
+
+            if (direction === 'max') {
+                return Math.ceil(shifted) / magnitude;
+            } else {
+                return Math.floor(shifted) / magnitude;
+            }
+        };
+
         return {
-            min: Math.min(...values).toString(),
-            max: Math.max(...values).toString()
+            min: roundTo3SigFigs(minVal, 'min').toString(),
+            max: roundTo3SigFigs(maxVal, 'max').toString()
         };
     };
 
@@ -87,13 +108,13 @@ const Settings: React.FC = () => {
     };
 
     const handleAutoX = () => {
-        setLocalXMin('');
-        setLocalXMax('');
+        setLocalXMin(xRangeDefaults.min);
+        setLocalXMax(xRangeDefaults.max);
     };
 
     const handleAutoY = () => {
-        setLocalYMin('');
-        setLocalYMax('');
+        setLocalYMin(yRangeDefaults.min);
+        setLocalYMax(yRangeDefaults.max);
     };
 
     if (!plotLayout.isSettingsOpen) return null;
