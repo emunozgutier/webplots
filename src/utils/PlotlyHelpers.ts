@@ -3,9 +3,11 @@ import type { PlotData } from '../store/PlotDataStore';
 import type { SideMenuData } from '../store/SideMenuStore';
 import type { PlotLayout } from '../store/PlotLayoutStore';
 
+import { getPaletteColor } from './ColorPalettes';
+
 export const generatePlotConfig = (data: PlotData[], sideMenuData: SideMenuData, plotLayout: PlotLayout) => {
     const { xAxis, yAxis } = sideMenuData;
-    const { enableLogAxis, plotTitle, xAxisTitle, yAxisTitle, xRange, yRange } = plotLayout;
+    const { enableLogAxis, plotTitle, xAxisTitle, yAxisTitle, xRange, yRange, traceCustomizations, colorPalette } = plotLayout;
     const hasData = data.length > 0 && !!xAxis && yAxis.length > 0;
 
     if (!hasData) {
@@ -20,13 +22,21 @@ export const generatePlotConfig = (data: PlotData[], sideMenuData: SideMenuData,
     const x = data.map(row => row[xAxis]);
 
     // Create a trace for each Y-axis column
-    const plotData: Data[] = yAxis.map(yCol => ({
-        x: x,
-        y: data.map(row => row[yCol]),
-        mode: 'lines',
-        type: 'scatter',
-        name: yCol
-    }));
+    const plotData: Data[] = yAxis.map((yCol, index) => {
+        const customization = traceCustomizations?.[yCol] || {};
+        const baseColor = getPaletteColor(colorPalette || 'Default', index);
+
+        return {
+            x: x,
+            y: data.map(row => row[yCol]),
+            mode: 'lines',
+            type: 'scatter',
+            name: customization.displayName || yCol,
+            line: {
+                color: customization.color || baseColor
+            }
+        };
+    });
 
     const layout: Partial<Layout> = {
         width: undefined,
@@ -59,12 +69,18 @@ export const generatePlotConfig = (data: PlotData[], sideMenuData: SideMenuData,
     // Traces
     const tracesReceipt = yAxis.map((yCol, index) => {
         const traceVar = `trace${index + 1}`;
+        const customization = traceCustomizations?.[yCol] || {};
+        const baseColor = getPaletteColor(colorPalette || 'Default', index);
+        const finalColor = customization.color || baseColor;
+        const finalName = customization.displayName || yCol;
+
         return `var ${traceVar} = {
   // x: data.map(r => r['${xAxis}']), // Data not shown
   // y: data.map(r => r['${yCol}']), // Data not shown
   mode: 'lines',
   type: 'scatter',
-  name: '${yCol}'
+  name: '${finalName}',
+  line: { color: '${finalColor}' }
 };`;
     }).join('\n\n');
 

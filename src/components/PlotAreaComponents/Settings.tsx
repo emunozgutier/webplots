@@ -3,12 +3,20 @@ import { usePlotLayoutStore } from '../../store/PlotLayoutStore';
 import { useSideMenuStore } from '../../store/SideMenuStore';
 import { usePlotDataStore } from '../../store/PlotDataStore';
 import { useAppStateStore } from '../../store/AppStateStore';
+import { COLOR_PALETTES, getPaletteColor } from '../../utils/ColorPalettes';
 
 const Settings: React.FC = () => {
-    const { plotLayout, setPlotTitle, setXAxisTitle, setYAxisTitle, setXRange, setYRange } = usePlotLayoutStore();
+    const {
+        plotLayout,
+        setPlotTitle, setXAxisTitle, setYAxisTitle,
+        setXRange, setYRange,
+        setTraceCustomization, setColorPalette
+    } = usePlotLayoutStore();
     const { closePopup } = useAppStateStore();
     const { sideMenuData } = useSideMenuStore();
     const { data } = usePlotDataStore();
+
+    const [activeTab, setActiveTab] = useState<'layout' | 'trace'>('layout');
 
     // Calculate default titles based on selection
     const defaultPlotTitle = sideMenuData.yAxis.length > 0 && sideMenuData.xAxis
@@ -61,7 +69,6 @@ const Settings: React.FC = () => {
     const yRangeDefaults = calculateRange(sideMenuData.yAxis);
 
     // Local state for inputs
-    // If plotLayout has a custom range, use it. Otherwise use the calculated data range.
     const [localPlotTitle, setLocalPlotTitle] = useState(plotLayout.plotTitle || defaultPlotTitle);
     const [localXTitle, setLocalXTitle] = useState(plotLayout.xAxisTitle || defaultXTitle);
     const [localYTitle, setLocalYTitle] = useState(plotLayout.yAxisTitle || defaultYTitle);
@@ -117,59 +124,136 @@ const Settings: React.FC = () => {
         setLocalYMax(yRangeDefaults.max);
     };
 
+    const handleTraceChange = (column: string, field: 'displayName' | 'color', value: string) => {
+        setTraceCustomization(column, { [field]: value });
+    };
+
     return (
-        <div className="card shadow-lg" style={{ width: '400px' }}>
+        <div className="card shadow-lg" style={{ width: '500px' }}>
             <div className="card-header bg-white fw-bold d-flex justify-content-between align-items-center">
                 <span>Plot Settings</span>
                 <button className="btn btn-sm btn-close" onClick={closePopup}></button>
             </div>
-            <div className="card-body">
-                <div className="mb-3">
-                    <label className="form-label small fw-bold">Plot Title</label>
-                    <input type="text" className="form-control form-control-sm" value={localPlotTitle} onChange={e => setLocalPlotTitle(e.target.value)} />
-                </div>
-                <div className="row mb-3">
-                    <div className="col-6">
-                        <label className="form-label small fw-bold">X-Axis Title</label>
-                        <input type="text" className="form-control form-control-sm" value={localXTitle} onChange={e => setLocalXTitle(e.target.value)} />
-                    </div>
-                    <div className="col-6">
-                        <label className="form-label small fw-bold">Y-Axis Title</label>
-                        <input type="text" className="form-control form-control-sm" value={localYTitle} onChange={e => setLocalYTitle(e.target.value)} />
-                    </div>
-                </div>
 
-                <hr />
+            <div className="card-body p-0">
+                <ul className="nav nav-tabs nav-justified bg-light">
+                    <li className="nav-item">
+                        <button
+                            className={`nav-link rounded-0 ${activeTab === 'layout' ? 'active bg-white fw-bold' : ''}`}
+                            onClick={() => setActiveTab('layout')}
+                        >
+                            Layout
+                        </button>
+                    </li>
+                    <li className="nav-item">
+                        <button
+                            className={`nav-link rounded-0 ${activeTab === 'trace' ? 'active bg-white fw-bold' : ''}`}
+                            onClick={() => setActiveTab('trace')}
+                        >
+                            Trace Config
+                        </button>
+                    </li>
+                </ul>
 
-                <div className="mb-2">
-                    <div className="d-flex justify-content-between align-items-center mb-1">
-                        <label className="form-label small fw-bold mb-0">X-Axis Range</label>
-                        <button className="btn btn-xs btn-outline-secondary py-0" style={{ fontSize: '0.7rem' }} onClick={handleAutoX}>Auto</button>
-                    </div>
-                    <div className="input-group input-group-sm">
-                        <span className="input-group-text">Min</span>
-                        <input type="number" className="form-control" value={localXMin} onChange={e => setLocalXMin(e.target.value)} placeholder="Auto" />
-                        <span className="input-group-text">Max</span>
-                        <input type="number" className="form-control" value={localXMax} onChange={e => setLocalXMax(e.target.value)} placeholder="Auto" />
-                    </div>
-                </div>
+                <div className="p-3">
+                    {activeTab === 'layout' ? (
+                        <>
+                            <div className="mb-3">
+                                <label className="form-label small fw-bold">Plot Title</label>
+                                <input type="text" className="form-control form-control-sm" value={localPlotTitle} onChange={e => setLocalPlotTitle(e.target.value)} />
+                            </div>
+                            <div className="row mb-3">
+                                <div className="col-6">
+                                    <label className="form-label small fw-bold">X-Axis Title</label>
+                                    <input type="text" className="form-control form-control-sm" value={localXTitle} onChange={e => setLocalXTitle(e.target.value)} />
+                                </div>
+                                <div className="col-6">
+                                    <label className="form-label small fw-bold">Y-Axis Title</label>
+                                    <input type="text" className="form-control form-control-sm" value={localYTitle} onChange={e => setLocalYTitle(e.target.value)} />
+                                </div>
+                            </div>
 
-                <div className="mb-3">
-                    <div className="d-flex justify-content-between align-items-center mb-1">
-                        <label className="form-label small fw-bold mb-0">Y-Axis Range</label>
-                        <button className="btn btn-xs btn-outline-secondary py-0" style={{ fontSize: '0.7rem' }} onClick={handleAutoY}>Auto</button>
-                    </div>
-                    <div className="input-group input-group-sm">
-                        <span className="input-group-text">Min</span>
-                        <input type="number" className="form-control" value={localYMin} onChange={e => setLocalYMin(e.target.value)} placeholder="Auto" />
-                        <span className="input-group-text">Max</span>
-                        <input type="number" className="form-control" value={localYMax} onChange={e => setLocalYMax(e.target.value)} placeholder="Auto" />
-                    </div>
+                            <hr />
+
+                            <div className="mb-2">
+                                <div className="d-flex justify-content-between align-items-center mb-1">
+                                    <label className="form-label small fw-bold mb-0">X-Axis Range</label>
+                                    <button className="btn btn-xs btn-outline-secondary py-0" style={{ fontSize: '0.7rem' }} onClick={handleAutoX}>Auto</button>
+                                </div>
+                                <div className="input-group input-group-sm">
+                                    <span className="input-group-text">Min</span>
+                                    <input type="number" className="form-control" value={localXMin} onChange={e => setLocalXMin(e.target.value)} placeholder="Auto" />
+                                    <span className="input-group-text">Max</span>
+                                    <input type="number" className="form-control" value={localXMax} onChange={e => setLocalXMax(e.target.value)} placeholder="Auto" />
+                                </div>
+                            </div>
+
+                            <div className="mb-3">
+                                <div className="d-flex justify-content-between align-items-center mb-1">
+                                    <label className="form-label small fw-bold mb-0">Y-Axis Range</label>
+                                    <button className="btn btn-xs btn-outline-secondary py-0" style={{ fontSize: '0.7rem' }} onClick={handleAutoY}>Auto</button>
+                                </div>
+                                <div className="input-group input-group-sm">
+                                    <span className="input-group-text">Min</span>
+                                    <input type="number" className="form-control" value={localYMin} onChange={e => setLocalYMin(e.target.value)} placeholder="Auto" />
+                                    <span className="input-group-text">Max</span>
+                                    <input type="number" className="form-control" value={localYMax} onChange={e => setLocalYMax(e.target.value)} placeholder="Auto" />
+                                </div>
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <div className="mb-3">
+                                <label className="form-label small fw-bold">Color Palette</label>
+                                <select
+                                    className="form-select form-select-sm"
+                                    value={plotLayout.colorPalette || 'Default'}
+                                    onChange={(e) => setColorPalette(e.target.value)}
+                                >
+                                    {Object.keys(COLOR_PALETTES).map(palette => (
+                                        <option key={palette} value={palette}>{palette}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="list-group list-group-flush border rounded overflow-auto" style={{ maxHeight: '300px' }}>
+                                {sideMenuData.yAxis.length === 0 && <div className="p-3 text-muted small text-center">No traces selected</div>}
+                                {sideMenuData.yAxis.map((col, idx) => {
+                                    const custom = plotLayout.traceCustomizations?.[col] || {};
+                                    const defaultColor = getPaletteColor(plotLayout.colorPalette || 'Default', idx);
+
+                                    return (
+                                        <div key={col} className="list-group-item p-2">
+                                            <div className="mb-1 d-flex justify-content-between align-items-center">
+                                                <small className="fw-bold text-truncate" style={{ maxWidth: '150px' }} title={col}>{col}</small>
+                                                <input
+                                                    type="color"
+                                                    className="form-control form-control-color form-control-sm"
+                                                    value={custom.color || defaultColor}
+                                                    onChange={(e) => handleTraceChange(col, 'color', e.target.value)}
+                                                    title="Trace Color"
+                                                    style={{ width: '30px', padding: '2px' }}
+                                                />
+                                            </div>
+                                            <input
+                                                type="text"
+                                                className="form-control form-control-sm"
+                                                placeholder="Display Name"
+                                                value={custom.displayName || ''}
+                                                onChange={(e) => handleTraceChange(col, 'displayName', e.target.value)}
+                                            />
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
+
             <div className="card-footer bg-light d-flex justify-content-end">
-                <button className="btn btn-sm btn-secondary me-2" onClick={closePopup}>Cancel</button>
-                <button className="btn btn-sm btn-primary" onClick={handleSave}>Save Changes</button>
+                <button className="btn btn-sm btn-secondary me-2" onClick={closePopup}>Close</button>
+                {activeTab === 'layout' && <button className="btn btn-sm btn-primary" onClick={handleSave}>Save Layout</button>}
             </div>
         </div>
     );

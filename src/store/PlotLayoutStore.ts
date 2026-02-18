@@ -10,6 +10,8 @@ export interface PlotLayout {
     yAxisTitle: string;
     xRange: [number, number] | null;
     yRange: [number, number] | null;
+    traceCustomizations: Record<string, { displayName?: string; color?: string }>;
+    colorPalette: string;
 }
 
 interface PlotLayoutState {
@@ -20,6 +22,8 @@ interface PlotLayoutState {
     setYAxisTitle: (title: string) => void;
     setXRange: (range: [number, number] | null) => void;
     setYRange: (range: [number, number] | null) => void;
+    setTraceCustomization: (columnName: string, settings: { displayName?: string; color?: string }) => void;
+    setColorPalette: (paletteName: string) => void;
     loadProject: (plotLayout: PlotLayout) => void;
 }
 
@@ -30,7 +34,9 @@ export const usePlotLayoutStore = create<PlotLayoutState>((set) => ({
         xAxisTitle: '',
         yAxisTitle: '',
         yRange: null,
-        xRange: null
+        xRange: null,
+        traceCustomizations: {},
+        colorPalette: 'Default'
     },
     setEnableLogAxis: (enableLogAxis) => set((state) => ({
         plotLayout: { ...state.plotLayout, enableLogAxis }
@@ -50,8 +56,21 @@ export const usePlotLayoutStore = create<PlotLayoutState>((set) => ({
     setYRange: (yRange) => set((state) => ({
         plotLayout: { ...state.plotLayout, yRange }
     })),
+    setTraceCustomization: (columnName, settings) => set((state) => ({
+        plotLayout: {
+            ...state.plotLayout,
+            traceCustomizations: {
+                ...state.plotLayout.traceCustomizations,
+                [columnName]: { ...state.plotLayout.traceCustomizations[columnName], ...settings }
+            }
+        }
+    })),
+    setColorPalette: (paletteName) => set((state) => ({
+        plotLayout: { ...state.plotLayout, colorPalette: paletteName }
+    })),
     loadProject: (plotLayout) => set({ plotLayout })
 }));
+
 
 import { generatePlotConfig } from '../utils/PlotlyHelpers';
 
