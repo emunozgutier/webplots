@@ -4,6 +4,8 @@ import { usePlotDataStore } from '../store/PlotDataStore';
 import { useSideMenuStore } from '../store/SideMenuStore';
 import { usePlotAreaStore } from '../store/PlotAreaStore';
 import { generatePlotConfig } from '../utils/PlotlyHelpers';
+import ControllerButtons from './PlotAreaComponents/ControllerButtons';
+import Settings from './PlotAreaComponents/Settings';
 
 const PlotArea: React.FC = () => {
     const { data } = usePlotDataStore();
@@ -13,8 +15,12 @@ const PlotArea: React.FC = () => {
     const { plotData, layout, hasData, receipt } = useMemo(() => generatePlotConfig(data, sideMenuData, plotArea), [data, sideMenuData, plotArea]);
 
     return (
-        <div className="flex-grow-1 p-4 d-flex flex-column" style={{ minWidth: 0 }}>
+        <div className="flex-grow-1 p-4 d-flex flex-column position-relative" style={{ minWidth: 0 }}>
             <div className="card shadow-sm flex-grow-1 mb-3">
+                <div className="card-header bg-white d-flex justify-content-between align-items-center py-2">
+                    <span className="fw-bold">{layout.title?.text || 'Plot Area'}</span>
+                    <ControllerButtons />
+                </div>
                 <div className="card-body p-0 position-relative">
                     {hasData ? (
                         <Plot
@@ -34,7 +40,7 @@ const PlotArea: React.FC = () => {
                 </div>
             </div>
 
-            {hasData && receipt && (
+            {hasData && plotArea.showReceipt && (
                 <div className="card shadow-sm" style={{ height: '200px' }}>
                     <div className="card-header bg-light fw-bold small text-uppercase text-muted">
                         Plotly Code Receipt
@@ -46,6 +52,8 @@ const PlotArea: React.FC = () => {
                     </div>
                 </div>
             )}
+
+            <Settings />
         </div>
     );
 };

@@ -5,7 +5,7 @@ import type { PlotArea } from '../store/PlotAreaStore';
 
 export const generatePlotConfig = (data: PlotData[], sideMenuData: SideMenuData, plotArea: PlotArea) => {
     const { xAxis, yAxis } = sideMenuData;
-    const { enableLogAxis, plotTitle } = plotArea;
+    const { enableLogAxis, plotTitle, xAxisTitle, yAxisTitle, xRange, yRange } = plotArea;
     const hasData = data.length > 0 && !!xAxis && yAxis.length > 0;
 
     if (!hasData) {
@@ -33,12 +33,16 @@ export const generatePlotConfig = (data: PlotData[], sideMenuData: SideMenuData,
         height: undefined,
         title: { text: plotTitle || `Plot: ${yAxis.join(', ')} vs ${xAxis}` },
         xaxis: {
-            title: { text: xAxis },
-            type: enableLogAxis ? 'log' : 'linear'
+            title: { text: xAxisTitle || xAxis },
+            type: enableLogAxis ? 'log' : 'linear',
+            range: xRange || undefined,
+            autorange: !xRange
         },
         yaxis: {
-            title: { text: yAxis.length === 1 ? yAxis[0] : 'Values' },
-            type: enableLogAxis ? 'log' : 'linear'
+            title: { text: yAxisTitle || (yAxis.length === 1 ? yAxis[0] : 'Values') },
+            type: enableLogAxis ? 'log' : 'linear',
+            range: yRange || undefined,
+            autorange: !yRange
         },
         autosize: true,
         margin: { l: 50, r: 50, b: 50, t: 50 },
@@ -72,12 +76,14 @@ export const generatePlotConfig = (data: PlotData[], sideMenuData: SideMenuData,
     receipt += `var layout = {
   title: { text: '${layout.title?.text}' },
   xaxis: {
-    title: { text: '${xAxis}' },
-    type: '${enableLogAxis ? 'log' : 'linear'}'
+    title: { text: '${layout.xaxis?.title?.text}' },
+    type: '${enableLogAxis ? 'log' : 'linear'}',
+    ${xRange ? `range: [${xRange[0]}, ${xRange[1]}]` : '// autorange: true'}
   },
   yaxis: {
     title: { text: '${layout.yaxis?.title?.text}' },
-    type: '${enableLogAxis ? 'log' : 'linear'}'
+    type: '${enableLogAxis ? 'log' : 'linear'}',
+    ${yRange ? `range: [${yRange[0]}, ${yRange[1]}]` : '// autorange: true'}
   },
   showlegend: ${yAxis.length > 1}
 };\n\n`;
