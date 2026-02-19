@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTraceConfigStore } from '../../../store/TraceConfigStore';
-import { useSideMenuStore } from '../../../store/SideMenuStore';
+import { useAxisSideMenuStore } from '../../../store/AxisSideMenuStore';
 import { useAppStateStore } from '../../../store/AppStateStore';
 import { COLOR_PALETTES } from '../../../utils/ColorPalettes';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
@@ -18,7 +18,7 @@ const SYMBOLS = [
 ];
 
 const TraceConfig: React.FC = () => {
-    const { traceConfig, setTraceType, setTraceColor, setTraceDash, setTraceMode, setTraceSymbol, setTraceSize } = useTraceConfigStore();
+    const { traceConfig, setTraceCustomization, setColorPalette, setPaletteColorOrder, updatePaletteColor } = useTraceConfigStore();
     const { sideMenuData } = useAxisSideMenuStore();
     const { closePopup } = useAppStateStore();
 

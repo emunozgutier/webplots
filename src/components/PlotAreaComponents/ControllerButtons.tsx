@@ -15,7 +15,7 @@ const ControllerButtons: React.FC<ControllerButtonsProps> = ({ onOpenSettings, o
     const { plotLayout } = usePlotLayoutStore();
     const { traceConfig } = useTraceConfigStore();
     const { data } = useCsvDataStore();
-    const { sideMenuData } = useSideMenuStore();
+    const { sideMenuData } = useAxisSideMenuStore();
 
     const handleSaveHTML = () => {
         const { plotData, layout } = generatePlotConfig(data, sideMenuData, plotLayout, traceConfig);

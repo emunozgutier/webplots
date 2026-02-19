@@ -1,12 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { useCsvDataStore } from '../../store/CsvDataStore';
-import { useFilterSideMenuStore, type Filter, type FilterType } from '../../store/FilterSideMenuStore';
+import { useFilterSideMenuStore, type FilterType } from '../../store/FilterSideMenuStore';
 import SearchColumn from './SearchColumn'; // Reusing for drag source
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import FilterElement from './FilterElement';
 
 const FilterSideMenu: React.FC = () => {
-    const { data: rawData, columns } = useCsvDataStore();
+    const { data: rawData } = useCsvDataStore();
     const { filters, addFilter, reorderFilters } = useFilterSideMenuStore();
     const [dragOver, setDragOver] = useState(false);
 
@@ -151,7 +151,7 @@ const FilterSideMenu: React.FC = () => {
                                         <div {...provided.droppableProps} ref={provided.innerRef}>
                                             {filters.map((filter, index) => (
                                                 <Draggable key={filter.id} draggableId={filter.id} index={index}>
-                                                    {(provided, snapshot) => (
+                                                    {(provided) => (
                                                         <div
                                                             ref={provided.innerRef}
                                                             {...provided.draggableProps}

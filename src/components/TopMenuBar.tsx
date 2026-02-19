@@ -9,7 +9,7 @@ import { useAxisSideMenuStore } from '../store/AxisSideMenuStore';
 
 const TopMenuBar: React.FC = () => {
     const { data, columns, setPlotData, setColumns, loadProject: loadPlotDataProject } = useCsvDataStore();
-    const { isSideMenuOpen, toggleSideMenu } = useAppStateStore();
+
     const { sideMenuData, setXAxis, loadProject: loadSideMenuProject } = useAxisSideMenuStore();
     const { plotLayout, loadProject: loadPlotLayoutProject } = usePlotLayoutStore();
 

@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import Plot from 'react-plotly.js';
-import { useCsvDataStore } from '../store/CsvDataStore';
-import { useSideMenuStore } from '../store/SideMenuStore';
+
+import { useAxisSideMenuStore } from '../store/AxisSideMenuStore';
 import { useAppStateStore } from '../store/AppStateStore';
 import { usePlotLayoutStore } from '../store/PlotLayoutStore';
 import { useTraceConfigStore } from '../store/TraceConfigStore';
