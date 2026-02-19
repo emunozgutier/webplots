@@ -1,14 +1,14 @@
 
 import React, { useRef } from 'react';
 import { NavDropdown, Navbar, Nav, Container } from 'react-bootstrap';
-import { usePlotDataStore } from '../store/PlotDataStore';
+import { useCsvDataStore } from '../store/CsvDataStore';
 import { useSideMenuStore } from '../store/SideMenuStore';
 import { usePlotLayoutStore } from '../store/PlotLayoutStore';
 import Papa from 'papaparse';
-import type { PlotData } from '../store/PlotDataStore';
+import type { CsvDataStore } from '../store/CsvDataStore';
 
 const TopMenuBar: React.FC = () => {
-    const { data, columns, setPlotData, setColumns, loadProject: loadPlotDataProject } = usePlotDataStore();
+    const { data, columns, setPlotData, setColumns, loadProject: loadPlotDataProject } = useCsvDataStore();
     const { sideMenuData, setXAxis, loadProject: loadSideMenuProject } = useSideMenuStore();
     const { plotLayout, loadProject: loadPlotLayoutProject } = usePlotLayoutStore();
 
@@ -22,7 +22,7 @@ const TopMenuBar: React.FC = () => {
                 header: true,
                 dynamicTyping: true,
                 complete: (results) => {
-                    const parsedData = results.data as PlotData[];
+                    const parsedData = results.data as CsvDataStore[];
                     if (parsedData.length > 0) {
                         setPlotData(parsedData);
                         const cols = Object.keys(parsedData[0]);

@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import Plot from 'react-plotly.js';
-import { usePlotDataStore } from '../store/PlotDataStore';
+import { useCsvDataStore } from '../store/CsvDataStore';
 import { useSideMenuStore } from '../store/SideMenuStore';
 import { useAppStateStore } from '../store/AppStateStore';
 import { usePlotLayoutStore } from '../store/PlotLayoutStore';
@@ -11,7 +11,7 @@ import Settings from './PlotAreaComponents/Settings';
 import Debug from './PlotAreaComponents/Debug';
 
 const PlotArea: React.FC = () => {
-    const { data } = usePlotDataStore();
+    const { data } = useCsvDataStore();
     const { sideMenuData } = useSideMenuStore();
     const { isSideMenuOpen } = useAppStateStore();
     const { plotLayout } = usePlotLayoutStore();

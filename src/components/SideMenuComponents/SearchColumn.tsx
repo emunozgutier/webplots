@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { usePlotDataStore } from '../../store/PlotDataStore';
+import { useCsvDataStore } from '../../store/CsvDataStore';
 import DragableColumn from './DragableColumn';
 
 const SearchColumn: React.FC = () => {
-    const { columns } = usePlotDataStore();
+    const { columns } = useCsvDataStore();
     const [searchTerm, setSearchTerm] = useState('');
 
     const filteredColumns = useMemo(() => {

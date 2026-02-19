@@ -2,7 +2,7 @@ import React from 'react';
 import { usePlotLayoutStore } from '../../store/PlotLayoutStore';
 import { useTraceConfigStore } from '../../store/TraceConfigStore';
 import { generatePlotConfig } from '../../utils/PlotlyHelpers';
-import { usePlotDataStore } from '../../store/PlotDataStore';
+import { useCsvDataStore } from '../../store/CsvDataStore';
 import { useSideMenuStore } from '../../store/SideMenuStore';
 
 
@@ -14,7 +14,7 @@ interface ControllerButtonsProps {
 const ControllerButtons: React.FC<ControllerButtonsProps> = ({ onOpenSettings, onOpenDebug }) => {
     const { plotLayout } = usePlotLayoutStore();
     const { traceConfig } = useTraceConfigStore();
-    const { data } = usePlotDataStore();
+    const { data } = useCsvDataStore();
     const { sideMenuData } = useSideMenuStore();
 
     const handleSaveHTML = () => {

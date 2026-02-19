@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { usePlotLayoutStore } from '../../../store/PlotLayoutStore';
 import { useSideMenuStore } from '../../../store/SideMenuStore';
-import { usePlotDataStore } from '../../../store/PlotDataStore';
+import { useCsvDataStore } from '../../../store/CsvDataStore';
 import { useAppStateStore } from '../../../store/AppStateStore';
 
 const PlotLayout: React.FC = () => {
     const { plotLayout, setPlotTitle, setXAxisTitle, setYAxisTitle, setXRange, setYRange } = usePlotLayoutStore();
     const { closePopup } = useAppStateStore();
     const { sideMenuData } = useSideMenuStore();
-    const { data } = usePlotDataStore();
+    const { data } = useCsvDataStore();
 
     // Calculate default titles based on selection
     const defaultPlotTitle = sideMenuData.yAxis.length > 0 && sideMenuData.xAxis

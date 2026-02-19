@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from 'react';
-import { usePlotDataStore } from '../store/PlotDataStore';
+import { useCsvDataStore } from '../store/CsvDataStore';
 import { useSideMenuStore, createSideMenuConfig } from '../store/SideMenuStore';
 import { useAppStateStore } from '../store/AppStateStore';
 import SearchColumn from './SideMenuComponents/SearchColumn';
 
 const SideMenu: React.FC = () => {
-    const { columns: storeColumns } = usePlotDataStore();
+    const { columns: storeColumns } = useCsvDataStore();
     const {
         sideMenuData,
         setXAxis,

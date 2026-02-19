@@ -240,6 +240,25 @@ const TraceConfig: React.FC = () => {
                                                     </div>
                                                 </div>
                                             )}
+
+                                            {/* Size Slider (Only for markers or lines+markers if symbol selected) */}
+                                            {(currentMode === 'markers' || custom.symbol) && (
+                                                <div className="mb-3">
+                                                    <label className="form-label small fw-bold d-flex justify-content-between">
+                                                        <span>Marker Size</span>
+                                                        <span className="text-muted">{custom.size || 8}px</span>
+                                                    </label>
+                                                    <input
+                                                        type="range"
+                                                        className="form-range"
+                                                        min="4"
+                                                        max="20"
+                                                        step="1"
+                                                        value={custom.size || 8}
+                                                        onChange={(e) => handleSizeChange(col, parseInt(e.target.value))}
+                                                    />
+                                                </div>
+                                            )}
                                         </div>
                                     );
                                 })()}
