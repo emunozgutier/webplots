@@ -10,6 +10,8 @@ interface AppState {
     setTopMenuBarOpen: (isOpen: boolean) => void;
     setPopupContent: (content: React.ReactNode | null) => void;
     closePopup: () => void;
+    sideMenuWidth: number;
+    setSideMenuWidth: (width: number) => void;
 }
 
 export const useAppStateStore = create<AppState>((set) => ({
@@ -21,5 +23,7 @@ export const useAppStateStore = create<AppState>((set) => ({
     setSideMenuOpen: (isOpen) => set({ isSideMenuOpen: isOpen }),
     setTopMenuBarOpen: (isOpen) => set({ isTopMenuBarOpen: isOpen }),
     setPopupContent: (content) => set({ popupContent: content }),
-    closePopup: () => set({ popupContent: null })
+    closePopup: () => set({ popupContent: null }),
+    sideMenuWidth: 300,
+    setSideMenuWidth: (width) => set({ sideMenuWidth: width })
 }));

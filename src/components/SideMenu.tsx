@@ -11,10 +11,44 @@ type SideMenuTab = 'axis' | 'filter' | 'control';
 const SideMenu: React.FC = () => {
     const { columns: storeColumns } = useCsvDataStore();
     const { sideMenuData } = useAxisSideMenuStore();
-    const { isSideMenuOpen, toggleSideMenu } = useAppStateStore();
+    const { isSideMenuOpen, toggleSideMenu, sideMenuWidth, setSideMenuWidth } = useAppStateStore();
 
     const { hasColumns } = useMemo(() => createAxisSideMenuConfig(storeColumns, sideMenuData), [storeColumns, sideMenuData]);
     const [activeTab, setActiveTab] = useState<SideMenuTab>('axis');
+    const [isResizing, setIsResizing] = useState(false);
+
+    // Resizing Logic
+    React.useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            if (!isResizing) return;
+            const newWidth = e.clientX;
+            // Min width 200px, Max width 800px or 80vw?
+            if (newWidth > 200 && newWidth < 800) {
+                setSideMenuWidth(newWidth);
+            }
+        };
+
+        const handleMouseUp = () => {
+            setIsResizing(false);
+            document.body.style.cursor = 'default';
+        };
+
+        if (isResizing) {
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+        }
+
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isResizing, setSideMenuWidth]);
+
+    const handleMouseDown = (e: React.MouseEvent) => {
+        e.preventDefault();
+        setIsResizing(true);
+        document.body.style.cursor = 'col-resize';
+    };
 
     const renderContent = () => {
         switch (activeTab) {
@@ -52,11 +86,11 @@ const SideMenu: React.FC = () => {
 
     return (
         <div
-            className="bg-light border-end d-flex"
+            className="bg-light border-end d-flex position-relative"
             style={{
-                width: isSideMenuOpen ? '360px' : '50px', // Slightly wider for tabs
-                transition: 'width 0.3s ease-in-out',
-                overflow: 'hidden',
+                width: isSideMenuOpen ? `${sideMenuWidth}px` : '50px',
+                transition: isResizing ? 'none' : 'width 0.3s ease-in-out',
+                overflow: 'visible',
                 flexShrink: 0
             }}
         >
@@ -68,7 +102,7 @@ const SideMenu: React.FC = () => {
                     transition: 'opacity 0.2s',
                     visibility: isSideMenuOpen ? 'visible' : 'hidden',
                     overflow: 'hidden',
-                    width: isSideMenuOpen ? 'calc(100% - 50px)' : '0px'
+                    width: isSideMenuOpen ? `calc(100% - 50px)` : '0px'
                 }}
             >
                 <div className="d-flex align-items-center p-2 justify-content-between border-bottom bg-white">
@@ -117,6 +151,24 @@ const SideMenu: React.FC = () => {
                 {renderTabButton('filter', 'Filter', 'bi-funnel')}
                 {renderTabButton('control', 'Control', 'bi-sliders')}
             </div>
+
+            {/* Resize Handle - Only visible when open */}
+            {isSideMenuOpen && (
+                <div
+                    onMouseDown={handleMouseDown}
+                    style={{
+                        position: 'absolute',
+                        right: '-5px',
+                        top: 0,
+                        bottom: 0,
+                        width: '10px',
+                        cursor: 'col-resize',
+                        zIndex: 100, // Above everything
+                        backgroundColor: 'transparent' // Invisible hit area
+                    }}
+                    title="Drag to resize"
+                />
+            )}
         </div>
     );
 };
