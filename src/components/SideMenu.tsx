@@ -33,8 +33,12 @@ const SideMenu: React.FC = () => {
         <button
             className={`btn btn-sm w-100 mb-2 p-2 ${activeTab === tab ? 'btn-primary' : 'btn-light text-secondary'} border-0 rounded-0 rounded-start`}
             onClick={() => {
-                if (!isSideMenuOpen) toggleSideMenu();
-                setActiveTab(tab);
+                if (activeTab === tab) {
+                    toggleSideMenu();
+                } else {
+                    if (!isSideMenuOpen) toggleSideMenu();
+                    setActiveTab(tab);
+                }
             }}
             title={label}
             style={{ borderRadius: '4px 0 0 4px', position: 'relative', right: '-1px' }}
