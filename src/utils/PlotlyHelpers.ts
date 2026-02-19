@@ -1,10 +1,10 @@
 import type { Layout, Data } from 'plotly.js';
 import type { CsvDataStore } from '../store/CsvDataStore';
-import type { SideMenuData } from '../store/SideMenuStore';
+import type { AxisSideMenuData } from '../store/AxisSideMenuStore';
 import type { PlotLayout } from '../store/PlotLayoutStore';
 import type { TraceConfig } from '../store/TraceConfigStore';
 
-export const generatePlotConfig = (data: CsvDataStore[], sideMenuData: SideMenuData, plotLayout: PlotLayout, traceConfig: TraceConfig) => {
+export const generatePlotConfig = (data: CsvDataStore[], sideMenuData: AxisSideMenuData, plotLayout: PlotLayout, traceConfig: TraceConfig) => {
     const { xAxis, yAxis } = sideMenuData;
     const { enableLogAxis, plotTitle, xAxisTitle, yAxisTitle, xRange, yRange } = plotLayout;
 
@@ -32,7 +32,7 @@ export const generatePlotConfig = (data: CsvDataStore[], sideMenuData: SideMenuD
 
     // Create a trace for each Y-axis column
     // Create a trace for each Y-axis column
-    const plotData: Data[] = yAxis.map((yCol, index) => {
+    const plotData: Data[] = yAxis.map((yCol: string, index: number) => {
         const customization = traceCustomizations?.[yCol] || {};
         const baseColor = getColor(index);
 
@@ -101,10 +101,10 @@ export const generatePlotConfig = (data: CsvDataStore[], sideMenuData: SideMenuD
 
     // Config variables
     receipt += `var xAxisName = '${xAxis}';\n`;
-    receipt += `var yAxisNames = [${yAxis.map(y => `'${y}'`).join(', ')}];\n\n`;
+    receipt += `var yAxisNames = [${yAxis.map((y: string) => `'${y}'`).join(', ')}];\n\n`;
 
     // Traces
-    const tracesReceipt = yAxis.map((yCol, index) => {
+    const tracesReceipt = yAxis.map((yCol: string, index: number) => {
         const traceVar = `trace${index + 1}`;
         const customization = traceCustomizations?.[yCol] || {};
         const baseColor = getColor(index);
@@ -141,7 +141,7 @@ export const generatePlotConfig = (data: CsvDataStore[], sideMenuData: SideMenuD
 
     receipt += tracesReceipt + '\n\n';
 
-    receipt += `var data = [ ${yAxis.map((_, i) => `trace${i + 1}`).join(', ')} ];\n\n`;
+    receipt += `var data = [ ${yAxis.map((_: string, i: number) => `trace${i + 1}`).join(', ')} ];\n\n`;
 
     // Layout
     receipt += `var layout = {
