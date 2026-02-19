@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useCsvDataStore } from '../../store/CsvDataStore';
-import { useFilterStore, Filter, FilterType } from '../../store/FilterStore';
-import DragableColumn from './DragableColumn';
+import { useFilterStore, type Filter, type FilterType } from '../../store/FilterStore';
 import SearchColumn from './SearchColumn'; // Reusing for drag source
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 
