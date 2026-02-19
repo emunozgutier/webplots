@@ -10,8 +10,10 @@ import ControllerButtons from './PlotAreaComponents/ControllerButtons';
 import Settings from './PlotAreaComponents/Settings';
 import Debug from './PlotAreaComponents/Debug';
 
+import { useFilteredData } from '../hooks/useFilteredData';
+
 const PlotArea: React.FC = () => {
-    const { data } = useCsvDataStore();
+    const data = useFilteredData();
     const { sideMenuData } = useSideMenuStore();
     const { isSideMenuOpen } = useAppStateStore();
     const { plotLayout } = usePlotLayoutStore();
