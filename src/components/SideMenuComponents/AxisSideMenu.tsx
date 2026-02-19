@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useCsvDataStore } from '../../store/CsvDataStore';
-import { useSideMenuStore } from '../../store/SideMenuStore';
+import { useAxisSideMenuStore } from '../../store/AxisSideMenuStore';
 import SearchColumn from './SearchColumn';
 
 interface AxisSideMenuProps {
@@ -14,7 +14,7 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
         setXAxis,
         addYAxisColumn,
         removeYAxisColumn,
-    } = useSideMenuStore();
+    } = useAxisSideMenuStore();
 
     const { xAxis, yAxis } = sideMenuData;
 

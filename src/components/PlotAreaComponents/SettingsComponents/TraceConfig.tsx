@@ -18,8 +18,8 @@ const SYMBOLS = [
 ];
 
 const TraceConfig: React.FC = () => {
-    const { traceConfig, setTraceCustomization, setColorPalette, setPaletteColorOrder, updatePaletteColor } = useTraceConfigStore();
-    const { sideMenuData } = useSideMenuStore();
+    const { traceConfig, setTraceType, setTraceColor, setTraceDash, setTraceMode, setTraceSymbol, setTraceSize } = useTraceConfigStore();
+    const { sideMenuData } = useAxisSideMenuStore();
     const { closePopup } = useAppStateStore();
 
     // Manage active tab locally

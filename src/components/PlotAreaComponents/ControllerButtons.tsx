@@ -3,7 +3,7 @@ import { usePlotLayoutStore } from '../../store/PlotLayoutStore';
 import { useTraceConfigStore } from '../../store/TraceConfigStore';
 import { generatePlotConfig } from '../../utils/PlotlyHelpers';
 import { useCsvDataStore } from '../../store/CsvDataStore';
-import { useSideMenuStore } from '../../store/SideMenuStore';
+import { useAxisSideMenuStore } from '../../store/AxisSideMenuStore';
 
 
 interface ControllerButtonsProps {

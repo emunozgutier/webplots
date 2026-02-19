@@ -31,7 +31,7 @@ interface FilterState {
     clearFilters: () => void;
 }
 
-export const useFilterStore = create<FilterState>((set) => ({
+export const useFilterSideMenuStore = create<FilterState>((set) => ({
     filters: [],
     addFilter: (column, type, initialConfig) => set((state) => {
         const newFilter: Filter = {

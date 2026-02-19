@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
 import { useCsvDataStore } from '../store/CsvDataStore';
-import { useFilterStore } from '../store/FilterStore';
+import { useFilterSideMenuStore } from '../store/FilterSideMenuStore';
 
 export const useFilteredData = () => {
     const { data: rawData } = useCsvDataStore();
-    const { filters } = useFilterStore();
+    const { filters } = useFilterSideMenuStore();
 
     const filteredData = useMemo(() => {
         if (filters.length === 0) return rawData;

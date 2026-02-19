@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useCsvDataStore } from '../store/CsvDataStore';
-import { useSideMenuStore, createSideMenuConfig } from '../store/SideMenuStore';
+import { useAxisSideMenuStore, createAxisSideMenuConfig } from '../store/AxisSideMenuStore';
 import { useAppStateStore } from '../store/AppStateStore';
 import AxisSideMenu from './SideMenuComponents/AxisSideMenu';
 import FilterSideMenu from './SideMenuComponents/FilterSideMenu';
@@ -10,10 +10,10 @@ type SideMenuTab = 'axis' | 'filter' | 'control';
 
 const SideMenu: React.FC = () => {
     const { columns: storeColumns } = useCsvDataStore();
-    const { sideMenuData } = useSideMenuStore();
+    const { sideMenuData } = useAxisSideMenuStore();
     const { isSideMenuOpen, toggleSideMenu } = useAppStateStore();
 
-    const { hasColumns } = useMemo(() => createSideMenuConfig(storeColumns, sideMenuData), [storeColumns, sideMenuData]);
+    const { hasColumns } = useMemo(() => createAxisSideMenuConfig(storeColumns, sideMenuData), [storeColumns, sideMenuData]);
     const [activeTab, setActiveTab] = useState<SideMenuTab>('axis');
 
     const renderContent = () => {

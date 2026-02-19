@@ -2,14 +2,15 @@
 import React, { useRef } from 'react';
 import { NavDropdown, Navbar, Nav, Container } from 'react-bootstrap';
 import { useCsvDataStore } from '../store/CsvDataStore';
-import { useSideMenuStore } from '../store/SideMenuStore';
 import { usePlotLayoutStore } from '../store/PlotLayoutStore';
 import Papa from 'papaparse';
 import type { CsvDataStore } from '../store/CsvDataStore';
+import { useAxisSideMenuStore } from '../store/AxisSideMenuStore';
 
 const TopMenuBar: React.FC = () => {
     const { data, columns, setPlotData, setColumns, loadProject: loadPlotDataProject } = useCsvDataStore();
-    const { sideMenuData, setXAxis, loadProject: loadSideMenuProject } = useSideMenuStore();
+    const { isSideMenuOpen, toggleSideMenu } = useAppStateStore();
+    const { sideMenuData, setXAxis, loadProject: loadSideMenuProject } = useAxisSideMenuStore();
     const { plotLayout, loadProject: loadPlotLayoutProject } = usePlotLayoutStore();
 
     const csvInputRef = useRef<HTMLInputElement>(null);

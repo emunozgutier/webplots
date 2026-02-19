@@ -14,7 +14,7 @@ import { useFilteredData } from '../hooks/useFilteredData';
 
 const PlotArea: React.FC = () => {
     const data = useFilteredData();
-    const { sideMenuData } = useSideMenuStore();
+    const { sideMenuData } = useAxisSideMenuStore();
     const { isSideMenuOpen } = useAppStateStore();
     const { plotLayout } = usePlotLayoutStore();
     const { traceConfig } = useTraceConfigStore();

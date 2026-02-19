@@ -1,19 +1,19 @@
 import { create } from 'zustand';
 
-export interface SideMenuData {
+export interface AxisSideMenuData {
     xAxis: string;
     yAxis: string[];
 }
 
-interface SideMenuState {
-    sideMenuData: SideMenuData;
+interface AxisSideMenuState {
+    sideMenuData: AxisSideMenuData;
     setXAxis: (xAxis: string) => void;
     addYAxisColumn: (column: string) => void;
     removeYAxisColumn: (column: string) => void;
     loadProject: (xAxis: string, yAxis: string[]) => void;
 }
 
-export const useSideMenuStore = create<SideMenuState>((set) => ({
+export const useAxisSideMenuStore = create<AxisSideMenuState>((set) => ({
     sideMenuData: {
         xAxis: '',
         yAxis: []
@@ -42,7 +42,7 @@ export const useSideMenuStore = create<SideMenuState>((set) => ({
     }))
 }));
 
-export const createSideMenuConfig = (columns: string[], sideMenuData: SideMenuData) => {
+export const createAxisSideMenuConfig = (columns: string[], sideMenuData: AxisSideMenuData) => {
     return {
         columns,
         xAxis: sideMenuData.xAxis,
