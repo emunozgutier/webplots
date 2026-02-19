@@ -47,6 +47,10 @@ const TraceConfig: React.FC = () => {
         setTraceCustomization(column, { symbol });
     };
 
+    const handleSizeChange = (column: string, size: number) => {
+        setTraceCustomization(column, { size });
+    };
+
     const onDragEnd = (result: DropResult) => {
         if (!result.destination) return;
         const items = Array.from(currentColors);

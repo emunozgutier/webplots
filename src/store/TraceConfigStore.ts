@@ -7,6 +7,7 @@ export interface TraceConfig {
         color?: string;
         mode?: 'lines' | 'markers' | 'lines+markers';
         symbol?: string; // allow any plotly symbol string
+        size?: number;
     }>;
     colorPalette: string;
     currentPaletteColors: string[];
@@ -19,6 +20,7 @@ interface TraceConfigState {
         color?: string;
         mode?: 'lines' | 'markers' | 'lines+markers';
         symbol?: string;
+        size?: number;
     }) => void;
     setColorPalette: (paletteName: string) => void;
     setPaletteColorOrder: (colors: string[]) => void;

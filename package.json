@@ -16,6 +16,7 @@
     "@types/papaparse": "^5.5.2",
     "@types/react-plotly.js": "^2.6.4",
     "bootstrap": "^5.3.8",
+    "bootstrap-icons": "^1.13.1",
     "papaparse": "^5.5.3",
     "plotly.js": "^3.3.1",
     "react": "^19.2.0",

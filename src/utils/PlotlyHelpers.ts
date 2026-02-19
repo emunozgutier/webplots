@@ -47,7 +47,7 @@ export const generatePlotConfig = (data: PlotData[], sideMenuData: SideMenuData,
                 mode = 'lines+markers';
             }
             marker.symbol = customization.symbol;
-            marker.size = 8; // Default size for symbols
+            marker.size = customization.size || 8; // Default size for symbols
         }
 
         // If explicit mode is 'markers', we force markers
@@ -56,6 +56,7 @@ export const generatePlotConfig = (data: PlotData[], sideMenuData: SideMenuData,
             if (!customization.symbol) {
                 marker.symbol = 'circle'; // Default marker
             }
+            marker.size = customization.size || 8;
         }
 
         return {
@@ -109,19 +110,22 @@ export const generatePlotConfig = (data: PlotData[], sideMenuData: SideMenuData,
         const baseColor = getColor(index);
         const finalColor = customization.color || baseColor;
         const finalName = customization.displayName || yCol;
+        const finalSize = customization.size || 8;
 
         let mode = customization.mode || 'lines';
         let markerParams = '';
 
         if (customization.symbol) {
             if (mode === 'lines') mode = 'lines+markers';
-            markerParams = `, marker: { symbol: '${customization.symbol}', size: 8 }`;
+            markerParams = `, marker: { symbol: '${customization.symbol}', size: ${finalSize} }`;
         }
 
         if (customization.mode === 'markers') {
             mode = 'markers';
             if (!customization.symbol) {
-                markerParams = `, marker: { symbol: 'circle' }`;
+                markerParams = `, marker: { symbol: 'circle', size: ${finalSize} }`;
+            } else {
+                markerParams = `, marker: { symbol: '${customization.symbol}', size: ${finalSize} }`;
             }
         }
 
