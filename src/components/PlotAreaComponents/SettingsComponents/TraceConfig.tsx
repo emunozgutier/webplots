@@ -99,13 +99,13 @@ const TraceConfig: React.FC = () => {
                                     {...provided.droppableProps}
                                     ref={provided.innerRef}
                                     className={`d-flex align-items-center p-2 rounded border ${snapshot.isDraggingOver ? 'bg-light' : 'bg-white'}`}
-                                    style={{ overflowX: 'auto', minHeight: '60px', position: 'relative' }}
+                                    style={{ minHeight: '60px', position: 'relative' }}
                                 >
                                     <div
                                         className="position-absolute border border-primary border-2 rounded"
                                         style={{
                                             left: '4px', top: '4px', bottom: '4px',
-                                            width: `${Math.max(activeTraceCount * 48, 4)}px`,
+                                            width: `${Math.min(activeTraceCount, currentColors.length) * 48}px`,
                                             pointerEvents: 'none', zIndex: 0, backgroundColor: 'rgba(13, 110, 253, 0.05)'
                                         }}
                                     ></div>
@@ -149,8 +149,8 @@ const TraceConfig: React.FC = () => {
                     <div className="text-center text-muted p-4">No active traces selected.</div>
                 ) : (
                     <Tabs activeKey={activeTab} onSelect={(k) => k && setActiveTab(k)} className="mb-3 small">
-                        {sideMenuData.yAxis.map((col) => (
-                            <Tab key={col} eventKey={col} title={<span className="text-truncate d-inline-block" style={{ maxWidth: '100px' }}>{col}</span>}>
+                        {sideMenuData.yAxis.map((col, index) => (
+                            <Tab key={col} eventKey={col} title={<span className="text-truncate d-inline-block" style={{ maxWidth: '100px' }}>{`Trace #${index + 1}`}</span>}>
                                 {(() => {
                                     const idx = sideMenuData.yAxis.indexOf(col);
                                     const custom = traceConfig.traceCustomizations?.[col] || {};

@@ -34,7 +34,7 @@ const Settings: React.FC = () => {
                     </li>
                 </ul>
 
-                <div className="p-0">
+                <div className="p-0" style={{ minHeight: '600px' }}>
                     {activeTab === 'layout' ? <PlotLayout /> : <TraceConfig />}
                 </div>
             </div>
