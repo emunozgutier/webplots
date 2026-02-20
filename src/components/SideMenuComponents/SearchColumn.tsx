@@ -22,8 +22,8 @@ const SearchColumn: React.FC = () => {
     };
 
     return (
-        <div className="d-flex flex-column h-100">
-            <div className="mb-3">
+        <div className="d-flex flex-column">
+            <div className="mb-1">
                 <input
                     type="text"
                     className="form-control"
@@ -33,22 +33,38 @@ const SearchColumn: React.FC = () => {
                 />
             </div>
 
-            <div className="flex-grow-1 overflow-auto" style={{ minHeight: 0 }}>
-                {filteredColumns.length > 0 ? (
-                    <div className="list-group">
-                        {filteredColumns.map(col => (
-                            <DragableColumn
-                                key={col}
-                                columnName={col}
-                                onDragStart={handleDragStart}
-                            />
-                        ))}
-                    </div>
-                ) : (
-                    <div className="text-muted text-center py-3">
-                        {columns.length === 0 ? "No columns available" : "No matches found"}
-                    </div>
-                )}
+            <div className="flex-grow-1 overflow-auto" style={{
+                minHeight: 0,
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+                /* Webkit scrollbar hiding is best done in CSS file, but we can try inline style tag if scoped properly, 
+                   or just rely on scrollbarWidth for Firefox and hope standard CSS handles Webkit. 
+                   Actually, let's just use the style tag but placed correctly. */
+            }}>
+                <style>
+                    {`
+                        .hide-scrollbar::-webkit-scrollbar {
+                            display: none;
+                        }
+                    `}
+                </style>
+                <div className="hide-scrollbar h-100" style={{ overflowY: 'auto' }}>
+                    {filteredColumns.length > 0 ? (
+                        <div className="list-group">
+                            {filteredColumns.map(col => (
+                                <DragableColumn
+                                    key={col}
+                                    columnName={col}
+                                    onDragStart={handleDragStart}
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-muted text-center py-3">
+                            {columns.length === 0 ? "No columns available" : "No matches found"}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
