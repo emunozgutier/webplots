@@ -49,8 +49,8 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
         <div className="d-flex flex-column h-100 overflow-hidden">
             {hasColumns && (
                 <div className="p-2 border-bottom" style={{ flex: '0 1 auto', maxHeight: '50%', minHeight: '150px', display: 'flex', flexDirection: 'column' }}>
-                    <div className="d-flex flex-column overflow-hidden">
-                        <div className="p-2 overflow-hidden d-flex flex-column">
+                    <div className="d-flex flex-column h-100 overflow-hidden">
+                        <div className="p-2 h-100 overflow-hidden d-flex flex-column">
                             <SearchColumn />
                         </div>
                     </div>
