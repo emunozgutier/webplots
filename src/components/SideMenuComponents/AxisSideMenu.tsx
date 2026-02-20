@@ -50,9 +50,7 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
             {hasColumns && (
                 <div className="p-3" style={{ height: '50%', minHeight: '200px', display: 'flex', flexDirection: 'column' }}>
                     <div className="card shadow-sm h-100 d-flex flex-column overflow-hidden">
-                        <div className="card-header bg-white fw-bold flex-shrink-0">
-                            Available Columns
-                        </div>
+
                         <div className="card-body p-2 overflow-hidden d-flex flex-column">
                             <SearchColumn />
                         </div>
@@ -62,9 +60,7 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
 
             <div className="p-3 pt-0 flex-grow-1" style={{ height: '50%', minHeight: '200px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                 <div className="card shadow-sm h-100 d-flex flex-column overflow-hidden">
-                    <div className="card-header bg-white fw-bold flex-shrink-0">
-                        Axes Configuration
-                    </div>
+
                     <div className="card-body overflow-auto">
                         {hasColumns ? (
                             <>
