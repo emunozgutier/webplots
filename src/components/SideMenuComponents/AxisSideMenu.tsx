@@ -14,12 +14,14 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
         setXAxis,
         addYAxisColumn,
         removeYAxisColumn,
+        setGroupAxis
     } = useAxisSideMenuStore();
 
-    const { xAxis, yAxis } = sideMenuData;
+    const { xAxis, yAxis, groupAxis } = sideMenuData;
 
     const [dragOverX, setDragOverX] = useState(false);
     const [dragOverY, setDragOverY] = useState(false);
+    const [dragOverGroup, setDragOverGroup] = useState(false);
 
     const handleDragOver = (e: React.DragEvent<HTMLDivElement>, setDragOver: (val: boolean) => void) => {
         e.preventDefault();
@@ -43,6 +45,13 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
         setDragOverY(false);
         const colName = e.dataTransfer.getData('text/plain');
         if (colName) addYAxisColumn(colName);
+    };
+
+    const handleDropGroup = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setDragOverGroup(false);
+        const colName = e.dataTransfer.getData('text/plain');
+        if (colName) setGroupAxis(colName);
     };
 
     return (
@@ -104,6 +113,26 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
                                             <div className="d-flex justify-content-between align-items-center">
                                                 <span className="badge bg-primary text-truncate mw-100">{xAxis}</span>
                                                 <button className="btn btn-sm btn-link text-danger p-0 ms-1" onClick={() => setXAxis('')}>&times;</button>
+                                            </div>
+                                        ) : (
+                                            <div className="text-muted small fst-italic text-center" style={{ fontSize: '0.8rem' }}>Drag column here</div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="mb-0 mt-3">
+                                    <label className="form-label fw-bold small mb-2">Group Axis <small className="text-muted fw-normal">(Optional)</small></label>
+                                    <div
+                                        className={`border rounded p-2 ${dragOverGroup ? 'bg-info bg-opacity-10 border-info' : 'bg-white'}`}
+                                        onDragOver={(e) => handleDragOver(e, setDragOverGroup)}
+                                        onDragLeave={(e) => handleDragLeave(e, setDragOverGroup)}
+                                        onDrop={handleDropGroup}
+                                        style={{ minHeight: '35px', transition: 'all 0.2s' }}
+                                    >
+                                        {groupAxis ? (
+                                            <div className="d-flex justify-content-between align-items-center">
+                                                <span className="badge bg-warning text-dark text-truncate mw-100">{groupAxis}</span>
+                                                <button className="btn btn-sm btn-link text-danger p-0 ms-1" onClick={() => setGroupAxis(null)}>&times;</button>
                                             </div>
                                         ) : (
                                             <div className="text-muted small fst-italic text-center" style={{ fontSize: '0.8rem' }}>Drag column here</div>

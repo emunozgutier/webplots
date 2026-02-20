@@ -16,7 +16,7 @@ export const generatePlotConfig = (
     useCustomRadius: boolean = false,
     customRadius: number = 20
 ) => {
-    const { xAxis, yAxis } = sideMenuData;
+    const { xAxis, yAxis, groupAxis } = sideMenuData;
     const { enableLogAxis, plotTitle, xAxisTitle, yAxisTitle, xRange, yRange } = plotLayout;
 
     // Trace config from the new store
@@ -156,9 +156,69 @@ export const generatePlotConfig = (
         return { x: filteredX, y: filteredY, filteredCount: xData.length - filteredX.length };
     };
 
-    // Create a trace for each Y-axis column
-    const plotData: Data[] = yAxis.map((yCol: string, index: number) => {
-        const customization = traceCustomizations?.[yCol] || {};
+    // Prepare traces
+    let generatedTraces: {
+        yCol: string;
+        groupName: string; // The suffix or group identifier
+        fullTraceName: string; // The unique key for customization
+        xData: any[];
+        yData: any[];
+    }[] = [];
+
+    if (groupAxis) {
+        // 1. Find unique values for the group axis
+        const groupValues = Array.from(new Set(data.map(row => row[groupAxis]))).filter(v => v !== null && v !== undefined);
+        // Sort for consistency
+        groupValues.sort();
+
+        // 2. For each Y-axis, create traces for each group
+        // Total limit check later, or break early?
+        // Let's generate all and then slice.
+
+        yAxis.forEach(yCol => {
+            groupValues.forEach(groupVal => {
+                const groupValStr = String(groupVal);
+                // Filter data for this group
+                const indices = data.map((row, idx) => row[groupAxis] == groupVal ? idx : -1).filter(idx => idx !== -1);
+
+                if (indices.length === 0) return;
+
+                const groupX = indices.map(i => data[i][xAxis]);
+                const groupY = indices.map(i => data[i][yCol]);
+
+                generatedTraces.push({
+                    yCol: yCol,
+                    groupName: `${groupAxis}=${groupValStr}`,
+                    fullTraceName: `${yCol} (${groupAxis}=${groupValStr})`,
+                    xData: groupX,
+                    yData: groupY
+                });
+            });
+        });
+
+    } else {
+        // Standard behavior
+        yAxis.forEach(yCol => {
+            generatedTraces.push({
+                yCol: yCol,
+                groupName: '',
+                fullTraceName: yCol,
+                xData: x,
+                yData: data.map(row => row[yCol])
+            });
+        });
+    }
+
+    // Enforce 8 trace limit
+    if (generatedTraces.length > 8) {
+        console.warn(`[Plot] Too many traces (${generatedTraces.length}). Truncating to 8.`);
+        generatedTraces = generatedTraces.slice(0, 8);
+    }
+
+    // Create Plotly traces
+    const plotData: Data[] = generatedTraces.map((traceInfo, index) => {
+        const { fullTraceName, xData, yData } = traceInfo;
+        const customization = traceCustomizations?.[fullTraceName] || {};
         const baseColor = getColor(index);
 
         // Default mode is 'lines' unless specified
@@ -184,28 +244,26 @@ export const generatePlotConfig = (
             marker.size = customization.size || 8;
         }
 
-        const yData = data.map(row => row[yCol]);
-
         // Apply filtering
         // We pass the trace's specific size (or default 8 if not set)
         const traceSize = customization.size || 8;
 
         const { x: finalX, y: finalY, filteredCount } = filterPoints(
-            x,
+            xData,
             yData,
             enableLogAxis ? 'log' : 'linear',
             enableLogAxis ? 'log' : 'linear',
             traceSize
         );
 
-        stats[yCol] = filteredCount;
+        stats[fullTraceName] = filteredCount;
 
         return {
             x: finalX,
             y: finalY,
             mode: mode,
             type: 'scatter',
-            name: customization.displayName || yCol,
+            name: customization.displayName || fullTraceName,
             line: {
                 color: customization.color || baseColor,
                 // If dot is selected, maybe we want a dotted line too? 
@@ -234,7 +292,7 @@ export const generatePlotConfig = (
         },
         autosize: true,
         margin: { l: 50, r: 50, b: 50, t: 50 },
-        showlegend: yAxis.length > 1
+        showlegend: generatedTraces.length > 1
     };
 
     // Generate Receipt
@@ -242,15 +300,20 @@ export const generatePlotConfig = (
 
     // Config variables
     receipt += `var xAxisName = '${xAxis}';\n`;
-    receipt += `var yAxisNames = [${yAxis.map((y: string) => `'${y}'`).join(', ')}];\n\n`;
+    receipt += `var yAxisNames = [${yAxis.map((y: string) => `'${y}'`).join(', ')}];\n`;
+    if (groupAxis) {
+        receipt += `var groupAxisName = '${groupAxis}';\n`;
+    }
+    receipt += `\n`;
 
     // Traces
-    const tracesReceipt = yAxis.map((yCol: string, index: number) => {
+    const tracesReceipt = generatedTraces.map((traceInfo, index) => {
+        const { fullTraceName } = traceInfo;
         const traceVar = `trace${index + 1}`;
-        const customization = traceCustomizations?.[yCol] || {};
+        const customization = traceCustomizations?.[fullTraceName] || {};
         const baseColor = getColor(index);
         const finalColor = customization.color || baseColor;
-        const finalName = customization.displayName || yCol;
+        const finalName = customization.displayName || fullTraceName;
         const finalSize = customization.size || 8;
 
         let mode = customization.mode || 'lines';
@@ -271,8 +334,8 @@ export const generatePlotConfig = (
         }
 
         return `var ${traceVar} = {
-  // x: data.map(r => r['${xAxis}']), // Data not shown
-  // y: data.map(r => r['${yCol}']), // Data not shown
+  // x: ..., // Filtered data
+  // y: ..., // Filtered data
   mode: '${mode}',
   type: 'scatter',
   name: '${finalName}',
@@ -282,7 +345,7 @@ export const generatePlotConfig = (
 
     receipt += tracesReceipt + '\n\n';
 
-    receipt += `var data = [ ${yAxis.map((_: string, i: number) => `trace${i + 1}`).join(', ')} ];\n\n`;
+    receipt += `var data = [ ${generatedTraces.map((_, i) => `trace${i + 1}`).join(', ')} ];\n\n`;
 
     // Layout
     receipt += `var layout = {
@@ -297,7 +360,7 @@ export const generatePlotConfig = (
     type: '${enableLogAxis ? 'log' : 'linear'}',
     ${yRange ? `range: [${yRange[0]}, ${yRange[1]}]` : '// autorange: true'}
   },
-  showlegend: ${yAxis.length > 1}
+  showlegend: ${generatedTraces.length > 1}
 };\n\n`;
 
     receipt += `Plotly.newPlot('myDiv', data, layout);`;
