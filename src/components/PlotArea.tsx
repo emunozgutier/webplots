@@ -5,6 +5,7 @@ import { useAxisSideMenuStore } from '../store/AxisSideMenuStore';
 import { useAppStateStore } from '../store/AppStateStore';
 import { usePlotLayoutStore } from '../store/PlotLayoutStore';
 import { useTraceConfigStore } from '../store/TraceConfigStore';
+import { useInkRatioStore } from '../store/InkRatioStore';
 import { generatePlotConfig } from '../utils/PlotlyHelpers';
 import ControllerButtons from './PlotAreaComponents/ControllerButtons';
 import Settings from './PlotAreaComponents/Settings';
@@ -18,8 +19,20 @@ const PlotArea: React.FC = () => {
     const { isSideMenuOpen } = useAppStateStore();
     const { plotLayout } = usePlotLayoutStore();
     const { traceConfig } = useTraceConfigStore();
+    const { inkRatio, setFilteredStats, chartWidth, chartHeight, pointRadius, setChartDimensions, useCustomRadius, customRadius } = useInkRatioStore();
+    const containerRef = React.useRef<HTMLDivElement>(null);
 
-    const { plotData, layout, hasData, receipt } = useMemo(() => generatePlotConfig(data, sideMenuData, plotLayout, traceConfig), [data, sideMenuData, plotLayout, traceConfig]);
+    const { plotData, layout, hasData, receipt, stats } = useMemo(
+        () => generatePlotConfig(data, sideMenuData, plotLayout, traceConfig, inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius),
+        [data, sideMenuData, plotLayout, traceConfig, inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius]
+    );
+
+    // Update stats in store
+    React.useEffect(() => {
+        if (stats) {
+            setFilteredStats(stats);
+        }
+    }, [stats, setFilteredStats]);
 
     // Force Plotly resize when side menu toggles
     React.useEffect(() => {
@@ -30,6 +43,26 @@ const PlotArea: React.FC = () => {
     }, [isSideMenuOpen]);
 
     const { setPopupContent } = useAppStateStore();
+
+    // Use ResizeObserver to track container size
+    React.useEffect(() => {
+        if (!containerRef.current) return;
+
+        const observer = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                const { width, height } = entry.contentRect;
+                // Only update if dimensions actually changed significantly to avoid loops?
+                // Or just update.
+                setChartDimensions(Math.round(width), Math.round(height));
+            }
+        });
+
+        observer.observe(containerRef.current);
+
+        return () => {
+            observer.disconnect();
+        };
+    }, [setChartDimensions]);
 
     const handleOpenSettings = () => {
         setPopupContent(<Settings />);
@@ -47,7 +80,7 @@ const PlotArea: React.FC = () => {
                 <div className="card-header bg-white d-flex justify-content-end align-items-center py-2">
                     <ControllerButtons onOpenSettings={handleOpenSettings} onOpenDebug={handleOpenDebug} />
                 </div>
-                <div className="card-body p-0 position-relative">
+                <div className="card-body p-0 position-relative" ref={containerRef}>
                     {hasData ? (
                         <Plot
                             data={plotData}

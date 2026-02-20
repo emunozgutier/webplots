@@ -5,8 +5,9 @@ import { useAppStateStore } from '../store/AppStateStore';
 import AxisSideMenu from './SideMenuComponents/AxisSideMenu';
 import FilterSideMenu from './SideMenuComponents/FilterSideMenu';
 import ControlSideMenu from './SideMenuComponents/ControlSideMenu';
+import InkRationSideMenu from './SideMenuComponents/InkRationSideMenu';
 
-type SideMenuTab = 'axis' | 'filter' | 'control';
+type SideMenuTab = 'axis' | 'filter' | 'control' | 'ink';
 
 const SideMenu: React.FC = () => {
     const { columns: storeColumns } = useCsvDataStore();
@@ -58,6 +59,8 @@ const SideMenu: React.FC = () => {
                 return <FilterSideMenu />;
             case 'control':
                 return <ControlSideMenu />;
+            case 'ink':
+                return <InkRationSideMenu />;
             default:
                 return null;
         }
@@ -110,6 +113,7 @@ const SideMenu: React.FC = () => {
                         {activeTab === 'axis' && 'Axes Configuration'}
                         {activeTab === 'filter' && 'Filters'}
                         {activeTab === 'control' && 'Controls'}
+                        {activeTab === 'ink' && 'Ink Ratio'}
                     </span>
                     <button
                         className="btn btn-sm btn-link text-secondary"
@@ -150,6 +154,7 @@ const SideMenu: React.FC = () => {
                 {renderTabButton('axis', 'Axis', 'bi-bar-chart-steps')}
                 {renderTabButton('filter', 'Filter', 'bi-funnel')}
                 {renderTabButton('control', 'Control', 'bi-sliders')}
+                {renderTabButton('ink', 'Ink', 'bi-droplet')}
             </div>
 
             {/* Resize Handle - Only visible when open */}
