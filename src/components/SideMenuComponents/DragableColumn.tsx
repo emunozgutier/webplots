@@ -10,7 +10,7 @@ const DragableColumn: React.FC<DragableColumnProps> = ({ columnName, onDragStart
         <div
             draggable
             onDragStart={(e) => onDragStart(e, columnName)}
-            className="list-group-item list-group-item-action cursor-grab p-1"
+            className="list-group-item list-group-item-action cursor-grab p-2"
             style={{ cursor: 'grab' }}
             title={columnName}
         >

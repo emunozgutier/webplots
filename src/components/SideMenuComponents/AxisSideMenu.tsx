@@ -48,27 +48,27 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
     return (
         <div className="d-flex flex-column h-100 overflow-hidden">
             {hasColumns && (
-                <div className="p-0 border-bottom" style={{ flex: '0 1 auto', maxHeight: '50%', minHeight: '150px', display: 'flex', flexDirection: 'column' }}>
+                <div className="p-2 border-bottom" style={{ flex: '0 1 auto', maxHeight: '50%', minHeight: '150px', display: 'flex', flexDirection: 'column' }}>
                     <div className="d-flex flex-column overflow-hidden">
-                        <div className="p-1 overflow-hidden d-flex flex-column">
+                        <div className="p-2 overflow-hidden d-flex flex-column">
                             <SearchColumn />
                         </div>
                     </div>
                 </div>
             )}
-            <div className="p-0 flex-grow-1" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            <div className="p-2 flex-grow-1" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                 <div className="d-flex flex-column h-100 overflow-hidden">
-                    <div className="p-1 overflow-auto h-100">
+                    <div className="overflow-auto h-100">
                         {hasColumns ? (
                             <>
-                                <div className="mb-2">
-                                    <label className="form-label fw-bold small mb-1">Y-Axis <small className="text-muted fw-normal">({yAxis.length}/8)</small></label>
+                                <div className="mb-3">
+                                    <label className="form-label fw-bold small mb-2">Y-Axis <small className="text-muted fw-normal">({yAxis.length}/8)</small></label>
                                     <div
-                                        className={`border rounded p-1 ${dragOverY ? 'bg-info bg-opacity-10 border-info' : 'bg-white'}`}
+                                        className={`border rounded p-2 ${dragOverY ? 'bg-info bg-opacity-10 border-info' : 'bg-white'}`}
                                         onDragOver={(e) => handleDragOver(e, setDragOverY)}
                                         onDragLeave={(e) => handleDragLeave(e, setDragOverY)}
                                         onDrop={handleDropY}
-                                        style={{ minHeight: '30px', transition: 'all 0.2s' }}
+                                        style={{ minHeight: '35px', transition: 'all 0.2s' }}
                                     >
                                         {yAxis.length > 0 ? (
                                             <div className="d-flex flex-wrap gap-1">
@@ -92,13 +92,13 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
                                 </div>
 
                                 <div className="mb-0">
-                                    <label className="form-label fw-bold small mb-1">X-Axis</label>
+                                    <label className="form-label fw-bold small mb-2">X-Axis</label>
                                     <div
-                                        className={`border rounded p-1 ${dragOverX ? 'bg-info bg-opacity-10 border-info' : 'bg-white'}`}
+                                        className={`border rounded p-2 ${dragOverX ? 'bg-info bg-opacity-10 border-info' : 'bg-white'}`}
                                         onDragOver={(e) => handleDragOver(e, setDragOverX)}
                                         onDragLeave={(e) => handleDragLeave(e, setDragOverX)}
                                         onDrop={handleDropX}
-                                        style={{ minHeight: '30px', transition: 'all 0.2s' }}
+                                        style={{ minHeight: '35px', transition: 'all 0.2s' }}
                                     >
                                         {xAxis ? (
                                             <div className="d-flex justify-content-between align-items-center">

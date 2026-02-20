@@ -23,7 +23,7 @@ const SearchColumn: React.FC = () => {
 
     return (
         <div className="d-flex flex-column">
-            <div className="mb-1">
+            <div className="mb-2">
                 <input
                     type="text"
                     className="form-control"
