@@ -117,28 +117,24 @@ const FilterSideMenu: React.FC = () => {
     return (
         <div className="d-flex flex-column h-100 overflow-hidden">
             {/* Reusing SearchColumn for convenience source */}
-            <div className="p-3" style={{ height: '40%', minHeight: '150px', display: 'flex', flexDirection: 'column' }}>
-                <div className="card shadow-sm h-100 d-flex flex-column overflow-hidden">
-                    <div className="card-header bg-white fw-bold flex-shrink-0">
-                        Available Columns
-                    </div>
-                    <div className="card-body p-2 overflow-hidden d-flex flex-column">
+            {/* Reusing SearchColumn for convenience source */}
+            <div className="p-2 border-bottom" style={{ height: '40%', minHeight: '150px', display: 'flex', flexDirection: 'column' }}>
+                <div className="d-flex flex-column h-100 overflow-hidden">
+                    <div className="p-2 h-100 overflow-hidden d-flex flex-column">
                         <SearchColumn />
                     </div>
                 </div>
             </div>
 
-            <div className="p-3 pt-0 flex-grow-1" style={{ height: '60%', minHeight: '200px', display: 'flex', flexDirection: 'column' }}>
-                <div className="card shadow-sm h-100 d-flex flex-column overflow-hidden">
-                    <div className="card-header bg-white fw-bold flex-shrink-0">
-                        Active Filters & Stats
-                    </div>
+            <div className="p-2 flex-grow-1" style={{ height: '60%', minHeight: '200px', display: 'flex', flexDirection: 'column' }}>
+                <div className="d-flex flex-column h-100 overflow-hidden">
                     <div
-                        className={`card-body overflow-auto p-2 ${dragOver ? 'bg-info bg-opacity-10' : ''}`}
+                        className={`overflow-auto h-100 p-2 ${dragOver ? 'bg-info bg-opacity-10' : ''}`}
                         onDragOver={handleDragOver}
                         onDragLeave={handleDragLeave}
                         onDrop={handleDrop}
                     >
+                        <div className="fw-bold small mb-2">Active Filters & Stats</div>
                         {filters.length === 0 ? (
                             <div className="h-100 d-flex flex-column justify-content-center align-items-center text-muted">
                                 <i className="bi bi-funnel fs-3 mb-2"></i>
