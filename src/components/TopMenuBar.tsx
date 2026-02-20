@@ -4,8 +4,8 @@ import { NavDropdown, Navbar, Nav, Container } from 'react-bootstrap';
 import { useCsvDataStore } from '../store/CsvDataStore';
 import { usePlotLayoutStore } from '../store/PlotLayoutStore';
 import Papa from 'papaparse';
-import type { CsvDataStore } from '../store/CsvDataStore';
-import { useAxisSideMenuStore } from '../store/AxisSideMenuStore';
+import type { CsvDataStore } from '../store/CsvDataStore'; import { useAxisSideMenuStore } from '../store/AxisSideMenuStore';
+import { getSmallDataset, getLargeColumnDataset, getSimulationDataset } from '../utils/TestDatasets';
 
 const TopMenuBar: React.FC = () => {
     const { data, columns, setPlotData, setColumns, loadProject: loadPlotDataProject } = useCsvDataStore();
@@ -98,6 +98,28 @@ const TopMenuBar: React.FC = () => {
         if (event.target) event.target.value = '';
     };
 
+    const handleLoadTestData = (datasetType: 'small' | 'large' | 'simulation') => {
+        let testData: CsvDataStore[] = [];
+        switch (datasetType) {
+            case 'small':
+                testData = getSmallDataset();
+                break;
+            case 'large':
+                testData = getLargeColumnDataset();
+                break;
+            case 'simulation':
+                testData = getSimulationDataset();
+                break;
+        }
+
+        if (testData.length > 0) {
+            setPlotData(testData);
+            const cols = Object.keys(testData[0]);
+            setColumns(cols);
+            if (cols.length > 0) setXAxis(cols[0]);
+        }
+    };
+
     return (
         <Navbar bg="dark" variant="dark" expand="lg" className="px-4 shadow-sm">
             <Container fluid className="p-0">
@@ -115,6 +137,18 @@ const TopMenuBar: React.FC = () => {
                             </NavDropdown.Item>
                             <NavDropdown.Item onClick={handleSaveProject}>
                                 Save Project
+                            </NavDropdown.Item>
+                        </NavDropdown>
+
+                        <NavDropdown title="Test" id="test-nav-dropdown">
+                            <NavDropdown.Item onClick={() => handleLoadTestData('small')}>
+                                Small Dataset (3 cols)
+                            </NavDropdown.Item>
+                            <NavDropdown.Item onClick={() => handleLoadTestData('large')}>
+                                Large Dataset (50 cols)
+                            </NavDropdown.Item>
+                            <NavDropdown.Item onClick={() => handleLoadTestData('simulation')}>
+                                Simulation Dataset (Trig)
                             </NavDropdown.Item>
                         </NavDropdown>
 
