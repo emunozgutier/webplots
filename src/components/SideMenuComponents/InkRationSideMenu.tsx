@@ -3,7 +3,7 @@ import { useInkRatioStore } from '../../store/InkRatioStore';
 import { useTraceConfigStore } from '../../store/TraceConfigStore';
 
 const InkRationSideMenu: React.FC = () => {
-    const { inkRatio, setInkRatio, filteredStats, chartWidth, chartHeight, useCustomRadius, setUseCustomRadius, customRadius, setCustomRadius } = useInkRatioStore();
+    const { inkRatio, setInkRatio, filteredStats, chartWidth, chartHeight } = useInkRatioStore();
     const { traceConfig } = useTraceConfigStore();
     const { traceCustomizations } = traceConfig;
 
@@ -12,12 +12,7 @@ const InkRationSideMenu: React.FC = () => {
         setInkRatio(newRatio);
     };
 
-    const handleCustomRadiusChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const val = parseInt(e.target.value);
-        if (!isNaN(val) && val >= 0) {
-            setCustomRadius(val);
-        }
-    };
+
 
     // Helper to format percentage
     const formatPercent = (val: number) => `${Math.round(val * 100)}%`;
@@ -26,18 +21,7 @@ const InkRationSideMenu: React.FC = () => {
         <div className="p-3">
             <h6 className="mb-3">Ink To Data Ratio Control</h6>
 
-            <div className="form-check form-switch mb-3">
-                <input
-                    className="form-check-input"
-                    type="checkbox"
-                    id="useCustomRadius"
-                    checked={useCustomRadius}
-                    onChange={(e) => setUseCustomRadius(e.target.checked)}
-                />
-                <label className="form-check-label" htmlFor="useCustomRadius">
-                    Force Pixel Radius Removal
-                </label>
-            </div>
+
 
             {/* Visualization */}
             <div className="mb-4 d-flex flex-column align-items-center bg-light p-3 rounded">
@@ -84,55 +68,30 @@ const InkRationSideMenu: React.FC = () => {
                     </svg>
 
                     {/* Label */}
-                    {!useCustomRadius && (
-                        <div className="text-center small text-muted mt-1" style={{ fontSize: '0.7em' }}>
-                            Filtering Threshold
-                        </div>
-                    )}
+                    <div className="text-center small text-muted mt-1" style={{ fontSize: '0.7em' }}>
+                        Filtering Threshold
+                    </div>
                 </div>
             </div>
 
-            {
-                !useCustomRadius ? (
-                    <div className="mb-4">
-                        <label className="form-label d-flex justify-content-between">
-                            <span>Allowed Overlap</span>
-                            <span className="fw-bold">{formatPercent(inkRatio)}</span>
-                        </label>
-                        <input
-                            type="range"
-                            className="form-range"
-                            min="0"
-                            max="1"
-                            step="0.25"
-                            value={inkRatio}
-                            onChange={handleRatioChange}
-                        />
-                        <div className="form-text text-muted small">
-                            Lower percentage means less overlap allowed (more points removed).
-                        </div>
-                    </div>
-                ) : (
-                    <div className="mb-4">
-                        <label className="form-label d-flex justify-content-between">
-                            <span>Removal Radius (px)</span>
-                            <span className="fw-bold">{customRadius} px</span>
-                        </label>
-                        <input
-                            type="range"
-                            className="form-range"
-                            min="0"
-                            max={Math.min(chartWidth, chartHeight) / 4} // Allow up to 1/4 screen for testing
-                            step="1"
-                            value={customRadius}
-                            onChange={handleCustomRadiusChange}
-                        />
-                        <div className="form-text text-muted small">
-                            Minimum distance between points. Larger radius = fewer points.
-                        </div>
-                    </div>
-                )
-            }
+            <div className="mb-4">
+                <label className="form-label d-flex justify-content-between">
+                    <span>Allowed Overlap</span>
+                    <span className="fw-bold">{formatPercent(inkRatio)}</span>
+                </label>
+                <input
+                    type="range"
+                    className="form-range"
+                    min="0"
+                    max="1"
+                    step="0.25"
+                    value={inkRatio}
+                    onChange={handleRatioChange}
+                />
+                <div className="form-text text-muted small">
+                    Lower percentage means less overlap allowed (more points removed).
+                </div>
+            </div>
 
             <div className="mb-4">
                 <h6 className="mb-2">Calculation Parameters</h6>
