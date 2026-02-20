@@ -42,36 +42,78 @@ export const generatePlotConfig = (
         return currentPaletteColors[index % currentPaletteColors.length];
     };
 
-    const minPixelDist = useCustomRadius
-        ? customRadius
-        : pointRadius * 2 * (1 - inkRatio);
-
     const stats: Record<string, number> = {};
 
     // Helper to filter points
-    const filterPoints = (xData: any[], yData: any[], xType: 'log' | 'linear', yType: 'log' | 'linear') => {
+    const filterPoints = (xData: any, yData: any, xType: 'log' | 'linear', yType: 'log' | 'linear', traceRadius?: number) => {
+        // Determine effective radius for this trace
+        const effectiveRadius = traceRadius || pointRadius;
+
+        const minPixelDist = useCustomRadius
+            ? customRadius
+            : effectiveRadius * 2 * (1 - inkRatio);
+
         if (!useCustomRadius && inkRatio >= 1) return { x: xData, y: yData, filteredCount: 0 };
+        if (xData.length === 0) return { x: [], y: [], filteredCount: 0 };
 
-        const xMin = Math.min(...xData);
-        const xMax = Math.max(...xData);
-        const yMin = Math.min(...yData);
-        const yMax = Math.max(...yData);
+        // Robust conversion to numbers
+        const toNum = (v: any): number => {
+            if (typeof v === 'number') return v;
+            const n = parseFloat(v);
+            if (!isNaN(n) && isFinite(n)) return n;
+            const d = Date.parse(v);
+            if (!isNaN(d)) return d;
+            return NaN;
+        };
 
-        const xRangeVal = xType === 'log' ? Math.log10(xMax) - Math.log10(xMin) : xMax - xMin;
-        const yRangeVal = yType === 'log' ? Math.log10(yMax) - Math.log10(yMin) : yMax - yMin;
+        const numsX = xData.map(toNum);
+        const numsY = yData.map(toNum);
+
+        // Check if we have valid numbers. If strict categorical, we might need a different approach.
+        // If >50% NaN, assume categorical?
+        // Let's just filter what we can calculate.
+
+        let validX = numsX;
+        let validY = numsY;
+
+        // Determine Min/Max based on VALID numbers
+        const validNumsX = numsX.filter((n: number) => !isNaN(n));
+        const validNumsY = numsY.filter((n: number) => !isNaN(n));
+
+        // If essentially no valid numbers, we can't filter by distance distance properly potentially.
+        // Fallback: If no valid numbers, treat as index-based (0 to 1 range?) to avoid breaking?
+        // Or just return original data.
+        if (validNumsX.length === 0 || validNumsY.length === 0) {
+            console.warn('[InkRatio] Cannot determine numeric range for filtering. Skipping.');
+            return { x: xData, y: yData, filteredCount: 0 };
+        }
+
+        const xMin = Math.min(...validNumsX);
+        const xMax = Math.max(...validNumsX);
+        const yMin = Math.min(...validNumsY);
+        const yMax = Math.max(...validNumsY);
+
+        // Avoid division by zero
+        const safeW = chartWidth || 1;
+        const safeH = chartHeight || 1;
+
+        const xRangeVal = (xType === 'log' ? Math.log10(xMax) - Math.log10(xMin) : xMax - xMin) || 1;
+        const yRangeVal = (yType === 'log' ? Math.log10(yMax) - Math.log10(yMin) : yMax - yMin) || 1;
 
         const xToPx = (val: number) => {
+            if (isNaN(val)) return -9999;
             const normalized = xType === 'log'
                 ? (Math.log10(val) - Math.log10(xMin)) / xRangeVal
                 : (val - xMin) / xRangeVal;
-            return normalized * chartWidth;
+            return normalized * safeW;
         };
 
         const yToPx = (val: number) => {
+            if (isNaN(val)) return -9999;
             const normalized = yType === 'log'
                 ? (Math.log10(val) - Math.log10(yMin)) / yRangeVal
                 : (val - yMin) / yRangeVal;
-            return (1 - normalized) * chartHeight; // Y is inverted in screen coords
+            return (1 - normalized) * safeH; // Y is inverted in screen coords
         };
 
         const filteredX: any[] = [];
@@ -79,8 +121,16 @@ export const generatePlotConfig = (
         const points: { px: number, py: number }[] = [];
 
         for (let i = 0; i < xData.length; i++) {
-            const px = xToPx(xData[i]);
-            const py = yToPx(yData[i]);
+            const px = xToPx(validX[i]);
+            const py = yToPx(validY[i]);
+
+            // If invalid coordinates, keep safely? Or drop? Keep.
+            if (px === -9999 || py === -9999) {
+                filteredX.push(xData[i]);
+                filteredY.push(yData[i]);
+                continue;
+            }
+
             let keep = true;
 
             // Simple check against all kept points. For large datasets, a quadtree would be better.
@@ -137,11 +187,15 @@ export const generatePlotConfig = (
         const yData = data.map(row => row[yCol]);
 
         // Apply filtering
+        // We pass the trace's specific size (or default 8 if not set)
+        const traceSize = customization.size || 8;
+
         const { x: finalX, y: finalY, filteredCount } = filterPoints(
             x,
             yData,
             enableLogAxis ? 'log' : 'linear',
-            enableLogAxis ? 'log' : 'linear'
+            enableLogAxis ? 'log' : 'linear',
+            traceSize
         );
 
         stats[yCol] = filteredCount;

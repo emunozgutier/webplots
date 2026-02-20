@@ -3,7 +3,7 @@ import { useInkRatioStore } from '../../store/InkRatioStore';
 import { useTraceConfigStore } from '../../store/TraceConfigStore';
 
 const InkRationSideMenu: React.FC = () => {
-    const { inkRatio, setInkRatio, filteredStats, chartWidth, chartHeight, pointRadius, useCustomRadius, setUseCustomRadius, customRadius, setCustomRadius } = useInkRatioStore();
+    const { inkRatio, setInkRatio, filteredStats, chartWidth, chartHeight, useCustomRadius, setUseCustomRadius, customRadius, setCustomRadius } = useInkRatioStore();
     const { traceConfig } = useTraceConfigStore();
     const { traceCustomizations } = traceConfig;
 
@@ -50,7 +50,7 @@ const InkRationSideMenu: React.FC = () => {
                         className="form-range"
                         min="0"
                         max="1"
-                        step="0.05"
+                        step="0.25"
                         value={inkRatio}
                         onChange={handleRatioChange}
                     />
@@ -85,10 +85,6 @@ const InkRationSideMenu: React.FC = () => {
                     <span className="text-muted small">Chart Size:</span>
                     <span className="small font-monospace">{chartWidth}x{chartHeight} px</span>
                 </div>
-                <div className="d-flex justify-content-between">
-                    <span className="text-muted small">Point Radius:</span>
-                    <span className="small font-monospace">{pointRadius} px</span>
-                </div>
             </div>
 
             <h6 className="mb-3">Filtering Stats</h6>
@@ -110,7 +106,7 @@ const InkRationSideMenu: React.FC = () => {
                     </li>
                 )}
             </ul>
-        </div>
+        </div >
     );
 };
 

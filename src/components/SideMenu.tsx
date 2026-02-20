@@ -82,7 +82,7 @@ const SideMenu: React.FC = () => {
         >
             <div className="d-flex flex-column align-items-center">
                 <i className={`bi ${iconClass} fs-5`}></i>
-                <span style={{ fontSize: '0.65rem', marginTop: '2px' }}>{label}</span>
+                <span style={{ fontSize: '0.65rem', marginTop: '2px', textAlign: 'center', lineHeight: '1.1' }}>{label}</span>
             </div>
         </button>
     );
@@ -154,7 +154,7 @@ const SideMenu: React.FC = () => {
                 {renderTabButton('axis', 'Axis', 'bi-bar-chart-steps')}
                 {renderTabButton('filter', 'Filter', 'bi-funnel')}
                 {renderTabButton('control', 'Control', 'bi-sliders')}
-                {renderTabButton('ink', 'Ink', 'bi-droplet')}
+                {renderTabButton('ink', 'Ink Ratio', 'bi-droplet')}
             </div>
 
             {/* Resize Handle - Only visible when open */}

@@ -20,7 +20,7 @@ interface InkRatioState {
 }
 
 export const useInkRatioStore = create<InkRatioState>((set) => ({
-    inkRatio: 1, // Default to 100% overlap (no filtering)
+    inkRatio: 0, // Default to 0% overlap (max filtering)
     filteredStats: {},
     chartWidth: 1280,
     chartHeight: 720,
