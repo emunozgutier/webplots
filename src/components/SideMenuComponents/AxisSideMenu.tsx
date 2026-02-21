@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 
 import { useAxisSideMenuStore } from '../../store/AxisSideMenuStore';
+import { useAppStateStore } from '../../store/AppStateStore';
 import SearchColumn from './SearchColumn';
+import GroupAxisSettings from './GroupAxisSettings';
 
 interface AxisSideMenuProps {
     hasColumns: boolean;
@@ -17,6 +19,7 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
         setGroupAxis
     } = useAxisSideMenuStore();
 
+    const { setPopupContent } = useAppStateStore();
     const { xAxis, yAxis, groupAxis } = sideMenuData;
 
     const [dragOverX, setDragOverX] = useState(false);
@@ -131,7 +134,15 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
                                     >
                                         {groupAxis ? (
                                             <div className="d-flex justify-content-between align-items-center">
-                                                <span className="badge bg-warning text-dark text-truncate mw-100">{groupAxis}</span>
+                                                <span
+                                                    className="badge bg-warning text-dark text-truncate mw-100 cursor-pointer user-select-none"
+                                                    onClick={() => setPopupContent(<GroupAxisSettings column={groupAxis} />)}
+                                                    style={{ cursor: 'pointer' }}
+                                                    title="Click to configure grouping"
+                                                >
+                                                    {groupAxis}
+                                                    <small className="ms-1 opacity-50">⚙️</small>
+                                                </span>
                                                 <button className="btn btn-sm btn-link text-danger p-0 ms-1" onClick={() => setGroupAxis(null)}>&times;</button>
                                             </div>
                                         ) : (
