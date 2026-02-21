@@ -1,54 +1,50 @@
 import React from 'react';
-import { useInkRatioStore } from '../../store/InkRatioStore';
 
 const InkRatioAnimation: React.FC = () => {
-    const { inkRatio } = useInkRatioStore();
-
     return (
         <div className="mb-4 d-flex flex-column align-items-center bg-light p-3 rounded">
-            <div style={{ width: '160px', height: '80px', position: 'relative' }}>
-                <svg width="160" height="80">
-                    {(() => {
-                        const r = 24; // Doubled radius
-                        const cy = 40; // Vertical center
-                        const cxMiddle = 80; // Horizontal center
+            <style>
+                {`
+                    @keyframes moveB {
+                        0%   { transform: translateX(15px); opacity: 1; }
+                        25%  { transform: translateX(40px); opacity: 1; }
+                        50%  { transform: translateX(65px); opacity: 1; }
+                        75%  { transform: translateX(90px); opacity: 1; }
+                        100% { transform: translateX(0px); opacity: 0; }
+                    }
 
-                        // Calculate distance based on inkRatio
-                        // inkRatio = Allowed Overlap %
-                        // 0% allowed -> Points touch (dist = 2r)
-                        // 100% allowed -> Points merge (dist = 0)
-                        // dist = 2r * (1 - inkRatio)
-                        const dist = 2 * r * (1 - inkRatio);
+                    @keyframes moveC {
+                        0%   { transform: translateX(5px); }    /* C is at B (-10) -> 15 - 10 = 5 */
+                        25%  { transform: translateX(55px); }   /* C is at B (+15) -> 40 + 15 = 55 */
+                        50%  { transform: translateX(105px); }  /* C is at B (+40) -> 65 + 40 = 105 */
+                        75%  { transform: translateX(155px); }  /* C is at B (+65) -> 90 + 65 = 155 */
+                        100% { transform: translateX(90px); }   /* C is at B (+90) -> 0 + 90 = 90 */
+                    }
+                `}
+            </style>
+            <div style={{ width: '200px', height: '80px', position: 'relative' }}>
+                <svg width="200" height="80">
+                    <g fill="#0d6efd" opacity="0.8">
+                        {/* Point A (Fixed base point) */}
+                        <circle cx="20" cy="40" r="15" />
 
-                        const cxLeft = cxMiddle - dist;
-                        const cxRight = cxMiddle + dist;
+                        {/* Point B */}
+                        <circle
+                            cx="20" cy="40" r="15"
+                            style={{ animation: 'moveB 6s infinite alternate ease-in-out' }}
+                        />
 
-                        const color = '#0d6efd'; // Bootstrap primary
-
-                        return (
-                            <g>
-                                {/* Left Point - Solid */}
-                                <circle cx={cxLeft} cy={cy} r={r} fill={color} opacity="0.8" />
-
-                                {/* Right Point - Solid */}
-                                <circle cx={cxRight} cy={cy} r={r} fill={color} opacity="0.8" />
-
-                                {/* Middle Point - Solid (The filtered outcome, visualized as overlapping) */}
-                                <circle
-                                    cx={cxMiddle}
-                                    cy={cy}
-                                    r={r}
-                                    fill={color}
-                                    opacity="0.8"
-                                />
-                            </g>
-                        );
-                    })()}
+                        {/* Point C */}
+                        <circle
+                            cx="20" cy="40" r="15"
+                            style={{ animation: 'moveC 6s infinite alternate ease-in-out' }}
+                        />
+                    </g>
                 </svg>
 
                 {/* Label */}
                 <div className="text-center small text-muted mt-1" style={{ fontSize: '0.7em' }}>
-                    Filtering Threshold
+                    Filtering Threshold Animation
                 </div>
             </div>
         </div>
