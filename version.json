@@ -1,0 +1,5 @@
+{
+    "commit_title": "Add version generation and UI to TopMenuBar",
+    "commit_message": "Add a Python script (scripts/generate_version.py) that writes public/version.json containing the latest git commit title, message, and a version string formatted as year.week.day. Call this script in package.json predeploy so version.json is generated before builds, and include an initial public/version.json sample. Update TopMenuBar.tsx to add a \"Version\" menu item and modal UI that fetches and displays the version, commit title, and commit message (uses import.meta.env.BASE_URL to locate version.json). This enables the app to surface build/commit metadata to users.",
+    "version_string": "2026.08.6"
+}
