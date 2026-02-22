@@ -5,11 +5,31 @@ import os
 
 def get_current_commit_info():
     try:
-        # Get the latest commit title, ignoring 'auto versioning' commits
-        title = subprocess.run(['git', 'log', '--invert-grep', '--fixed-strings', '--grep=auto versioning', '-1', '--pretty=%s'], capture_output=True, text=True, check=True).stdout.strip()
-        # Get the latest commit message body, ignoring 'auto versioning' commits
-        message = subprocess.run(['git', 'log', '--invert-grep', '--fixed-strings', '--grep=auto versioning', '-1', '--pretty=%b'], capture_output=True, text=True, check=True).stdout.strip()
-        return title, message
+        # Get the last 20 commits
+        # Format: '%s<<DELIMITER>>%b<<END_COMMIT>>'
+        log_format = '%s<<DELIMITER>>%b<<END_COMMIT>>'
+        result = subprocess.run(['git', 'log', '-20', f'--pretty={log_format}'], capture_output=True, text=True, check=True)
+        
+        commits = result.stdout.strip().split('<<END_COMMIT>>')
+        
+        for commit in commits:
+            commit = commit.strip()
+            if not commit:
+                continue
+                
+            parts = commit.split('<<DELIMITER>>')
+            if len(parts) >= 2:
+                title = parts[0].strip()
+                message = parts[1].strip()
+                
+                # Check if this is an auto-generated or version-bumping commit
+                title_lower = title.lower()
+                if ('auto versioning' not in title_lower and 
+                    'update version.json' not in title_lower and
+                    'version.json' not in title_lower):
+                    return title, message
+                    
+        return "No suitable commit found", "No commit message available"
     except subprocess.CalledProcessError:
         return "No commit title available", "No commit message available"
 
