@@ -1,11 +1,17 @@
 
-import React, { useRef } from 'react';
-import { NavDropdown, Navbar, Nav, Container } from 'react-bootstrap';
+import React, { useRef, useState } from 'react';
+import { NavDropdown, Navbar, Nav, Container, Modal, Button } from 'react-bootstrap';
 import { useCsvDataStore } from '../store/CsvDataStore';
 import { usePlotLayoutStore } from '../store/PlotLayoutStore';
 import Papa from 'papaparse';
 import type { CsvDataStore } from '../store/CsvDataStore'; import { useAxisSideMenuStore } from '../store/AxisSideMenuStore';
 import { getSmallDataset, getLargeColumnDataset, getSimulationDataset } from '../utils/TestDatasets';
+
+interface VersionData {
+    commit_title: string;
+    commit_message: string;
+    version_string: string;
+}
 
 const TopMenuBar: React.FC = () => {
     const { data, columns, setPlotData, setColumns, loadProject: loadPlotDataProject } = useCsvDataStore();
@@ -15,6 +21,9 @@ const TopMenuBar: React.FC = () => {
 
     const csvInputRef = useRef<HTMLInputElement>(null);
     const projectInputRef = useRef<HTMLInputElement>(null);
+
+    const [showVersionModal, setShowVersionModal] = useState(false);
+    const [versionData, setVersionData] = useState<VersionData | null>(null);
 
     const handleCsvUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -120,6 +129,25 @@ const TopMenuBar: React.FC = () => {
         }
     };
 
+    const handleShowVersion = async () => {
+        try {
+            // Check if we are in production or dev environment using base url
+            const baseUrl = import.meta.env.BASE_URL || '/';
+            const response = await fetch(`${baseUrl}version.json`);
+            if (response.ok) {
+                const data: VersionData = await response.json();
+                setVersionData(data);
+            } else {
+                console.error("Failed to fetch version data.");
+                setVersionData(null);
+            }
+        } catch (error) {
+            console.error("Error fetching version json:", error);
+            setVersionData(null);
+        }
+        setShowVersionModal(true);
+    };
+
     return (
         <Navbar bg="dark" variant="dark" expand="lg" className="px-4 shadow-sm">
             <Container fluid className="p-0">
@@ -156,6 +184,9 @@ const TopMenuBar: React.FC = () => {
                             <NavDropdown.Item onClick={() => alert('WebPlots v1.0\n\n- Load CSV to visualize data.\n- Save/Load Project to persist your work.')}>
                                 About
                             </NavDropdown.Item>
+                            <NavDropdown.Item onClick={handleShowVersion}>
+                                Version
+                            </NavDropdown.Item>
                         </NavDropdown>
                     </Nav>
                 </Navbar.Collapse>
@@ -176,6 +207,32 @@ const TopMenuBar: React.FC = () => {
                 accept=".json"
                 onChange={handleLoadProject}
             />
+
+            {/* Version Modal */}
+            <Modal show={showVersionModal} onHide={() => setShowVersionModal(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Version Information</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {versionData ? (
+                        <div>
+                            <p><strong>Version:</strong> {versionData.version_string}</p>
+                            <p><strong>Commit Title:</strong> {versionData.commit_title}</p>
+                            <p><strong>Commit Message:</strong></p>
+                            <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', background: '#f8f9fa', padding: '10px', borderRadius: '5px' }}>
+                                {versionData.commit_message}
+                            </pre>
+                        </div>
+                    ) : (
+                        <p>Loading version data or not available...</p>
+                    )}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowVersionModal(false)}>
+                        Close
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </Navbar>
     );
 };
