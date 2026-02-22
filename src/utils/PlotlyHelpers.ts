@@ -16,7 +16,7 @@ export const generatePlotConfig = (
     useCustomRadius: boolean = false,
     customRadius: number = 20
 ) => {
-    const { xAxis, yAxis, groupAxis } = sideMenuData;
+    const { xAxis, yAxis, groupAxis, groupSettings } = sideMenuData;
     const { enableLogAxis, plotTitle, xAxisTitle, yAxisTitle, xRange, yRange } = plotLayout;
 
     // Trace config from the new store
@@ -166,35 +166,89 @@ export const generatePlotConfig = (
     }[] = [];
 
     if (groupAxis) {
-        // 1. Find unique values for the group axis
-        const groupValues = Array.from(new Set(data.map(row => row[groupAxis]))).filter(v => v !== null && v !== undefined);
-        // Sort for consistency
-        groupValues.sort();
+        const settings = groupSettings[groupAxis];
+        const isManual = settings && settings.mode === 'manual';
 
-        // 2. For each Y-axis, create traces for each group
-        // Total limit check later, or break early?
-        // Let's generate all and then slice.
+        if (isManual) {
+            const bins = settings.bins;
 
-        yAxis.forEach(yCol => {
-            groupValues.forEach(groupVal => {
-                const groupValStr = String(groupVal);
-                // Filter data for this group
-                const indices = data.map((row, idx) => row[groupAxis] == groupVal ? idx : -1).filter(idx => idx !== -1);
+            yAxis.forEach(yCol => {
+                // Group indices by bin index
+                const binGroups: Record<number, number[]> = {};
 
-                if (indices.length === 0) return;
+                data.forEach((row, idx) => {
+                    const val = row[groupAxis];
+                    const numVal = typeof val === 'number' ? val : parseFloat(String(val));
 
-                const groupX = indices.map(i => data[i][xAxis]);
-                const groupY = indices.map(i => data[i][yCol]);
 
-                generatedTraces.push({
-                    yCol: yCol,
-                    groupName: `${groupAxis}=${groupValStr}`,
-                    fullTraceName: `${yCol} (${groupAxis}=${groupValStr})`,
-                    xData: groupX,
-                    yData: groupY
+                    for (let i = 0; i < bins.length; i++) {
+                        const bin = bins[i];
+                        let match = false;
+
+                        // Handle numeric comparisons
+                        if (!isNaN(numVal)) {
+                            switch (bin.operator) {
+                                case '>': match = numVal > bin.value; break;
+                                case '>=': match = numVal >= bin.value; break;
+                                case '<': match = numVal < bin.value; break;
+                                case '<=': match = numVal <= bin.value; break;
+                                case '==': match = numVal == bin.value; break;
+                                case '!=': match = numVal != bin.value; break;
+                            }
+                        } else {
+                            // Non-numeric fallback (only == and !=)
+                            if (bin.operator === '==') match = String(val) === String(bin.value);
+                            if (bin.operator === '!=') match = String(val) !== String(bin.value);
+                        }
+
+                        if (match) {
+                            if (!binGroups[i]) binGroups[i] = [];
+                            binGroups[i].push(idx);
+                            break;
+                        }
+                    }
+                });
+
+                // Create traces for matched bins
+                bins.forEach((bin, binIdx) => {
+                    const indices = binGroups[binIdx];
+                    if (!indices || indices.length === 0) return;
+
+                    generatedTraces.push({
+                        yCol: yCol,
+                        groupName: bin.label,
+                        fullTraceName: `${yCol} (${bin.label})`,
+                        xData: indices.map(i => data[i][xAxis]),
+                        yData: indices.map(i => data[i][yCol])
+                    });
                 });
             });
-        });
+
+        } else {
+            // 1. Find unique values for the group axis
+            const groupValues = Array.from(new Set(data.map(row => row[groupAxis]))).filter(v => v !== null && v !== undefined);
+            // Sort for consistency
+            groupValues.sort();
+
+            // 2. For each Y-axis, create traces for each group
+            yAxis.forEach(yCol => {
+                groupValues.forEach(groupVal => {
+                    const groupValStr = String(groupVal);
+                    // Filter data for this group
+                    const indices = data.map((row, idx) => row[groupAxis] == groupVal ? idx : -1).filter(idx => idx !== -1);
+
+                    if (indices.length === 0) return;
+
+                    generatedTraces.push({
+                        yCol: yCol,
+                        groupName: `${groupAxis}=${groupValStr}`,
+                        fullTraceName: `${yCol} (${groupAxis}=${groupValStr})`,
+                        xData: indices.map(i => data[i][xAxis]),
+                        yData: indices.map(i => data[i][yCol])
+                    });
+                });
+            });
+        }
 
     } else {
         // Standard behavior

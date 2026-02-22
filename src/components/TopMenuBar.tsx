@@ -5,7 +5,7 @@ import { useCsvDataStore } from '../store/CsvDataStore';
 import { usePlotLayoutStore } from '../store/PlotLayoutStore';
 import Papa from 'papaparse';
 import type { CsvDataStore } from '../store/CsvDataStore'; import { useAxisSideMenuStore } from '../store/AxisSideMenuStore';
-import { getSmallDataset, getLargeColumnDataset, getSimulationDataset } from '../utils/TestDatasets';
+import { getSmallDataset, getLargeColumnDataset, getSimulationDataset, getBinningTestData } from '../utils/TestDatasets';
 
 interface VersionData {
     commit_title: string;
@@ -107,7 +107,7 @@ const TopMenuBar: React.FC = () => {
         if (event.target) event.target.value = '';
     };
 
-    const handleLoadTestData = (datasetType: 'small' | 'large' | 'simulation') => {
+    const handleLoadTestData = (datasetType: 'small' | 'large' | 'simulation' | 'binning') => {
         let testData: CsvDataStore[] = [];
         switch (datasetType) {
             case 'small':
@@ -118,6 +118,9 @@ const TopMenuBar: React.FC = () => {
                 break;
             case 'simulation':
                 testData = getSimulationDataset();
+                break;
+            case 'binning':
+                testData = getBinningTestData();
                 break;
         }
 
@@ -177,6 +180,9 @@ const TopMenuBar: React.FC = () => {
                             </NavDropdown.Item>
                             <NavDropdown.Item onClick={() => handleLoadTestData('simulation')}>
                                 Simulation Dataset (Trig)
+                            </NavDropdown.Item>
+                            <NavDropdown.Item onClick={() => handleLoadTestData('binning')}>
+                                Binning Test (Many Unique)
                             </NavDropdown.Item>
                         </NavDropdown>
 

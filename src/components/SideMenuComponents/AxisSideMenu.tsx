@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 
 import { useAxisSideMenuStore } from '../../store/AxisSideMenuStore';
 import { useAppStateStore } from '../../store/AppStateStore';
+import { useCsvDataStore } from '../../store/CsvDataStore';
 import SearchColumn from './SearchColumn';
 import GroupAxisSettings from './GroupAxisSettings';
 
@@ -50,11 +51,30 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
         if (colName) addYAxisColumn(colName);
     };
 
+    const { data } = useCsvDataStore();
+
     const handleDropGroup = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
         setDragOverGroup(false);
         const colName = e.dataTransfer.getData('text/plain');
-        if (colName) setGroupAxis(colName);
+        if (!colName) return;
+
+        // Check unique values
+        const uniqueValues = new Set(data.map((row: any) => row[colName])).size;
+
+        if (uniqueValues > 8) {
+            const confirmBin = window.confirm(
+                `The column "${colName}" has ${uniqueValues} unique values. This will create many traces and might slow down the plot. Would you like to bin these values?`
+            );
+
+            if (confirmBin) {
+                setGroupAxis(colName);
+                setPopupContent(<GroupAxisSettings column={colName} />);
+                return;
+            }
+        }
+
+        setGroupAxis(colName);
     };
 
     return (
@@ -124,7 +144,17 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
                                 </div>
 
                                 <div className="mb-0 mt-3">
-                                    <label className="form-label fw-bold small mb-2">Group Axis <small className="text-muted fw-normal">(Optional)</small></label>
+                                    <label className="form-label fw-bold small mb-2 d-flex align-items-center">
+                                        Group Axis
+                                        <small className="text-muted fw-normal ms-1">(Optional)</small>
+                                        <span
+                                            className="ms-2 badge rounded-pill bg-light text-dark border cursor-help"
+                                            style={{ cursor: 'help', fontSize: '0.7rem' }}
+                                            title="It creates subtraces (or groups) based on other columns. Like Temp (hot or cold) or Voltage (max or min) OR both for 4 subtraces/groups"
+                                        >
+                                            ?
+                                        </span>
+                                    </label>
                                     <div
                                         className={`border rounded p-2 ${dragOverGroup ? 'bg-info bg-opacity-10 border-info' : 'bg-white'}`}
                                         onDragOver={(e) => handleDragOver(e, setDragOverGroup)}
