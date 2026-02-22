@@ -1,5 +1,5 @@
 {
-    "commit_title": "Add ink physics animation and output GIF",
-    "commit_message": "Add a new Matplotlib animation script (scripts/ink_physics_animation.py) that simulates three circles (A, B, C) with easing/repulsion behavior to visualize an \"ink ratio\" physics demo. The script animates positions and opacity, attempts to save an MP4 via ffmpeg and falls back to a GIF (public/ink_ratio_physics.gif) using Pillow; output is placed in the public directory. Requires numpy, matplotlib, and either ffmpeg or Pillow to export the animation.",
+    "commit_title": "Add version generation and UI to TopMenuBar",
+    "commit_message": "Add a Python script (scripts/generate_version.py) that writes public/version.json containing the latest git commit title, message, and a version string formatted as year.week.day. Call this script in package.json predeploy so version.json is generated before builds, and include an initial public/version.json sample. Update TopMenuBar.tsx to add a \"Version\" menu item and modal UI that fetches and displays the version, commit title, and commit message (uses import.meta.env.BASE_URL to locate version.json). This enables the app to surface build/commit metadata to users.",
     "version_string": "2026.08.6"
 }
