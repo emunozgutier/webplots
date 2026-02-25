@@ -40,3 +40,16 @@ export const getSimulationDataset = (): CsvDataStore[] => {
     }
     return data;
 };
+
+export const getBinningTestData = (): CsvDataStore[] => {
+    const data: CsvDataStore[] = [];
+    for (let i = 0; i < 20; i++) {
+        data.push({
+            "ManyUnique": i, // 20 unique values
+            "FewUnique1": i % 2, // 2 unique values
+            "FewUnique2": i % 3, // 3 unique values
+            "Value": Math.random() * 100
+        });
+    }
+    return data;
+};
