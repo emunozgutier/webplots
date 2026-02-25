@@ -1,5 +1,5 @@
 {
-    "commit_title": "Memoize histogram bounds and display min/max",
-    "commit_message": "Compute data min/max with React.useMemo (based on data and column) and refactor the histogram bin effect to use these memoized bounds for default start/end and bin size. Add small UI labels under the Start/End inputs to show Data Min and Data Max. Keeps the existing fallback to 0..100 when no numeric data is present.",
+    "commit_title": "Disable manual axis ranges for histograms",
+    "commit_message": "UI and plot generation updates to prevent manual X/Y axis range overrides for histogram plots. In PlotLayout.tsx the Auto buttons are disabled when plotType === 'histogram', and min/max inputs are replaced with explanatory helper text. In PlotlyHelpers.ts the xaxis/yaxis range and autorange are adjusted so histograms always use autorange (range set to undefined and autorange true) while preserving existing behavior for other plot types. This ensures histogram binning/data density controls the displayed range.",
     "version_string": "2026.09.3"
 }
