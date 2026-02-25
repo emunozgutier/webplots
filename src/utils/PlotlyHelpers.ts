@@ -17,8 +17,7 @@ export const generatePlotConfig = (
     customRadius: number = 20
 ) => {
     const { plotType, xAxis, yAxis, groupAxis, groupSettings } = sideMenuData;
-    const { enableLogAxis, plotTitle, xAxisTitle, yAxisTitle, xRange, yRange, histogramBins } = plotLayout;
-
+    const { enableLogAxis, plotTitle, xAxisTitle, yAxisTitle, xRange, yRange } = plotLayout;
 
     // Trace config from the new store
     const { traceCustomizations, currentPaletteColors } = traceConfig;
@@ -307,11 +306,12 @@ export const generatePlotConfig = (
             // Histogram logic
             // Apply over/underflow clamping to yData
             let processedYData = yData;
-            if (histogramBins) {
-                const { start, end, underflow, overflow } = histogramBins;
+            const traceBins = customization.histogramBins;
+            if (traceBins) {
+                const { start, end, underflow, overflow } = traceBins;
                 const EPSILON = 1e-6; // Ensure values fall nicely into start/end bins
                 processedYData = yData.map(v => {
-                    let num = parseFloat(v);
+                    let num = parseFloat(String(v));
                     if (isNaN(num)) return v;
                     if (underflow && num < start) num = start + EPSILON;
                     if (overflow && num > end) num = end - EPSILON;
@@ -330,11 +330,11 @@ export const generatePlotConfig = (
                 }
             };
 
-            if (histogramBins) {
+            if (traceBins) {
                 histTrace.xbins = {
-                    start: histogramBins.start,
-                    end: histogramBins.end,
-                    size: histogramBins.size
+                    start: traceBins.start,
+                    end: traceBins.end,
+                    size: traceBins.size
                 };
                 histTrace.autobinx = false;
             }
@@ -439,9 +439,10 @@ export const generatePlotConfig = (
   type: 'histogram',
   name: '${finalName}',
   marker: { color: '${finalColor}' }`;
-            if (histogramBins) {
+            const traceBins = customization.histogramBins;
+            if (traceBins) {
                 histCode += `,\n  autobinx: false,
-  xbins: { start: ${histogramBins.start}, end: ${histogramBins.end}, size: ${histogramBins.size} }`;
+  xbins: { start: ${traceBins.start}, end: ${traceBins.end}, size: ${traceBins.size} }`;
             }
             histCode += `\n};`;
             return histCode;

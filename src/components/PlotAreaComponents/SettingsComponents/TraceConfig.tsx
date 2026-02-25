@@ -6,6 +6,7 @@ import { COLOR_PALETTES } from '../../../utils/ColorPalettes';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { HexColorPicker } from 'react-colorful';
 import { OverlayTrigger, Popover, Dropdown, Tabs, Tab, ButtonGroup, ToggleButton } from 'react-bootstrap';
+import { useCsvDataStore } from '../../../store/CsvDataStore';
 
 const SYMBOLS = [
     { id: 'circle', label: 'Circle', icon: 'bi-circle-fill' },
@@ -17,10 +18,104 @@ const SYMBOLS = [
     { id: 'star', label: 'Star', icon: 'bi-star-fill' }
 ];
 
+const HistogramBinSettings: React.FC<{ col: string; custom: any; data: any[]; setTraceCustomization: any }> = ({ col, custom, data, setTraceCustomization }) => {
+    React.useEffect(() => {
+        if (!custom.histogramBins && data && data.length > 0) {
+            let min = Infinity, max = -Infinity;
+            data.forEach(row => {
+                const val = parseFloat(String(row[col]));
+                if (!isNaN(val)) {
+                    if (val < min) min = val;
+                    if (val > max) max = val;
+                }
+            });
+            if (min === Infinity) { min = 0; max = 100; }
+
+            const start = Math.floor(min);
+            const end = Math.ceil(max);
+            // Default to ~10 bins
+            const size = (end - start) / 10 || 1;
+
+            setTraceCustomization(col, {
+                histogramBins: {
+                    start,
+                    end,
+                    size,
+                    underflow: true,
+                    overflow: true
+                }
+            });
+        }
+    }, [col, custom.histogramBins, data, setTraceCustomization]);
+
+    if (!custom.histogramBins) return null;
+
+    const bins = custom.histogramBins;
+    // Calculate bin count
+    const binCount = Math.max(1, Math.round((bins.end - bins.start) / bins.size));
+
+    const updateBin = (field: string, value: any) => {
+        setTraceCustomization(col, {
+            histogramBins: { ...bins, [field]: value }
+        });
+    };
+
+    const updateCount = (newCount: number) => {
+        if (newCount > 0) {
+            const newSize = (bins.end - bins.start) / newCount;
+            updateBin('size', newSize);
+        }
+    };
+
+    return (
+        <div className="mb-3">
+            <hr />
+            <label className="form-label small fw-bold mt-2">Histogram Bins</label>
+            <div className="row g-2 mb-2">
+                <div className="col-6">
+                    <div className="input-group input-group-sm">
+                        <span className="input-group-text">Start</span>
+                        <input type="number" className="form-control" value={bins.start.toFixed(2)} onChange={e => updateBin('start', parseFloat(e.target.value))} />
+                    </div>
+                </div>
+                <div className="col-6">
+                    <div className="input-group input-group-sm">
+                        <span className="input-group-text">End</span>
+                        <input type="number" className="form-control" value={bins.end.toFixed(2)} onChange={e => updateBin('end', parseFloat(e.target.value))} />
+                    </div>
+                </div>
+                <div className="col-6">
+                    <div className="input-group input-group-sm">
+                        <span className="input-group-text">Bin Width</span>
+                        <input type="number" className="form-control" value={bins.size.toFixed(2)} onChange={e => updateBin('size', parseFloat(e.target.value))} step="0.1" />
+                    </div>
+                </div>
+                <div className="col-6">
+                    <div className="input-group input-group-sm">
+                        <span className="input-group-text">Count (#)</span>
+                        <input type="number" className="form-control" value={binCount} onChange={e => updateCount(parseInt(e.target.value))} min="1" />
+                    </div>
+                </div>
+            </div>
+            <div className="d-flex gap-3">
+                <div className="form-check form-switch">
+                    <input className="form-check-input" type="checkbox" id={`flexSwitchUnderflow-${col}`} checked={bins.underflow} onChange={e => updateBin('underflow', e.target.checked)} />
+                    <label className="form-check-label small" htmlFor={`flexSwitchUnderflow-${col}`}>Underflow Bin</label>
+                </div>
+                <div className="form-check form-switch">
+                    <input className="form-check-input" type="checkbox" id={`flexSwitchOverflow-${col}`} checked={bins.overflow} onChange={e => updateBin('overflow', e.target.checked)} />
+                    <label className="form-check-label small" htmlFor={`flexSwitchOverflow-${col}`}>Overflow Bin</label>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const TraceConfig: React.FC = () => {
     const { traceConfig, setTraceCustomization, setColorPalette, setPaletteColorOrder, updatePaletteColor } = useTraceConfigStore();
     const { sideMenuData } = useAxisSideMenuStore();
     const { closePopup } = useAppStateStore();
+    const { data } = useCsvDataStore();
 
     // Manage active tab locally
     const [activeTab, setActiveTab] = useState<string>(sideMenuData.yAxis[0] || '');
@@ -258,6 +353,11 @@ const TraceConfig: React.FC = () => {
                                                         onChange={(e) => handleSizeChange(col, parseInt(e.target.value))}
                                                     />
                                                 </div>
+                                            )}
+
+                                            {/* Histogram Bins (Only for Histogram plot type) */}
+                                            {sideMenuData.plotType === 'histogram' && (
+                                                <HistogramBinSettings col={col} custom={custom} data={data} setTraceCustomization={setTraceCustomization} />
                                             )}
                                         </div>
                                     );

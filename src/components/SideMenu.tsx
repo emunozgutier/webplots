@@ -19,6 +19,12 @@ const SideMenu: React.FC = () => {
     const [activeTab, setActiveTab] = useState<SideMenuTab>('axis');
     const [isResizing, setIsResizing] = useState(false);
 
+    React.useEffect(() => {
+        if (plotType === 'histogram' && activeTab === 'ink') {
+            setActiveTab('axis');
+        }
+    }, [plotType, activeTab]);
+
     // Resizing Logic
     React.useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {

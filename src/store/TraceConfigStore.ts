@@ -8,6 +8,13 @@ export interface TraceConfig {
         mode?: 'lines' | 'markers' | 'lines+markers';
         symbol?: string; // allow any plotly symbol string
         size?: number;
+        histogramBins?: {
+            start: number;
+            end: number;
+            size: number;
+            underflow: boolean;
+            overflow: boolean;
+        };
     }>;
     colorPalette: string;
     currentPaletteColors: string[];
@@ -21,6 +28,7 @@ interface TraceConfigState {
         mode?: 'lines' | 'markers' | 'lines+markers';
         symbol?: string;
         size?: number;
+        histogramBins?: { start: number; end: number; size: number; underflow: boolean; overflow: boolean; };
     }) => void;
     setColorPalette: (paletteName: string) => void;
     setPaletteColorOrder: (colors: string[]) => void;
