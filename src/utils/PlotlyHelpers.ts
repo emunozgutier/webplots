@@ -16,7 +16,7 @@ export const generatePlotConfig = (
     useCustomRadius: boolean = false,
     customRadius: number = 20
 ) => {
-    const { plotType, xAxis, yAxis, groupAxis } = sideMenuData;
+    const { plotType, xAxis, yAxis, groupAxis, groupSettings } = sideMenuData;
     const { enableLogAxis, plotTitle, xAxisTitle, yAxisTitle, xRange, yRange, histogramBins } = plotLayout;
 
 
@@ -213,7 +213,7 @@ export const generatePlotConfig = (
                 });
 
                 // Create traces for matched bins
-                bins.forEach((bin, binIdx) => {
+                bins.forEach((bin: any, binIdx: number) => {
                     const indices = binGroups[binIdx];
                     if (!indices || indices.length === 0) return;
 

@@ -15,6 +15,7 @@ const SideMenu: React.FC = () => {
     const { isSideMenuOpen, toggleSideMenu, sideMenuWidth, setSideMenuWidth } = useAppStateStore();
 
     const { hasColumns } = useMemo(() => createAxisSideMenuConfig(storeColumns, sideMenuData), [storeColumns, sideMenuData]);
+    const { plotType } = sideMenuData;
     const [activeTab, setActiveTab] = useState<SideMenuTab>('axis');
     const [isResizing, setIsResizing] = useState(false);
 
@@ -154,7 +155,7 @@ const SideMenu: React.FC = () => {
                 {renderTabButton('axis', 'Axis', 'bi-bar-chart-steps')}
                 {renderTabButton('filter', 'Filter', 'bi-funnel')}
                 {renderTabButton('control', 'Control', 'bi-sliders')}
-                {renderTabButton('ink', 'Ink Ratio', 'bi-droplet')}
+                {plotType !== 'histogram' && renderTabButton('ink', 'Ink Ratio', 'bi-droplet')}
             </div>
 
             {/* Resize Handle - Only visible when open */}
