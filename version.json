@@ -1,5 +1,11 @@
 {
+<<<<<<< HEAD
+    "commit_title": "Add histogram support and UI controls",
+    "commit_message": "Introduce histogram mode across stores, UI and plot generation.\n\n- AxisSideMenu: add plotType to state, radio buttons to switch between scatter/histogram, and hide the X-axis drop target when histogram is selected. Expose setPlotType and include plotType in loadProject/createAxisSideMenuConfig.\n- PlotLayoutStore: add histogramBins to PlotLayout state with setter.\n- PlotLayout component: add local controls for histogram bins (start, end, size, underflow, overflow) and persist via setHistogramBins when saving layout.\n- PlotlyHelpers.generatePlotConfig: support histogram mode by adjusting hasData checks, creating histogram traces with xbins/autobinx, applying underflow/overflow handling, using value-based x-axis/title text, and emitting appropriate code for histogram traces. Adjust scatter behavior to remain unchanged.\n\nThese changes enable building histograms with configurable binning while preserving existing scatter functionality.",
+    "version_string": "2026.09.3"
+=======
     "commit_title": "Add group binning + many-unique warnings",
     "commit_message": "Warn when a dragged group column has many unique values and offer binning; add manual binning support when generating traces. AxisSideMenu: import CSV store, check unique count on drop, prompt to bin, and show a help badge next to the Group Axis label; uses GroupAxisSettings popup when binning is chosen. PlotlyHelpers: consume groupSettings from side menu data and support 'manual' binning mode by grouping rows into configured bins (creating traces per bin); preserve default per-value grouping otherwise. TopMenuBar: add a \"Binning Test (Many Unique)\" test dataset option and wire getBinningTestData into the loader. TestDatasets: add getBinningTestData (20 unique values) for testing binning behavior.",
     "version_string": "2026.08.7"
+>>>>>>> 7e9304eefd7a81483f6b8262bbfa040599eb980f
 }
