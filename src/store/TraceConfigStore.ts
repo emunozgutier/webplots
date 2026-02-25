@@ -12,6 +12,8 @@ export interface TraceConfig {
             start: number;
             end: number;
             size: number;
+            binMode?: 'width' | 'count';
+            count?: number;
             underflow: boolean;
             overflow: boolean;
         };
@@ -28,7 +30,7 @@ interface TraceConfigState {
         mode?: 'lines' | 'markers' | 'lines+markers';
         symbol?: string;
         size?: number;
-        histogramBins?: { start: number; end: number; size: number; underflow: boolean; overflow: boolean; };
+        histogramBins?: { start: number; end: number; size: number; binMode?: 'width' | 'count'; count?: number; underflow: boolean; overflow: boolean; };
     }) => void;
     setColorPalette: (paletteName: string) => void;
     setPaletteColorOrder: (colors: string[]) => void;

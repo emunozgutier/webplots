@@ -7,6 +7,7 @@ import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-p
 import { HexColorPicker } from 'react-colorful';
 import { OverlayTrigger, Popover, Dropdown, Tabs, Tab, ButtonGroup, ToggleButton } from 'react-bootstrap';
 import { useCsvDataStore } from '../../../store/CsvDataStore';
+import Plot from 'react-plotly.js';
 
 const SYMBOLS = [
     { id: 'circle', label: 'Circle', icon: 'bi-circle-fill' },
@@ -41,6 +42,8 @@ const HistogramBinSettings: React.FC<{ col: string; custom: any; data: any[]; se
                     start,
                     end,
                     size,
+                    binMode: 'width',
+                    count: 10,
                     underflow: true,
                     overflow: true
                 }
@@ -51,53 +54,98 @@ const HistogramBinSettings: React.FC<{ col: string; custom: any; data: any[]; se
     if (!custom.histogramBins) return null;
 
     const bins = custom.histogramBins;
-    // Calculate bin count
-    const binCount = Math.max(1, Math.round((bins.end - bins.start) / bins.size));
+    // Calculate bin count if not set
+    const currentMode = bins.binMode || 'width';
+    const activeCount = bins.count || Math.max(1, Math.round((bins.end - bins.start) / bins.size));
 
     const updateBin = (field: string, value: any) => {
+        const newBins = { ...bins, [field]: value };
+
+        // If we are updating start or end, and we are in 'count' mode, recalculate size
+        if (currentMode === 'count' && (field === 'start' || field === 'end')) {
+            const range = newBins.end - newBins.start;
+            newBins.size = range / activeCount;
+        }
+
+        setTraceCustomization(col, { histogramBins: newBins });
+    };
+
+    const updateMode = (mode: 'width' | 'count') => {
         setTraceCustomization(col, {
-            histogramBins: { ...bins, [field]: value }
+            histogramBins: { ...bins, binMode: mode }
         });
     };
 
     const updateCount = (newCount: number) => {
         if (newCount > 0) {
             const newSize = (bins.end - bins.start) / newCount;
-            updateBin('size', newSize);
+            setTraceCustomization(col, {
+                histogramBins: { ...bins, count: newCount, size: newSize, binMode: 'count' }
+            });
         }
     };
 
     return (
         <div className="mb-3">
             <hr />
-            <label className="form-label small fw-bold mt-2">Histogram Bins</label>
+            <div className="d-flex justify-content-between align-items-center mt-2 mb-2">
+                <label className="form-label small fw-bold mb-0">Histogram Bins</label>
+                <ButtonGroup size="sm">
+                    <ToggleButton
+                        id={`binmode-width-${col}`}
+                        type="radio"
+                        variant="outline-secondary"
+                        name={`binmode-${col}`}
+                        value="width"
+                        checked={currentMode === 'width'}
+                        onChange={() => updateMode('width')}
+                    >
+                        Bin Width
+                    </ToggleButton>
+                    <ToggleButton
+                        id={`binmode-count-${col}`}
+                        type="radio"
+                        variant="outline-secondary"
+                        name={`binmode-${col}`}
+                        value="count"
+                        checked={currentMode === 'count'}
+                        onChange={() => updateMode('count')}
+                    >
+                        Number of Bins
+                    </ToggleButton>
+                </ButtonGroup>
+            </div>
+
             <div className="row g-2 mb-2">
-                <div className="col-6">
+                <div className="col-4">
                     <div className="input-group input-group-sm">
                         <span className="input-group-text">Start</span>
-                        <input type="number" className="form-control" value={bins.start.toFixed(2)} onChange={e => updateBin('start', parseFloat(e.target.value))} />
+                        <input type="number" className="form-control" value={Number(bins.start.toFixed(2))} onChange={e => updateBin('start', parseFloat(e.target.value))} />
                     </div>
                 </div>
-                <div className="col-6">
+                <div className="col-4">
                     <div className="input-group input-group-sm">
                         <span className="input-group-text">End</span>
-                        <input type="number" className="form-control" value={bins.end.toFixed(2)} onChange={e => updateBin('end', parseFloat(e.target.value))} />
+                        <input type="number" className="form-control" value={Number(bins.end.toFixed(2))} onChange={e => updateBin('end', parseFloat(e.target.value))} />
                     </div>
                 </div>
-                <div className="col-6">
-                    <div className="input-group input-group-sm">
-                        <span className="input-group-text">Bin Width</span>
-                        <input type="number" className="form-control" value={bins.size.toFixed(2)} onChange={e => updateBin('size', parseFloat(e.target.value))} step="0.1" />
+                {currentMode === 'width' ? (
+                    <div className="col-4">
+                        <div className="input-group input-group-sm">
+                            <span className="input-group-text">Width</span>
+                            <input type="number" className="form-control" value={Number(bins.size.toFixed(2))} onChange={e => updateBin('size', parseFloat(e.target.value))} step="0.1" />
+                        </div>
                     </div>
-                </div>
-                <div className="col-6">
-                    <div className="input-group input-group-sm">
-                        <span className="input-group-text">Count (#)</span>
-                        <input type="number" className="form-control" value={binCount} onChange={e => updateCount(parseInt(e.target.value))} min="1" />
+                ) : (
+                    <div className="col-4">
+                        <div className="input-group input-group-sm">
+                            <span className="input-group-text">Count</span>
+                            <input type="number" className="form-control" value={activeCount} onChange={e => updateCount(parseInt(e.target.value))} min="1" />
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
-            <div className="d-flex gap-3">
+            <div className="d-flex gap-3 mb-3">
                 <div className="form-check form-switch">
                     <input className="form-check-input" type="checkbox" id={`flexSwitchUnderflow-${col}`} checked={bins.underflow} onChange={e => updateBin('underflow', e.target.checked)} />
                     <label className="form-check-label small" htmlFor={`flexSwitchUnderflow-${col}`}>Underflow Bin</label>
@@ -107,7 +155,41 @@ const HistogramBinSettings: React.FC<{ col: string; custom: any; data: any[]; se
                     <label className="form-check-label small" htmlFor={`flexSwitchOverflow-${col}`}>Overflow Bin</label>
                 </div>
             </div>
-        </div>
+
+            <div className="border rounded bg-white p-2" style={{ height: '200px' }}>
+                <Plot
+                    data={[
+                        {
+                            x: data.map(row => {
+                                let num = parseFloat(String(row[col]));
+                                if (isNaN(num)) return num;
+                                if (bins.underflow && num < bins.start) num = bins.start + 1e-6;
+                                if (bins.overflow && num > bins.end) num = bins.end - 1e-6;
+                                return num;
+                            }),
+                            type: 'histogram',
+                            marker: { color: custom.color || '#0d6efd' },
+                            autobinx: false,
+                            xbins: {
+                                start: bins.start,
+                                end: bins.end,
+                                size: bins.size
+                            }
+                        }
+                    ]}
+                    layout={{
+                        margin: { t: 10, r: 10, l: 30, b: 30 },
+                        xaxis: { range: [bins.start, bins.end], fixedrange: true },
+                        yaxis: { fixedrange: true },
+                        paper_bgcolor: 'transparent',
+                        plot_bgcolor: 'transparent'
+                    }}
+                    config={{ displayModeBar: false }}
+                    style={{ width: '100%', height: '100%' }}
+                    useResizeHandler={true}
+                />
+            </div>
+        </div >
     );
 };
 
@@ -287,37 +369,39 @@ const TraceConfig: React.FC = () => {
                                                         <span className="small text-muted">{effectiveColor}</span>
                                                     </div>
                                                 </div>
-                                                <div className="col-6">
-                                                    <label className="form-label small fw-bold">Plot Type</label>
-                                                    <ButtonGroup size="sm" className="w-100">
-                                                        <ToggleButton
-                                                            id={`mode-line-${col}`}
-                                                            type="radio"
-                                                            variant="outline-secondary"
-                                                            name={`mode-${col}`}
-                                                            value="lines"
-                                                            checked={currentMode === 'lines'}
-                                                            onChange={() => handleModeChange(col, 'lines')}
-                                                        >
-                                                            Line
-                                                        </ToggleButton>
-                                                        <ToggleButton
-                                                            id={`mode-markers-${col}`}
-                                                            type="radio"
-                                                            variant="outline-secondary"
-                                                            name={`mode-${col}`}
-                                                            value="markers"
-                                                            checked={currentMode === 'markers'}
-                                                            onChange={() => handleModeChange(col, 'markers')}
-                                                        >
-                                                            Scatter
-                                                        </ToggleButton>
-                                                    </ButtonGroup>
-                                                </div>
+                                                {sideMenuData.plotType !== 'histogram' && (
+                                                    <div className="col-6">
+                                                        <label className="form-label small fw-bold">Trace Type</label>
+                                                        <ButtonGroup size="sm" className="w-100">
+                                                            <ToggleButton
+                                                                id={`mode-line-${col}`}
+                                                                type="radio"
+                                                                variant="outline-secondary"
+                                                                name={`mode-${col}`}
+                                                                value="lines"
+                                                                checked={currentMode === 'lines'}
+                                                                onChange={() => handleModeChange(col, 'lines')}
+                                                            >
+                                                                Line
+                                                            </ToggleButton>
+                                                            <ToggleButton
+                                                                id={`mode-markers-${col}`}
+                                                                type="radio"
+                                                                variant="outline-secondary"
+                                                                name={`mode-${col}`}
+                                                                value="markers"
+                                                                checked={currentMode === 'markers'}
+                                                                onChange={() => handleModeChange(col, 'markers')}
+                                                            >
+                                                                Scatter
+                                                            </ToggleButton>
+                                                        </ButtonGroup>
+                                                    </div>
+                                                )}
                                             </div>
 
                                             {/* Symbol Picker (Only for Scatter) */}
-                                            {currentMode === 'markers' && (
+                                            {sideMenuData.plotType !== 'histogram' && currentMode === 'markers' && (
                                                 <div className="mb-3">
                                                     <label className="form-label small fw-bold">Marker Symbol</label>
                                                     <div className="d-flex flex-wrap gap-2 border p-2 rounded bg-light">
@@ -337,7 +421,7 @@ const TraceConfig: React.FC = () => {
                                             )}
 
                                             {/* Size Slider (Only for markers or lines+markers if symbol selected) */}
-                                            {(currentMode === 'markers' || custom.symbol) && (
+                                            {sideMenuData.plotType !== 'histogram' && (currentMode === 'markers' || custom.symbol) && (
                                                 <div className="mb-3">
                                                     <label className="form-label small fw-bold d-flex justify-content-between">
                                                         <span>Marker Size</span>
