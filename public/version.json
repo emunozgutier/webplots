@@ -1,5 +1,5 @@
 {
-    "commit_title": "Hide Ink tab for histogram plots; add typings",
-    "commit_message": "Conditionally hide the Ink Ratio tab in the side menu when the selected plotType is 'histogram' by pulling plotType from sideMenuData and rendering the tab only if not a histogram. In PlotlyHelpers, include groupSettings in the sideMenuData destructure and add explicit types for the bins.forEach callback parameters to address TypeScript typing issues. These changes prevent irrelevant UI controls for histograms and tighten typings in plot generation code.",
+    "commit_title": "Memoize histogram bounds and display min/max",
+    "commit_message": "Compute data min/max with React.useMemo (based on data and column) and refactor the histogram bin effect to use these memoized bounds for default start/end and bin size. Add small UI labels under the Start/End inputs to show Data Min and Data Max. Keeps the existing fallback to 0..100 when no numeric data is present.",
     "version_string": "2026.09.3"
 }
