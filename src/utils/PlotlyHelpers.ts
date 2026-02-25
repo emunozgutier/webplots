@@ -16,13 +16,15 @@ export const generatePlotConfig = (
     useCustomRadius: boolean = false,
     customRadius: number = 20
 ) => {
-    const { xAxis, yAxis, groupAxis } = sideMenuData;
-    const { enableLogAxis, plotTitle, xAxisTitle, yAxisTitle, xRange, yRange } = plotLayout;
+    const { plotType, xAxis, yAxis, groupAxis } = sideMenuData;
+    const { enableLogAxis, plotTitle, xAxisTitle, yAxisTitle, xRange, yRange, histogramBins } = plotLayout;
 
     // Trace config from the new store
     const { traceCustomizations, currentPaletteColors } = traceConfig;
 
-    const hasData = data.length > 0 && !!xAxis && yAxis.length > 0;
+    const hasData = plotType === 'histogram'
+        ? data.length > 0 && yAxis.length > 0
+        : data.length > 0 && !!xAxis && yAxis.length > 0;
 
     if (!hasData) {
         return {
@@ -44,7 +46,7 @@ export const generatePlotConfig = (
 
     const stats: Record<string, number> = {};
 
-    // Helper to filter points
+    // Helper to filter points (mainly for Scatter)
     const filterPoints = (xData: any, yData: any, xType: 'log' | 'linear', yType: 'log' | 'linear', traceRadius?: number) => {
         // Determine effective radius for this trace
         const effectiveRadius = traceRadius || pointRadius;
@@ -199,11 +201,13 @@ export const generatePlotConfig = (
     } else {
         // Standard behavior
         yAxis.forEach(yCol => {
+            // For histograms, we don't necessarily have x since there's no xAxis selected
+            const hasXAxis = plotType !== 'histogram' && xAxis;
             generatedTraces.push({
                 yCol: yCol,
                 groupName: '',
                 fullTraceName: yCol,
-                xData: x,
+                xData: hasXAxis ? x : [],
                 yData: data.map(row => row[yCol])
             });
         });
@@ -244,7 +248,46 @@ export const generatePlotConfig = (
             marker.size = customization.size || 8;
         }
 
-        // Apply filtering
+        if (plotType === 'histogram') {
+            // Histogram logic
+            // Apply over/underflow clamping to yData
+            let processedYData = yData;
+            if (histogramBins) {
+                const { start, end, underflow, overflow } = histogramBins;
+                const EPSILON = 1e-6; // Ensure values fall nicely into start/end bins
+                processedYData = yData.map(v => {
+                    let num = parseFloat(v);
+                    if (isNaN(num)) return v;
+                    if (underflow && num < start) num = start + EPSILON;
+                    if (overflow && num > end) num = end - EPSILON;
+                    return num;
+                });
+            }
+
+            stats[fullTraceName] = 0; // Or calculate clipped points
+
+            const histTrace: any = {
+                x: processedYData, // In Plotly histogram, providing `x` creates vertical bars for that distribution
+                type: 'histogram',
+                name: customization.displayName || fullTraceName,
+                marker: {
+                    color: customization.color || baseColor,
+                }
+            };
+
+            if (histogramBins) {
+                histTrace.xbins = {
+                    start: histogramBins.start,
+                    end: histogramBins.end,
+                    size: histogramBins.size
+                };
+                histTrace.autobinx = false;
+            }
+
+            return histTrace;
+        }
+
+        // Apply filtering for Scatter
         // We pass the trace's specific size (or default 8 if not set)
         const traceSize = customization.size || 8;
 
@@ -277,9 +320,9 @@ export const generatePlotConfig = (
     const layout: Partial<Layout> = {
         width: undefined,
         height: undefined,
-        title: { text: plotTitle || `Plot: ${yAxis.join(', ')} vs ${xAxis}` },
+        title: { text: plotTitle || (plotType === 'histogram' ? `Histogram: ${yAxis.join(', ')}` : `Plot: ${yAxis.join(', ')} vs ${xAxis}`) },
         xaxis: {
-            title: { text: xAxisTitle || xAxis },
+            title: { text: xAxisTitle || (plotType === 'histogram' ? 'Value' : xAxis) },
             type: enableLogAxis ? 'log' : 'linear',
             range: xRange || undefined,
             autorange: !xRange
@@ -299,7 +342,9 @@ export const generatePlotConfig = (
     let receipt = `// Generated Plotly Code\n\n`;
 
     // Config variables
-    receipt += `var xAxisName = '${xAxis}';\n`;
+    if (plotType !== 'histogram') {
+        receipt += `var xAxisName = '${xAxis}';\n`;
+    }
     receipt += `var yAxisNames = [${yAxis.map((y: string) => `'${y}'`).join(', ')}];\n`;
     if (groupAxis) {
         receipt += `var groupAxisName = '${groupAxis}';\n`;
@@ -331,6 +376,20 @@ export const generatePlotConfig = (
             } else {
                 markerParams = `, marker: { symbol: '${customization.symbol}', size: ${finalSize} }`;
             }
+        }
+
+        if (plotType === 'histogram') {
+            let histCode = `var ${traceVar} = {
+  // x: ..., // Histogram data mapped from yAxis
+  type: 'histogram',
+  name: '${finalName}',
+  marker: { color: '${finalColor}' }`;
+            if (histogramBins) {
+                histCode += `,\n  autobinx: false,
+  xbins: { start: ${histogramBins.start}, end: ${histogramBins.end}, size: ${histogramBins.size} }`;
+            }
+            histCode += `\n};`;
+            return histCode;
         }
 
         return `var ${traceVar} = {

@@ -7,6 +7,13 @@ export interface PlotLayout {
     yAxisTitle: string;
     xRange: [number, number] | null;
     yRange: [number, number] | null;
+    histogramBins: {
+        start: number;
+        end: number;
+        size: number;
+        underflow: boolean;
+        overflow: boolean;
+    } | null;
 }
 
 interface PlotLayoutState {
@@ -17,6 +24,7 @@ interface PlotLayoutState {
     setYAxisTitle: (title: string) => void;
     setXRange: (range: [number, number] | null) => void;
     setYRange: (range: [number, number] | null) => void;
+    setHistogramBins: (bins: PlotLayout['histogramBins']) => void;
     loadProject: (plotLayout: PlotLayout) => void;
 }
 
@@ -27,7 +35,8 @@ export const usePlotLayoutStore = create<PlotLayoutState>((set) => ({
         xAxisTitle: '',
         yAxisTitle: '',
         yRange: null,
-        xRange: null
+        xRange: null,
+        histogramBins: null
     },
     setEnableLogAxis: (enableLogAxis) => set((state) => ({
         plotLayout: { ...state.plotLayout, enableLogAxis }
@@ -46,6 +55,9 @@ export const usePlotLayoutStore = create<PlotLayoutState>((set) => ({
     })),
     setYRange: (yRange) => set((state) => ({
         plotLayout: { ...state.plotLayout, yRange }
+    })),
+    setHistogramBins: (histogramBins) => set((state) => ({
+        plotLayout: { ...state.plotLayout, histogramBins }
     })),
     loadProject: (plotLayout) => set({ plotLayout })
 }));

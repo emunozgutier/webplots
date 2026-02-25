@@ -6,8 +6,9 @@ import { useAxisSideMenuStore } from '../../../store/AxisSideMenuStore';
 import { useAppStateStore } from '../../../store/AppStateStore';
 
 const PlotLayout: React.FC = () => {
-    const { plotLayout, setPlotTitle, setXAxisTitle, setYAxisTitle, setXRange, setYRange } = usePlotLayoutStore();
+    const { plotLayout, setPlotTitle, setXAxisTitle, setYAxisTitle, setXRange, setYRange, setHistogramBins } = usePlotLayoutStore();
     const { sideMenuData } = useAxisSideMenuStore();
+    const { plotType } = sideMenuData;
     const { data } = useCsvDataStore();
     const { closePopup } = useAppStateStore();
 
@@ -72,6 +73,14 @@ const PlotLayout: React.FC = () => {
     const [localYMin, setLocalYMin] = useState(plotLayout.yRange ? plotLayout.yRange[0].toString() : yRangeDefaults.min);
     const [localYMax, setLocalYMax] = useState(plotLayout.yRange ? plotLayout.yRange[1].toString() : yRangeDefaults.max);
 
+    // Histogram state
+    const defaultHistBins = plotLayout.histogramBins || { start: 0, end: 100, size: 10, underflow: false, overflow: false };
+    const [localHistStart, setLocalHistStart] = useState(defaultHistBins.start.toString());
+    const [localHistEnd, setLocalHistEnd] = useState(defaultHistBins.end.toString());
+    const [localHistSize, setLocalHistSize] = useState(defaultHistBins.size.toString());
+    const [localHistUnderflow, setLocalHistUnderflow] = useState(defaultHistBins.underflow);
+    const [localHistOverflow, setLocalHistOverflow] = useState(defaultHistBins.overflow);
+
     // Update local state when visibility changes to ensure fresh defaults if data changed
     useEffect(() => {
         setLocalPlotTitle(plotLayout.plotTitle || defaultPlotTitle);
@@ -102,6 +111,22 @@ const PlotLayout: React.FC = () => {
             setYRange([parseFloat(localYMin), parseFloat(localYMax)]);
         } else {
             setYRange(null);
+        }
+
+        if (plotType === 'histogram' && localHistStart !== '' && localHistEnd !== '' && localHistSize !== '' && parseFloat(localHistSize) > 0) {
+            setHistogramBins({
+                start: parseFloat(localHistStart),
+                end: parseFloat(localHistEnd),
+                size: parseFloat(localHistSize),
+                underflow: localHistUnderflow,
+                overflow: localHistOverflow
+            });
+        } else {
+            // Keep existing or set defaults if invalid/removed, maybe don't overwrite if not histogram?
+            // Actually, safe to just update it if valid, else null
+            if (plotType === 'histogram') {
+                setHistogramBins(null);
+            }
         }
 
         closePopup();
@@ -162,6 +187,45 @@ const PlotLayout: React.FC = () => {
                         <input type="number" className="form-control" value={localYMax} onChange={e => setLocalYMax(e.target.value)} placeholder="Auto" />
                     </div>
                 </div>
+
+                {plotType === 'histogram' && (
+                    <>
+                        <hr />
+                        <div className="mb-3">
+                            <label className="form-label small fw-bold">Histogram Bins</label>
+                            <div className="row g-2 mb-2">
+                                <div className="col-4">
+                                    <div className="input-group input-group-sm">
+                                        <span className="input-group-text" title="Bin Start">Start</span>
+                                        <input type="number" className="form-control" value={localHistStart} onChange={e => setLocalHistStart(e.target.value)} />
+                                    </div>
+                                </div>
+                                <div className="col-4">
+                                    <div className="input-group input-group-sm">
+                                        <span className="input-group-text" title="Bin End">End</span>
+                                        <input type="number" className="form-control" value={localHistEnd} onChange={e => setLocalHistEnd(e.target.value)} />
+                                    </div>
+                                </div>
+                                <div className="col-4">
+                                    <div className="input-group input-group-sm">
+                                        <span className="input-group-text" title="Bin Width">Size</span>
+                                        <input type="number" className="form-control" value={localHistSize} onChange={e => setLocalHistSize(e.target.value)} />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="d-flex gap-3">
+                                <div className="form-check form-switch">
+                                    <input className="form-check-input" type="checkbox" id="flexSwitchUnderflow" checked={localHistUnderflow} onChange={e => setLocalHistUnderflow(e.target.checked)} />
+                                    <label className="form-check-label small" htmlFor="flexSwitchUnderflow" title="Put values < start into the first bin">Underflow Bin</label>
+                                </div>
+                                <div className="form-check form-switch">
+                                    <input className="form-check-input" type="checkbox" id="flexSwitchOverflow" checked={localHistOverflow} onChange={e => setLocalHistOverflow(e.target.checked)} />
+                                    <label className="form-check-label small" htmlFor="flexSwitchOverflow" title="Put values > end into the last bin">Overflow Bin</label>
+                                </div>
+                            </div>
+                        </div>
+                    </>
+                )}
             </div>
             <div className="card-footer bg-light d-flex justify-content-end">
                 <button className="btn btn-sm btn-secondary me-2" onClick={closePopup}>Close</button>

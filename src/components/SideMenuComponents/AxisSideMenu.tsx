@@ -13,6 +13,7 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
 
     const {
         sideMenuData,
+        setPlotType,
         setXAxis,
         addYAxisColumn,
         removeYAxisColumn,
@@ -20,7 +21,7 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
     } = useAxisSideMenuStore();
 
     const { setPopupContent } = useAppStateStore();
-    const { xAxis, yAxis, groupAxis } = sideMenuData;
+    const { plotType, xAxis, yAxis, groupAxis } = sideMenuData;
 
     const [dragOverX, setDragOverX] = useState(false);
     const [dragOverY, setDragOverY] = useState(false);
@@ -59,6 +60,15 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
 
     return (
         <div className="d-flex flex-column h-100 overflow-hidden">
+            <div className="p-2 border-bottom text-center">
+                <div className="btn-group w-100" role="group">
+                    <input type="radio" className="btn-check" name="plotType" id="plotScatter" autoComplete="off" checked={plotType === 'scatter'} onChange={() => setPlotType('scatter')} />
+                    <label className="btn btn-outline-primary btn-sm" htmlFor="plotScatter">Scatter</label>
+
+                    <input type="radio" className="btn-check" name="plotType" id="plotHistogram" autoComplete="off" checked={plotType === 'histogram'} onChange={() => setPlotType('histogram')} />
+                    <label className="btn btn-outline-primary btn-sm" htmlFor="plotHistogram">Histogram</label>
+                </div>
+            </div>
             {hasColumns && (
                 <div className="p-2 border-bottom" style={{ flex: '0 1 auto', maxHeight: '50%', minHeight: '150px', display: 'flex', flexDirection: 'column' }}>
                     <div className="d-flex flex-column h-100 overflow-hidden">
@@ -103,25 +113,27 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
                                     </div>
                                 </div>
 
-                                <div className="mb-0">
-                                    <label className="form-label fw-bold small mb-2">X-Axis</label>
-                                    <div
-                                        className={`border rounded p-2 ${dragOverX ? 'bg-info bg-opacity-10 border-info' : 'bg-white'}`}
-                                        onDragOver={(e) => handleDragOver(e, setDragOverX)}
-                                        onDragLeave={(e) => handleDragLeave(e, setDragOverX)}
-                                        onDrop={handleDropX}
-                                        style={{ minHeight: '35px', transition: 'all 0.2s' }}
-                                    >
-                                        {xAxis ? (
-                                            <div className="d-flex justify-content-between align-items-center">
-                                                <span className="badge bg-primary text-truncate mw-100">{xAxis}</span>
-                                                <button className="btn btn-sm btn-link text-danger p-0 ms-1" onClick={() => setXAxis('')}>&times;</button>
-                                            </div>
-                                        ) : (
-                                            <div className="text-muted small fst-italic text-center" style={{ fontSize: '0.8rem' }}>Drag column here</div>
-                                        )}
+                                {plotType !== 'histogram' && (
+                                    <div className="mb-0 mt-3">
+                                        <label className="form-label fw-bold small mb-2">X-Axis</label>
+                                        <div
+                                            className={`border rounded p-2 ${dragOverX ? 'bg-info bg-opacity-10 border-info' : 'bg-white'}`}
+                                            onDragOver={(e) => handleDragOver(e, setDragOverX)}
+                                            onDragLeave={(e) => handleDragLeave(e, setDragOverX)}
+                                            onDrop={handleDropX}
+                                            style={{ minHeight: '35px', transition: 'all 0.2s' }}
+                                        >
+                                            {xAxis ? (
+                                                <div className="d-flex justify-content-between align-items-center">
+                                                    <span className="badge bg-primary text-truncate mw-100">{xAxis}</span>
+                                                    <button className="btn btn-sm btn-link text-danger p-0 ms-1" onClick={() => setXAxis('')}>&times;</button>
+                                                </div>
+                                            ) : (
+                                                <div className="text-muted small fst-italic text-center" style={{ fontSize: '0.8rem' }}>Drag column here</div>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
+                                )}
 
                                 <div className="mb-0 mt-3">
                                     <label className="form-label fw-bold small mb-2">Group Axis <small className="text-muted fw-normal">(Optional)</small></label>

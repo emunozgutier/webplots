@@ -11,6 +11,7 @@ export interface GroupSettings {
 }
 
 export interface AxisSideMenuData {
+    plotType: 'scatter' | 'histogram';
     xAxis: string;
     yAxis: string[];
     groupAxis: string | null;
@@ -19,6 +20,7 @@ export interface AxisSideMenuData {
 
 interface AxisSideMenuState {
     sideMenuData: AxisSideMenuData;
+    setPlotType: (type: 'scatter' | 'histogram') => void;
     setXAxis: (xAxis: string) => void;
     addYAxisColumn: (column: string) => void;
     removeYAxisColumn: (column: string) => void;
@@ -29,11 +31,15 @@ interface AxisSideMenuState {
 
 export const useAxisSideMenuStore = create<AxisSideMenuState>((set) => ({
     sideMenuData: {
+        plotType: 'scatter',
         xAxis: '',
         yAxis: [],
         groupAxis: null,
         groupSettings: {}
     },
+    setPlotType: (plotType) => set((state) => ({
+        sideMenuData: { ...state.sideMenuData, plotType }
+    })),
     setXAxis: (xAxis) => set((state) => ({
         sideMenuData: { ...state.sideMenuData, xAxis }
     })),
@@ -65,14 +71,15 @@ export const useAxisSideMenuStore = create<AxisSideMenuState>((set) => ({
             }
         }
     })),
-    loadProject: (xAxis, yAxis, groupAxis = null, groupSettings = {}) => set(() => ({
-        sideMenuData: { xAxis, yAxis, groupAxis, groupSettings }
+    loadProject: (xAxis, yAxis, groupAxis = null, groupSettings = {}, plotType: 'scatter' | 'histogram' = 'scatter') => set(() => ({
+        sideMenuData: { plotType, xAxis, yAxis, groupAxis, groupSettings }
     }))
 }));
 
 export const createAxisSideMenuConfig = (columns: string[], sideMenuData: AxisSideMenuData) => {
     return {
         columns,
+        plotType: sideMenuData.plotType,
         xAxis: sideMenuData.xAxis,
         yAxis: sideMenuData.yAxis,
         groupAxis: sideMenuData.groupAxis,
