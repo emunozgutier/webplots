@@ -20,9 +20,10 @@ const SYMBOLS = [
 ];
 
 const HistogramBinSettings: React.FC<{ col: string; custom: any; data: any[]; setTraceCustomization: any }> = ({ col, custom, data, setTraceCustomization }) => {
-    React.useEffect(() => {
-        if (!custom.histogramBins && data && data.length > 0) {
-            let min = Infinity, max = -Infinity;
+    // Memoize the data bounds so we can display them and use them for defaults
+    const { dataMin, dataMax } = React.useMemo(() => {
+        let min = Infinity, max = -Infinity;
+        if (data && data.length > 0) {
             data.forEach(row => {
                 const val = parseFloat(String(row[col]));
                 if (!isNaN(val)) {
@@ -30,10 +31,15 @@ const HistogramBinSettings: React.FC<{ col: string; custom: any; data: any[]; se
                     if (val > max) max = val;
                 }
             });
-            if (min === Infinity) { min = 0; max = 100; }
+        }
+        if (min === Infinity) { min = 0; max = 100; }
+        return { dataMin: min, dataMax: max };
+    }, [data, col]);
 
-            const start = Math.floor(min);
-            const end = Math.ceil(max);
+    React.useEffect(() => {
+        if (!custom.histogramBins && data && data.length > 0) {
+            const start = Math.floor(dataMin);
+            const end = Math.ceil(dataMax);
             // Default to ~10 bins
             const size = (end - start) / 10 || 1;
 
@@ -122,12 +128,14 @@ const HistogramBinSettings: React.FC<{ col: string; custom: any; data: any[]; se
                         <span className="input-group-text">Start</span>
                         <input type="number" className="form-control" value={Number(bins.start.toFixed(2))} onChange={e => updateBin('start', parseFloat(e.target.value))} />
                     </div>
+                    <div className="text-muted text-start ps-1 mt-1" style={{ fontSize: '0.65rem' }}>Data Min: {dataMin.toFixed(2)}</div>
                 </div>
                 <div className="col-4">
                     <div className="input-group input-group-sm">
                         <span className="input-group-text">End</span>
                         <input type="number" className="form-control" value={Number(bins.end.toFixed(2))} onChange={e => updateBin('end', parseFloat(e.target.value))} />
                     </div>
+                    <div className="text-muted text-start ps-1 mt-1" style={{ fontSize: '0.65rem' }}>Data Max: {dataMax.toFixed(2)}</div>
                 </div>
                 {currentMode === 'width' ? (
                     <div className="col-4">
