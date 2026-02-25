@@ -379,14 +379,14 @@ export const generatePlotConfig = (
         xaxis: {
             title: { text: xAxisTitle || (plotType === 'histogram' ? 'Value' : xAxis) },
             type: enableLogAxis ? 'log' : 'linear',
-            range: xRange || undefined,
-            autorange: !xRange
+            range: plotType === 'histogram' ? undefined : (xRange || undefined),
+            autorange: plotType === 'histogram' ? true : !xRange
         },
         yaxis: {
             title: { text: yAxisTitle || (yAxis.length === 1 ? yAxis[0] : 'Values') },
             type: enableLogAxis ? 'log' : 'linear',
-            range: yRange || undefined,
-            autorange: !yRange
+            range: plotType === 'histogram' ? undefined : (yRange || undefined),
+            autorange: plotType === 'histogram' ? true : !yRange
         },
         autosize: true,
         margin: { l: 50, r: 50, b: 50, t: 50 },

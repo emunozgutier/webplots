@@ -140,27 +140,49 @@ const PlotLayout: React.FC = () => {
                 <div className="mb-2">
                     <div className="d-flex justify-content-between align-items-center mb-1">
                         <label className="form-label small fw-bold mb-0">X-Axis Range</label>
-                        <button className="btn btn-xs btn-outline-secondary py-0" style={{ fontSize: '0.7rem' }} onClick={handleAutoX}>Auto</button>
+                        <button
+                            className="btn btn-xs btn-outline-secondary py-0"
+                            style={{ fontSize: '0.7rem' }}
+                            onClick={handleAutoX}
+                            disabled={sideMenuData.plotType === 'histogram'}
+                        >
+                            Auto
+                        </button>
                     </div>
-                    <div className="input-group input-group-sm">
-                        <span className="input-group-text">Min</span>
-                        <input type="number" className="form-control" value={localXMin} onChange={e => setLocalXMin(e.target.value)} placeholder="Auto" />
-                        <span className="input-group-text">Max</span>
-                        <input type="number" className="form-control" value={localXMax} onChange={e => setLocalXMax(e.target.value)} placeholder="Auto" />
-                    </div>
+                    {sideMenuData.plotType === 'histogram' ? (
+                        <div className="text-muted small fst-italic">Range handles automatically via Trace Bins</div>
+                    ) : (
+                        <div className="input-group input-group-sm">
+                            <span className="input-group-text">Min</span>
+                            <input type="number" className="form-control" value={localXMin} onChange={e => setLocalXMin(e.target.value)} placeholder="Auto" />
+                            <span className="input-group-text">Max</span>
+                            <input type="number" className="form-control" value={localXMax} onChange={e => setLocalXMax(e.target.value)} placeholder="Auto" />
+                        </div>
+                    )}
                 </div>
 
                 <div className="mb-3">
                     <div className="d-flex justify-content-between align-items-center mb-1">
                         <label className="form-label small fw-bold mb-0">Y-Axis Range</label>
-                        <button className="btn btn-xs btn-outline-secondary py-0" style={{ fontSize: '0.7rem' }} onClick={handleAutoY}>Auto</button>
+                        <button
+                            className="btn btn-xs btn-outline-secondary py-0"
+                            style={{ fontSize: '0.7rem' }}
+                            onClick={handleAutoY}
+                            disabled={sideMenuData.plotType === 'histogram'}
+                        >
+                            Auto
+                        </button>
                     </div>
-                    <div className="input-group input-group-sm">
-                        <span className="input-group-text">Min</span>
-                        <input type="number" className="form-control" value={localYMin} onChange={e => setLocalYMin(e.target.value)} placeholder="Auto" />
-                        <span className="input-group-text">Max</span>
-                        <input type="number" className="form-control" value={localYMax} onChange={e => setLocalYMax(e.target.value)} placeholder="Auto" />
-                    </div>
+                    {sideMenuData.plotType === 'histogram' ? (
+                        <div className="text-muted small fst-italic">Range scales automatically based on data density</div>
+                    ) : (
+                        <div className="input-group input-group-sm">
+                            <span className="input-group-text">Min</span>
+                            <input type="number" className="form-control" value={localYMin} onChange={e => setLocalYMin(e.target.value)} placeholder="Auto" />
+                            <span className="input-group-text">Max</span>
+                            <input type="number" className="form-control" value={localYMax} onChange={e => setLocalYMax(e.target.value)} placeholder="Auto" />
+                        </div>
+                    )}
                 </div>
             </div>
             <div className="card-footer bg-light d-flex justify-content-end">
