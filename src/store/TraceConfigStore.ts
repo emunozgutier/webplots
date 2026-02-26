@@ -20,6 +20,7 @@ export interface TraceConfig {
     }>;
     colorPalette: string;
     currentPaletteColors: string[];
+    activeTraces: { fullTraceName: string; yCol: string; groupName: string }[];
 }
 
 interface TraceConfigState {
@@ -36,6 +37,7 @@ interface TraceConfigState {
     setPaletteColorOrder: (colors: string[]) => void;
     updatePaletteColor: (index: number, color: string) => void;
     loadTraceConfig: (config: TraceConfig) => void;
+    setActiveTraces: (traces: { fullTraceName: string; yCol: string; groupName: string }[]) => void;
 }
 
 const DEFAULT_PALETTE = 'Default';
@@ -44,7 +46,8 @@ export const useTraceConfigStore = create<TraceConfigState>((set) => ({
     traceConfig: {
         traceCustomizations: {},
         colorPalette: DEFAULT_PALETTE,
-        currentPaletteColors: [...(COLOR_PALETTES[DEFAULT_PALETTE] || [])]
+        currentPaletteColors: [...(COLOR_PALETTES[DEFAULT_PALETTE] || [])],
+        activeTraces: [],
     },
     setTraceCustomization: (columnName, settings) => set((state) => ({
         traceConfig: {
@@ -74,5 +77,6 @@ export const useTraceConfigStore = create<TraceConfigState>((set) => ({
             traceConfig: { ...state.traceConfig, currentPaletteColors: newColors }
         };
     }),
-    loadTraceConfig: (config) => set({ traceConfig: config })
+    loadTraceConfig: (config) => set({ traceConfig: config }),
+    setActiveTraces: (traces) => set((state) => ({ traceConfig: { ...state.traceConfig, activeTraces: traces } }))
 }));

@@ -514,6 +514,11 @@ export const generatePlotConfig = (
         layout,
         hasData: true,
         stats,
-        receipt
+        receipt,
+        generatedTraces: generatedTraces.map(t => ({
+            fullTraceName: t.fullTraceName,
+            yCol: t.yCol,
+            groupName: t.groupName
+        }))
     };
 };

@@ -10,6 +10,7 @@ import { generatePlotConfig } from '../utils/PlotlyHelpers';
 import ControllerButtons from './PlotAreaComponents/ControllerButtons';
 import Settings from './PlotAreaComponents/Settings';
 import Debug from './PlotAreaComponents/Debug';
+import PopupMenu from './PopupMenu';
 
 import { useFilteredData } from '../hooks/useFilteredData';
 
@@ -18,11 +19,11 @@ const PlotArea: React.FC = () => {
     const { sideMenuData } = useAxisSideMenuStore();
     const { isSideMenuOpen } = useAppStateStore();
     const { plotLayout } = usePlotLayoutStore();
-    const { traceConfig } = useTraceConfigStore();
+    const { traceConfig, setActiveTraces } = useTraceConfigStore();
     const { inkRatio, setFilteredStats, chartWidth, chartHeight, pointRadius, setChartDimensions, useCustomRadius, customRadius } = useInkRatioStore();
     const containerRef = React.useRef<HTMLDivElement>(null);
 
-    const { plotData, layout, hasData, receipt, stats } = useMemo(
+    const { plotData, layout, hasData, receipt, stats, generatedTraces } = useMemo(
         () => generatePlotConfig(data, sideMenuData, plotLayout, traceConfig, inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius),
         [data, sideMenuData, plotLayout, traceConfig, inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius]
     );
@@ -33,6 +34,13 @@ const PlotArea: React.FC = () => {
             setFilteredStats(stats);
         }
     }, [stats, setFilteredStats]);
+
+    // Update active traces in store for settings panels
+    React.useEffect(() => {
+        if (generatedTraces) {
+            setActiveTraces(generatedTraces);
+        }
+    }, [generatedTraces, setActiveTraces]);
 
     // Force Plotly resize when side menu toggles
     React.useEffect(() => {
@@ -76,6 +84,7 @@ const PlotArea: React.FC = () => {
 
     return (
         <div className="flex-grow-1 p-4 d-flex flex-column position-relative" style={{ minWidth: 0 }}>
+            <PopupMenu />
             <div className="card shadow-sm flex-grow-1 mb-3">
                 <div className="card-header bg-white d-flex justify-content-end align-items-center py-2">
                     <ControllerButtons onOpenSettings={handleOpenSettings} onOpenDebug={handleOpenDebug} />

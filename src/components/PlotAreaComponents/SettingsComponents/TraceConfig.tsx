@@ -207,18 +207,20 @@ const TraceConfig: React.FC = () => {
     const { closePopup } = useAppStateStore();
     const { data } = useCsvDataStore();
 
-    // Manage active tab locally
-    const [activeTab, setActiveTab] = useState<string>(sideMenuData.yAxis[0] || '');
+    const activeTraces = traceConfig.activeTraces || [];
 
-    // If active tab is not in yAxis anymore, reset to first
+    // Manage active tab locally
+    const [activeTab, setActiveTab] = useState<string>(activeTraces[0]?.fullTraceName || '');
+
+    // If active tab is not in activeTraces anymore, reset to first
     React.useEffect(() => {
-        if (sideMenuData.yAxis.length > 0 && !sideMenuData.yAxis.includes(activeTab)) {
-            setActiveTab(sideMenuData.yAxis[0]);
+        if (activeTraces.length > 0 && !activeTraces.find(t => t.fullTraceName === activeTab)) {
+            setActiveTab(activeTraces[0].fullTraceName);
         }
-    }, [sideMenuData.yAxis, activeTab]);
+    }, [activeTraces, activeTab]);
 
     const currentColors = traceConfig.currentPaletteColors || [];
-    const activeTraceCount = sideMenuData.yAxis.length;
+    const activeTraceCount = activeTraces.length;
 
     const handleTraceChange = (column: string, field: 'displayName' | 'color', value: string) => {
         setTraceCustomization(column, { [field]: value });
