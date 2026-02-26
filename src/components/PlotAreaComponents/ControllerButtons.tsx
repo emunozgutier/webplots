@@ -25,7 +25,7 @@ const ControllerButtons: React.FC<ControllerButtonsProps> = ({ onOpenSettings, o
 <!DOCTYPE html>
 <html>
 <head>
-    <title>${layout.title?.text || 'Plot'}</title>
+    <title>${((layout as any).title?.text || 'Plot')}</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>

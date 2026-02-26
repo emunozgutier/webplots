@@ -29,16 +29,22 @@ const PlotArea: React.FC = () => {
     );
 
     // Update stats in store
+    const prevStatsRef = React.useRef<string | null>(null);
     React.useEffect(() => {
-        if (stats) {
+        const statsStr = JSON.stringify(stats);
+        if (stats && statsStr !== prevStatsRef.current) {
             setFilteredStats(stats);
+            prevStatsRef.current = statsStr;
         }
     }, [stats, setFilteredStats]);
 
     // Update active traces in store for settings panels
+    const prevTracesRef = React.useRef<string | null>(null);
     React.useEffect(() => {
-        if (generatedTraces) {
+        const tracesStr = JSON.stringify(generatedTraces);
+        if (generatedTraces && tracesStr !== prevTracesRef.current) {
             setActiveTraces(generatedTraces);
+            prevTracesRef.current = tracesStr;
         }
     }, [generatedTraces, setActiveTraces]);
 

@@ -336,19 +336,28 @@ const TraceConfig: React.FC = () => {
                 <hr />
 
                 {/* Individual Trace Configuration Tabs */}
-                {sideMenuData.yAxis.length === 0 ? (
+                {activeTraces.length === 0 ? (
                     <div className="text-center text-muted p-4">No active traces selected.</div>
                 ) : (
                     <Tabs activeKey={activeTab} onSelect={(k) => k && setActiveTab(k)} className="mb-3 small">
-                        {sideMenuData.yAxis.map((col, index) => (
-                            <Tab key={col} eventKey={col} title={<span className="text-truncate d-inline-block" style={{ maxWidth: '100px' }}>{`Trace #${index + 1}`}</span>}>
+                        {activeTraces.map((trace, index) => (
+                            <Tab key={trace.fullTraceName} eventKey={trace.fullTraceName} title={<span className="text-truncate d-inline-block" style={{ maxWidth: '100px' }}>{trace.groupName ? `Trace #${index + 1} (${trace.groupName})` : `Trace #${index + 1}`}</span>}>
                                 {(() => {
-                                    const idx = sideMenuData.yAxis.indexOf(col);
-                                    const custom = traceConfig.traceCustomizations?.[col] || {};
-                                    const assignedColor = currentColors[idx % currentColors.length] || '#000000';
-                                    const effectiveColor = custom.color || assignedColor;
-                                    const currentMode = custom.mode || 'lines';
-                                    const currentSymbol = custom.symbol || 'circle';
+                                    // Exact customization holds specific overrides (like color, explicit name override)
+                                    const exactCustomization = traceConfig.traceCustomizations?.[trace.fullTraceName] || {};
+                                    // Col customization holds shared parent state, esp histogram bins!
+                                    const colCustomization = traceConfig.traceCustomizations?.[trace.yCol] || {};
+
+                                    const assignedColor = currentColors[index % currentColors.length] || '#000000';
+                                    const effectiveColor = exactCustomization.color || assignedColor;
+                                    const currentMode = exactCustomization.mode || colCustomization.mode || 'lines';
+                                    const currentSymbol = exactCustomization.symbol || colCustomization.symbol || 'circle';
+
+                                    // Display name resolution logic mimicking PlotlyHelpers: exact > col + group > default
+                                    let displayName = exactCustomization.displayName || '';
+                                    if (!exactCustomization.displayName && colCustomization.displayName && trace.groupName) {
+                                        displayName = `${colCustomization.displayName} (${trace.groupName})`;
+                                    }
 
                                     return (
                                         <div className="p-2">
@@ -358,9 +367,9 @@ const TraceConfig: React.FC = () => {
                                                 <input
                                                     type="text"
                                                     className="form-control form-control-sm"
-                                                    value={custom.displayName || ''}
-                                                    placeholder={col}
-                                                    onChange={(e) => handleTraceChange(col, 'displayName', e.target.value)}
+                                                    value={displayName}
+                                                    placeholder={trace.fullTraceName}
+                                                    onChange={(e) => handleTraceChange(trace.fullTraceName, 'displayName', e.target.value)}
                                                 />
                                             </div>
 
@@ -373,7 +382,7 @@ const TraceConfig: React.FC = () => {
                                                             type="color"
                                                             className="form-control form-control-color form-control-sm me-2"
                                                             value={effectiveColor}
-                                                            onChange={(e) => handleTraceChange(col, 'color', e.target.value)}
+                                                            onChange={(e) => handleTraceChange(trace.fullTraceName, 'color', e.target.value)}
                                                             title="Override Color"
                                                         />
                                                         <span className="small text-muted">{effectiveColor}</span>
@@ -384,24 +393,24 @@ const TraceConfig: React.FC = () => {
                                                         <label className="form-label small fw-bold">Trace Type</label>
                                                         <ButtonGroup size="sm" className="w-100">
                                                             <ToggleButton
-                                                                id={`mode-line-${col}`}
+                                                                id={`mode-line-${trace.fullTraceName}`}
                                                                 type="radio"
                                                                 variant="outline-secondary"
-                                                                name={`mode-${col}`}
+                                                                name={`mode-${trace.fullTraceName}`}
                                                                 value="lines"
                                                                 checked={currentMode === 'lines'}
-                                                                onChange={() => handleModeChange(col, 'lines')}
+                                                                onChange={() => handleModeChange(trace.fullTraceName, 'lines')}
                                                             >
                                                                 Line
                                                             </ToggleButton>
                                                             <ToggleButton
-                                                                id={`mode-markers-${col}`}
+                                                                id={`mode-markers-${trace.fullTraceName}`}
                                                                 type="radio"
                                                                 variant="outline-secondary"
-                                                                name={`mode-${col}`}
+                                                                name={`mode-${trace.fullTraceName}`}
                                                                 value="markers"
                                                                 checked={currentMode === 'markers'}
-                                                                onChange={() => handleModeChange(col, 'markers')}
+                                                                onChange={() => handleModeChange(trace.fullTraceName, 'markers')}
                                                             >
                                                                 Scatter
                                                             </ToggleButton>
@@ -420,7 +429,7 @@ const TraceConfig: React.FC = () => {
                                                                 key={s.id}
                                                                 className={`btn btn-sm ${currentSymbol === s.id ? 'btn-primary' : 'btn-outline-secondary'} d-flex align-items-center justify-content-center`}
                                                                 style={{ width: '36px', height: '36px' }}
-                                                                onClick={() => handleSymbolChange(col, s.id)}
+                                                                onClick={() => handleSymbolChange(trace.fullTraceName, s.id)}
                                                                 title={s.label}
                                                             >
                                                                 <i className={`bi ${s.icon}`}></i>
@@ -430,12 +439,12 @@ const TraceConfig: React.FC = () => {
                                                 </div>
                                             )}
 
-                                            {/* Size Slider (Only for markers or lines+markers if symbol selected) */}
-                                            {sideMenuData.plotType !== 'histogram' && (currentMode === 'markers' || custom.symbol) && (
+                                            {/* Size Slider */}
+                                            {sideMenuData.plotType !== 'histogram' && (currentMode === 'markers' || exactCustomization.symbol || colCustomization.symbol) && (
                                                 <div className="mb-3">
                                                     <label className="form-label small fw-bold d-flex justify-content-between">
                                                         <span>Marker Size</span>
-                                                        <span className="text-muted">{custom.size || 8}px</span>
+                                                        <span className="text-muted">{exactCustomization.size || colCustomization.size || 8}px</span>
                                                     </label>
                                                     <input
                                                         type="range"
@@ -443,15 +452,20 @@ const TraceConfig: React.FC = () => {
                                                         min="4"
                                                         max="20"
                                                         step="1"
-                                                        value={custom.size || 8}
-                                                        onChange={(e) => handleSizeChange(col, parseInt(e.target.value))}
+                                                        value={exactCustomization.size || colCustomization.size || 8}
+                                                        onChange={(e) => handleSizeChange(trace.fullTraceName, parseInt(e.target.value))}
                                                     />
                                                 </div>
                                             )}
 
                                             {/* Histogram Bins (Only for Histogram plot type) */}
                                             {sideMenuData.plotType === 'histogram' && (
-                                                <HistogramBinSettings col={col} custom={custom} data={data} setTraceCustomization={setTraceCustomization} />
+                                                <HistogramBinSettings
+                                                    col={trace.yCol}
+                                                    custom={colCustomization}
+                                                    data={data}
+                                                    setTraceCustomization={setTraceCustomization}
+                                                />
                                             )}
                                         </div>
                                     );
