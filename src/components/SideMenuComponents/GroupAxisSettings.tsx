@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAxisSideMenuStore } from '../../store/AxisSideMenuStore';
 import type { GroupSettings } from '../../store/AxisSideMenuStore';
 import { useAppStateStore } from '../../store/AppStateStore';
+import { useCsvDataStore } from '../../store/CsvDataStore';
+import Plot from 'react-plotly.js';
 import { v4 as uuidv4 } from 'uuid';
 
 interface GroupAxisSettingsProps {
@@ -11,19 +13,63 @@ interface GroupAxisSettingsProps {
 const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
     const { sideMenuData, setGroupSettings } = useAxisSideMenuStore();
     const { closePopup } = useAppStateStore();
+    const { data } = useCsvDataStore();
+
     const [localSettings, setLocalSettings] = useState<GroupSettings>({
         mode: 'auto',
         bins: []
     });
 
+    // Extract numeric column data for preview
+    const { numericData, dataMin, dataMax } = React.useMemo(() => {
+        if (!data || data.length === 0) return { numericData: [], dataMin: 0, dataMax: 100 };
+        const nums: number[] = [];
+        let min = Infinity, max = -Infinity;
+        data.forEach(row => {
+            const val = parseFloat(String(row[column]));
+            if (!isNaN(val)) {
+                nums.push(val);
+                if (val < min) min = val;
+                if (val > max) max = val;
+            }
+        });
+        if (min === Infinity) { min = 0; max = 100; }
+        return { numericData: nums, dataMin: min, dataMax: max };
+    }, [data, column]);
+
     useEffect(() => {
         if (sideMenuData.groupSettings && sideMenuData.groupSettings[column]) {
-            setLocalSettings(sideMenuData.groupSettings[column]);
+            const saved = sideMenuData.groupSettings[column];
+            if (saved.mode === 'manual' && saved.bins.length === 0) {
+                setLocalSettings({ mode: 'manual', bins: generateDefaultBins(dataMin, dataMax) });
+            } else {
+                setLocalSettings(saved);
+            }
         } else {
-            // Default
+            // Default: auto
             setLocalSettings({ mode: 'auto', bins: [] });
         }
-    }, [column, sideMenuData.groupSettings]);
+    }, [column, sideMenuData.groupSettings, dataMin, dataMax]);
+
+    // Used when toggling explicitly to manual
+    const handleModeToggle = (mode: 'auto' | 'manual') => {
+        setLocalSettings(prev => {
+            if (mode === 'manual' && prev.bins.length === 0) {
+                return { mode: 'manual', bins: generateDefaultBins(dataMin, dataMax) };
+            }
+            return { ...prev, mode };
+        });
+    };
+
+    const generateDefaultBins = (min: number, max: number): GroupSettings['bins'] => {
+        const step = (max - min) / 4;
+        return [
+            { id: uuidv4(), label: `Bin 1`, operator: '<', value: min + step },
+            { id: uuidv4(), label: `Bin 2`, operator: '<', value: min + step * 2 },
+            { id: uuidv4(), label: `Bin 3`, operator: '<', value: min + step * 3 },
+            { id: uuidv4(), label: `Bin 4`, operator: '>=', value: min + step * 3 },
+        ];
+    };
 
     const handleSave = () => {
         setGroupSettings(column, localSettings);
@@ -68,14 +114,14 @@ const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
                         <button
                             type="button"
                             className={`btn ${localSettings.mode === 'auto' ? 'btn-primary' : 'btn-outline-primary'}`}
-                            onClick={() => setLocalSettings(prev => ({ ...prev, mode: 'auto' }))}
+                            onClick={() => handleModeToggle('auto')}
                         >
                             Auto (Unique Values)
                         </button>
                         <button
                             type="button"
                             className={`btn ${localSettings.mode === 'manual' ? 'btn-primary' : 'btn-outline-primary'}`}
-                            onClick={() => setLocalSettings(prev => ({ ...prev, mode: 'manual' }))}
+                            onClick={() => handleModeToggle('manual')}
                         >
                             Manual (Bins)
                         </button>
@@ -92,6 +138,39 @@ const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
                         <div className="d-flex justify-content-between align-items-center mb-2">
                             <label className="form-label fw-bold mb-0">Bins</label>
                             <button className="btn btn-sm btn-success" onClick={addBin}>+ Add Bin</button>
+                        </div>
+
+                        <div className="mb-3 border rounded p-1 bg-white" style={{ height: '120px' }}>
+                            <Plot
+                                data={[
+                                    {
+                                        x: numericData,
+                                        type: 'histogram',
+                                        marker: { color: '#0d6efd', opacity: 0.6 }
+                                    }
+                                ]}
+                                layout={{
+                                    margin: { t: 5, r: 5, b: 20, l: 30 },
+                                    height: 110,
+                                    xaxis: { fixedrange: true },
+                                    yaxis: { fixedrange: true, showticklabels: false, visible: false },
+                                    paper_bgcolor: 'transparent',
+                                    plot_bgcolor: 'transparent',
+                                    shapes: localSettings.bins
+                                        .filter(b => b.operator !== '==' && b.operator !== '!=')
+                                        .map(b => ({
+                                            type: 'line',
+                                            x0: b.value,
+                                            x1: b.value,
+                                            y0: 0,
+                                            y1: 1,
+                                            yref: 'paper',
+                                            line: { color: 'red', width: 2, dash: 'dot' }
+                                        }))
+                                }}
+                                config={{ displayModeBar: false }}
+                                style={{ width: '100%', height: '100%' }}
+                            />
                         </div>
 
                         {localSettings.bins.length === 0 ? (
