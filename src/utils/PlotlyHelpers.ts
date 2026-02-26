@@ -275,8 +275,25 @@ export const generatePlotConfig = (
 
     // Create Plotly traces
     const plotData: Data[] = generatedTraces.map((traceInfo, index) => {
-        const { fullTraceName, xData, yData } = traceInfo;
-        const customization = traceCustomizations?.[fullTraceName] || {};
+        const { fullTraceName, yCol, groupName, xData, yData } = traceInfo;
+
+        // Inherit configurations: exact name overrides > parent column overrides > defaults
+        const colCustomization = traceCustomizations?.[yCol] || {};
+        const exactCustomization = traceCustomizations?.[fullTraceName] || {};
+
+        // Merge settings
+        const customization = { ...colCustomization, ...exactCustomization };
+
+        // Subgroups should use default color scale unless exactly specified, 
+        // otherwise all subgroups of 'Price' will share the exact same 'Price' color
+        customization.color = exactCustomization.color || undefined;
+
+        // Resolve final display name
+        let finalName = exactCustomization.displayName || fullTraceName;
+        if (!exactCustomization.displayName && colCustomization.displayName && groupName) {
+            finalName = `${colCustomization.displayName} (${groupName})`;
+        }
+
         const baseColor = getColor(index);
 
         // Default mode is 'lines' unless specified
@@ -324,7 +341,8 @@ export const generatePlotConfig = (
             const histTrace: any = {
                 x: processedYData, // In Plotly histogram, providing `x` creates vertical bars for that distribution
                 type: 'histogram',
-                name: customization.displayName || fullTraceName,
+                name: finalName,
+                opacity: generatedTraces.length > 1 ? 0.7 : 1,
                 marker: {
                     color: customization.color || baseColor,
                 }
@@ -361,7 +379,7 @@ export const generatePlotConfig = (
             y: finalY,
             mode: mode,
             type: 'scatter',
-            name: customization.displayName || fullTraceName,
+            name: finalName,
             line: {
                 color: customization.color || baseColor,
                 // If dot is selected, maybe we want a dotted line too? 
@@ -390,7 +408,8 @@ export const generatePlotConfig = (
         },
         autosize: true,
         margin: { l: 50, r: 50, b: 50, t: 50 },
-        showlegend: generatedTraces.length > 1
+        showlegend: generatedTraces.length > 1,
+        barmode: plotType === 'histogram' ? 'overlay' : undefined
     };
 
     // Generate Receipt
@@ -408,12 +427,21 @@ export const generatePlotConfig = (
 
     // Traces
     const tracesReceipt = generatedTraces.map((traceInfo, index) => {
-        const { fullTraceName } = traceInfo;
+        const { fullTraceName, yCol, groupName } = traceInfo;
         const traceVar = `trace${index + 1}`;
-        const customization = traceCustomizations?.[fullTraceName] || {};
+
+        const colCustomization = traceCustomizations?.[yCol] || {};
+        const exactCustomization = traceCustomizations?.[fullTraceName] || {};
+        const customization = { ...colCustomization, ...exactCustomization };
+        customization.color = exactCustomization.color || undefined;
+
+        let finalName = exactCustomization.displayName || fullTraceName;
+        if (!exactCustomization.displayName && colCustomization.displayName && groupName) {
+            finalName = `${colCustomization.displayName} (${groupName})`;
+        }
+
         const baseColor = getColor(index);
         const finalColor = customization.color || baseColor;
-        const finalName = customization.displayName || fullTraceName;
         const finalSize = customization.size || 8;
 
         let mode = customization.mode || 'lines';
@@ -438,6 +466,7 @@ export const generatePlotConfig = (
   // x: ..., // Histogram data mapped from yAxis
   type: 'histogram',
   name: '${finalName}',
+  opacity: ${generatedTraces.length > 1 ? 0.7 : 1},
   marker: { color: '${finalColor}' }`;
             const traceBins = customization.histogramBins;
             if (traceBins) {
