@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 
 import { useAxisSideMenuStore } from '../../store/AxisSideMenuStore';
-import { useAppStateStore } from '../../store/AppStateStore';
-import { useCsvDataStore } from '../../store/CsvDataStore';
+// Removed useAppStateStore
+
 import SearchColumn from './SearchColumn';
-import GroupAxisSettings from './GroupAxisSettings';
 
 interface AxisSideMenuProps {
     hasColumns: boolean;
@@ -17,16 +16,13 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
         setPlotType,
         setXAxis,
         addYAxisColumn,
-        removeYAxisColumn,
-        setGroupAxis
+        removeYAxisColumn
     } = useAxisSideMenuStore();
 
-    const { setPopupContent } = useAppStateStore();
-    const { plotType, xAxis, yAxis, groupAxis } = sideMenuData;
+    const { plotType, xAxis, yAxis } = sideMenuData;
 
     const [dragOverX, setDragOverX] = useState(false);
     const [dragOverY, setDragOverY] = useState(false);
-    const [dragOverGroup, setDragOverGroup] = useState(false);
 
     const handleDragOver = (e: React.DragEvent<HTMLDivElement>, setDragOver: (val: boolean) => void) => {
         e.preventDefault();
@@ -50,32 +46,6 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
         setDragOverY(false);
         const colName = e.dataTransfer.getData('text/plain');
         if (colName) addYAxisColumn(colName);
-    };
-
-    const { data } = useCsvDataStore();
-
-    const handleDropGroup = (e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        setDragOverGroup(false);
-        const colName = e.dataTransfer.getData('text/plain');
-        if (!colName) return;
-
-        // Check unique values
-        const uniqueValues = new Set(data.map((row: any) => row[colName])).size;
-
-        if (uniqueValues > 8) {
-            const confirmBin = window.confirm(
-                `The column "${colName}" has ${uniqueValues} unique values. This will create many traces and might slow down the plot. Would you like to bin these values?`
-            );
-
-            if (confirmBin) {
-                setGroupAxis(colName);
-                setPopupContent(<GroupAxisSettings column={colName} />);
-                return;
-            }
-        }
-
-        setGroupAxis(colName);
     };
 
     return (
@@ -154,44 +124,6 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
                                         </div>
                                     </div>
                                 )}
-
-                                <div className="mb-0 mt-3">
-                                    <label className="form-label fw-bold small mb-2 d-flex align-items-center">
-                                        Group Axis
-                                        <small className="text-muted fw-normal ms-1">(Optional)</small>
-                                        <span
-                                            className="ms-2 badge rounded-pill bg-light text-dark border cursor-help"
-                                            style={{ cursor: 'help', fontSize: '0.7rem' }}
-                                            title="It creates subtraces (or groups) based on other columns. Like Temp (hot or cold) or Voltage (max or min) OR both for 4 subtraces/groups"
-                                        >
-                                            ?
-                                        </span>
-                                    </label>
-                                    <div
-                                        className={`border rounded p-2 ${dragOverGroup ? 'bg-info bg-opacity-10 border-info' : 'bg-white'}`}
-                                        onDragOver={(e) => handleDragOver(e, setDragOverGroup)}
-                                        onDragLeave={(e) => handleDragLeave(e, setDragOverGroup)}
-                                        onDrop={handleDropGroup}
-                                        style={{ minHeight: '35px', transition: 'all 0.2s' }}
-                                    >
-                                        {groupAxis ? (
-                                            <div className="d-flex justify-content-between align-items-center">
-                                                <span
-                                                    className="badge bg-warning text-dark text-truncate mw-100 cursor-pointer user-select-none"
-                                                    onClick={() => setPopupContent(<GroupAxisSettings column={groupAxis} />)}
-                                                    style={{ cursor: 'pointer' }}
-                                                    title="Click to configure grouping"
-                                                >
-                                                    {groupAxis}
-                                                    <small className="ms-1 opacity-50">⚙️</small>
-                                                </span>
-                                                <button className="btn btn-sm btn-link text-danger p-0 ms-1" onClick={() => setGroupAxis(null)}>&times;</button>
-                                            </div>
-                                        ) : (
-                                            <div className="text-muted small fst-italic text-center" style={{ fontSize: '0.8rem' }}>Drag column here</div>
-                                        )}
-                                    </div>
-                                </div>
                             </>
                         ) : (
                             <p className="text-muted small mb-0">Please load data first.</p>
