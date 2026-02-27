@@ -2,7 +2,7 @@ import React from 'react';
 import { useInkRatioStore } from '../../../store/InkRatioStore';
 
 const InkRatioAnimation: React.FC = () => {
-    const { inkRatio } = useInkRatioStore();
+    const { inkRatio, absorptionMode } = useInkRatioStore();
 
     const R = 24; // Twice as big as previous (12)
     const overlapNA = inkRatio * 100 - 10;
@@ -25,6 +25,16 @@ const InkRatioAnimation: React.FC = () => {
                         50%  { transform: translateX(-${distanceA}px); }
                         100% { transform: translateX(0px); }
                     }
+                    @keyframes pulseSize {
+                        0%, 40%   { transform: scale(1); transform-origin: ${fixedLeftCx}px ${cyCenter}px; }
+                        50%       { transform: scale(1.4); transform-origin: ${fixedLeftCx}px ${cyCenter}px; }
+                        60%, 100% { transform: scale(1); transform-origin: ${fixedLeftCx}px ${cyCenter}px; }
+                    }
+                    @keyframes pulseGlow {
+                        0%, 40%   { r: ${R}; opacity: 0.8; }
+                        50%       { r: ${R * 1.8}; opacity: 0; }
+                        60%, 100% { r: ${R}; opacity: 0; }
+                    }
                 `}
             </style>
 
@@ -35,10 +45,20 @@ const InkRatioAnimation: React.FC = () => {
                         <div className="mb-2 w-100">
                             <svg viewBox="0 0 160 80" style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
                                 <g>
+                                    {/* Sub-circle for glowing effect (only active on Glow mode) */}
+                                    {absorptionMode === 'glow' && (
+                                        <circle
+                                            cx={fixedLeftCx} cy={cyCenter} r={R}
+                                            fill="#dc3545" opacity="0"
+                                            style={{ animation: 'pulseGlow 3s infinite ease-in-out' }}
+                                        />
+                                    )}
+
                                     {/* Stationary Target Point */}
                                     <circle
                                         cx={fixedLeftCx} cy={cyCenter} r={R}
                                         fill="#dc3545" opacity="0.8"
+                                        style={{ animation: absorptionMode === 'size' ? 'pulseSize 3s infinite ease-in-out' : 'none' }}
                                     />
                                     {/* Dashed Outline left behind at original position */}
                                     <circle

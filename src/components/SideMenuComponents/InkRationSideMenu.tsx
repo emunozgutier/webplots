@@ -4,7 +4,7 @@ import { useTraceConfigStore } from '../../store/TraceConfigStore';
 import InkRatioAnimation from './subcomponents/InkRatioAnimation';
 
 const InkRationSideMenu: React.FC = () => {
-    const { inkRatio, setInkRatio, filteredStats } = useInkRatioStore();
+    const { inkRatio, setInkRatio, filteredStats, absorptionMode, setAbsorptionMode } = useInkRatioStore();
     const { traceConfig } = useTraceConfigStore();
     const { traceCustomizations } = traceConfig;
 
@@ -21,6 +21,21 @@ const InkRationSideMenu: React.FC = () => {
     return (
         <div className="p-3">            {/* Visualization */}
             <InkRatioAnimation />
+
+            <div className="mb-4">
+                <label className="form-label d-flex justify-content-between">
+                    <span>Absorption Behavior</span>
+                </label>
+                <select
+                    className="form-select form-select-sm"
+                    value={absorptionMode}
+                    onChange={(e) => setAbsorptionMode(e.target.value as any)}
+                >
+                    <option value="none">Nothing</option>
+                    <option value="size">Increase Point Size</option>
+                    <option value="glow">Grow its Glow</option>
+                </select>
+            </div>
 
             <div className="mb-4">
                 <label className="form-label d-flex justify-content-between">

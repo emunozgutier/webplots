@@ -10,6 +10,9 @@ interface InkRatioState {
     // Custom limit
     useCustomRadius: boolean;
     customRadius: number;
+    absorptionMode: 'none' | 'size' | 'glow';
+    setAbsorptionMode: (mode: 'none' | 'size' | 'glow') => void;
+
     setInkRatio: (ratio: number) => void;
 
     setUseCustomRadius: (use: boolean) => void;
@@ -21,6 +24,7 @@ interface InkRatioState {
 
 export const useInkRatioStore = create<InkRatioState>((set) => ({
     inkRatio: 0, // Default to 0% overlap (max filtering)
+    absorptionMode: 'none',
     filteredStats: {},
     chartWidth: 1280,
     chartHeight: 720,
@@ -28,6 +32,7 @@ export const useInkRatioStore = create<InkRatioState>((set) => ({
     useCustomRadius: false,
     customRadius: 20, // Default to visible amount
     setInkRatio: (ratio) => set({ inkRatio: ratio }),
+    setAbsorptionMode: (mode) => set({ absorptionMode: mode }),
     setUseCustomRadius: (use) => set({ useCustomRadius: use }),
     setCustomRadius: (radius) => set({ customRadius: radius }),
     setFilteredStats: (stats) => set({ filteredStats: stats }),
