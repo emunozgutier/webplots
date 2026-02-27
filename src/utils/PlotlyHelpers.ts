@@ -1,12 +1,14 @@
 import type { Layout, Data } from 'plotly.js';
 import type { CsvDataStore } from '../store/CsvDataStore';
 import type { AxisSideMenuData } from '../store/AxisSideMenuStore';
+import type { GroupSideMenuData } from '../store/GroupSideMenuStore';
 import type { PlotLayout } from '../store/PlotLayoutStore';
 import type { TraceConfig } from '../store/TraceConfigStore';
 
 export const generatePlotConfig = (
     data: CsvDataStore[],
     sideMenuData: AxisSideMenuData,
+    groupSideMenuData: GroupSideMenuData,
     plotLayout: PlotLayout,
     traceConfig: TraceConfig,
     inkRatio: number = 1,
@@ -16,7 +18,8 @@ export const generatePlotConfig = (
     useCustomRadius: boolean = false,
     customRadius: number = 20
 ) => {
-    const { plotType, xAxis, yAxis, groupAxis, groupSettings } = sideMenuData;
+    const { plotType, xAxis, yAxis } = sideMenuData;
+    const { groupAxis, groupSettings } = groupSideMenuData;
     const { enableLogAxis, plotTitle, xAxisTitle, yAxisTitle, xRange, yRange } = plotLayout;
 
     // Trace config from the new store

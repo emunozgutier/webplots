@@ -4,6 +4,7 @@ import { useTraceConfigStore } from '../../store/TraceConfigStore';
 import { generatePlotConfig } from '../../utils/PlotlyHelpers';
 import { useCsvDataStore } from '../../store/CsvDataStore';
 import { useAxisSideMenuStore } from '../../store/AxisSideMenuStore';
+import { useGroupSideMenuStore } from '../../store/GroupSideMenuStore';
 
 
 interface ControllerButtonsProps {
@@ -16,9 +17,10 @@ const ControllerButtons: React.FC<ControllerButtonsProps> = ({ onOpenSettings, o
     const { traceConfig } = useTraceConfigStore();
     const { data } = useCsvDataStore();
     const { sideMenuData } = useAxisSideMenuStore();
+    const { groupSideMenuData } = useGroupSideMenuStore();
 
     const handleSaveHTML = () => {
-        const { plotData, layout } = generatePlotConfig(data, sideMenuData, plotLayout, traceConfig);
+        const { plotData, layout } = generatePlotConfig(data, sideMenuData, groupSideMenuData, plotLayout, traceConfig);
 
         // Basic HTML template to render the plot
         const htmlContent = `

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useAxisSideMenuStore } from '../../../store/AxisSideMenuStore';
-import type { GroupSettings } from '../../../store/AxisSideMenuStore';
+import { useGroupSideMenuStore } from '../../../store/GroupSideMenuStore';
+import type { GroupSettings } from '../../../store/GroupSideMenuStore';
 import { useAppStateStore } from '../../../store/AppStateStore';
 import { useCsvDataStore } from '../../../store/CsvDataStore';
 import Plot from 'react-plotly.js';
@@ -11,7 +11,7 @@ interface GroupAxisSettingsProps {
 }
 
 const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
-    const { sideMenuData, setGroupSettings } = useAxisSideMenuStore();
+    const { groupSideMenuData, setGroupSettings } = useGroupSideMenuStore();
     const { closePopup } = useAppStateStore();
     const { data } = useCsvDataStore();
 
@@ -38,8 +38,8 @@ const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
     }, [data, column]);
 
     useEffect(() => {
-        if (sideMenuData.groupSettings && sideMenuData.groupSettings[column]) {
-            const saved = sideMenuData.groupSettings[column];
+        if (groupSideMenuData.groupSettings && groupSideMenuData.groupSettings[column]) {
+            const saved = groupSideMenuData.groupSettings[column];
             if (saved.mode === 'manual' && saved.bins.length === 0) {
                 setLocalSettings({ mode: 'manual', bins: generateDefaultBins(dataMin, dataMax) });
             } else {
@@ -49,7 +49,7 @@ const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
             // Default: auto
             setLocalSettings({ mode: 'auto', bins: [] });
         }
-    }, [column, sideMenuData.groupSettings, dataMin, dataMax]);
+    }, [column, groupSideMenuData.groupSettings, dataMin, dataMax]);
 
     // Used when toggling explicitly to manual
     const handleModeToggle = (mode: 'auto' | 'manual') => {

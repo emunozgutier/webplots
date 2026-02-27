@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 
-import { useAxisSideMenuStore } from '../../store/AxisSideMenuStore';
+import { useGroupSideMenuStore } from '../../store/GroupSideMenuStore';
 import { useAppStateStore } from '../../store/AppStateStore';
 import { useCsvDataStore } from '../../store/CsvDataStore';
 import GroupAxisSettings from './subcomponents/GroupAxisSettings';
 import SearchColumn from './subcomponents/SearchColumn';
 
 const GroupSideMenu: React.FC = () => {
-    const { sideMenuData, setGroupAxis } = useAxisSideMenuStore();
+    const { groupSideMenuData, setGroupAxis } = useGroupSideMenuStore();
     const { setPopupContent } = useAppStateStore();
-    const { groupAxis } = sideMenuData;
+    const { groupAxis } = groupSideMenuData;
     const { data, columns } = useCsvDataStore();
 
     const [dragOverGroup, setDragOverGroup] = useState(false);

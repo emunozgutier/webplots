@@ -4,7 +4,9 @@ import { NavDropdown, Navbar, Nav, Container, Modal, Button } from 'react-bootst
 import { useCsvDataStore } from '../store/CsvDataStore';
 import { usePlotLayoutStore } from '../store/PlotLayoutStore';
 import Papa from 'papaparse';
-import type { CsvDataStore } from '../store/CsvDataStore'; import { useAxisSideMenuStore } from '../store/AxisSideMenuStore';
+import type { CsvDataStore } from '../store/CsvDataStore';
+import { useAxisSideMenuStore } from '../store/AxisSideMenuStore';
+import { useGroupSideMenuStore } from '../store/GroupSideMenuStore';
 import { getSmallDataset, getLargeColumnDataset, getSimulationDataset, getBinningTestData } from '../utils/TestDatasets';
 
 interface VersionData {
@@ -17,6 +19,7 @@ const TopMenuBar: React.FC = () => {
     const { data, columns, setPlotData, setColumns, loadProject: loadPlotDataProject } = useCsvDataStore();
 
     const { sideMenuData, setXAxis, loadProject: loadSideMenuProject } = useAxisSideMenuStore();
+    const { groupSideMenuData, loadProject: loadGroupSideMenuProject } = useGroupSideMenuStore();
     const { plotLayout, loadProject: loadPlotLayoutProject } = usePlotLayoutStore();
 
     const csvInputRef = useRef<HTMLInputElement>(null);
@@ -55,6 +58,7 @@ const TopMenuBar: React.FC = () => {
             data,
             columns,
             sideMenuData,
+            groupSideMenuData,
             plotLayout
         };
         const blob = new Blob([JSON.stringify(projectState, null, 2)], { type: 'application/json' });
@@ -82,10 +86,18 @@ const TopMenuBar: React.FC = () => {
                     }
 
                     if (projectState.sideMenuData) {
-                        loadSideMenuProject(projectState.sideMenuData.xAxis, projectState.sideMenuData.yAxis);
+                        loadSideMenuProject(projectState.sideMenuData.xAxis, projectState.sideMenuData.yAxis, projectState.sideMenuData.plotType);
+
+                        // Handle backwards compatibility where group details were in sideMenuData
+                        if (projectState.groupSideMenuData) {
+                            loadGroupSideMenuProject(projectState.groupSideMenuData.groupAxis, projectState.groupSideMenuData.groupSettings);
+                        } else {
+                            loadGroupSideMenuProject(projectState.sideMenuData.groupAxis, projectState.sideMenuData.groupSettings);
+                        }
                     } else if (projectState.plotArea && projectState.plotArea.axisMenuData) {
                         // Migration for old project files
                         loadSideMenuProject(projectState.plotArea.axisMenuData.xAxis, projectState.plotArea.axisMenuData.yAxis);
+                        loadGroupSideMenuProject(projectState.plotArea.axisMenuData.groupAxis, projectState.plotArea.axisMenuData.groupSettings);
                     }
 
                     if (projectState.plotLayout) {

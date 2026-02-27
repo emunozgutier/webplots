@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import Plot from 'react-plotly.js';
 
 import { useAxisSideMenuStore } from '../store/AxisSideMenuStore';
+import { useGroupSideMenuStore } from '../store/GroupSideMenuStore';
 import { useAppStateStore } from '../store/AppStateStore';
 import { usePlotLayoutStore } from '../store/PlotLayoutStore';
 import { useTraceConfigStore } from '../store/TraceConfigStore';
@@ -17,6 +18,7 @@ import { useFilteredData } from '../hooks/useFilteredData';
 const PlotArea: React.FC = () => {
     const data = useFilteredData();
     const { sideMenuData } = useAxisSideMenuStore();
+    const { groupSideMenuData } = useGroupSideMenuStore();
     const { isSideMenuOpen } = useAppStateStore();
     const { plotLayout } = usePlotLayoutStore();
     const { traceConfig, setActiveTraces } = useTraceConfigStore();
@@ -24,8 +26,8 @@ const PlotArea: React.FC = () => {
     const containerRef = React.useRef<HTMLDivElement>(null);
 
     const { plotData, layout, hasData, receipt, stats, generatedTraces } = useMemo(
-        () => generatePlotConfig(data, sideMenuData, plotLayout, traceConfig, inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius),
-        [data, sideMenuData, plotLayout, traceConfig, inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius]
+        () => generatePlotConfig(data, sideMenuData, groupSideMenuData, plotLayout, traceConfig, inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius),
+        [data, sideMenuData, groupSideMenuData, plotLayout, traceConfig, inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius]
     );
 
     // Update stats in store
