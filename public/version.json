@@ -1,5 +1,5 @@
 {
-    "commit_title": "Remove chart size and help text from InkRatio side menu",
-    "commit_message": "Stop destructuring chartWidth/chartHeight from the ink ratio store and remove the small help text and the \"Calculation Parameters\" chart size display in InkRationSideMenu. Cleans up unused variables and simplifies the UI by removing an unnecessary info block.",
+    "commit_title": "Simplify keyframe percentage stops",
+    "commit_message": "Replace redundant percentage ranges in InkRatioAnimation keyframes with explicit 0%/50%/100% stops. Updated shrinkPoint, pulseSize, and pulseGlow animations in src/components/SideMenuComponents/subcomponents/InkRatioAnimation.tsx to use single percentage entries instead of repeating ranges (e.g. 0%,25% -> 0%; 75%,100% -> 100%), keeping the same transform origins and animation behavior while making the CSS clearer and more concise.",
     "version_string": "2026.09.4"
 }

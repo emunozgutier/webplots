@@ -22,19 +22,30 @@ const InkRationSideMenu: React.FC = () => {
         <div className="p-3">            {/* Visualization */}
             <InkRatioAnimation />
 
-            <div className="mb-4">
-                <label className="form-label d-flex justify-content-between">
-                    <span>Absorption Behavior</span>
-                </label>
-                <select
-                    className="form-select form-select-sm"
-                    value={absorptionMode}
-                    onChange={(e) => setAbsorptionMode(e.target.value as any)}
-                >
-                    <option value="none">Nothing</option>
-                    <option value="size">Increase Point Size</option>
-                    <option value="glow">Grow its Glow</option>
-                </select>
+            <div className="mb-4 d-flex justify-content-center">
+                <div className="btn-group w-100" role="group" aria-label="Absorption Behavior">
+                    <button
+                        type="button"
+                        className={`btn btn-sm ${absorptionMode === 'size' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                        onClick={() => setAbsorptionMode('size')}
+                    >
+                        Grow
+                    </button>
+                    <button
+                        type="button"
+                        className={`btn btn-sm ${absorptionMode === 'glow' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                        onClick={() => setAbsorptionMode('glow')}
+                    >
+                        Glow
+                    </button>
+                    <button
+                        type="button"
+                        className={`btn btn-sm ${absorptionMode === 'none' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                        onClick={() => setAbsorptionMode('none')}
+                    >
+                        Ignore
+                    </button>
+                </div>
             </div>
 
             <div className="mb-4">

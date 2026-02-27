@@ -35,10 +35,10 @@ const InkRatioAnimation: React.FC = () => {
                         50%  { transform: scale(${Math.SQRT2}); transform-origin: ${fixedLeftCx}px ${cyCenter}px; }
                         100% { transform: scale(1); transform-origin: ${fixedLeftCx}px ${cyCenter}px; }
                     }
-                    @keyframes pulseGlow {
-                        0%   { transform: scale(1); transform-origin: ${fixedLeftCx}px ${cyCenter}px; opacity: 0; filter: blur(0px); }
-                        50%  { transform: scale(2); transform-origin: ${fixedLeftCx}px ${cyCenter}px; opacity: 0.6; filter: blur(4px); }
-                        100% { transform: scale(1); transform-origin: ${fixedLeftCx}px ${cyCenter}px; opacity: 0; filter: blur(0px); }
+                    @keyframes glowIntensity {
+                        0%   { filter: drop-shadow(0px 0px 4px rgba(220,53,69,0.1)); }
+                        50%  { filter: drop-shadow(0px 0px 16px rgba(220,53,69,1)); }
+                        100% { filter: drop-shadow(0px 0px 4px rgba(220,53,69,0.1)); }
                     }
                 `}
             </style>
@@ -50,20 +50,15 @@ const InkRatioAnimation: React.FC = () => {
                         <div className="mb-2 w-100">
                             <svg viewBox="0 0 160 80" style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
                                 <g>
-                                    {/* Sub-circle for glowing effect (only active on Glow mode) */}
-                                    {absorptionMode === 'glow' && (
-                                        <circle
-                                            cx={fixedLeftCx} cy={cyCenter} r={R}
-                                            fill="#dc3545" opacity="0"
-                                            style={{ animation: 'pulseGlow 3s infinite ease-in-out' }}
-                                        />
-                                    )}
-
                                     {/* Stationary Target Point */}
                                     <circle
                                         cx={fixedLeftCx} cy={cyCenter} r={R}
                                         fill="#dc3545" opacity="0.8"
-                                        style={{ animation: absorptionMode === 'size' ? 'pulseSize 3s infinite ease-in-out' : 'none' }}
+                                        style={{
+                                            animation: absorptionMode === 'size' ? 'pulseSize 3s infinite ease-in-out' :
+                                                absorptionMode === 'glow' ? 'glowIntensity 3s infinite ease-in-out' : 'none',
+                                            filter: absorptionMode === 'glow' ? 'drop-shadow(0px 0px 4px rgba(220,53,69,0.1))' : 'none'
+                                        }}
                                     />
                                     {/* Dashed Outline left behind at original position */}
                                     <circle
