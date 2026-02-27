@@ -20,7 +20,7 @@ export const generatePlotConfig = (
 ) => {
     const { plotType, xAxis, yAxis } = sideMenuData;
     const { groupAxis, groupSettings } = groupSideMenuData;
-    const { enableLogAxis, plotTitle, xAxisTitle, yAxisTitle, xRange, yRange } = plotLayout;
+    const { enableLogAxis, plotTitle, xAxisTitle, yAxisTitle, xRange, yRange, histogramBarmode } = plotLayout;
 
     // Trace config from the new store
     const { traceCustomizations, currentPaletteColors } = traceConfig;
@@ -412,7 +412,7 @@ export const generatePlotConfig = (
         autosize: true,
         margin: { l: 50, r: 50, b: 50, t: 50 },
         showlegend: generatedTraces.length > 1,
-        barmode: plotType === 'histogram' ? 'overlay' : undefined
+        barmode: plotType === 'histogram' ? (histogramBarmode || 'overlay') : undefined
     };
 
     // Generate Receipt

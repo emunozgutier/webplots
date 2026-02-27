@@ -6,7 +6,7 @@ import { useAxisSideMenuStore } from '../../../store/AxisSideMenuStore';
 import { useAppStateStore } from '../../../store/AppStateStore';
 
 const PlotLayout: React.FC = () => {
-    const { plotLayout, setPlotTitle, setXAxisTitle, setYAxisTitle, setXRange, setYRange } = usePlotLayoutStore();
+    const { plotLayout, setPlotTitle, setXAxisTitle, setYAxisTitle, setXRange, setYRange, setHistogramBarmode } = usePlotLayoutStore();
     const { sideMenuData } = useAxisSideMenuStore();
     const { data } = useCsvDataStore();
     const { closePopup } = useAppStateStore();
@@ -72,6 +72,8 @@ const PlotLayout: React.FC = () => {
     const [localYMin, setLocalYMin] = useState(plotLayout.yRange ? plotLayout.yRange[0].toString() : yRangeDefaults.min);
     const [localYMax, setLocalYMax] = useState(plotLayout.yRange ? plotLayout.yRange[1].toString() : yRangeDefaults.max);
 
+    const [localHistogramBarmode, setLocalHistogramBarmode] = useState<'overlay' | 'stack' | 'group'>(plotLayout.histogramBarmode || 'overlay');
+
     // Update local state when visibility changes to ensure fresh defaults if data changed
     useEffect(() => {
         setLocalPlotTitle(plotLayout.plotTitle || defaultPlotTitle);
@@ -85,7 +87,9 @@ const PlotLayout: React.FC = () => {
         const freshYDefaults = calculateRange(sideMenuData.yAxis);
         setLocalYMin(plotLayout.yRange ? plotLayout.yRange[0].toString() : freshYDefaults.min);
         setLocalYMax(plotLayout.yRange ? plotLayout.yRange[1].toString() : freshYDefaults.max);
-    }, [plotLayout.plotTitle, plotLayout.xAxisTitle, plotLayout.yAxisTitle, plotLayout.xRange, plotLayout.yRange, sideMenuData, data]);
+
+        setLocalHistogramBarmode(plotLayout.histogramBarmode || 'overlay');
+    }, [plotLayout.plotTitle, plotLayout.xAxisTitle, plotLayout.yAxisTitle, plotLayout.xRange, plotLayout.yRange, plotLayout.histogramBarmode, sideMenuData, data]);
 
     const handleSave = () => {
         setPlotTitle(localPlotTitle);
@@ -104,6 +108,10 @@ const PlotLayout: React.FC = () => {
             setYRange(null);
         }
 
+        if (sideMenuData.plotType === 'histogram') {
+            setHistogramBarmode(localHistogramBarmode);
+        }
+
         closePopup();
     };
 
@@ -120,6 +128,24 @@ const PlotLayout: React.FC = () => {
     return (
         <>
             <div className="card-body">
+                {sideMenuData.plotType === 'histogram' && (
+                    <div className="mb-3 p-3 bg-light border rounded">
+                        <label className="form-label small fw-bold">Histogram Layout</label>
+                        <select
+                            className="form-select form-select-sm"
+                            value={localHistogramBarmode}
+                            onChange={(e) => setLocalHistogramBarmode(e.target.value as any)}
+                        >
+                            <option value="overlay">Transparent Overlapped (Overlay)</option>
+                            <option value="stack">Stacked (Not Overlapped)</option>
+                            <option value="group">Divided (Side-by-side)</option>
+                        </select>
+                        <div className="form-text text-muted mt-1" style={{ fontSize: '0.75rem' }}>
+                            Determines how multiple traces are displayed together.
+                        </div>
+                    </div>
+                )}
+
                 <div className="mb-3">
                     <label className="form-label small fw-bold">Plot Title</label>
                     <input type="text" className="form-control form-control-sm" value={localPlotTitle} onChange={e => setLocalPlotTitle(e.target.value)} />
