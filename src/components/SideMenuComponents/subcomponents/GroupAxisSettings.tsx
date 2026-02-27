@@ -62,12 +62,16 @@ const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
     };
 
     const generateDefaultBins = (min: number, max: number): GroupSettings['bins'] => {
-        const step = (max - min) / 4;
+        const diff = max - min;
+        // Calculate thresholds at roughly 33% and 66% of the range
+        // If diff is 0, add a tiny fallback so bins don't overlap exactly
+        const safeDiff = diff === 0 ? 1 : diff;
+        const val1 = parseFloat((min + safeDiff / 3).toPrecision(3));
+        const val2 = parseFloat((max - safeDiff / 3).toPrecision(3));
+
         return [
-            { id: uuidv4(), label: `Bin 1`, operator: '<', value: min + step },
-            { id: uuidv4(), label: `Bin 2`, operator: '<', value: min + step * 2 },
-            { id: uuidv4(), label: `Bin 3`, operator: '<', value: min + step * 3 },
-            { id: uuidv4(), label: `Bin 4`, operator: '>=', value: min + step * 3 },
+            { id: uuidv4(), label: `data < ${val1}`, operator: '<', value: val1 },
+            { id: uuidv4(), label: `data > ${val2}`, operator: '>', value: val2 },
         ];
     };
 
