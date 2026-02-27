@@ -101,7 +101,7 @@ const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
     };
 
     return (
-        <div className="card shadow" style={{ width: '400px', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
+        <div className="card shadow w-100 h-100" style={{ display: 'flex', flexDirection: 'column' }}>
             <div className="card-header d-flex justify-content-between align-items-center">
                 <h5 className="mb-0">Group Settings: {column}</h5>
                 <button className="btn-close" onClick={closePopup}></button>

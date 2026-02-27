@@ -9,7 +9,7 @@ const Debug: React.FC<DebugProps> = ({ receipt }) => {
     const { closePopup } = useAppStateStore();
 
     return (
-        <div className="card shadow-lg d-flex flex-column" style={{ width: '80vw', maxWidth: '1200px', height: '90vh', maxHeight: '90vh' }}>
+        <div className="card shadow-lg w-100 h-100" style={{ display: 'flex', flexDirection: 'column' }}>
             <div className="card-header bg-white fw-bold d-flex justify-content-between align-items-center flex-shrink-0">
                 <span>Plotly Code Receipt</span>
                 <button className="btn btn-sm btn-close" onClick={closePopup}></button>

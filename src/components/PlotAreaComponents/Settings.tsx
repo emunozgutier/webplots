@@ -8,13 +8,13 @@ const Settings: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'layout' | 'trace'>('layout');
 
     return (
-        <div className="card shadow-lg" style={{ width: '500px' }}>
+        <div className="card shadow-lg w-100 h-100" style={{ display: 'flex', flexDirection: 'column' }}>
             <div className="card-header bg-white fw-bold d-flex justify-content-between align-items-center">
                 <span>Plot Settings</span>
                 <button className="btn btn-sm btn-close" onClick={closePopup}></button>
             </div>
 
-            <div className="card-body p-0">
+            <div className="card-body p-0 d-flex flex-column overflow-hidden">
                 <ul className="nav nav-tabs nav-justified bg-light">
                     <li className="nav-item">
                         <button
@@ -34,7 +34,7 @@ const Settings: React.FC = () => {
                     </li>
                 </ul>
 
-                <div className="p-0" style={{ minHeight: '600px' }}>
+                <div className="p-0 flex-grow-1 overflow-auto" style={{ minHeight: 0 }}>
                     {activeTab === 'layout' ? <PlotLayout /> : <TraceConfig />}
                 </div>
             </div>

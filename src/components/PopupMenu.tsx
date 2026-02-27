@@ -12,7 +12,11 @@ const PopupMenu: React.FC = () => {
             style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050 }}
             onClick={closePopup}
         >
-            <div onClick={(e) => e.stopPropagation()}>
+            <div
+                onClick={(e) => e.stopPropagation()}
+                className="d-flex flex-column"
+                style={{ width: '80%', height: '80%' }}
+            >
                 {popupContent}
             </div>
         </div>
