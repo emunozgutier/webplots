@@ -14,6 +14,7 @@ const InkRatioAnimation: React.FC = () => {
 
     const cxCenter = 80;
     const cyCenter = 40;
+    const fixedLeftCx = cxCenter - R;
 
     return (
         <div className="mb-4 bg-light p-3 rounded d-flex flex-column align-items-center w-100">
@@ -27,10 +28,6 @@ const InkRatioAnimation: React.FC = () => {
                 `}
             </style>
 
-            <div className="text-center small text-muted mb-3 fw-bold" style={{ fontSize: '0.85em' }}>
-                Distance Threshold Visualizer
-            </div>
-
             <div className="d-flex flex-column align-items-center gap-3 w-100">
                 {/* Absorbed Box */}
                 {inkRatio < 1 ? (
@@ -40,18 +37,18 @@ const InkRatioAnimation: React.FC = () => {
                                 <g>
                                     {/* Stationary Target Point */}
                                     <circle
-                                        cx={cxCenter - distanceA / 2} cy={cyCenter} r={R}
+                                        cx={fixedLeftCx} cy={cyCenter} r={R}
                                         fill="#dc3545" opacity="0.8"
                                     />
                                     {/* Dashed Outline left behind at original position */}
                                     <circle
-                                        cx={cxCenter + distanceA / 2} cy={cyCenter} r={R}
+                                        cx={fixedLeftCx + distanceA} cy={cyCenter} r={R}
                                         fill="transparent" stroke="#dc3545" strokeWidth="2" strokeDasharray="4 4"
                                         opacity="0.6"
                                     />
                                     {/* Moving Solid Point */}
                                     <circle
-                                        cx={cxCenter + distanceA / 2} cy={cyCenter} r={R}
+                                        cx={fixedLeftCx + distanceA} cy={cyCenter} r={R}
                                         fill="#dc3545" opacity="0.8"
                                         style={{ animation: 'moveMovingPoint 3s infinite ease-in-out' }}
                                     />
@@ -76,9 +73,9 @@ const InkRatioAnimation: React.FC = () => {
                         <svg viewBox="0 0 160 80" style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
                             <g>
                                 {/* Fixed Left Solid Point */}
-                                <circle cx={cxCenter - distanceNA / 2} cy={cyCenter} r={R} fill="#198754" opacity="0.8" />
+                                <circle cx={fixedLeftCx} cy={cyCenter} r={R} fill="#198754" opacity="0.8" />
                                 {/* Fixed Right Solid Point */}
-                                <circle cx={cxCenter + distanceNA / 2} cy={cyCenter} r={R} fill="#198754" opacity="0.8" />
+                                <circle cx={fixedLeftCx + distanceNA} cy={cyCenter} r={R} fill="#198754" opacity="0.8" />
                             </g>
                         </svg>
                     </div>

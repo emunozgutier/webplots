@@ -19,12 +19,7 @@ const InkRationSideMenu: React.FC = () => {
     const formatPercent = (val: number) => `${Math.round(val * 100)}%`;
 
     return (
-        <div className="p-3">
-            <h6 className="mb-3">Ink To Data Ratio Control</h6>
-
-
-
-            {/* Visualization */}
+        <div className="p-3">            {/* Visualization */}
             <InkRatioAnimation />
 
             <div className="mb-4">
