@@ -62,8 +62,13 @@ const InkRatioAnimation: React.FC = () => {
                     </div>
                 ) : (
                     <div className="border border-secondary rounded p-2 d-flex flex-column align-items-center bg-light justify-content-center shadow-sm flex-fill" style={{ width: '100%', opacity: 0.6 }}>
-                        <span className="badge bg-secondary small w-100 mb-2">Absorbed</span>
-                        <span className="small fw-bold text-muted">N/A</span>
+                        <div className="mb-2 w-100 d-flex justify-content-center align-items-center" style={{ height: 'auto', minHeight: '80px' }}>
+                            <span className="small fw-bold text-muted">N/A</span>
+                        </div>
+                        <span className="badge bg-secondary small w-100 mb-1">Absorbed</span>
+                        <div className="text-muted" style={{ fontSize: '0.7em' }}>
+                            Overlap: {overlapA.toFixed(0)}%
+                        </div>
                     </div>
                 )}
 
