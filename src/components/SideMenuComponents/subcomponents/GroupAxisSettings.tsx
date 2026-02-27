@@ -5,6 +5,7 @@ import { useAppStateStore } from '../../../store/AppStateStore';
 import { useCsvDataStore } from '../../../store/CsvDataStore';
 import Plot from 'react-plotly.js';
 import { v4 as uuidv4 } from 'uuid';
+import { roundToSignificantDigits, toEngineeringString } from '../../../utils/MathHelper';
 
 interface GroupAxisSettingsProps {
     column: string;
@@ -66,12 +67,15 @@ const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
         // Calculate thresholds at roughly 33% and 66% of the range
         // If diff is 0, add a tiny fallback so bins don't overlap exactly
         const safeDiff = diff === 0 ? 1 : diff;
-        const val1 = parseFloat((min + safeDiff / 3).toPrecision(3));
-        const val2 = parseFloat((max - safeDiff / 3).toPrecision(3));
+        const val1 = roundToSignificantDigits(min + safeDiff / 3, 3);
+        const val2 = roundToSignificantDigits(max - safeDiff / 3, 3);
+
+        const val1Str = toEngineeringString(val1, 3);
+        const val2Str = toEngineeringString(val2, 3);
 
         return [
-            { id: uuidv4(), label: `data < ${val1}`, operator: '<', value: val1 },
-            { id: uuidv4(), label: `data > ${val2}`, operator: '>', value: val2 },
+            { id: uuidv4(), label: `data < ${val1Str}`, operator: '<', value: val1 },
+            { id: uuidv4(), label: `data > ${val2Str}`, operator: '>', value: val2 },
         ];
     };
 
