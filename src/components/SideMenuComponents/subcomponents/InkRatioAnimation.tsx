@@ -26,19 +26,19 @@ const InkRatioAnimation: React.FC = () => {
                         100% { transform: translateX(0px); }
                     }
                     @keyframes shrinkPoint {
-                        0%, 25%   { transform: scale(1); transform-origin: ${fixedLeftCx + distanceA}px ${cyCenter}px; }
-                        50%       { transform: scale(0); transform-origin: ${fixedLeftCx + distanceA}px ${cyCenter}px; }
-                        75%, 100% { transform: scale(1); transform-origin: ${fixedLeftCx + distanceA}px ${cyCenter}px; }
+                        0%   { transform: scale(1); transform-origin: ${fixedLeftCx + distanceA}px ${cyCenter}px; }
+                        50%  { transform: scale(0); transform-origin: ${fixedLeftCx + distanceA}px ${cyCenter}px; }
+                        100% { transform: scale(1); transform-origin: ${fixedLeftCx + distanceA}px ${cyCenter}px; }
                     }
                     @keyframes pulseSize {
-                        0%, 25%   { transform: scale(1); transform-origin: ${fixedLeftCx}px ${cyCenter}px; }
-                        50%       { transform: scale(${Math.SQRT2}); transform-origin: ${fixedLeftCx}px ${cyCenter}px; }
-                        75%, 100% { transform: scale(1); transform-origin: ${fixedLeftCx}px ${cyCenter}px; }
+                        0%   { transform: scale(1); transform-origin: ${fixedLeftCx}px ${cyCenter}px; }
+                        50%  { transform: scale(${Math.SQRT2}); transform-origin: ${fixedLeftCx}px ${cyCenter}px; }
+                        100% { transform: scale(1); transform-origin: ${fixedLeftCx}px ${cyCenter}px; }
                     }
                     @keyframes pulseGlow {
-                        0%, 25%   { transform: scale(1); transform-origin: ${fixedLeftCx}px ${cyCenter}px; opacity: 0; filter: blur(0px); }
-                        50%       { transform: scale(2); transform-origin: ${fixedLeftCx}px ${cyCenter}px; opacity: 0.6; filter: blur(4px); }
-                        75%, 100% { transform: scale(1); transform-origin: ${fixedLeftCx}px ${cyCenter}px; opacity: 0; filter: blur(0px); }
+                        0%   { transform: scale(1); transform-origin: ${fixedLeftCx}px ${cyCenter}px; opacity: 0; filter: blur(0px); }
+                        50%  { transform: scale(2); transform-origin: ${fixedLeftCx}px ${cyCenter}px; opacity: 0.6; filter: blur(4px); }
+                        100% { transform: scale(1); transform-origin: ${fixedLeftCx}px ${cyCenter}px; opacity: 0; filter: blur(0px); }
                     }
                 `}
             </style>
