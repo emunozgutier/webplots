@@ -4,7 +4,7 @@ import { useTraceConfigStore } from '../../store/TraceConfigStore';
 import InkRatioAnimation from './subcomponents/InkRatioAnimation';
 
 const InkRationSideMenu: React.FC = () => {
-    const { inkRatio, setInkRatio, filteredStats, chartWidth, chartHeight } = useInkRatioStore();
+    const { inkRatio, setInkRatio, filteredStats } = useInkRatioStore();
     const { traceConfig } = useTraceConfigStore();
     const { traceCustomizations } = traceConfig;
 
@@ -36,17 +36,6 @@ const InkRationSideMenu: React.FC = () => {
                     value={inkRatio}
                     onChange={handleRatioChange}
                 />
-                <div className="form-text text-muted small">
-                    Lower percentage means less overlap allowed (more points removed).
-                </div>
-            </div>
-
-            <div className="mb-4">
-                <h6 className="mb-2">Calculation Parameters</h6>
-                <div className="d-flex justify-content-between mb-1">
-                    <span className="text-muted small">Chart Size:</span>
-                    <span className="small font-monospace">{chartWidth}x{chartHeight} px</span>
-                </div>
             </div>
 
             <h6 className="mb-3">Filtering Stats</h6>
