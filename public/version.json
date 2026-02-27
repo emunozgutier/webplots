@@ -1,5 +1,5 @@
 {
-    "commit_title": "Add histogram barmode setting",
-    "commit_message": "Expose a histogram barmode option so users can choose how histogram traces are displayed (overlay, stack, or group). Updates include: adding histogramBarmode to the PlotLayout store with a default of 'overlay' and a setter; adding a UI select in PlotLayout.tsx (visible for plotType === 'histogram') with local state sync and saving behavior; and passing histogramBarmode into generatePlotConfig to drive Plotly's barmode. This enables persisting and applying the chosen histogram layout mode.",
+    "commit_title": "Remove chart size and help text from InkRatio side menu",
+    "commit_message": "Stop destructuring chartWidth/chartHeight from the ink ratio store and remove the small help text and the \"Calculation Parameters\" chart size display in InkRationSideMenu. Cleans up unused variables and simplifies the UI by removing an unnecessary info block.",
     "version_string": "2026.09.4"
 }
