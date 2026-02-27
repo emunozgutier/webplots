@@ -1,5 +1,5 @@
 {
-    "commit_title": "Avoid redundant store updates; refactor trace config",
-    "commit_message": "PlotArea: avoid unnecessary setFilteredStats and setActiveTraces calls by comparing JSON.stringify(stats|generatedTraces) against refs before updating store. ControllerButtons: add an explicit cast when reading layout.title text ((layout as any).title?.text) to satisfy typing. TraceConfig: switch trace iteration from sideMenuData.yAxis to activeTraces and introduce distinct per-trace (exact) vs per-column customizations; resolve displayName (exact > column+group > default), compute effective color/mode/symbol, update control ids/names/handlers to use trace.fullTraceName, consider column-level fallbacks for symbol/size, and pass correct col/custom to HistogramBinSettings. These changes reduce redundant renders and improve trace customization correctness.",
-    "version_string": "2026.09.3"
+    "commit_title": "Add histogram barmode setting",
+    "commit_message": "Expose a histogram barmode option so users can choose how histogram traces are displayed (overlay, stack, or group). Updates include: adding histogramBarmode to the PlotLayout store with a default of 'overlay' and a setter; adding a UI select in PlotLayout.tsx (visible for plotType === 'histogram') with local state sync and saving behavior; and passing histogramBarmode into generatePlotConfig to drive Plotly's barmode. This enables persisting and applying the chosen histogram layout mode.",
+    "version_string": "2026.09.4"
 }
