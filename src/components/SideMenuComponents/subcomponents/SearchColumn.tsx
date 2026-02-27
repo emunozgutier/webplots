@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useCsvDataStore } from '../../store/CsvDataStore';
+import { useCsvDataStore } from '../../../store/CsvDataStore';
 import DragableColumn from './DragableColumn';
 
 const SearchColumn: React.FC = () => {
@@ -8,10 +8,10 @@ const SearchColumn: React.FC = () => {
 
     const filteredColumns = useMemo(() => {
         // Filter out blank or whitespace-only columns
-        const validColumns = columns.filter(col => col && col.trim().length > 0);
-
+        const validColumns = columns.filter((col: any) => col && col.trim().length > 0);
         if (!searchTerm) return validColumns;
-        return validColumns.filter(col =>
+
+        return validColumns.filter((col: any) =>
             col.toLowerCase().includes(searchTerm.toLowerCase())
         );
     }, [columns, searchTerm]);
@@ -36,7 +36,7 @@ const SearchColumn: React.FC = () => {
             <div className="flex-grow-1 overflow-auto" style={{ minHeight: 0 }}>
                 {filteredColumns.length > 0 ? (
                     <div className="list-group">
-                        {filteredColumns.map(col => (
+                        {filteredColumns.map((col: any) => (
                             <DragableColumn
                                 key={col}
                                 columnName={col}

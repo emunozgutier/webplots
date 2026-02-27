@@ -1,5 +1,5 @@
 import React from 'react';
-import { useFilterSideMenuStore, type Filter } from '../../store/FilterSideMenuStore';
+import { useFilterSideMenuStore, type Filter } from '../../../store/FilterSideMenuStore';
 
 interface FilterElementProps {
     filter: Filter;

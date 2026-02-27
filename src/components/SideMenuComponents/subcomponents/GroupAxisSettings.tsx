@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useAxisSideMenuStore } from '../../store/AxisSideMenuStore';
-import type { GroupSettings } from '../../store/AxisSideMenuStore';
-import { useAppStateStore } from '../../store/AppStateStore';
-import { useCsvDataStore } from '../../store/CsvDataStore';
+import { useAxisSideMenuStore } from '../../../store/AxisSideMenuStore';
+import type { GroupSettings } from '../../../store/AxisSideMenuStore';
+import { useAppStateStore } from '../../../store/AppStateStore';
+import { useCsvDataStore } from '../../../store/CsvDataStore';
 import Plot from 'react-plotly.js';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -25,7 +25,7 @@ const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
         if (!data || data.length === 0) return { numericData: [], dataMin: 0, dataMax: 100 };
         const nums: number[] = [];
         let min = Infinity, max = -Infinity;
-        data.forEach(row => {
+        data.forEach((row: any) => {
             const val = parseFloat(String(row[column]));
             if (!isNaN(val)) {
                 nums.push(val);
@@ -53,7 +53,7 @@ const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
 
     // Used when toggling explicitly to manual
     const handleModeToggle = (mode: 'auto' | 'manual') => {
-        setLocalSettings(prev => {
+        setLocalSettings((prev: any) => {
             if (mode === 'manual' && prev.bins.length === 0) {
                 return { mode: 'manual', bins: generateDefaultBins(dataMin, dataMax) };
             }
@@ -77,7 +77,7 @@ const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
     };
 
     const addBin = () => {
-        setLocalSettings(prev => ({
+        setLocalSettings((prev: any) => ({
             ...prev,
             bins: [
                 ...prev.bins,
@@ -87,16 +87,16 @@ const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
     };
 
     const updateBin = (id: string, field: keyof GroupSettings['bins'][0], value: any) => {
-        setLocalSettings(prev => ({
+        setLocalSettings((prev: any) => ({
             ...prev,
-            bins: prev.bins.map(bin => bin.id === id ? { ...bin, [field]: value } : bin)
+            bins: prev.bins.map((bin: any) => bin.id === id ? { ...bin, [field]: value } : bin)
         }));
     };
 
     const removeBin = (id: string) => {
-        setLocalSettings(prev => ({
+        setLocalSettings((prev: any) => ({
             ...prev,
-            bins: prev.bins.filter(bin => bin.id !== id)
+            bins: prev.bins.filter((bin: any) => bin.id !== id)
         }));
     };
 
@@ -157,8 +157,8 @@ const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
                                     paper_bgcolor: 'transparent',
                                     plot_bgcolor: 'transparent',
                                     shapes: localSettings.bins
-                                        .filter(b => b.operator !== '==' && b.operator !== '!=')
-                                        .map(b => ({
+                                        .filter((b: any) => b.operator !== '==' && b.operator !== '!=')
+                                        .map((b: any) => ({
                                             type: 'line',
                                             x0: b.value,
                                             x1: b.value,
@@ -177,7 +177,7 @@ const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
                             <p className="text-muted small fst-italic">No bins defined. Data will not be grouped.</p>
                         ) : (
                             <div className="d-flex flex-column gap-2">
-                                {localSettings.bins.map((bin, index) => (
+                                {localSettings.bins.map((bin: any, index: number) => (
                                     <div key={bin.id} className="border rounded p-2 bg-light">
                                         <div className="d-flex gap-2 mb-2 align-items-center">
                                             <span className="badge bg-secondary">{index + 1}</span>

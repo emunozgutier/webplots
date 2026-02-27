@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { useCsvDataStore } from '../../store/CsvDataStore';
 import { useFilterSideMenuStore, type FilterType } from '../../store/FilterSideMenuStore';
-import SearchColumn from './SearchColumn'; // Reusing for drag source
+import SearchColumn from './subcomponents/SearchColumn'; // Reusing for drag source
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
-import FilterElement from './FilterElement';
+import FilterElement from './subcomponents/FilterElement';
 
 const FilterSideMenu: React.FC = () => {
     const { data: rawData } = useCsvDataStore();

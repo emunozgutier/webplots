@@ -3,8 +3,8 @@ import React, { useState } from 'react';
 import { useAxisSideMenuStore } from '../../store/AxisSideMenuStore';
 import { useAppStateStore } from '../../store/AppStateStore';
 import { useCsvDataStore } from '../../store/CsvDataStore';
-import GroupAxisSettings from './GroupAxisSettings';
-import SearchColumn from './SearchColumn';
+import GroupAxisSettings from './subcomponents/GroupAxisSettings';
+import SearchColumn from './subcomponents/SearchColumn';
 
 const GroupSideMenu: React.FC = () => {
     const { sideMenuData, setGroupAxis } = useAxisSideMenuStore();

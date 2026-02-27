@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useAxisSideMenuStore } from '../../store/AxisSideMenuStore';
 // Removed useAppStateStore
 
-import SearchColumn from './SearchColumn';
+import SearchColumn from './subcomponents/SearchColumn';
 
 interface AxisSideMenuProps {
     hasColumns: boolean;

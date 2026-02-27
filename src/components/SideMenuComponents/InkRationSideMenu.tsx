@@ -1,7 +1,7 @@
 import React from 'react';
 import { useInkRatioStore } from '../../store/InkRatioStore';
 import { useTraceConfigStore } from '../../store/TraceConfigStore';
-import InkRatioAnimation from './InkRatioAnimation';
+import InkRatioAnimation from './subcomponents/InkRatioAnimation';
 
 const InkRationSideMenu: React.FC = () => {
     const { inkRatio, setInkRatio, filteredStats, chartWidth, chartHeight } = useInkRatioStore();
