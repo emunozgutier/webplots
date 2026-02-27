@@ -20,20 +20,25 @@ const InkRatioAnimation: React.FC = () => {
         <div className="mb-4 bg-light p-3 rounded d-flex flex-column align-items-center w-100">
             <style>
                 {`
-                    @keyframes moveMovingPoint {
-                        0%   { transform: translateX(0px); }
-                        50%  { transform: translateX(-${distanceA}px); }
-                        100% { transform: translateX(0px); }
+                    @keyframes slideIn {
+                        0%, 10%   { transform: translateX(0px); }
+                        40%, 60%  { transform: translateX(-${distanceA}px); }
+                        90%, 100% { transform: translateX(0px); }
+                    }
+                    @keyframes shrinkPoint {
+                        0%, 40%   { transform: scale(1); transform-origin: ${fixedLeftCx + distanceA}px ${cyCenter}px; }
+                        45%, 55%  { transform: scale(0); transform-origin: ${fixedLeftCx + distanceA}px ${cyCenter}px; }
+                        60%, 100% { transform: scale(1); transform-origin: ${fixedLeftCx + distanceA}px ${cyCenter}px; }
                     }
                     @keyframes pulseSize {
                         0%, 40%   { transform: scale(1); transform-origin: ${fixedLeftCx}px ${cyCenter}px; }
-                        50%       { transform: scale(1.4); transform-origin: ${fixedLeftCx}px ${cyCenter}px; }
+                        45%, 55%  { transform: scale(${Math.SQRT2}); transform-origin: ${fixedLeftCx}px ${cyCenter}px; }
                         60%, 100% { transform: scale(1); transform-origin: ${fixedLeftCx}px ${cyCenter}px; }
                     }
                     @keyframes pulseGlow {
-                        0%, 40%   { r: ${R}; opacity: 0.8; }
-                        50%       { r: ${R * 1.8}; opacity: 0; }
-                        60%, 100% { r: ${R}; opacity: 0; }
+                        0%, 39%   { transform: scale(1); transform-origin: ${fixedLeftCx}px ${cyCenter}px; opacity: 0; }
+                        40%       { transform: scale(1); transform-origin: ${fixedLeftCx}px ${cyCenter}px; opacity: 0.8; }
+                        55%, 100% { transform: scale(2.5); transform-origin: ${fixedLeftCx}px ${cyCenter}px; opacity: 0; }
                     }
                 `}
             </style>
@@ -67,11 +72,13 @@ const InkRatioAnimation: React.FC = () => {
                                         opacity="0.6"
                                     />
                                     {/* Moving Solid Point */}
-                                    <circle
-                                        cx={fixedLeftCx + distanceA} cy={cyCenter} r={R}
-                                        fill="#dc3545" opacity="0.8"
-                                        style={{ animation: 'moveMovingPoint 3s infinite ease-in-out' }}
-                                    />
+                                    <g style={{ animation: 'slideIn 3s infinite ease-in-out' }}>
+                                        <circle
+                                            cx={fixedLeftCx + distanceA} cy={cyCenter} r={R}
+                                            fill="#dc3545" opacity="0.8"
+                                            style={{ animation: absorptionMode !== 'none' ? 'shrinkPoint 3s infinite ease-in-out' : 'none' }}
+                                        />
+                                    </g>
                                 </g>
                             </svg>
                         </div>
