@@ -31,10 +31,10 @@ const InkRatioAnimation: React.FC = () => {
                 Distance Threshold Visualizer
             </div>
 
-            <div className="d-flex justify-content-center gap-2 w-100">
+            <div className="d-flex flex-column align-items-center gap-3 w-100">
                 {/* Absorbed Box */}
                 {inkRatio < 1 ? (
-                    <div className="border border-secondary rounded p-2 d-flex flex-column align-items-center bg-white shadow-sm flex-fill" style={{ width: '50%' }}>
+                    <div className="border border-secondary rounded p-2 d-flex flex-column align-items-center bg-white shadow-sm flex-fill" style={{ width: '100%' }}>
                         <div className="mb-2 w-100">
                             <svg viewBox="0 0 160 80" style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
                                 <g>
@@ -64,14 +64,14 @@ const InkRatioAnimation: React.FC = () => {
                         </div>
                     </div>
                 ) : (
-                    <div className="border border-secondary rounded p-2 d-flex flex-column align-items-center bg-light justify-content-center shadow-sm flex-fill" style={{ width: '50%', opacity: 0.6 }}>
+                    <div className="border border-secondary rounded p-2 d-flex flex-column align-items-center bg-light justify-content-center shadow-sm flex-fill" style={{ width: '100%', opacity: 0.6 }}>
                         <span className="badge bg-secondary small w-100 mb-2">Absorbed</span>
                         <span className="small fw-bold text-muted">N/A</span>
                     </div>
                 )}
 
                 {/* Not Absorbed Box */}
-                <div className="border border-secondary rounded p-2 d-flex flex-column align-items-center bg-white shadow-sm flex-fill" style={{ width: '50%' }}>
+                <div className="border border-secondary rounded p-2 d-flex flex-column align-items-center bg-white shadow-sm flex-fill" style={{ width: '100%' }}>
                     <div className="mb-2 w-100">
                         <svg viewBox="0 0 160 80" style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
                             <g>
