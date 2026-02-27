@@ -21,24 +21,24 @@ const InkRatioAnimation: React.FC = () => {
             <style>
                 {`
                     @keyframes slideIn {
-                        0%, 10%   { transform: translateX(0px); }
-                        40%, 60%  { transform: translateX(-${distanceA}px); }
-                        90%, 100% { transform: translateX(0px); }
+                        0%   { transform: translateX(0px); }
+                        50%  { transform: translateX(-${distanceA}px); }
+                        100% { transform: translateX(0px); }
                     }
                     @keyframes shrinkPoint {
-                        0%, 40%   { transform: scale(1); transform-origin: ${fixedLeftCx + distanceA}px ${cyCenter}px; }
-                        45%, 55%  { transform: scale(0); transform-origin: ${fixedLeftCx + distanceA}px ${cyCenter}px; }
-                        60%, 100% { transform: scale(1); transform-origin: ${fixedLeftCx + distanceA}px ${cyCenter}px; }
+                        0%, 25%   { transform: scale(1); transform-origin: ${fixedLeftCx + distanceA}px ${cyCenter}px; }
+                        50%       { transform: scale(0); transform-origin: ${fixedLeftCx + distanceA}px ${cyCenter}px; }
+                        75%, 100% { transform: scale(1); transform-origin: ${fixedLeftCx + distanceA}px ${cyCenter}px; }
                     }
                     @keyframes pulseSize {
-                        0%, 40%   { transform: scale(1); transform-origin: ${fixedLeftCx}px ${cyCenter}px; }
-                        45%, 55%  { transform: scale(${Math.SQRT2}); transform-origin: ${fixedLeftCx}px ${cyCenter}px; }
-                        60%, 100% { transform: scale(1); transform-origin: ${fixedLeftCx}px ${cyCenter}px; }
+                        0%, 25%   { transform: scale(1); transform-origin: ${fixedLeftCx}px ${cyCenter}px; }
+                        50%       { transform: scale(${Math.SQRT2}); transform-origin: ${fixedLeftCx}px ${cyCenter}px; }
+                        75%, 100% { transform: scale(1); transform-origin: ${fixedLeftCx}px ${cyCenter}px; }
                     }
                     @keyframes pulseGlow {
-                        0%, 39%   { transform: scale(1); transform-origin: ${fixedLeftCx}px ${cyCenter}px; opacity: 0; }
-                        40%       { transform: scale(1); transform-origin: ${fixedLeftCx}px ${cyCenter}px; opacity: 0.8; }
-                        55%, 100% { transform: scale(2.5); transform-origin: ${fixedLeftCx}px ${cyCenter}px; opacity: 0; }
+                        0%, 25%   { transform: scale(1); transform-origin: ${fixedLeftCx}px ${cyCenter}px; opacity: 0; filter: blur(0px); }
+                        50%       { transform: scale(2); transform-origin: ${fixedLeftCx}px ${cyCenter}px; opacity: 0.6; filter: blur(4px); }
+                        75%, 100% { transform: scale(1); transform-origin: ${fixedLeftCx}px ${cyCenter}px; opacity: 0; filter: blur(0px); }
                     }
                 `}
             </style>
