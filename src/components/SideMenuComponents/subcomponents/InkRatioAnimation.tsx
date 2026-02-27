@@ -1,50 +1,91 @@
 import React from 'react';
+import { useInkRatioStore } from '../../../store/InkRatioStore';
 
 const InkRatioAnimation: React.FC = () => {
+    const { inkRatio } = useInkRatioStore();
+
+    const R = 24; // Twice as big as previous (12)
+    const overlapNA = inkRatio * 100 - 10;
+    const overlapA = inkRatio * 100 + 10;
+
+    // Formula provided: 2*R*(1-overlap)
+    const distanceNA = 2 * R * (1 - overlapNA / 100);
+    const distanceA = 2 * R * (1 - overlapA / 100);
+
+    const cxCenter = 80;
+    const cyCenter = 40;
+
     return (
-        <div className="mb-4 d-flex flex-column align-items-center bg-light p-3 rounded">
+        <div className="mb-4 bg-light p-3 rounded d-flex flex-column align-items-center w-100">
             <style>
                 {`
-                    @keyframes moveB {
-                        0%   { transform: translateX(15px); opacity: 1; }
-                        25%  { transform: translateX(40px); opacity: 1; }
-                        50%  { transform: translateX(65px); opacity: 1; }
-                        75%  { transform: translateX(90px); opacity: 1; }
-                        100% { transform: translateX(0px); opacity: 0; }
-                    }
-
-                    @keyframes moveC {
-                        0%   { transform: translateX(5px); }    /* C is at B (-10) -> 15 - 10 = 5 */
-                        25%  { transform: translateX(55px); }   /* C is at B (+15) -> 40 + 15 = 55 */
-                        50%  { transform: translateX(105px); }  /* C is at B (+40) -> 65 + 40 = 105 */
-                        75%  { transform: translateX(155px); }  /* C is at B (+65) -> 90 + 65 = 155 */
-                        100% { transform: translateX(90px); }   /* C is at B (+90) -> 0 + 90 = 90 */
+                    @keyframes moveMovingPoint {
+                        0%   { transform: translateX(0px); }
+                        50%  { transform: translateX(-${distanceA}px); }
+                        100% { transform: translateX(0px); }
                     }
                 `}
             </style>
-            <div style={{ width: '200px', height: '80px', position: 'relative' }}>
-                <svg width="200" height="80">
-                    <g fill="#0d6efd" opacity="0.8">
-                        {/* Point A (Fixed base point) */}
-                        <circle cx="20" cy="40" r="15" />
 
-                        {/* Point B */}
-                        <circle
-                            cx="20" cy="40" r="15"
-                            style={{ animation: 'moveB 6s infinite alternate ease-in-out' }}
-                        />
+            <div className="text-center small text-muted mb-3 fw-bold" style={{ fontSize: '0.85em' }}>
+                Distance Threshold Visualizer
+            </div>
 
-                        {/* Point C */}
-                        <circle
-                            cx="20" cy="40" r="15"
-                            style={{ animation: 'moveC 6s infinite alternate ease-in-out' }}
-                        />
-                    </g>
-                </svg>
+            <div className="d-flex justify-content-center gap-2 w-100">
+                {/* Absorbed Box */}
+                {inkRatio < 1 ? (
+                    <div className="border border-secondary rounded p-2 d-flex flex-column align-items-center bg-white shadow-sm flex-fill" style={{ width: '50%' }}>
+                        <div className="mb-2 w-100">
+                            <svg viewBox="0 0 160 80" style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
+                                <g>
+                                    {/* Stationary Target Point */}
+                                    <circle
+                                        cx={cxCenter - distanceA / 2} cy={cyCenter} r={R}
+                                        fill="#dc3545" opacity="0.8"
+                                    />
+                                    {/* Dashed Outline left behind at original position */}
+                                    <circle
+                                        cx={cxCenter + distanceA / 2} cy={cyCenter} r={R}
+                                        fill="transparent" stroke="#dc3545" strokeWidth="2" strokeDasharray="4 4"
+                                        opacity="0.6"
+                                    />
+                                    {/* Moving Solid Point */}
+                                    <circle
+                                        cx={cxCenter + distanceA / 2} cy={cyCenter} r={R}
+                                        fill="#dc3545" opacity="0.8"
+                                        style={{ animation: 'moveMovingPoint 3s infinite ease-in-out' }}
+                                    />
+                                </g>
+                            </svg>
+                        </div>
+                        <span className="badge bg-danger small w-100 mb-1">Absorbed</span>
+                        <div className="text-muted" style={{ fontSize: '0.7em' }}>
+                            Overlap: {overlapA.toFixed(0)}%
+                        </div>
+                    </div>
+                ) : (
+                    <div className="border border-secondary rounded p-2 d-flex flex-column align-items-center bg-light justify-content-center shadow-sm flex-fill" style={{ width: '50%', opacity: 0.6 }}>
+                        <span className="badge bg-secondary small w-100 mb-2">Absorbed</span>
+                        <span className="small fw-bold text-muted">N/A</span>
+                    </div>
+                )}
 
-                {/* Label */}
-                <div className="text-center small text-muted mt-1" style={{ fontSize: '0.7em' }}>
-                    Filtering Threshold Animation
+                {/* Not Absorbed Box */}
+                <div className="border border-secondary rounded p-2 d-flex flex-column align-items-center bg-white shadow-sm flex-fill" style={{ width: '50%' }}>
+                    <div className="mb-2 w-100">
+                        <svg viewBox="0 0 160 80" style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
+                            <g>
+                                {/* Fixed Left Solid Point */}
+                                <circle cx={cxCenter - distanceNA / 2} cy={cyCenter} r={R} fill="#198754" opacity="0.8" />
+                                {/* Fixed Right Solid Point */}
+                                <circle cx={cxCenter + distanceNA / 2} cy={cyCenter} r={R} fill="#198754" opacity="0.8" />
+                            </g>
+                        </svg>
+                    </div>
+                    <span className="badge bg-success small w-100 mb-1">Not Absorbed</span>
+                    <div className="text-muted" style={{ fontSize: '0.7em' }}>
+                        Overlap: {overlapNA.toFixed(0)}%
+                    </div>
                 </div>
             </div>
         </div>
