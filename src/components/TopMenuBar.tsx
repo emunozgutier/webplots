@@ -144,6 +144,54 @@ const TopMenuBar: React.FC = () => {
         }
     };
 
+    const handleLoadWeatherData = async () => {
+        try {
+            const baseUrl = import.meta.env.BASE_URL || '/';
+            const response = await fetch(`${baseUrl}weather_data.json`);
+            if (response.ok) {
+                const rawData = await response.json();
+                const flattenedData: any[] = [];
+
+                // Flatten the nested JSON structure into an array of objects
+                for (const city of Object.keys(rawData)) {
+                    const cityData = rawData[city];
+                    const daily = cityData.daily;
+
+                    if (daily && daily.time) {
+                        for (let i = 0; i < daily.time.length; i++) {
+                            flattenedData.push({
+                                city: city,
+                                date: daily.time[i],
+                                latitude: cityData.latitude,
+                                longitude: cityData.longitude,
+                                temperature_2m_mean: daily.temperature_2m_mean[i],
+                                rain_sum: daily.rain_sum[i],
+                                surface_pressure_mean: daily.surface_pressure_mean[i]
+                            });
+                        }
+                    }
+                }
+
+                if (flattenedData.length > 0) {
+                    setPlotData(flattenedData);
+                    const cols = Object.keys(flattenedData[0]);
+                    setColumns(cols);
+                    if (cols.length > 1) { // Assuming 'city' is index 0 and 'date' is index 1
+                        setXAxis(cols[1]);
+                    } else if (cols.length > 0) {
+                        setXAxis(cols[0]);
+                    }
+                }
+            } else {
+                console.error("Failed to fetch weather data.");
+                alert("Could not load weather data.");
+            }
+        } catch (error) {
+            console.error("Error fetching weather json:", error);
+            alert("Error loading weather data.");
+        }
+    };
+
     const handleShowVersion = async () => {
         try {
             // Check if we are in production or dev environment using base url
@@ -195,6 +243,10 @@ const TopMenuBar: React.FC = () => {
                             </NavDropdown.Item>
                             <NavDropdown.Item onClick={() => handleLoadTestData('binning')}>
                                 Binning Test (Many Unique)
+                            </NavDropdown.Item>
+                            <NavDropdown.Divider />
+                            <NavDropdown.Item onClick={handleLoadWeatherData}>
+                                Sample Weather Data
                             </NavDropdown.Item>
                         </NavDropdown>
 
