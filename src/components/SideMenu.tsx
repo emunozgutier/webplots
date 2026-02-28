@@ -6,8 +6,9 @@ import AxisSideMenu from './SideMenuComponents/AxisSideMenu';
 import FilterSideMenu from './SideMenuComponents/FilterSideMenu';
 import InkRationSideMenu from './SideMenuComponents/InkRationSideMenu';
 import GroupSideMenu from './SideMenuComponents/GroupSideMenu';
+import ColorSideMenu from './SideMenuComponents/ColorSideMenu';
 
-type SideMenuTab = 'axis' | 'filter' | 'group' | 'ink';
+type SideMenuTab = 'axis' | 'filter' | 'group' | 'color' | 'ink';
 
 const SideMenu: React.FC = () => {
     const { columns: storeColumns } = useCsvDataStore();
@@ -66,6 +67,8 @@ const SideMenu: React.FC = () => {
                 return <FilterSideMenu />;
             case 'group':
                 return <GroupSideMenu />;
+            case 'color':
+                return <ColorSideMenu />;
             case 'ink':
                 return <InkRationSideMenu />;
             default:
@@ -120,6 +123,7 @@ const SideMenu: React.FC = () => {
                         {activeTab === 'axis' && 'Axes Configuration'}
                         {activeTab === 'filter' && 'Filters'}
                         {activeTab === 'group' && 'Group Settings'}
+                        {activeTab === 'color' && 'Color & Style'}
                         {activeTab === 'ink' && 'Ink Ratio'}
                     </span>
                     <button
@@ -161,6 +165,7 @@ const SideMenu: React.FC = () => {
                 {renderTabButton('axis', 'Axis', 'bi-bar-chart-steps')}
                 {renderTabButton('filter', 'Filter', 'bi-funnel')}
                 {renderTabButton('group', 'Group', 'bi-diagram-3')}
+                {renderTabButton('color', 'Style', 'bi-palette')}
                 {plotType !== 'histogram' && renderTabButton('ink', 'Ink Ratio', 'bi-droplet')}
             </div>
 

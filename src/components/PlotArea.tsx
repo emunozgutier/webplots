@@ -7,6 +7,7 @@ import { useAppStateStore } from '../store/AppStateStore';
 import { usePlotLayoutStore } from '../store/PlotLayoutStore';
 import { useTraceConfigStore } from '../store/TraceConfigStore';
 import { useInkRatioStore } from '../store/InkRatioStore';
+import { useColorSideMenuStore } from '../store/ColorSideMenuStore'; // Added this import
 import { generatePlotConfig } from '../utils/PlotlyHelpers';
 import ControllerButtons from './PlotAreaComponents/ControllerButtons';
 import Settings from './PlotAreaComponents/Settings';
@@ -23,11 +24,12 @@ const PlotArea: React.FC = () => {
     const { plotLayout } = usePlotLayoutStore();
     const { traceConfig, setActiveTraces } = useTraceConfigStore();
     const { inkRatio, setFilteredStats, chartWidth, chartHeight, pointRadius, setChartDimensions, useCustomRadius, customRadius } = useInkRatioStore();
+    const { colorData } = useColorSideMenuStore(); // Grabbed colorData
     const containerRef = React.useRef<HTMLDivElement>(null);
 
     const { plotData, layout, hasData, receipt, stats, generatedTraces } = useMemo(
-        () => generatePlotConfig(data, sideMenuData, groupSideMenuData, plotLayout, traceConfig, inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius),
-        [data, sideMenuData, groupSideMenuData, plotLayout, traceConfig, inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius]
+        () => generatePlotConfig(data, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData, inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius),
+        [data, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData, inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius]
     );
 
     // Update stats in store

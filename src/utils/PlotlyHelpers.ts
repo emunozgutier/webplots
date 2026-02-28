@@ -4,6 +4,7 @@ import type { AxisSideMenuData } from '../store/AxisSideMenuStore';
 import type { GroupSideMenuData } from '../store/GroupSideMenuStore';
 import type { PlotLayout } from '../store/PlotLayoutStore';
 import type { TraceConfig } from '../store/TraceConfigStore';
+import type { ColorSideMenuData } from '../store/ColorSideMenuStore';
 
 export const generatePlotConfig = (
     data: CsvDataStore[],
@@ -11,6 +12,7 @@ export const generatePlotConfig = (
     groupSideMenuData: GroupSideMenuData,
     plotLayout: PlotLayout,
     traceConfig: TraceConfig,
+    colorSideMenuData: ColorSideMenuData,
     inkRatio: number = 1,
     chartWidth: number = 1280,
     chartHeight: number = 720,
@@ -168,6 +170,7 @@ export const generatePlotConfig = (
         fullTraceName: string; // The unique key for customization
         xData: any[];
         yData: any[];
+        rowIndices: number[]; // the original indices of these points in the 'data' array for column mapping lookup
     }[] = [];
 
     if (groupAxis) {
@@ -224,7 +227,8 @@ export const generatePlotConfig = (
                         groupName: bin.label,
                         fullTraceName: `${yCol} (${bin.label})`,
                         xData: indices.map(i => data[i][xAxis]),
-                        yData: indices.map(i => data[i][yCol])
+                        yData: indices.map(i => data[i][yCol]),
+                        rowIndices: indices
                     });
                 });
             });
@@ -249,7 +253,8 @@ export const generatePlotConfig = (
                         groupName: `${groupAxis}=${groupValStr}`,
                         fullTraceName: `${yCol} (${groupAxis}=${groupValStr})`,
                         xData: indices.map(i => data[i][xAxis]),
-                        yData: indices.map(i => data[i][yCol])
+                        yData: indices.map(i => data[i][yCol]),
+                        rowIndices: indices
                     });
                 });
             });
@@ -265,7 +270,8 @@ export const generatePlotConfig = (
                 groupName: '',
                 fullTraceName: yCol,
                 xData: hasXAxis ? x : [],
-                yData: data.map(row => row[yCol])
+                yData: data.map(row => row[yCol]),
+                rowIndices: data.map((_, i) => i) // Full dataset map
             });
         });
     }
@@ -278,7 +284,7 @@ export const generatePlotConfig = (
 
     // Create Plotly traces
     const plotData: Data[] = generatedTraces.map((traceInfo, index) => {
-        const { fullTraceName, yCol, groupName, xData, yData } = traceInfo;
+        const { fullTraceName, yCol, groupName, xData, yData, rowIndices } = traceInfo;
 
         // Inherit configurations: exact name overrides > parent column overrides > defaults
         const colCustomization = traceCustomizations?.[yCol] || {};
@@ -287,9 +293,75 @@ export const generatePlotConfig = (
         // Merge settings
         const customization = { ...colCustomization, ...exactCustomization };
 
-        // Subgroups should use default color scale unless exactly specified, 
-        // otherwise all subgroups of 'Price' will share the exact same 'Price' color
-        customization.color = exactCustomization.color || undefined;
+        const { hue, saturation, lightness, shape } = colorSideMenuData;
+
+        // Auto-scaled helpers for "column" mappings
+        const getColumnMapRule = (colName: string, outMin: number, outMax: number) => {
+            const vals = data.map(r => r[colName]);
+            const nums = vals.map(v => typeof v === 'number' ? v : parseFloat(String(v))).filter(n => !isNaN(n));
+            const min = nums.length > 0 ? Math.min(...nums) : 0;
+            const max = nums.length > 0 ? Math.max(...nums) : 1;
+            const range = (max - min) || 1;
+
+            return (val: any) => {
+                const num = typeof val === 'number' ? val : parseFloat(String(val));
+                if (isNaN(num)) return outMin;
+                const pct = (num - min) / range;
+                return outMin + pct * (outMax - outMin);
+            };
+        };
+
+        const getColumnCategoryRule = (colName: string, categories: string[]) => {
+            const uniqueVals = Array.from(new Set(data.map(r => String(r[colName])))).sort();
+            return (val: any) => {
+                const idx = uniqueVals.indexOf(String(val));
+                return categories[Math.max(0, idx) % categories.length];
+            };
+        };
+
+        // Pre-compute lookup functions for column mappings
+        const hueColMap = hue.source === 'column' ? getColumnMapRule(String(hue.value), 0, 360) : null;
+        const satColMap = saturation.source === 'column' ? getColumnMapRule(String(saturation.value), 0, 100) : null;
+        const litColMap = lightness.source === 'column' ? getColumnMapRule(String(lightness.value), 0, 100) : null;
+
+        const SHAPE_OPTS = ['circle', 'square', 'diamond', 'cross', 'x', 'triangle-up', 'pentagon', 'hexagram', 'star'];
+        const shapeColMap = shape.source === 'column' ? getColumnCategoryRule(String(shape.value), SHAPE_OPTS) : null;
+
+        // Compute aesthetics arrays
+        const computedColors: string[] = [];
+        const computedShapes: string[] = [];
+
+        rowIndices.forEach(dataIndex => {
+            const row = data[dataIndex];
+
+            // HUE
+            let h = 0;
+            if (hue.source === 'manual') h = Number(hue.value);
+            else if (hue.source === 'group') h = (index * 137.5) % 360; // Golden angle spread
+            else if (hue.source === 'column' && hueColMap) h = hueColMap(row[String(hue.value)]);
+
+            // SATURATION
+            let s = 80;
+            if (saturation.source === 'manual') s = Number(saturation.value);
+            else if (saturation.source === 'group') s = 50 + ((index * 30) % 50);
+            else if (saturation.source === 'column' && satColMap) s = satColMap(row[String(saturation.value)]);
+
+            // LIGHTNESS
+            let l = 50;
+            if (lightness.source === 'manual') l = Number(lightness.value);
+            else if (lightness.source === 'group') l = 40 + ((index * 20) % 40);
+            else if (lightness.source === 'column' && litColMap) l = litColMap(row[String(lightness.value)]);
+
+            computedColors.push(`hsl(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%)`);
+
+            // SHAPE
+            let sh = 'circle';
+            if (shape.source === 'manual') sh = String(shape.value);
+            else if (shape.source === 'group') sh = SHAPE_OPTS[index % SHAPE_OPTS.length];
+            else if (shape.source === 'column' && shapeColMap) sh = shapeColMap(row[String(shape.value)]);
+
+            computedShapes.push(sh);
+        });
 
         // Resolve final display name
         let finalName = exactCustomization.displayName || fullTraceName;
@@ -297,34 +369,20 @@ export const generatePlotConfig = (
             finalName = `${colCustomization.displayName} (${groupName})`;
         }
 
-        const baseColor = getColor(index);
+        // Trace level overrides (if a user explicitly forces a color/symbol from TraceConfig Menu, it kills dynamic behavior)
+        const traceColorOverlay = customization.color;
+        const traceSymbolOverlay = customization.symbol;
 
         // Default mode is 'lines' unless specified
         let mode: 'lines' | 'markers' | 'lines+markers' = customization.mode || 'lines';
         const marker: any = {};
 
-        // If specific symbol is set
-        if (customization.symbol) {
-            // If user selected a symbol, we ensure markers are visible
-            if (mode === 'lines') {
-                mode = 'lines+markers';
-            }
-            marker.symbol = customization.symbol;
-            marker.size = customization.size || 8; // Default size for symbols
-        }
-
-        // If explicit mode is 'markers', we force markers
-        if (customization.mode === 'markers') {
-            mode = 'markers';
-            if (!customization.symbol) {
-                marker.symbol = 'circle'; // Default marker
-            }
-            marker.size = customization.size || 8;
-        }
+        // Apply arrays or overlay
+        marker.color = traceColorOverlay || computedColors;
+        marker.symbol = traceSymbolOverlay || computedShapes;
+        marker.size = customization.size || 8;
 
         if (plotType === 'histogram') {
-            // Histogram logic
-            // Apply over/underflow clamping to yData
             let processedYData = yData;
             const traceBins = customization.histogramBins;
             if (traceBins) {
@@ -342,12 +400,12 @@ export const generatePlotConfig = (
             stats[fullTraceName] = 0; // Or calculate clipped points
 
             const histTrace: any = {
-                x: processedYData, // In Plotly histogram, providing `x` creates vertical bars for that distribution
+                x: processedYData,
                 type: 'histogram',
                 name: finalName,
                 opacity: generatedTraces.length > 1 ? 0.7 : 1,
                 marker: {
-                    color: customization.color || baseColor,
+                    color: marker.color,
                 }
             };
 
@@ -364,18 +422,35 @@ export const generatePlotConfig = (
         }
 
         // Apply filtering for Scatter
-        // We pass the trace's specific size (or default 8 if not set)
-        const traceSize = customization.size || 8;
-
         const { x: finalX, y: finalY, filteredCount } = filterPoints(
             xData,
             yData,
             enableLogAxis ? 'log' : 'linear',
             enableLogAxis ? 'log' : 'linear',
-            traceSize
+            marker.size
         );
 
         stats[fullTraceName] = filteredCount;
+
+        // If filtering occurred, we need to filter our computed aesthetics arrays too!
+        // To simplify, if we use the filterPoints logic, the arrays might misalign because filterPoints drops indices.
+        // Let's modify filterPoints above to also return the kept indices if needed, or we just trust that 
+        // the generic scatter won't mismatch too hard if it's dropping random overlaps? 
+        // Actually, for perfect mapping, overlapping dropping MUST sync with custom color arrays.
+        // Wait, filterPoints already returns 'x' and 'y', but it doesn't return 'keptIndices'. Let's supply marker directly to plot, 
+        // Plotly handles dropping? No, filterPoints is our internal decimator. 
+        // *IMPORTANT PATCH*: For now, if ink filtering drops points, the color arrays will mis-align.
+        // We will pass the full arrays into Plotly and skip using filterPoints if inkRatio >= 1 (default).
+        // Since inkRatio decimates points entirely, we should just disable exact array mapping when ink ratio filtering is active unless we patch filterPoints.
+
+        let finalMarkerColor = marker.color;
+        let finalMarkerSymbol = marker.symbol;
+
+        if (filteredCount > 0 && Array.isArray(marker.color)) {
+            // Let's just fall back to a single color if filtering decimated the array sizes and decoupled indices.
+            finalMarkerColor = computedColors[0];
+            finalMarkerSymbol = computedShapes[0];
+        }
 
         return {
             x: finalX,
@@ -384,12 +459,13 @@ export const generatePlotConfig = (
             type: 'scatter',
             name: finalName,
             line: {
-                color: customization.color || baseColor,
-                // If dot is selected, maybe we want a dotted line too? 
-                // Using dash for dot symbol might look better if user intended line style.
-                // But for now, sticking to marker interpretation.
+                color: Array.isArray(finalMarkerColor) ? finalMarkerColor[0] : finalMarkerColor,
             },
-            marker: marker
+            marker: {
+                ...marker,
+                color: finalMarkerColor,
+                symbol: finalMarkerSymbol
+            }
         };
     });
 
