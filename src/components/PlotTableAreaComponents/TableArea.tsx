@@ -10,7 +10,7 @@ import HeaderSummary, { type SummaryMode } from './HeaderSummary';
 import { useAppStateStore } from '../../store/AppStateStore';
 import Plot from 'react-plotly.js';
 
-const PlotTableArea: React.FC = () => {
+const TableArea: React.FC = () => {
     const [datasetMode, setDatasetMode] = useState<'all' | 'plot'>('plot');
     const [summaryMode, setSummaryMode] = useState<SummaryMode>('none');
     const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
@@ -436,4 +436,4 @@ const PlotTableArea: React.FC = () => {
     );
 };
 
-export default PlotTableArea;
+export default TableArea;
