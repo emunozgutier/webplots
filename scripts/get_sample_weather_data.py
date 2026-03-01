@@ -43,7 +43,7 @@ def main():
             "longitude": coords["lon"],
             "start_date": start_date,
             "end_date": end_date,
-            "daily": "temperature_2m_mean,rain_sum,surface_pressure_mean",
+            "daily": "temperature_2m_mean,rain_sum,surface_pressure_mean,temperature_2m_max,temperature_2m_min,sunrise,sunset",
             "timezone": "auto"
         }
 

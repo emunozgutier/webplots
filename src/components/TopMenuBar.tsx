@@ -159,14 +159,29 @@ const TopMenuBar: React.FC = () => {
 
                     if (daily && daily.time) {
                         for (let i = 0; i < daily.time.length; i++) {
+                            const dateStr = daily.time[i];
+                            const dateObj = new Date(dateStr);
+
+                            // Calculate day out of the year
+                            const start = new Date(dateObj.getFullYear(), 0, 0);
+                            const diff = (dateObj.getTime() - start.getTime()) + ((start.getTimezoneOffset() - dateObj.getTimezoneOffset()) * 60 * 1000);
+                            const oneDay = 1000 * 60 * 60 * 24;
+                            const dayOfYear = Math.floor(diff / oneDay);
+
                             flattenedData.push({
                                 city: city,
-                                date: daily.time[i],
+                                date: dateStr,
+                                year: dateObj.getFullYear(),
+                                day_out_of_the_year: dayOfYear,
+                                temp_day_high: daily.temperature_2m_max?.[i] ?? null,
+                                temp_day_low: daily.temperature_2m_min?.[i] ?? null,
+                                sunrise_time: daily.sunrise?.[i] ?? null,
+                                sunset_time: daily.sunset?.[i] ?? null,
                                 latitude: cityData.latitude,
                                 longitude: cityData.longitude,
-                                temperature_2m_mean: daily.temperature_2m_mean[i],
-                                rain_sum: daily.rain_sum[i],
-                                surface_pressure_mean: daily.surface_pressure_mean[i]
+                                temperature_2m_mean: daily.temperature_2m_mean?.[i] ?? null,
+                                rain_sum: daily.rain_sum?.[i] ?? null,
+                                surface_pressure_mean: daily.surface_pressure_mean?.[i] ?? null
                             });
                         }
                     }
