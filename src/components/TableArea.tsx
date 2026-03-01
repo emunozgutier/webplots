@@ -7,11 +7,62 @@ import { useGroupSideMenuStore } from '../store/GroupSideMenuStore';
 import { useFilterSideMenuStore } from '../store/FilterSideMenuStore';
 import { useColorSideMenuStore } from '../store/ColorSideMenuStore';
 import HeaderSummary, { type SummaryMode } from './TableAreaComponents/HeaderSummary';
+import { useAppStateStore } from '../store/AppStateStore';
+import Plot from 'react-plotly.js';
 
 const TableArea: React.FC = () => {
     const [datasetMode, setDatasetMode] = useState<'all' | 'plot'>('plot');
     const [summaryMode, setSummaryMode] = useState<SummaryMode>('none');
     const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
+    const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
+    const { setPopupContent } = useAppStateStore();
+
+    const handleSortAsc = (key: string) => {
+        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') setSortConfig(null);
+        else setSortConfig({ key, direction: 'asc' });
+    };
+
+    const handleSortDesc = (key: string) => {
+        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'desc') setSortConfig(null);
+        else setSortConfig({ key, direction: 'desc' });
+    };
+
+    const handleZoom = (key: string) => {
+        const rawValues = displayData.map(row => row[key]).filter(v => v !== null && v !== undefined && v !== '');
+        const numericValues = rawValues.map(v => Number(v)).filter(v => !isNaN(v));
+
+        if (numericValues.length > 0) {
+            setPopupContent(
+                <div className="bg-white p-4 rounded shadow d-flex flex-column" style={{ width: '100%', height: '100%' }}>
+                    <h4>Distribution of {key}</h4>
+                    <div className="flex-grow-1 position-relative">
+                        <Plot
+                            data={[{ x: numericValues, type: 'histogram', marker: { color: '#0d6efd' } }]}
+                            layout={{ autosize: true, margin: { l: 40, r: 40, t: 40, b: 40 } }}
+                            useResizeHandler={true}
+                            style={{ width: '100%', height: '100%' }}
+                        />
+                    </div>
+                </div>
+            );
+        } else {
+            const counts: Record<string, number> = {};
+            rawValues.forEach(v => { counts[String(v)] = (counts[String(v)] || 0) + 1; });
+            setPopupContent(
+                <div className="bg-white p-4 rounded shadow d-flex flex-column" style={{ width: '100%', height: '100%' }}>
+                    <h4>Frequencies of {key}</h4>
+                    <div className="flex-grow-1 position-relative">
+                        <Plot
+                            data={[{ x: Object.keys(counts), y: Object.values(counts), type: 'bar', marker: { color: '#0d6efd' } }]}
+                            layout={{ autosize: true, margin: { l: 40, r: 40, t: 40, b: 60 } }}
+                            useResizeHandler={true}
+                            style={{ width: '100%', height: '100%' }}
+                        />
+                    </div>
+                </div>
+            );
+        }
+    };
 
     // Data Sources
     const { data: allData, columns: allColumns } = useCsvDataStore();
@@ -60,6 +111,7 @@ const TableArea: React.FC = () => {
     // Reset selection when dataset changes
     React.useEffect(() => {
         setSelectedCell(null);
+        setSortConfig(null);
     }, [datasetMode, displayData, displayColumns]);
 
     // Compute stats for detailed mode color coding
@@ -96,9 +148,34 @@ const TableArea: React.FC = () => {
         return stats;
     }, [displayData, displayColumns, summaryMode]);
 
+    const sortedData = useMemo(() => {
+        if (!sortConfig) return displayData;
+
+        const sorted = [...displayData];
+        sorted.sort((a, b) => {
+            let aVal = a[sortConfig.key];
+            let bVal = b[sortConfig.key];
+
+            // Handle nulls
+            if (aVal === null || aVal === undefined) aVal = '';
+            if (bVal === null || bVal === undefined) bVal = '';
+
+            // Handle numbers
+            if (!isNaN(Number(aVal)) && !isNaN(Number(bVal)) && aVal !== '' && bVal !== '') {
+                aVal = Number(aVal);
+                bVal = Number(bVal);
+            }
+
+            if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+            if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+        return sorted;
+    }, [displayData, sortConfig]);
+
     // Slice for performance (top 500 records)
     const MAX_ROWS = 500;
-    const slicedData = displayData.slice(0, MAX_ROWS);
+    const slicedData = sortedData.slice(0, MAX_ROWS);
 
     if (!displayData || displayData.length === 0) {
         return (
@@ -251,7 +328,34 @@ const TableArea: React.FC = () => {
                                     key={idx}
                                     className={`text-nowrap align-top ${selectedCell?.col === idx + 1 ? 'bg-primary text-white' : 'bg-light'}`}
                                 >
-                                    <div className="fw-bold">{col}</div>
+                                    <div className="d-flex justify-content-between align-items-center mb-1">
+                                        <div className="fw-bold">{col}</div>
+                                        <div className="d-flex gap-1 ms-2">
+                                            <div className="btn-group">
+                                                <button
+                                                    className={`btn btn-sm py-0 px-1 ${sortConfig?.key === col && sortConfig.direction === 'asc' ? 'btn-secondary' : 'btn-outline-secondary'}`}
+                                                    title="Sort Ascending"
+                                                    onClick={() => handleSortAsc(col)}
+                                                >
+                                                    <i className="bi bi-arrow-up"></i>
+                                                </button>
+                                                <button
+                                                    className={`btn btn-sm py-0 px-1 ${sortConfig?.key === col && sortConfig.direction === 'desc' ? 'btn-secondary' : 'btn-outline-secondary'}`}
+                                                    title="Sort Descending"
+                                                    onClick={() => handleSortDesc(col)}
+                                                >
+                                                    <i className="bi bi-arrow-down"></i>
+                                                </button>
+                                            </div>
+                                            <button
+                                                className="btn btn-sm btn-outline-info py-0 px-1 ms-1"
+                                                title="Zoom Data"
+                                                onClick={() => handleZoom(col)}
+                                            >
+                                                <i className="bi bi-zoom-in"></i>
+                                            </button>
+                                        </div>
+                                    </div>
                                     <HeaderSummary data={displayData} column={col} mode={summaryMode} />
                                 </th>
                             ))}
