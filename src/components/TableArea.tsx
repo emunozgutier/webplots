@@ -62,6 +62,40 @@ const TableArea: React.FC = () => {
         setSelectedCell(null);
     }, [datasetMode, displayData, displayColumns]);
 
+    // Compute stats for detailed mode color coding
+    const numericStats = useMemo(() => {
+        if (summaryMode !== 'detailed') return {};
+
+        const stats: Record<string, { min: number, max: number }> = {};
+        displayColumns.forEach(col => {
+            // Sample values to check if mostly numeric
+            const rawValues = displayData.map(row => row[col]).filter(v => v !== null && v !== undefined && v !== '');
+            if (rawValues.length === 0) return;
+
+            let numCount = 0;
+            const numericValues: number[] = [];
+
+            for (const v of rawValues) {
+                if (typeof v === 'number') {
+                    numCount++;
+                    numericValues.push(v);
+                } else if (typeof v === 'string' && !isNaN(Number(v)) && v.trim() !== '') {
+                    numCount++;
+                    numericValues.push(Number(v));
+                }
+            }
+
+            // If more than 80% are numbers, treat as numeric column for color coding
+            if (numCount / rawValues.length > 0.8 && numericValues.length > 0) {
+                stats[col] = {
+                    min: Math.min(...numericValues),
+                    max: Math.max(...numericValues)
+                };
+            }
+        });
+        return stats;
+    }, [displayData, displayColumns, summaryMode]);
+
     // Slice for performance (top 500 records)
     const MAX_ROWS = 500;
     const slicedData = displayData.slice(0, MAX_ROWS);
@@ -249,10 +283,26 @@ const TableArea: React.FC = () => {
                                         else if (typeof val === 'boolean') displayVal = String(val);
 
                                         let bgColor = '';
-                                        if (isCellSelected) bgColor = '#0d6efd'; // Primary blue
-                                        else if (isRowSelected || isColSelected) bgColor = '#e9ecef'; // Light gray highlight
-
                                         let textColor = isCellSelected ? '#fff' : '';
+
+                                        if (isCellSelected) {
+                                            bgColor = '#0d6efd'; // Primary blue
+                                        } else if (isRowSelected || isColSelected) {
+                                            bgColor = '#e9ecef'; // Light gray highlight
+                                        } else if (summaryMode === 'detailed' && numericStats[col]) {
+                                            const { min, max } = numericStats[col];
+                                            const numVal = Number(val);
+                                            // Make sure we have a valid range
+                                            if (!isNaN(numVal) && max > min) {
+                                                const ratio = (numVal - min) / (max - min);
+                                                // Color scale: Red (High) to Blue (Low)
+                                                // We can make the color vibrant but semi-transparent so text is readable
+                                                const r = Math.round(ratio * 255);
+                                                const b = Math.round((1 - ratio) * 255);
+                                                bgColor = `rgba(${r}, 40, ${b}, 0.25)`;
+                                                textColor = '#000'; // Force black text for contrast against gradient
+                                            }
+                                        }
 
                                         return (
                                             <td
