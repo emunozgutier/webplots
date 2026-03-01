@@ -8,14 +8,33 @@ import { useGroupSideMenuStore } from '../../store/GroupSideMenuStore';
 import { useColorSideMenuStore } from '../../store/ColorSideMenuStore';
 
 
-interface ControllerButtonsProps {
+export const ViewToggleButtons: React.FC<{ viewMode: 'plot' | 'table'; setViewMode: (mode: 'plot' | 'table') => void; }> = ({ viewMode, setViewMode }) => {
+    return (
+        <div className="btn-group">
+            <button
+                className={`btn btn-sm ${viewMode === 'plot' ? 'btn-primary' : 'btn-outline-primary'}`}
+                onClick={() => setViewMode('plot')}
+                title="View Plot"
+            >
+                🎨 Plot
+            </button>
+            <button
+                className={`btn btn-sm ${viewMode === 'table' ? 'btn-primary' : 'btn-outline-primary'}`}
+                onClick={() => setViewMode('table')}
+                title="View Table"
+            >
+                📇 Table
+            </button>
+        </div>
+    );
+};
+
+interface PlotActionButtonsProps {
     onOpenSettings: () => void;
     onOpenDebug: () => void;
-    viewMode: 'plot' | 'table';
-    setViewMode: (mode: 'plot' | 'table') => void;
 }
 
-const ControllerButtons: React.FC<ControllerButtonsProps> = ({ onOpenSettings, onOpenDebug, viewMode, setViewMode }) => {
+export const PlotActionButtons: React.FC<PlotActionButtonsProps> = ({ onOpenSettings, onOpenDebug }) => {
     const { plotLayout } = usePlotLayoutStore();
     const { traceConfig } = useTraceConfigStore();
     const { data } = useCsvDataStore();
@@ -26,7 +45,6 @@ const ControllerButtons: React.FC<ControllerButtonsProps> = ({ onOpenSettings, o
     const handleSaveHTML = () => {
         const { plotData, layout } = generatePlotConfig(data, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData);
 
-        // Basic HTML template to render the plot
         const htmlContent = `
 <!DOCTYPE html>
 <html>
@@ -56,51 +74,33 @@ const ControllerButtons: React.FC<ControllerButtonsProps> = ({ onOpenSettings, o
     };
 
     return (
-        <div className="d-flex align-items-center gap-2">
-            <div className="btn-group">
+        <div className="p-2 bg-light border-top d-flex justify-content-end align-items-center mt-auto shadow-sm" style={{ zIndex: 10 }}>
+            <div className="btn-group btn-group-sm">
                 <button
-                    className={`btn btn-sm ${viewMode === 'plot' ? 'btn-primary' : 'btn-outline-primary'}`}
-                    onClick={() => setViewMode('plot')}
-                    title="View Plot"
+                    className="btn btn-outline-secondary"
+                    onClick={onOpenDebug}
+                    title="Toggle Code Receipt"
                 >
-                    🎨 Plot
+                    <i className="bi bi-code-square me-1"></i>
+                    Debug Trace
                 </button>
                 <button
-                    className={`btn btn-sm ${viewMode === 'table' ? 'btn-primary' : 'btn-outline-primary'}`}
-                    onClick={() => setViewMode('table')}
-                    title="View Table"
+                    className="btn btn-outline-secondary"
+                    onClick={handleSaveHTML}
+                    title="Save as Interactive HTML"
                 >
-                    📇 Table
+                    <i className="bi bi-filetype-html me-1"></i>
+                    Save as HTML
+                </button>
+                <button
+                    className="btn btn-outline-secondary"
+                    onClick={onOpenSettings}
+                    title="Open Settings"
+                >
+                    <i className="bi bi-gear me-1"></i>
+                    Settings
                 </button>
             </div>
-
-            {viewMode === 'plot' && (
-                <div className="btn-group">
-                    <button
-                        className="btn btn-sm btn-outline-secondary"
-                        onClick={onOpenDebug}
-                        title="Toggle Code Receipt"
-                    >
-                        Debug Trace
-                    </button>
-                    <button
-                        className="btn btn-sm btn-outline-secondary"
-                        onClick={handleSaveHTML}
-                        title="Save as Interactive HTML"
-                    >
-                        Save as interactive HTML
-                    </button>
-                    <button
-                        className="btn btn-sm btn-outline-secondary"
-                        onClick={onOpenSettings}
-                        title="Open Settings"
-                    >
-                        Settings
-                    </button>
-                </div>
-            )}
         </div>
     );
 };
-
-export default ControllerButtons;
