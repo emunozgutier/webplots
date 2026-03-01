@@ -100,9 +100,7 @@ const PlotArea: React.FC = () => {
             <PopupMenu />
             <div className="card shadow-sm flex-grow-1 mb-3">
                 <div className="card-header bg-white d-flex justify-content-end align-items-center py-2">
-                    <ControllerButtons
-                        onOpenSettings={handleOpenSettings}
-                        onOpenDebug={handleOpenDebug}
+                    <ViewToggleButtons
                         viewMode={viewMode}
                         setViewMode={setViewMode}
                     />
@@ -111,13 +109,21 @@ const PlotArea: React.FC = () => {
                     {viewMode === 'table' ? (
                         <TableArea />
                     ) : hasData ? (
-                        <Plot
-                            data={plotData}
-                            layout={layout}
-                            useResizeHandler={true}
-                            style={{ width: '100%', height: '100%' }}
-                            className="w-100 h-100"
-                        />
+                        <div className="d-flex flex-column h-100">
+                            <div className="flex-grow-1 position-relative">
+                                <Plot
+                                    data={plotData}
+                                    layout={layout}
+                                    useResizeHandler={true}
+                                    style={{ width: '100%', height: '100%' }}
+                                    className="w-100 h-100"
+                                />
+                            </div>
+                            <PlotActionButtons
+                                onOpenSettings={handleOpenSettings}
+                                onOpenDebug={handleOpenDebug}
+                            />
+                        </div>
                     ) : (
                         <div className="d-flex flex-column justify-content-center align-items-center h-100 text-muted">
                             <div className="display-1 mb-3">📊</div>
