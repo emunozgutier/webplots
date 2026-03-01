@@ -1,5 +1,5 @@
 {
-    "commit_title": "Condense controller buttons; hide actions in table",
-    "commit_message": "Refactor controller button layout: use a flex container with separated btn-groups for view toggles and action buttons. Action buttons (Debug Trace, Save as interactive HTML, Settings) are now only rendered when viewMode === 'plot', reducing clutter in table view and improving spacing/responsiveness.",
+    "commit_title": "Refactor PlotArea into PlotTableArea",
+    "commit_message": "Replace the old PlotArea usage with a new PlotTableArea component and update App to render it. PlotTableArea is a refactor that removes inline Plotly rendering and heavy plot-generation logic; instead it composes smaller subcomponents (TableArea and a child PlotArea) and manages a local viewMode ('plot' | 'table'). Kept ResizeObserver logic to update chart dimensions via the ink ratio store. Removed direct usages of many stores, Plotly helpers, settings/debug popup handlers, and trace/stat side-effects from this file \u2014 those responsibilities should now live in the child components or stores. This change splits concerns and simplifies the top-level plot/table area, but note that some side-effects (stats/traces/popups) were removed here and may require wiring elsewhere.",
     "version_string": "2026.09.6"
 }
