@@ -56,42 +56,49 @@ const ControllerButtons: React.FC<ControllerButtonsProps> = ({ onOpenSettings, o
     };
 
     return (
-        <div className="btn-group">
-            <button
-                className={`btn btn-sm ${viewMode === 'plot' ? 'btn-primary' : 'btn-outline-primary'}`}
-                onClick={() => setViewMode('plot')}
-                title="View Plot"
-            >
-                🎨 Plot
-            </button>
-            <button
-                className={`btn btn-sm ${viewMode === 'table' ? 'btn-primary' : 'btn-outline-primary'}`}
-                onClick={() => setViewMode('table')}
-                title="View Table"
-            >
-                📇 Table
-            </button>
-            <button
-                className="btn btn-sm btn-outline-secondary ms-2"
-                onClick={onOpenDebug}
-                title="Toggle Code Receipt"
-            >
-                Debug Trace
-            </button>
-            <button
-                className="btn btn-sm btn-outline-secondary"
-                onClick={handleSaveHTML}
-                title="Save as Interactive HTML"
-            >
-                Save as interactive HTML
-            </button>
-            <button
-                className="btn btn-sm btn-outline-secondary"
-                onClick={onOpenSettings}
-                title="Open Settings"
-            >
-                Settings
-            </button>
+        <div className="d-flex align-items-center gap-2">
+            <div className="btn-group">
+                <button
+                    className={`btn btn-sm ${viewMode === 'plot' ? 'btn-primary' : 'btn-outline-primary'}`}
+                    onClick={() => setViewMode('plot')}
+                    title="View Plot"
+                >
+                    🎨 Plot
+                </button>
+                <button
+                    className={`btn btn-sm ${viewMode === 'table' ? 'btn-primary' : 'btn-outline-primary'}`}
+                    onClick={() => setViewMode('table')}
+                    title="View Table"
+                >
+                    📇 Table
+                </button>
+            </div>
+
+            {viewMode === 'plot' && (
+                <div className="btn-group">
+                    <button
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={onOpenDebug}
+                        title="Toggle Code Receipt"
+                    >
+                        Debug Trace
+                    </button>
+                    <button
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={handleSaveHTML}
+                        title="Save as Interactive HTML"
+                    >
+                        Save as interactive HTML
+                    </button>
+                    <button
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={onOpenSettings}
+                        title="Open Settings"
+                    >
+                        Settings
+                    </button>
+                </div>
+            )}
         </div>
     );
 };
