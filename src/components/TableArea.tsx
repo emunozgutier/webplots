@@ -112,11 +112,33 @@ const TableArea: React.FC = () => {
 
     return (
         <div
-            className="d-flex flex-column h-100 w-100 p-3 bg-white"
+            className="d-flex flex-column p-3 bg-white"
             onKeyDown={handleKeyDown}
             tabIndex={0}
-            style={{ outline: 'none' }}
+            style={{ outline: 'none', position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }}
         >
+            <style>{`
+                .table-scroll-container::-webkit-scrollbar {
+                    width: 14px;
+                    height: 14px;
+                }
+                .table-scroll-container::-webkit-scrollbar-track {
+                    background: #f8f9fa;
+                    border-radius: 4px;
+                }
+                .table-scroll-container::-webkit-scrollbar-thumb {
+                    background-color: #adb5bd;
+                    border-radius: 4px;
+                    border: 3px solid #f8f9fa;
+                }
+                .table-scroll-container::-webkit-scrollbar-thumb:hover {
+                    background-color: #6c757d;
+                }
+                .table-scroll-container {
+                    scrollbar-width: thin;
+                    scrollbar-color: #adb5bd #f8f9fa;
+                }
+            `}</style>
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <h5 className="mb-0 text-dark">Data Table</h5>
                 <ButtonGroup>
@@ -145,7 +167,7 @@ const TableArea: React.FC = () => {
                 </ButtonGroup>
             </div>
 
-            <div className="flex-grow-1 overflow-auto border rounded" style={{ position: 'relative' }}>
+            <div className="flex-grow-1 overflow-auto border rounded table-scroll-container" style={{ position: 'relative' }}>
                 <Table bordered hover size="sm" className="mb-0" style={{ minWidth: 'max-content' }}>
                     <thead className="sticky-top bg-light" style={{ zIndex: 10 }}>
                         <tr>
