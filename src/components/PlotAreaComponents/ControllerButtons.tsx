@@ -11,9 +11,11 @@ import { useColorSideMenuStore } from '../../store/ColorSideMenuStore';
 interface ControllerButtonsProps {
     onOpenSettings: () => void;
     onOpenDebug: () => void;
+    viewMode: 'plot' | 'table';
+    setViewMode: (mode: 'plot' | 'table') => void;
 }
 
-const ControllerButtons: React.FC<ControllerButtonsProps> = ({ onOpenSettings, onOpenDebug }) => {
+const ControllerButtons: React.FC<ControllerButtonsProps> = ({ onOpenSettings, onOpenDebug, viewMode, setViewMode }) => {
     const { plotLayout } = usePlotLayoutStore();
     const { traceConfig } = useTraceConfigStore();
     const { data } = useCsvDataStore();
@@ -56,7 +58,21 @@ const ControllerButtons: React.FC<ControllerButtonsProps> = ({ onOpenSettings, o
     return (
         <div className="btn-group">
             <button
-                className="btn btn-sm btn-outline-secondary"
+                className={`btn btn-sm ${viewMode === 'plot' ? 'btn-primary' : 'btn-outline-primary'}`}
+                onClick={() => setViewMode('plot')}
+                title="View Plot"
+            >
+                🎨 Plot
+            </button>
+            <button
+                className={`btn btn-sm ${viewMode === 'table' ? 'btn-primary' : 'btn-outline-primary'}`}
+                onClick={() => setViewMode('table')}
+                title="View Table"
+            >
+                📇 Table
+            </button>
+            <button
+                className="btn btn-sm btn-outline-secondary ms-2"
                 onClick={onOpenDebug}
                 title="Toggle Code Receipt"
             >

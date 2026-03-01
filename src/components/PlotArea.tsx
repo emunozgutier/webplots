@@ -13,6 +13,7 @@ import ControllerButtons from './PlotAreaComponents/ControllerButtons';
 import Settings from './PlotAreaComponents/Settings';
 import Debug from './PlotAreaComponents/Debug';
 import PopupMenu from './PopupMenu';
+import TableArea from './TableArea';
 
 import { useFilteredData } from '../hooks/useFilteredData';
 
@@ -26,6 +27,8 @@ const PlotArea: React.FC = () => {
     const { inkRatio, setFilteredStats, chartWidth, chartHeight, pointRadius, setChartDimensions, useCustomRadius, customRadius } = useInkRatioStore();
     const { colorData } = useColorSideMenuStore(); // Grabbed colorData
     const containerRef = React.useRef<HTMLDivElement>(null);
+
+    const [viewMode, setViewMode] = React.useState<'plot' | 'table'>('plot');
 
     const { plotData, layout, hasData, receipt, stats, generatedTraces } = useMemo(
         () => generatePlotConfig(data, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData, inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius),
@@ -97,10 +100,17 @@ const PlotArea: React.FC = () => {
             <PopupMenu />
             <div className="card shadow-sm flex-grow-1 mb-3">
                 <div className="card-header bg-white d-flex justify-content-end align-items-center py-2">
-                    <ControllerButtons onOpenSettings={handleOpenSettings} onOpenDebug={handleOpenDebug} />
+                    <ControllerButtons
+                        onOpenSettings={handleOpenSettings}
+                        onOpenDebug={handleOpenDebug}
+                        viewMode={viewMode}
+                        setViewMode={setViewMode}
+                    />
                 </div>
                 <div className="card-body p-0 position-relative" ref={containerRef}>
-                    {hasData ? (
+                    {viewMode === 'table' ? (
+                        <TableArea />
+                    ) : hasData ? (
                         <Plot
                             data={plotData}
                             layout={layout}
