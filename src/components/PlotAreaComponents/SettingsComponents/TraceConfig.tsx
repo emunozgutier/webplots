@@ -350,7 +350,7 @@ const TraceConfig: React.FC = () => {
 
                                     const assignedColor = currentColors[index % currentColors.length] || '#000000';
                                     const effectiveColor = exactCustomization.color || assignedColor;
-                                    const currentMode = exactCustomization.mode || colCustomization.mode || 'lines';
+                                    const currentMode = exactCustomization.mode || colCustomization.mode || 'markers';
                                     const currentSymbol = exactCustomization.symbol || colCustomization.symbol || 'circle';
 
                                     // Display name resolution logic mimicking PlotlyHelpers: exact > col + group > default

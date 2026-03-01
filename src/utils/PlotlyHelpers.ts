@@ -373,8 +373,8 @@ export const generatePlotConfig = (
         const traceColorOverlay = customization.color;
         const traceSymbolOverlay = customization.symbol;
 
-        // Default mode is 'lines' unless specified
-        let mode: 'lines' | 'markers' | 'lines+markers' = customization.mode || 'lines';
+        // Default mode is 'markers' unless specified
+        let mode: 'lines' | 'markers' | 'lines+markers' = customization.mode || 'markers';
         const marker: any = {};
 
         // Apply arrays or overlay
@@ -523,7 +523,7 @@ export const generatePlotConfig = (
         const finalColor = customization.color || baseColor;
         const finalSize = customization.size || 8;
 
-        let mode = customization.mode || 'lines';
+        let mode = customization.mode || 'markers';
         let markerParams = '';
 
         if (customization.symbol) {
