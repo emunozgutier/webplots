@@ -184,7 +184,10 @@ const HeaderSummary: React.FC<HeaderSummaryProps> = ({ data, column, mode }) => 
                 {stats.type === 'category' ? (
                     <span>{(stats as any).uniqueCount} distinct</span>
                 ) : (
-                    <span>Min: {(stats as any).min} | Max: {(stats as any).max}</span>
+                    <div className="d-flex flex-column">
+                        <span>Max: {(stats as any).max}</span>
+                        <span>Min: {(stats as any).min}</span>
+                    </div>
                 )}
             </div>
         );
