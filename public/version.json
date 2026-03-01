@@ -1,5 +1,5 @@
 {
-    "commit_title": "Simplify keyframe percentage stops",
-    "commit_message": "Replace redundant percentage ranges in InkRatioAnimation keyframes with explicit 0%/50%/100% stops. Updated shrinkPoint, pulseSize, and pulseGlow animations in src/components/SideMenuComponents/subcomponents/InkRatioAnimation.tsx to use single percentage entries instead of repeating ranges (e.g. 0%,25% -> 0%; 75%,100% -> 100%), keeping the same transform origins and animation behavior while making the CSS clearer and more concise.",
-    "version_string": "2026.09.4"
+    "commit_title": "Condense controller buttons; hide actions in table",
+    "commit_message": "Refactor controller button layout: use a flex container with separated btn-groups for view toggles and action buttons. Action buttons (Debug Trace, Save as interactive HTML, Settings) are now only rendered when viewMode === 'plot', reducing clutter in table view and improving spacing/responsiveness.",
+    "version_string": "2026.09.6"
 }
