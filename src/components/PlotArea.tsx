@@ -13,7 +13,7 @@ import { ViewToggleButtons, PlotActionButtons } from './PlotAreaComponents/Contr
 import Settings from './PlotAreaComponents/Settings';
 import Debug from './PlotAreaComponents/Debug';
 import PopupMenu from './PopupMenu';
-import TableArea from './TableArea';
+import PlotTableArea from './PlotTableAreaComponents/PlotTableArea';
 
 import { useFilteredData } from '../hooks/useFilteredData';
 
@@ -107,7 +107,7 @@ const PlotArea: React.FC = () => {
                 </div>
                 <div className="card-body p-0 position-relative" ref={containerRef}>
                     {viewMode === 'table' ? (
-                        <TableArea />
+                        <PlotTableArea />
                     ) : hasData ? (
                         <div className="d-flex flex-column h-100">
                             <div className="flex-grow-1 position-relative">

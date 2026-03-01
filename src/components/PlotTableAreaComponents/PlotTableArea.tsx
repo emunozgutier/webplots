@@ -1,16 +1,16 @@
 import React, { useMemo, useState } from 'react';
 import { Table, ButtonGroup, ToggleButton } from 'react-bootstrap';
-import { useCsvDataStore } from '../store/CsvDataStore';
-import { useFilteredData } from '../hooks/useFilteredData';
-import { useAxisSideMenuStore } from '../store/AxisSideMenuStore';
-import { useGroupSideMenuStore } from '../store/GroupSideMenuStore';
-import { useFilterSideMenuStore } from '../store/FilterSideMenuStore';
-import { useColorSideMenuStore } from '../store/ColorSideMenuStore';
-import HeaderSummary, { type SummaryMode } from './TableAreaComponents/HeaderSummary';
-import { useAppStateStore } from '../store/AppStateStore';
+import { useCsvDataStore } from '../../store/CsvDataStore';
+import { useFilteredData } from '../../hooks/useFilteredData';
+import { useAxisSideMenuStore } from '../../store/AxisSideMenuStore';
+import { useGroupSideMenuStore } from '../../store/GroupSideMenuStore';
+import { useFilterSideMenuStore } from '../../store/FilterSideMenuStore';
+import { useColorSideMenuStore } from '../../store/ColorSideMenuStore';
+import HeaderSummary, { type SummaryMode } from './HeaderSummary';
+import { useAppStateStore } from '../../store/AppStateStore';
 import Plot from 'react-plotly.js';
 
-const TableArea: React.FC = () => {
+const PlotTableArea: React.FC = () => {
     const [datasetMode, setDatasetMode] = useState<'all' | 'plot'>('plot');
     const [summaryMode, setSummaryMode] = useState<SummaryMode>('none');
     const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
@@ -28,8 +28,8 @@ const TableArea: React.FC = () => {
     };
 
     const handleZoom = (key: string) => {
-        const rawValues = displayData.map(row => row[key]).filter(v => v !== null && v !== undefined && v !== '');
-        const numericValues = rawValues.map(v => Number(v)).filter(v => !isNaN(v));
+        const rawValues = displayData.map((row: any) => row[key]).filter((v: any) => v !== null && v !== undefined && v !== '');
+        const numericValues = rawValues.map((v: any) => Number(v)).filter((v: any) => !isNaN(v));
 
         if (numericValues.length > 0) {
             setPopupContent(
@@ -47,7 +47,7 @@ const TableArea: React.FC = () => {
             );
         } else {
             const counts: Record<string, number> = {};
-            rawValues.forEach(v => { counts[String(v)] = (counts[String(v)] || 0) + 1; });
+            rawValues.forEach((v: any) => { counts[String(v)] = (counts[String(v)] || 0) + 1; });
             setPopupContent(
                 <div className="bg-white p-4 rounded shadow d-flex flex-column" style={{ width: '100%', height: '100%' }}>
                     <h4>Frequencies of {key}</h4>
@@ -166,8 +166,8 @@ const TableArea: React.FC = () => {
                 bVal = Number(bVal);
             }
 
-            if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
-            if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+            if (aVal < bVal) return sortConfig!.direction === 'asc' ? -1 : 1;
+            if (aVal > bVal) return sortConfig!.direction === 'asc' ? 1 : -1;
             return 0;
         });
         return sorted;
@@ -323,7 +323,7 @@ const TableArea: React.FC = () => {
                     <thead className="sticky-top bg-light" style={{ zIndex: 10 }}>
                         <tr>
                             <th className={selectedCell?.col === 0 ? 'bg-primary text-white' : 'bg-light'} style={{ position: 'sticky', left: 0, zIndex: 11 }}>#</th>
-                            {displayColumns.map((col, idx) => (
+                            {displayColumns.map((col: string, idx: number) => (
                                 <th
                                     key={idx}
                                     className={`text-nowrap align-top ${selectedCell?.col === idx + 1 ? 'bg-primary text-white' : 'bg-light'}`}
@@ -333,14 +333,14 @@ const TableArea: React.FC = () => {
                                         <div className="d-flex gap-1 ms-2">
                                             <div className="btn-group">
                                                 <button
-                                                    className={`btn btn-sm py-0 px-1 ${sortConfig?.key === col && sortConfig.direction === 'asc' ? 'btn-secondary' : 'btn-outline-secondary'}`}
+                                                    className={`btn btn-sm py-0 px-1 ${sortConfig?.key === col && sortConfig?.direction === 'asc' ? 'btn-secondary' : 'btn-outline-secondary'}`}
                                                     title="Sort Ascending"
                                                     onClick={() => handleSortAsc(col)}
                                                 >
                                                     <i className="bi bi-arrow-up"></i>
                                                 </button>
                                                 <button
-                                                    className={`btn btn-sm py-0 px-1 ${sortConfig?.key === col && sortConfig.direction === 'desc' ? 'btn-secondary' : 'btn-outline-secondary'}`}
+                                                    className={`btn btn-sm py-0 px-1 ${sortConfig?.key === col && sortConfig?.direction === 'desc' ? 'btn-secondary' : 'btn-outline-secondary'}`}
                                                     title="Sort Descending"
                                                     onClick={() => handleSortDesc(col)}
                                                 >
@@ -362,7 +362,7 @@ const TableArea: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {slicedData.map((row, rowIndex) => {
+                        {slicedData.map((row: any, rowIndex: number) => {
                             const isRowSelected = selectedCell?.row === rowIndex;
                             return (
                                 <tr key={rowIndex}>
@@ -375,7 +375,7 @@ const TableArea: React.FC = () => {
                                     >
                                         {rowIndex + 1}
                                     </td>
-                                    {displayColumns.map((col, idx) => {
+                                    {displayColumns.map((col: string, idx: number) => {
                                         const colIndex = idx + 1;
                                         const isColSelected = selectedCell?.col === colIndex;
                                         const isCellSelected = isRowSelected && isColSelected;
@@ -436,4 +436,4 @@ const TableArea: React.FC = () => {
     );
 };
 
-export default TableArea;
+export default PlotTableArea;
