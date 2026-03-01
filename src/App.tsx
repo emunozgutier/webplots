@@ -1,6 +1,6 @@
 
 import SideMenu from './components/SideMenu';
-import PlotArea from './components/PlotArea';
+import PlotTableArea from './components/PlotTableArea';
 import TopMenuBar from './components/TopMenuBar';
 import { useAppStateStore } from './store/AppStateStore';
 import './App.css';
@@ -19,7 +19,7 @@ function App() {
             So we probably should keep rendering it but let it handle its state via the store.
         */}
         <SideMenu />
-        <PlotArea />
+        <PlotTableArea />
       </div>
     </div>
   );

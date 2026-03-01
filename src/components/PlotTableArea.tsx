@@ -1,59 +1,16 @@
-import React, { useMemo } from 'react';
-import Plot from 'react-plotly.js';
-
-import { useAxisSideMenuStore } from '../store/AxisSideMenuStore';
-import { useGroupSideMenuStore } from '../store/GroupSideMenuStore';
+import React from 'react';
 import { useAppStateStore } from '../store/AppStateStore';
-import { usePlotLayoutStore } from '../store/PlotLayoutStore';
-import { useTraceConfigStore } from '../store/TraceConfigStore';
-import { useInkRatioStore } from '../store/InkRatioStore';
-import { useColorSideMenuStore } from '../store/ColorSideMenuStore'; // Added this import
-import { generatePlotConfig } from '../utils/PlotlyHelpers';
-import { ViewToggleButtons, PlotActionButtons } from './PlotAreaComponents/ControllerButtons';
-import Settings from './PlotAreaComponents/Settings';
-import Debug from './PlotAreaComponents/Debug';
+import { ViewToggleButtons } from './PlotAreaComponents/ControllerButtons';
 import PopupMenu from './PopupMenu';
-import PlotTableArea from './PlotTableAreaComponents/PlotTableArea';
+import TableArea from './PlotTableAreaComponents/TableArea';
+import PlotArea from './PlotTableAreaComponents/PlotArea';
+import { useInkRatioStore } from '../store/InkRatioStore';
 
-import { useFilteredData } from '../hooks/useFilteredData';
-
-const PlotArea: React.FC = () => {
-    const data = useFilteredData();
-    const { sideMenuData } = useAxisSideMenuStore();
-    const { groupSideMenuData } = useGroupSideMenuStore();
-    const { isSideMenuOpen } = useAppStateStore();
-    const { plotLayout } = usePlotLayoutStore();
-    const { traceConfig, setActiveTraces } = useTraceConfigStore();
-    const { inkRatio, setFilteredStats, chartWidth, chartHeight, pointRadius, setChartDimensions, useCustomRadius, customRadius } = useInkRatioStore();
-    const { colorData } = useColorSideMenuStore(); // Grabbed colorData
-    const containerRef = React.useRef<HTMLDivElement>(null);
-
+const PlotTableArea: React.FC = () => {
     const [viewMode, setViewMode] = React.useState<'plot' | 'table'>('plot');
-
-    const { plotData, layout, hasData, receipt, stats, generatedTraces } = useMemo(
-        () => generatePlotConfig(data, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData, inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius),
-        [data, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData, inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius]
-    );
-
-    // Update stats in store
-    const prevStatsRef = React.useRef<string | null>(null);
-    React.useEffect(() => {
-        const statsStr = JSON.stringify(stats);
-        if (stats && statsStr !== prevStatsRef.current) {
-            setFilteredStats(stats);
-            prevStatsRef.current = statsStr;
-        }
-    }, [stats, setFilteredStats]);
-
-    // Update active traces in store for settings panels
-    const prevTracesRef = React.useRef<string | null>(null);
-    React.useEffect(() => {
-        const tracesStr = JSON.stringify(generatedTraces);
-        if (generatedTraces && tracesStr !== prevTracesRef.current) {
-            setActiveTraces(generatedTraces);
-            prevTracesRef.current = tracesStr;
-        }
-    }, [generatedTraces, setActiveTraces]);
+    const { isSideMenuOpen } = useAppStateStore();
+    const { setChartDimensions } = useInkRatioStore();
+    const containerRef = React.useRef<HTMLDivElement>(null);
 
     // Force Plotly resize when side menu toggles
     React.useEffect(() => {
@@ -63,8 +20,6 @@ const PlotArea: React.FC = () => {
         return () => clearTimeout(timer);
     }, [isSideMenuOpen]);
 
-    const { setPopupContent } = useAppStateStore();
-
     // Use ResizeObserver to track container size
     React.useEffect(() => {
         if (!containerRef.current) return;
@@ -72,8 +27,6 @@ const PlotArea: React.FC = () => {
         const observer = new ResizeObserver((entries) => {
             for (const entry of entries) {
                 const { width, height } = entry.contentRect;
-                // Only update if dimensions actually changed significantly to avoid loops?
-                // Or just update.
                 setChartDimensions(Math.round(width), Math.round(height));
             }
         });
@@ -84,16 +37,6 @@ const PlotArea: React.FC = () => {
             observer.disconnect();
         };
     }, [setChartDimensions]);
-
-    const handleOpenSettings = () => {
-        setPopupContent(<Settings />);
-    };
-
-    const handleOpenDebug = () => {
-        // We pass receipt here. Debug component uses it.
-        // Wait, receipt comes from useMemo above.
-        setPopupContent(<Debug receipt={receipt || ''} />);
-    };
 
     return (
         <div className="flex-grow-1 p-4 d-flex flex-column position-relative" style={{ minWidth: 0 }}>
@@ -107,29 +50,9 @@ const PlotArea: React.FC = () => {
                 </div>
                 <div className="card-body p-0 position-relative" ref={containerRef}>
                     {viewMode === 'table' ? (
-                        <PlotTableArea />
-                    ) : hasData ? (
-                        <div className="d-flex flex-column h-100">
-                            <div className="flex-grow-1 position-relative">
-                                <Plot
-                                    data={plotData}
-                                    layout={layout}
-                                    useResizeHandler={true}
-                                    style={{ width: '100%', height: '100%' }}
-                                    className="w-100 h-100"
-                                />
-                            </div>
-                            <PlotActionButtons
-                                onOpenSettings={handleOpenSettings}
-                                onOpenDebug={handleOpenDebug}
-                            />
-                        </div>
+                        <TableArea />
                     ) : (
-                        <div className="d-flex flex-column justify-content-center align-items-center h-100 text-muted">
-                            <div className="display-1 mb-3">📊</div>
-                            <h4>No Data Loaded</h4>
-                            <p>Please load a CSV file or Project from the <strong>File</strong> menu to generate a plot.</p>
-                        </div>
+                        <PlotArea />
                     )}
                 </div>
             </div>
@@ -137,4 +60,4 @@ const PlotArea: React.FC = () => {
     );
 };
 
-export default PlotArea;
+export default PlotTableArea;
