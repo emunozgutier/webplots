@@ -9,7 +9,7 @@ import { useTraceConfigStore } from '../store/TraceConfigStore';
 import { useInkRatioStore } from '../store/InkRatioStore';
 import { useColorSideMenuStore } from '../store/ColorSideMenuStore'; // Added this import
 import { generatePlotConfig } from '../utils/PlotlyHelpers';
-import ControllerButtons from './PlotAreaComponents/ControllerButtons';
+import { ViewToggleButtons, PlotActionButtons } from './PlotAreaComponents/ControllerButtons';
 import Settings from './PlotAreaComponents/Settings';
 import Debug from './PlotAreaComponents/Debug';
 import PopupMenu from './PopupMenu';
