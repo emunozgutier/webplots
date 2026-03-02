@@ -42,7 +42,7 @@ const PlotTableArea: React.FC = () => {
         <div className="flex-grow-1 p-4 d-flex flex-column position-relative" style={{ minWidth: 0 }}>
             <PopupMenu />
             <div className="card shadow-sm flex-grow-1 mb-3">
-                <div className="card-header bg-white d-flex justify-content-end align-items-center py-2">
+                <div className="card-header bg-white d-flex justify-content-start align-items-end pt-2 pb-0 px-3 border-bottom">
                     <ViewToggleButtons
                         viewMode={viewMode}
                         setViewMode={setViewMode}
