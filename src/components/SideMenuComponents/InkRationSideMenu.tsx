@@ -66,14 +66,20 @@ const InkRationSideMenu: React.FC = () => {
 
             <h6 className="mb-3">Filtering Stats</h6>
             <ul className="list-group">
-                {Object.entries(filteredStats).map(([traceName, count]) => {
+                {Object.entries(filteredStats).map(([traceName, stats]) => {
                     // Try to get display name if available
                     const displayName = traceCustomizations[traceName]?.displayName || traceName;
 
                     return (
-                        <li key={traceName} className="list-group-item d-flex justify-content-between align-items-center">
-                            <span className="text-truncate me-2" title={displayName}>{displayName}</span>
-                            <span className="badge bg-secondary rounded-pill">{count} filtered</span>
+                        <li key={traceName} className="list-group-item d-flex flex-column gap-2">
+                            <div className="d-flex justify-content-between align-items-center">
+                                <span className="text-truncate fw-bold" title={displayName}>{displayName}</span>
+                                <span className="badge bg-secondary rounded-pill">{stats.filtered} filtered</span>
+                            </div>
+                            <div className="d-flex justify-content-between text-muted small">
+                                <span>Min/Max: {stats.min} / {stats.max}</span>
+                                <span>Avg: {stats.avg.toFixed(1)}</span>
+                            </div>
                         </li>
                     );
                 })}

@@ -3,9 +3,16 @@ import { useStore } from 'zustand';
 import { useContext } from 'react';
 import { WorkspaceContext } from './WorkspaceContext';
 
+export type TraceStats = {
+    filtered: number;
+    min: number;
+    max: number;
+    avg: number;
+};
+
 export type InkRatioState = {
     inkRatio: number; // 0 to 1
-    filteredStats: Record<string, number>;
+    filteredStats: Record<string, TraceStats>;
     // Fixed constants for now, but could be dynamic later
     chartWidth: number;
     chartHeight: number;
@@ -21,7 +28,7 @@ export type InkRatioState = {
     setUseCustomRadius: (use: boolean) => void;
     setCustomRadius: (radius: number) => void;
 
-    setFilteredStats: (stats: Record<string, number>) => void;
+    setFilteredStats: (stats: Record<string, TraceStats>) => void;
     setChartDimensions: (width: number, height: number) => void;
 }
 

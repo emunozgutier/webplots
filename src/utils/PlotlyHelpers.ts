@@ -5,6 +5,7 @@ import type { GroupSideMenuData } from '../store/GroupSideMenuStore';
 import type { PlotLayout } from '../store/PlotLayoutStore';
 import type { TraceConfig } from '../store/TraceConfigStore';
 import type { ColorSideMenuData } from '../store/ColorSideMenuStore';
+import type { TraceStats } from '../store/InkRatioStore';
 
 export const generatePlotConfig = (
     data: CsvDataStore[],
@@ -13,6 +14,7 @@ export const generatePlotConfig = (
     plotLayout: PlotLayout,
     traceConfig: TraceConfig,
     colorSideMenuData: ColorSideMenuData,
+    absorptionMode: 'none' | 'size' | 'glow',
     inkRatio: number = 1,
     chartWidth: number = 1280,
     chartHeight: number = 720,
@@ -49,7 +51,7 @@ export const generatePlotConfig = (
         return currentPaletteColors[index % currentPaletteColors.length];
     };
 
-    const stats: Record<string, number> = {};
+    const stats: Record<string, TraceStats> = {};
 
     // Helper to filter points (mainly for Scatter)
     const filterPoints = (xData: any, yData: any, xType: 'log' | 'linear', yType: 'log' | 'linear', traceRadius?: number) => {
@@ -60,8 +62,8 @@ export const generatePlotConfig = (
             ? customRadius
             : effectiveRadius * 2 * (1 - inkRatio);
 
-        if (!useCustomRadius && inkRatio >= 1) return { x: xData, y: yData, filteredCount: 0 };
-        if (xData.length === 0) return { x: [], y: [], filteredCount: 0 };
+        if (!useCustomRadius && inkRatio >= 1) return { x: xData, y: yData, filteredCount: 0, absorbedCounts: new Array(xData.length).fill(0) };
+        if (xData.length === 0) return { x: [], y: [], filteredCount: 0, absorbedCounts: [] };
 
         // Robust conversion to numbers
         const toNum = (v: any): number => {
@@ -76,10 +78,6 @@ export const generatePlotConfig = (
         const numsX = xData.map(toNum);
         const numsY = yData.map(toNum);
 
-        // Check if we have valid numbers. If strict categorical, we might need a different approach.
-        // If >50% NaN, assume categorical?
-        // Let's just filter what we can calculate.
-
         let validX = numsX;
         let validY = numsY;
 
@@ -87,12 +85,9 @@ export const generatePlotConfig = (
         const validNumsX = numsX.filter((n: number) => !isNaN(n));
         const validNumsY = numsY.filter((n: number) => !isNaN(n));
 
-        // If essentially no valid numbers, we can't filter by distance distance properly potentially.
-        // Fallback: If no valid numbers, treat as index-based (0 to 1 range?) to avoid breaking?
-        // Or just return original data.
         if (validNumsX.length === 0 || validNumsY.length === 0) {
             console.warn('[InkRatio] Cannot determine numeric range for filtering. Skipping.');
-            return { x: xData, y: yData, filteredCount: 0 };
+            return { x: xData, y: yData, filteredCount: 0, absorbedCounts: new Array(xData.length).fill(0) };
         }
 
         const xMin = Math.min(...validNumsX);
@@ -125,42 +120,65 @@ export const generatePlotConfig = (
 
         const filteredX: any[] = [];
         const filteredY: any[] = [];
-        const points: { px: number, py: number }[] = [];
+        const absorbedCounts: number[] = [];
+        const points: { px: number, py: number, absorbed: number, originalIndex: number }[] = [];
 
         for (let i = 0; i < xData.length; i++) {
             const px = xToPx(validX[i]);
             const py = yToPx(validY[i]);
 
-            // If invalid coordinates, keep safely? Or drop? Keep.
             if (px === -9999 || py === -9999) {
                 filteredX.push(xData[i]);
                 filteredY.push(yData[i]);
+                absorbedCounts.push(0);
                 continue;
             }
 
-            let keep = true;
+            let keptBy = -1;
 
-            // Simple check against all kept points. For large datasets, a quadtree would be better.
-            // Optimization: check against last few points or use a grid?
-            // For now, strict check against all kept points.
+            // Simple check against all kept points.
             for (let j = 0; j < points.length; j++) {
                 const dx = px - points[j].px;
                 const dy = py - points[j].py;
                 const dist = Math.sqrt(dx * dx + dy * dy);
                 if (dist < minPixelDist) {
-                    keep = false;
+                    keptBy = j;
                     break;
                 }
             }
 
-            if (keep) {
-                points.push({ px, py });
+            if (keptBy === -1) {
+                // Keep this point
+                points.push({ px, py, absorbed: 0, originalIndex: i });
                 filteredX.push(xData[i]);
                 filteredY.push(yData[i]);
+                absorbedCounts.push(0); // Initialize its count to 0 in our output array
+            } else {
+                // Absorbed by another point
+                points[keptBy].absorbed += 1;
+                // Update the count for the point that absorbed this one
+                absorbedCounts[points[keptBy].originalIndex] = points[keptBy].absorbed;
             }
         }
 
-        return { x: filteredX, y: filteredY, filteredCount: xData.length - filteredX.length };
+        const finalAbsorbedCounts = new Array(filteredX.length).fill(0);
+
+        let pointIdx = 0;
+        for (let i = 0; i < xData.length; i++) {
+            const px = xToPx(validX[i]);
+            const py = yToPx(validY[i]);
+            if (px === -9999 || py === -9999) {
+                finalAbsorbedCounts[pointIdx++] = 0;
+            } else {
+                // Is this point in our kept list?
+                const keptPoint = points.find(p => p.originalIndex === i);
+                if (keptPoint) {
+                    finalAbsorbedCounts[pointIdx++] = keptPoint.absorbed;
+                }
+            }
+        }
+
+        return { x: filteredX, y: filteredY, filteredCount: xData.length - filteredX.length, absorbedCounts: finalAbsorbedCounts };
     };
 
     // Prepare traces
@@ -397,7 +415,7 @@ export const generatePlotConfig = (
                 });
             }
 
-            stats[fullTraceName] = 0; // Or calculate clipped points
+            stats[fullTraceName] = { filtered: 0, min: 0, max: 0, avg: 0 }; // Histograms don't ink filter yet
 
             const histTrace: any = {
                 x: processedYData,
@@ -422,7 +440,7 @@ export const generatePlotConfig = (
         }
 
         // Apply filtering for Scatter
-        const { x: finalX, y: finalY, filteredCount } = filterPoints(
+        const { x: finalX, y: finalY, filteredCount, absorbedCounts } = filterPoints(
             xData,
             yData,
             enableLogAxis ? 'log' : 'linear',
@@ -430,26 +448,63 @@ export const generatePlotConfig = (
             marker.size
         );
 
-        stats[fullTraceName] = filteredCount;
+        // Calculate max absorbed in this trace
+        let maxAbsorbed = 0;
+        let minAbsorbed = 0;
+        let totalAbsorbed = 0;
 
-        // If filtering occurred, we need to filter our computed aesthetics arrays too!
-        // To simplify, if we use the filterPoints logic, the arrays might misalign because filterPoints drops indices.
-        // Let's modify filterPoints above to also return the kept indices if needed, or we just trust that 
-        // the generic scatter won't mismatch too hard if it's dropping random overlaps? 
-        // Actually, for perfect mapping, overlapping dropping MUST sync with custom color arrays.
-        // Wait, filterPoints already returns 'x' and 'y', but it doesn't return 'keptIndices'. Let's supply marker directly to plot, 
-        // Plotly handles dropping? No, filterPoints is our internal decimator. 
-        // *IMPORTANT PATCH*: For now, if ink filtering drops points, the color arrays will mis-align.
-        // We will pass the full arrays into Plotly and skip using filterPoints if inkRatio >= 1 (default).
-        // Since inkRatio decimates points entirely, we should just disable exact array mapping when ink ratio filtering is active unless we patch filterPoints.
+        if (absorbedCounts.length > 0) {
+            maxAbsorbed = Math.max(...absorbedCounts);
+            minAbsorbed = Math.min(...absorbedCounts);
+            totalAbsorbed = absorbedCounts.reduce((acc, val) => acc + val, 0);
+        }
+
+        const avgAbsorbed = absorbedCounts.length > 0 ? (totalAbsorbed / absorbedCounts.length) : 0;
+
+        stats[fullTraceName] = {
+            filtered: filteredCount,
+            min: minAbsorbed,
+            max: maxAbsorbed,
+            avg: avgAbsorbed
+        };
 
         let finalMarkerColor = marker.color;
         let finalMarkerSymbol = marker.symbol;
+        let finalMarkerSize = marker.size;
+        let finalMarkerLine = marker.line;
 
         if (filteredCount > 0 && Array.isArray(marker.color)) {
-            // Let's just fall back to a single color if filtering decimated the array sizes and decoupled indices.
+            // Decalibrate custom color mappings if they've been stripped by filtering
             finalMarkerColor = computedColors[0];
             finalMarkerSymbol = computedShapes[0];
+        }
+
+        // Apply visual tweaks based on absorptionMode!
+        /*
+          - If glow mode is selected, set max radius (or glow multiplier) to 3 based on absorbed ratio
+          - If grow mode is selected, set max radius (size multiplier) to 2
+        */
+
+        if (absorptionMode !== 'none' && absorbedCounts.length > 0 && maxAbsorbed > 0) {
+            const baseSize = marker.size || 8;
+            const baseColor = Array.isArray(finalMarkerColor) ? finalMarkerColor[0] : finalMarkerColor;
+
+            if (absorptionMode === 'size') {
+                // Scale from baseSize to baseSize * 2 linearly based on (absorbed / maxAbsorbed)
+                finalMarkerSize = absorbedCounts.map(count => {
+                    const ratio = count / maxAbsorbed;
+                    return baseSize + (baseSize * ratio); // max is 2 * baseSize
+                });
+            } else if (absorptionMode === 'glow') {
+                // Add a colored line stroke mimicking glow that scales up to 3x baseSize
+                finalMarkerLine = {
+                    color: baseColor,
+                    width: absorbedCounts.map(count => {
+                        const ratio = count / maxAbsorbed;
+                        return (baseSize * 2 * ratio); // Line width adds to total radius. max +2x radius -> 3x total radius
+                    })
+                };
+            }
         }
 
         return {
@@ -458,13 +513,17 @@ export const generatePlotConfig = (
             mode: mode,
             type: 'scatter',
             name: finalName,
+            customdata: absorbedCounts, // inject it into Plotly for the hover template
+            hovertemplate: '%{x}, %{y}, Absorbed points: %{customdata}<extra></extra>',
             line: {
                 color: Array.isArray(finalMarkerColor) ? finalMarkerColor[0] : finalMarkerColor,
             },
             marker: {
                 ...marker,
                 color: finalMarkerColor,
-                symbol: finalMarkerSymbol
+                symbol: finalMarkerSymbol,
+                size: finalMarkerSize,
+                line: finalMarkerLine
             }
         };
     });
