@@ -56,10 +56,26 @@ def main():
             response.raise_for_status()
             data = response.json()
             
+            daily_data = data.get("daily", {})
+            for key in ["sunrise", "sunset"]:
+                if key in daily_data and daily_data[key]:
+                    formatted_times = []
+                    for t in daily_data[key]:
+                        if t:
+                            try:
+                                dt = datetime.fromisoformat(t)
+                                formatted_times.append(dt.strftime("%H:%M"))
+                            except ValueError:
+                                # Fallback if parsing fails
+                                formatted_times.append(t)
+                        else:
+                            formatted_times.append(t)
+                    daily_data[key] = formatted_times
+
             final_data[city] = {
                 "latitude": coords["lat"],
                 "longitude": coords["lon"],
-                "daily": data.get("daily", {})
+                "daily": daily_data
             }
             print(f"Successfully fetched data for {city}.")
             
