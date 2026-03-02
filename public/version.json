@@ -1,5 +1,5 @@
 {
-    "commit_title": "Remove deprecated test dataset menu items",
-    "commit_message": "Remove the 'Small Dataset (3 cols)', 'Large Dataset (50 cols)', and 'Binning Test (Many Unique)' NavDropdown items from the Test menu in TopMenuBar.tsx. The Simulation Dataset and Sample Weather Data entries remain; this simplifies the Test menu and removes unused/obsolete test dataset options.",
+    "commit_title": "Add absorptionMode and maxRadiusRatio to export",
+    "commit_message": "Destructure absorptionMode and maxRadiusRatio from useInkRatioStore and pass them into generatePlotConfig when building the saved HTML export. This ensures the exported plot respects the new absorption-based radius and maximum radius ratio settings.",
     "version_string": "2026.09.7"
 }
