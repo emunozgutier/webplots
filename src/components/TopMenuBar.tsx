@@ -281,7 +281,18 @@ const TopMenuBar: React.FC = () => {
                             </NavDropdown.Item>
                         </NavDropdown>
                     </Nav>
-                    <div className="d-flex align-items-center">
+                    <div className="d-flex align-items-center gap-2">
+                        <Button
+                            variant="outline-secondary"
+                            size="sm"
+                            href="https://github.com/emunozgutier/webplots"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="fw-bold"
+                            title="See me on GitHub"
+                        >
+                            <i className="bi bi-github me-1"></i> See me on GitHub
+                        </Button>
                         <Button
                             variant={isBetaMode ? "warning" : "outline-secondary"}
                             size="sm"
