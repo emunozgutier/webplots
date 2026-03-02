@@ -263,17 +263,8 @@ const TopMenuBar: React.FC = () => {
                         </NavDropdown>
 
                         <NavDropdown title="Test" id="test-nav-dropdown">
-                            <NavDropdown.Item onClick={() => handleLoadTestData('small')}>
-                                Small Dataset (3 cols)
-                            </NavDropdown.Item>
-                            <NavDropdown.Item onClick={() => handleLoadTestData('large')}>
-                                Large Dataset (50 cols)
-                            </NavDropdown.Item>
                             <NavDropdown.Item onClick={() => handleLoadTestData('simulation')}>
                                 Simulation Dataset (Trig)
-                            </NavDropdown.Item>
-                            <NavDropdown.Item onClick={() => handleLoadTestData('binning')}>
-                                Binning Test (Many Unique)
                             </NavDropdown.Item>
                             <NavDropdown.Divider />
                             <NavDropdown.Item onClick={handleLoadWeatherData}>
