@@ -32,9 +32,9 @@ export const createWorkspaceLocalStore = () => {
         setPopupContent: (content) => set({ popupContent: content }),
         closePopup: () => set({ popupContent: null }),
         setSideMenuWidth: (width) => set({ sideMenuWidth: width }),
-        summaryMode: 'none',
+        summaryMode: 'detailed',
         datasetMode: 'all',
-        colorMode: 'none',
+        colorMode: 'color',
         setSummaryMode: (mode) => set({ summaryMode: mode }),
         setDatasetMode: (mode) => set({ datasetMode: mode }),
         setColorMode: (mode) => set({ colorMode: mode })

@@ -92,21 +92,10 @@ const TableAreaControlButtons: React.FC<TableAreaControlButtonsProps> = ({
 
             {/* Color Controls */}
             <div className="d-flex align-items-center gap-2">
-                <span className="fw-bold small text-muted">Color:</span>
+                <span className="fw-bold small text-muted">Color Columns:</span>
                 <ButtonGroup size="sm">
                     <ToggleButton
-                        id="color-none"
-                        type="radio"
-                        variant={colorMode === 'none' ? 'success' : 'outline-success'}
-                        name="colorMode"
-                        value="none"
-                        checked={colorMode === 'none'}
-                        onChange={(e) => setColorMode(e.currentTarget.value as 'none' | 'color')}
-                    >
-                        No Color
-                    </ToggleButton>
-                    <ToggleButton
-                        id="color-columns"
+                        id="color-on"
                         type="radio"
                         variant={colorMode === 'color' ? 'success' : 'outline-success'}
                         name="colorMode"
@@ -114,7 +103,18 @@ const TableAreaControlButtons: React.FC<TableAreaControlButtonsProps> = ({
                         checked={colorMode === 'color'}
                         onChange={(e) => setColorMode(e.currentTarget.value as 'none' | 'color')}
                     >
-                        Color Columns
+                        On
+                    </ToggleButton>
+                    <ToggleButton
+                        id="color-off"
+                        type="radio"
+                        variant={colorMode === 'none' ? 'secondary' : 'outline-secondary'}
+                        name="colorMode"
+                        value="none"
+                        checked={colorMode === 'none'}
+                        onChange={(e) => setColorMode(e.currentTarget.value as 'none' | 'color')}
+                    >
+                        Off
                     </ToggleButton>
                 </ButtonGroup>
             </div>
