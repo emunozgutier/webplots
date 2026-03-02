@@ -513,6 +513,7 @@ export const generatePlotConfig = (
                     name: finalName + ' (Glow)',
                     hoverinfo: 'skip',
                     showlegend: false,
+                    legendgroup: finalName,
                     opacity: 0.3,
                     line: {
                         color: baseColor,
@@ -534,6 +535,7 @@ export const generatePlotConfig = (
             mode: mode,
             type: 'scatter',
             name: finalName,
+            legendgroup: finalName,
             customdata: absorbedCounts, // inject it into Plotly for the hover template
             hovertemplate: '%{x}, %{y}, Absorbed points: %{customdata}<extra></extra>',
             line: {
