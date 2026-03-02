@@ -20,14 +20,14 @@ const PlotArea: React.FC = () => {
     const { groupSideMenuData } = useGroupSideMenuStore();
     const { plotLayout } = usePlotLayoutStore();
     const { traceConfig, setActiveTraces } = useTraceConfigStore();
-    const { inkRatio, absorptionMode, setFilteredStats, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius } = useInkRatioStore();
+    const { inkRatio, absorptionMode, maxRadiusRatio, setFilteredStats, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius } = useInkRatioStore();
     const { colorData } = useColorSideMenuStore();
 
     const { setPopupContent } = useWorkspaceLocalStore();
 
     const { plotData, layout, hasData, receipt, stats, generatedTraces } = useMemo(
-        () => generatePlotConfig(data, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData, absorptionMode, inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius),
-        [data, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData, absorptionMode, inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius]
+        () => generatePlotConfig(data, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData, absorptionMode, maxRadiusRatio, inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius),
+        [data, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData, absorptionMode, maxRadiusRatio, inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius]
     );
 
     // Update stats in store

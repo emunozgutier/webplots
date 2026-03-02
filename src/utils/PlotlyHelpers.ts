@@ -15,6 +15,7 @@ export const generatePlotConfig = (
     traceConfig: TraceConfig,
     colorSideMenuData: ColorSideMenuData,
     absorptionMode: 'none' | 'size' | 'glow',
+    maxRadiusRatio: number = 3,
     inkRatio: number = 1,
     chartWidth: number = 1280,
     chartHeight: number = 720,
@@ -301,7 +302,7 @@ export const generatePlotConfig = (
     }
 
     // Create Plotly traces
-    const plotData: Data[] = generatedTraces.map((traceInfo, index) => {
+    const plotData: Data[] = generatedTraces.flatMap((traceInfo, index) => {
         const { fullTraceName, yCol, groupName, xData, yData, rowIndices } = traceInfo;
 
         // Inherit configurations: exact name overrides > parent column overrides > defaults
@@ -436,7 +437,7 @@ export const generatePlotConfig = (
                 histTrace.autobinx = false;
             }
 
-            return histTrace;
+            return [histTrace];
         }
 
         // Apply filtering for Scatter
@@ -485,29 +486,49 @@ export const generatePlotConfig = (
           - If grow mode is selected, set max radius (size multiplier) to 2
         */
 
+        let glowTrace: any = null;
+
         if (absorptionMode !== 'none' && absorbedCounts.length > 0 && maxAbsorbed > 0) {
             const baseSize = marker.size || 8;
             const baseColor = Array.isArray(finalMarkerColor) ? finalMarkerColor[0] : finalMarkerColor;
 
             if (absorptionMode === 'size') {
-                // Scale from baseSize to baseSize * 2 linearly based on (absorbed / maxAbsorbed)
+                // Scale from baseSize to baseSize * maxRadiusRatio linearly based on (absorbed / maxAbsorbed)
                 finalMarkerSize = absorbedCounts.map(count => {
                     const ratio = count / maxAbsorbed;
-                    return baseSize + (baseSize * ratio); // max is 2 * baseSize
+                    return baseSize + (baseSize * (maxRadiusRatio - 1) * ratio);
                 });
             } else if (absorptionMode === 'glow') {
-                // Add a colored line stroke mimicking glow that scales up to 3x baseSize
-                finalMarkerLine = {
-                    color: baseColor,
-                    width: absorbedCounts.map(count => {
-                        const ratio = count / maxAbsorbed;
-                        return (baseSize * 2 * ratio); // Line width adds to total radius. max +2x radius -> 3x total radius
-                    })
+                // Add a separate semi-transparent background trace for glow
+                const glowMarkerSize = absorbedCounts.map(count => {
+                    const ratio = count / maxAbsorbed;
+                    return baseSize + (baseSize * (maxRadiusRatio - 1) * ratio);
+                });
+
+                glowTrace = {
+                    x: finalX,
+                    y: finalY,
+                    mode: mode,
+                    type: 'scatter',
+                    name: finalName + ' (Glow)',
+                    hoverinfo: 'skip',
+                    showlegend: false,
+                    opacity: 0.3,
+                    line: {
+                        color: baseColor,
+                        width: 0,
+                    },
+                    marker: {
+                        color: finalMarkerColor,
+                        symbol: finalMarkerSymbol,
+                        size: glowMarkerSize,
+                        line: { width: 0 }
+                    }
                 };
             }
         }
 
-        return {
+        const mainTrace: any = {
             x: finalX,
             y: finalY,
             mode: mode,
@@ -526,6 +547,8 @@ export const generatePlotConfig = (
                 line: finalMarkerLine
             }
         };
+
+        return glowTrace ? [glowTrace, mainTrace] : [mainTrace];
     });
 
     const layout: Partial<Layout> = {

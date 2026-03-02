@@ -4,13 +4,18 @@ import { useTraceConfigStore } from '../../store/TraceConfigStore';
 import InkRatioAnimation from './subcomponents/InkRatioAnimation';
 
 const InkRationSideMenu: React.FC = () => {
-    const { inkRatio, setInkRatio, filteredStats, absorptionMode, setAbsorptionMode } = useInkRatioStore();
+    const { inkRatio, setInkRatio, filteredStats, absorptionMode, setAbsorptionMode, maxRadiusRatio, setMaxRadiusRatio } = useInkRatioStore();
     const { traceConfig } = useTraceConfigStore();
     const { traceCustomizations } = traceConfig;
 
     const handleRatioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newRatio = parseFloat(e.target.value);
         setInkRatio(newRatio);
+    };
+
+    const handleMaxRadiusChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newRatio = parseFloat(e.target.value);
+        setMaxRadiusRatio(newRatio);
     };
 
 
@@ -47,6 +52,24 @@ const InkRationSideMenu: React.FC = () => {
                     </button>
                 </div>
             </div>
+
+            {absorptionMode !== 'none' && (
+                <div className="mb-4">
+                    <label className="form-label d-flex justify-content-between">
+                        <span>Radius Max (Ratio)</span>
+                        <span className="fw-bold">{maxRadiusRatio}x</span>
+                    </label>
+                    <input
+                        type="range"
+                        className="form-range"
+                        min="1"
+                        max="10"
+                        step="0.5"
+                        value={maxRadiusRatio}
+                        onChange={handleMaxRadiusChange}
+                    />
+                </div>
+            )}
 
             <div className="mb-4">
                 <label className="form-label d-flex justify-content-between">

@@ -23,6 +23,9 @@ export type InkRatioState = {
     absorptionMode: 'none' | 'size' | 'glow';
     setAbsorptionMode: (mode: 'none' | 'size' | 'glow') => void;
 
+    maxRadiusRatio: number; // 1 to 10
+    setMaxRadiusRatio: (ratio: number) => void;
+
     setInkRatio: (ratio: number) => void;
 
     setUseCustomRadius: (use: boolean) => void;
@@ -41,8 +44,10 @@ export const createInkRatioStore = () => createStore<InkRatioState>()((set) => (
     pointRadius: 8,
     useCustomRadius: false,
     customRadius: 20, // Default to visible amount
+    maxRadiusRatio: 3, // Default ratio
     setInkRatio: (ratio) => set({ inkRatio: ratio }),
     setAbsorptionMode: (mode) => set({ absorptionMode: mode }),
+    setMaxRadiusRatio: (ratio) => set({ maxRadiusRatio: ratio }),
     setUseCustomRadius: (use) => set({ useCustomRadius: use }),
     setCustomRadius: (radius) => set({ customRadius: radius }),
     setFilteredStats: (stats) => set({ filteredStats: stats }),
