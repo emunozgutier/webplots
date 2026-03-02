@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 
 import { useGroupSideMenuStore } from '../../store/GroupSideMenuStore';
-import { useAppStateStore } from '../../store/AppStateStore';
+import { useWorkspaceLocalStore } from '../../store/WorkspaceLocalStore';
 import { useCsvDataStore } from '../../store/CsvDataStore';
 import GroupAxisSettings from './subcomponents/GroupAxisSettings';
 import SearchColumn from './subcomponents/SearchColumn';
 
 const GroupSideMenu: React.FC = () => {
     const { groupSideMenuData, setGroupAxis } = useGroupSideMenuStore();
-    const { setPopupContent } = useAppStateStore();
+    const { setPopupContent } = useWorkspaceLocalStore();
     const { groupAxis } = groupSideMenuData;
     const { data, columns } = useCsvDataStore();
 

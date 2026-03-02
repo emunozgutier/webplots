@@ -1,4 +1,7 @@
-import { create } from 'zustand';
+import { createStore } from 'zustand/vanilla';
+import { useStore } from 'zustand';
+import { useContext } from 'react';
+import { WorkspaceContext } from './WorkspaceContext';
 
 export type MappingSource = 'manual' | 'group' | 'column';
 
@@ -14,7 +17,7 @@ export interface ColorSideMenuData {
     shape: AestheticMapping;
 }
 
-interface ColorSideMenuState {
+export type ColorSideMenuState = {
     colorData: ColorSideMenuData;
     setColorData: (data: Partial<ColorSideMenuData>) => void;
 
@@ -25,7 +28,7 @@ interface ColorSideMenuState {
     setShape: (shape: Partial<AestheticMapping>) => void;
 }
 
-export const useColorSideMenuStore = create<ColorSideMenuState>((set) => ({
+export const createColorSideMenuStore = () => createStore<ColorSideMenuState>()((set) => ({
     colorData: {
         hue: { source: 'group', value: '' }, // Default to grouping behavior 
         saturation: { source: 'manual', value: 80 },
@@ -58,3 +61,9 @@ export const useColorSideMenuStore = create<ColorSideMenuState>((set) => ({
             colorData: { ...state.colorData, shape: { ...state.colorData.shape, ...shape } }
         }))
 }));
+
+export const useColorSideMenuStore = <T = ColorSideMenuState>(selector: (state: ColorSideMenuState) => T = (state) => state as unknown as T): T => {
+    const context = useContext(WorkspaceContext);
+    if (!context) throw new Error('useColorSideMenuStore must be used within WorkspaceProvider');
+    return useStore(context.colorSideMenuStore, selector);
+};

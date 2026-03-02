@@ -1,8 +1,8 @@
 import React from 'react';
-import { useAppStateStore } from '../store/AppStateStore';
+import { useWorkspaceLocalStore } from '../store/WorkspaceLocalStore';
 
 const PopupMenu: React.FC = () => {
-    const { popupContent, closePopup } = useAppStateStore();
+    const { popupContent, closePopup } = useWorkspaceLocalStore();
 
     if (!popupContent) return null;
 

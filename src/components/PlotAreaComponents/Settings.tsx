@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { useAppStateStore } from '../../store/AppStateStore';
+import { useWorkspaceLocalStore } from '../../store/WorkspaceLocalStore';
 import PlotLayout from './SettingsComponents/PlotLayout';
 import TraceConfig from './SettingsComponents/TraceConfig';
 
 const Settings: React.FC = () => {
-    const { closePopup } = useAppStateStore();
+    const { closePopup } = useWorkspaceLocalStore();
     const [activeTab, setActiveTab] = useState<'layout' | 'trace'>('layout');
 
     return (

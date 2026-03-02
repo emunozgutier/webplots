@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTraceConfigStore } from '../../../store/TraceConfigStore';
 import { useAxisSideMenuStore } from '../../../store/AxisSideMenuStore';
-import { useAppStateStore } from '../../../store/AppStateStore';
+import { useWorkspaceLocalStore } from '../../../store/WorkspaceLocalStore';
 import { COLOR_PALETTES } from '../../../utils/ColorPalettes';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { HexColorPicker } from 'react-colorful';
@@ -204,7 +204,7 @@ const HistogramBinSettings: React.FC<{ col: string; custom: any; data: any[]; se
 const TraceConfig: React.FC = () => {
     const { traceConfig, setTraceCustomization, setColorPalette, setPaletteColorOrder, updatePaletteColor } = useTraceConfigStore();
     const { sideMenuData } = useAxisSideMenuStore();
-    const { closePopup } = useAppStateStore();
+    const { closePopup } = useWorkspaceLocalStore();
     const { data } = useCsvDataStore();
 
     const activeTraces = traceConfig.activeTraces || [];

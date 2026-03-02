@@ -3,13 +3,13 @@ import { usePlotLayoutStore } from '../../../store/PlotLayoutStore';
 
 import { useCsvDataStore } from '../../../store/CsvDataStore';
 import { useAxisSideMenuStore } from '../../../store/AxisSideMenuStore';
-import { useAppStateStore } from '../../../store/AppStateStore';
+import { useWorkspaceLocalStore } from '../../../store/WorkspaceLocalStore';
 
 const PlotLayout: React.FC = () => {
     const { plotLayout, setPlotTitle, setXAxisTitle, setYAxisTitle, setXRange, setYRange, setHistogramBarmode } = usePlotLayoutStore();
     const { sideMenuData } = useAxisSideMenuStore();
     const { data } = useCsvDataStore();
-    const { closePopup } = useAppStateStore();
+    const { closePopup } = useWorkspaceLocalStore();
 
     // Calculate default titles based on selection
     const defaultPlotTitle = sideMenuData.yAxis.length > 0 && sideMenuData.xAxis

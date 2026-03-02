@@ -2,24 +2,31 @@
 import SideMenu from './components/SideMenu';
 import PlotTableArea from './components/PlotTableArea';
 import TopMenuBar from './components/TopMenuBar';
-import { useAppStateStore } from './store/AppStateStore';
+import WorkspaceTabs from './components/WorkspaceTabs';
+import { WorkspaceProvider } from './store/WorkspaceContext';
+import { useWorkspaceStore } from './store/WorkspaceStore';
 import './App.css';
 
 function App() {
-  const { isTopMenuBarOpen } = useAppStateStore();
+  const { isTopMenuBarOpen, workspaces, activeWorkspaceId } = useWorkspaceStore();
 
   return (
     <div className="container-fluid vh-100 d-flex flex-column p-0 position-relative">
       {isTopMenuBarOpen && <TopMenuBar />}
+      <WorkspaceTabs />
 
       <div className="d-flex flex-row flex-grow-1 overflow-hidden">
-        {/* SideMenu handles its own collapsed width, but if we wanted to hide it completely we could do it here. 
-            However, requirements said "store if the SideMenu is open". 
-            SideMenu component currently handles "open" as expanded vs "closed" as collapsed (50px).
-            So we probably should keep rendering it but let it handle its state via the store.
-        */}
-        <SideMenu />
-        <PlotTableArea />
+        {workspaces.map((ws) => (
+          <div
+            key={ws.id}
+            className={`flex-row flex-grow-1 w-100 h-100 ${ws.id === activeWorkspaceId ? 'd-flex' : 'd-none'}`}
+          >
+            <WorkspaceProvider workspaceId={ws.id}>
+              <SideMenu />
+              <PlotTableArea />
+            </WorkspaceProvider>
+          </div>
+        ))}
       </div>
     </div>
   );

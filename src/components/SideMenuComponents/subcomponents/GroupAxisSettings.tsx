@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useGroupSideMenuStore } from '../../../store/GroupSideMenuStore';
 import type { GroupSettings } from '../../../store/GroupSideMenuStore';
-import { useAppStateStore } from '../../../store/AppStateStore';
+import { useWorkspaceLocalStore } from '../../../store/WorkspaceLocalStore';
 import { useCsvDataStore } from '../../../store/CsvDataStore';
 import Plot from 'react-plotly.js';
 import { v4 as uuidv4 } from 'uuid';
@@ -13,7 +13,7 @@ interface GroupAxisSettingsProps {
 
 const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
     const { groupSideMenuData, setGroupSettings } = useGroupSideMenuStore();
-    const { closePopup } = useAppStateStore();
+    const { closePopup } = useWorkspaceLocalStore();
     const { data } = useCsvDataStore();
 
     const [localSettings, setLocalSettings] = useState<GroupSettings>({

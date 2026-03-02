@@ -1,6 +1,9 @@
-import { create } from 'zustand';
+import { createStore } from 'zustand/vanilla';
+import { useStore } from 'zustand';
+import { useContext } from 'react';
+import { WorkspaceContext } from './WorkspaceContext';
 
-interface InkRatioState {
+export type InkRatioState = {
     inkRatio: number; // 0 to 1
     filteredStats: Record<string, number>;
     // Fixed constants for now, but could be dynamic later
@@ -22,7 +25,7 @@ interface InkRatioState {
     setChartDimensions: (width: number, height: number) => void;
 }
 
-export const useInkRatioStore = create<InkRatioState>((set) => ({
+export const createInkRatioStore = () => createStore<InkRatioState>()((set) => ({
     inkRatio: 0, // Default to 0% overlap (max filtering)
     absorptionMode: 'none',
     filteredStats: {},
@@ -38,3 +41,9 @@ export const useInkRatioStore = create<InkRatioState>((set) => ({
     setFilteredStats: (stats) => set({ filteredStats: stats }),
     setChartDimensions: (width, height) => set({ chartWidth: width, chartHeight: height })
 }));
+
+export const useInkRatioStore = <T = InkRatioState>(selector: (state: InkRatioState) => T = (state) => state as unknown as T): T => {
+    const context = useContext(WorkspaceContext);
+    if (!context) throw new Error('useInkRatioStore must be used within WorkspaceProvider');
+    return useStore(context.inkRatioStore, selector);
+};

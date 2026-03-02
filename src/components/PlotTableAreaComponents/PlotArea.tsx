@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useAppStateStore } from '../../store/AppStateStore';
+import { useWorkspaceLocalStore } from '../../store/WorkspaceLocalStore';
 import Settings from '../PlotAreaComponents/Settings';
 import Debug from '../PlotAreaComponents/Debug';
 import Plot from 'react-plotly.js';
@@ -23,7 +23,7 @@ const PlotArea: React.FC = () => {
     const { inkRatio, setFilteredStats, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius } = useInkRatioStore();
     const { colorData } = useColorSideMenuStore();
 
-    const { setPopupContent } = useAppStateStore();
+    const { setPopupContent } = useWorkspaceLocalStore();
 
     const { plotData, layout, hasData, receipt, stats, generatedTraces } = useMemo(
         () => generatePlotConfig(data, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData, inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius),

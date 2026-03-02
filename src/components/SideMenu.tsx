@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useCsvDataStore } from '../store/CsvDataStore';
 import { useAxisSideMenuStore, createAxisSideMenuConfig } from '../store/AxisSideMenuStore';
-import { useAppStateStore } from '../store/AppStateStore';
+import { useWorkspaceLocalStore } from '../store/WorkspaceLocalStore';
 import AxisSideMenu from './SideMenuComponents/AxisSideMenu';
 import FilterSideMenu from './SideMenuComponents/FilterSideMenu';
 import InkRationSideMenu from './SideMenuComponents/InkRationSideMenu';
@@ -13,7 +13,7 @@ type SideMenuTab = 'axis' | 'filter' | 'group' | 'color' | 'ink';
 const SideMenu: React.FC = () => {
     const { columns: storeColumns } = useCsvDataStore();
     const { sideMenuData } = useAxisSideMenuStore();
-    const { isSideMenuOpen, toggleSideMenu, sideMenuWidth, setSideMenuWidth } = useAppStateStore();
+    const { isSideMenuOpen, toggleSideMenu, sideMenuWidth, setSideMenuWidth } = useWorkspaceLocalStore();
 
     const { hasColumns } = useMemo(() => createAxisSideMenuConfig(storeColumns, sideMenuData), [storeColumns, sideMenuData]);
     const { plotType } = sideMenuData;

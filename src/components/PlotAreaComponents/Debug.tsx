@@ -1,12 +1,12 @@
 import React from 'react';
-import { useAppStateStore } from '../../store/AppStateStore';
+import { useWorkspaceLocalStore } from '../../store/WorkspaceLocalStore';
 
 interface DebugProps {
     receipt: string;
 }
 
 const Debug: React.FC<DebugProps> = ({ receipt }) => {
-    const { closePopup } = useAppStateStore();
+    const { closePopup } = useWorkspaceLocalStore();
 
     return (
         <div className="card shadow-lg w-100 h-100" style={{ display: 'flex', flexDirection: 'column' }}>

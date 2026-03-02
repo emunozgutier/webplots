@@ -7,7 +7,7 @@ import { useGroupSideMenuStore } from '../../store/GroupSideMenuStore';
 import { useFilterSideMenuStore } from '../../store/FilterSideMenuStore';
 import { useColorSideMenuStore } from '../../store/ColorSideMenuStore';
 import HeaderSummary, { type SummaryMode } from './HeaderSummary';
-import { useAppStateStore } from '../../store/AppStateStore';
+import { useWorkspaceLocalStore } from '../../store/WorkspaceLocalStore';
 import Plot from 'react-plotly.js';
 
 const TableArea: React.FC = () => {
@@ -15,7 +15,7 @@ const TableArea: React.FC = () => {
     const [summaryMode, setSummaryMode] = useState<SummaryMode>('none');
     const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
-    const { setPopupContent } = useAppStateStore();
+    const { setPopupContent } = useWorkspaceLocalStore();
 
     const handleSortAsc = (key: string) => {
         if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') setSortConfig(null);

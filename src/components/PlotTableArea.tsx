@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAppStateStore } from '../store/AppStateStore';
+import { useWorkspaceLocalStore } from '../store/WorkspaceLocalStore';
 import { ViewToggleButtons } from './PlotAreaComponents/ControllerButtons';
 import PopupMenu from './PopupMenu';
 import TableArea from './PlotTableAreaComponents/TableArea';
@@ -8,7 +8,7 @@ import { useInkRatioStore } from '../store/InkRatioStore';
 
 const PlotTableArea: React.FC = () => {
     const [viewMode, setViewMode] = React.useState<'plot' | 'table'>('plot');
-    const { isSideMenuOpen } = useAppStateStore();
+    const { isSideMenuOpen } = useWorkspaceLocalStore();
     const { setChartDimensions } = useInkRatioStore();
     const containerRef = React.useRef<HTMLDivElement>(null);
 
