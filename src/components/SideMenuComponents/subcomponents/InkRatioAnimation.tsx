@@ -36,9 +36,9 @@ const InkRatioAnimation: React.FC = () => {
                         100% { transform: scale(1); transform-origin: ${fixedLeftCx}px ${cyCenter}px; }
                     }
                     @keyframes glowIntensity {
-                        0%   { filter: drop-shadow(0px 0px 4px rgba(220,53,69,0.1)); }
-                        50%  { filter: drop-shadow(0px 0px 16px rgba(220,53,69,1)); }
-                        100% { filter: drop-shadow(0px 0px 4px rgba(220,53,69,0.1)); }
+                        0%   { filter: drop-shadow(0px 0px 8px rgba(220,53,69,0.3)); }
+                        50%  { filter: drop-shadow(0px 0px 20px rgba(220,53,69,1)) drop-shadow(0px 0px 40px rgba(220,53,69,0.8)); }
+                        100% { filter: drop-shadow(0px 0px 8px rgba(220,53,69,0.3)); }
                     }
                 `}
             </style>
@@ -48,7 +48,7 @@ const InkRatioAnimation: React.FC = () => {
                 {inkRatio < 1 ? (
                     <div className="border border-secondary rounded p-2 d-flex flex-column align-items-center bg-white shadow-sm flex-fill" style={{ width: '100%' }}>
                         <div className="mb-2 w-100">
-                            <svg viewBox="0 0 160 80" style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
+                            <svg key={absorptionMode} viewBox="0 0 160 80" style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
                                 <g>
                                     {/* Stationary Target Point */}
                                     <circle
@@ -57,7 +57,7 @@ const InkRatioAnimation: React.FC = () => {
                                         style={{
                                             animation: absorptionMode === 'size' ? 'pulseSize 3s infinite ease-in-out' :
                                                 absorptionMode === 'glow' ? 'glowIntensity 3s infinite ease-in-out' : 'none',
-                                            filter: absorptionMode === 'glow' ? 'drop-shadow(0px 0px 4px rgba(220,53,69,0.1))' : 'none'
+                                            filter: absorptionMode === 'glow' ? 'drop-shadow(0px 0px 8px rgba(220,53,69,0.3))' : 'none'
                                         }}
                                     />
                                     {/* Dashed Outline left behind at original position */}
