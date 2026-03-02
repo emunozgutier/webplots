@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Table, ButtonGroup, ToggleButton } from 'react-bootstrap';
+import { Table } from 'react-bootstrap';
 import { useCsvDataStore } from '../../store/CsvDataStore';
 import { useFilteredData } from '../../hooks/useFilteredData';
 import { useAxisSideMenuStore } from '../../store/AxisSideMenuStore';
@@ -9,6 +9,7 @@ import { useColorSideMenuStore } from '../../store/ColorSideMenuStore';
 import HeaderSummary, { type SummaryMode } from './HeaderSummary';
 import { useWorkspaceLocalStore } from '../../store/WorkspaceLocalStore';
 import Plot from 'react-plotly.js';
+import TableAreaControlButtons from './TableAreaControlButtons';
 
 const TableArea: React.FC = () => {
     const [datasetMode, setDatasetMode] = useState<'all' | 'plot'>('plot');
@@ -254,68 +255,12 @@ const TableArea: React.FC = () => {
             `}</style>
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <h5 className="mb-0 text-dark">Data Table</h5>
-                <div className="d-flex gap-3">
-                    <ButtonGroup size="sm">
-                        <ToggleButton
-                            id="summary-none"
-                            type="radio"
-                            variant={summaryMode === 'none' ? 'secondary' : 'outline-secondary'}
-                            name="summaryMode"
-                            value="none"
-                            checked={summaryMode === 'none'}
-                            onChange={(e) => setSummaryMode(e.currentTarget.value as SummaryMode)}
-                        >
-                            No Summary
-                        </ToggleButton>
-                        <ToggleButton
-                            id="summary-slim"
-                            type="radio"
-                            variant={summaryMode === 'slim' ? 'secondary' : 'outline-secondary'}
-                            name="summaryMode"
-                            value="slim"
-                            checked={summaryMode === 'slim'}
-                            onChange={(e) => setSummaryMode(e.currentTarget.value as SummaryMode)}
-                        >
-                            Slim
-                        </ToggleButton>
-                        <ToggleButton
-                            id="summary-detailed"
-                            type="radio"
-                            variant={summaryMode === 'detailed' ? 'secondary' : 'outline-secondary'}
-                            name="summaryMode"
-                            value="detailed"
-                            checked={summaryMode === 'detailed'}
-                            onChange={(e) => setSummaryMode(e.currentTarget.value as SummaryMode)}
-                        >
-                            Detailed
-                        </ToggleButton>
-                    </ButtonGroup>
-
-                    <ButtonGroup size="sm">
-                        <ToggleButton
-                            id="toggle-all"
-                            type="radio"
-                            variant={datasetMode === 'all' ? 'primary' : 'outline-primary'}
-                            name="datasetMode"
-                            value="all"
-                            checked={datasetMode === 'all'}
-                            onChange={(e) => setDatasetMode(e.currentTarget.value as 'all' | 'plot')}
-                        >
-                            All Data
-                        </ToggleButton>
-                        <ToggleButton
-                            id="toggle-plot"
-                            type="radio"
-                            variant={datasetMode === 'plot' ? 'primary' : 'outline-primary'}
-                            name="datasetMode"
-                            value="plot"
-                            checked={datasetMode === 'plot'}
-                            onChange={(e) => setDatasetMode(e.currentTarget.value as 'all' | 'plot')}
-                        >
-                            Plot Data
-                        </ToggleButton>
-                    </ButtonGroup>
-                </div>
+                <TableAreaControlButtons
+                    summaryMode={summaryMode}
+                    setSummaryMode={setSummaryMode}
+                    datasetMode={datasetMode}
+                    setDatasetMode={setDatasetMode}
+                />
             </div>
 
             <div className="flex-grow-1 overflow-auto border rounded table-scroll-container" style={{ position: 'relative' }}>

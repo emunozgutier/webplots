@@ -11,7 +11,7 @@ import { useTraceConfigStore } from '../../store/TraceConfigStore';
 import { useInkRatioStore } from '../../store/InkRatioStore';
 import { useColorSideMenuStore } from '../../store/ColorSideMenuStore';
 import { generatePlotConfig } from '../../utils/PlotlyHelpers';
-import { PlotActionButtons } from '../PlotAreaComponents/ControllerButtons';
+import PlotAreaControlButtons from './PlotAreaControlButtons';
 import { useFilteredData } from '../../hooks/useFilteredData';
 
 const PlotArea: React.FC = () => {
@@ -79,7 +79,7 @@ const PlotArea: React.FC = () => {
                     className="w-100 h-100"
                 />
             </div>
-            <PlotActionButtons
+            <PlotAreaControlButtons
                 onOpenSettings={handleOpenSettings}
                 onOpenDebug={handleOpenDebug}
             />
