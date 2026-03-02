@@ -15,6 +15,7 @@ interface VersionData {
 
 const TopMenuBar: React.FC = () => {
     const { data, columns, setPlotData, setColumns, loadProject: loadPlotDataProject } = useCsvDataStore();
+    const { isBetaMode, toggleBetaMode } = useWorkspaceStore();
 
     const csvInputRef = useRef<HTMLInputElement>(null);
     const projectInputRef = useRef<HTMLInputElement>(null);
@@ -289,6 +290,17 @@ const TopMenuBar: React.FC = () => {
                             </NavDropdown.Item>
                         </NavDropdown>
                     </Nav>
+                    <div className="d-flex align-items-center">
+                        <Button
+                            variant={isBetaMode ? "warning" : "outline-secondary"}
+                            size="sm"
+                            onClick={toggleBetaMode}
+                            title="Toggle Beta Features"
+                            className="fw-bold"
+                        >
+                            <i className="bi bi-tools me-1"></i> {isBetaMode ? 'Beta: ON' : 'Beta Mode'}
+                        </Button>
+                    </div>
                 </Navbar.Collapse>
             </Container>
 

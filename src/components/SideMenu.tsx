@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useCsvDataStore } from '../store/CsvDataStore';
 import { useAxisSideMenuStore, createAxisSideMenuConfig } from '../store/AxisSideMenuStore';
 import { useWorkspaceLocalStore } from '../store/WorkspaceLocalStore';
+import { useWorkspaceStore } from '../store/WorkspaceStore';
 import AxisSideMenu from './SideMenuComponents/AxisSideMenu';
 import FilterSideMenu from './SideMenuComponents/FilterSideMenu';
 import InkRationSideMenu from './SideMenuComponents/InkRationSideMenu';
@@ -14,6 +15,7 @@ const SideMenu: React.FC = () => {
     const { columns: storeColumns } = useCsvDataStore();
     const { sideMenuData } = useAxisSideMenuStore();
     const { isSideMenuOpen, toggleSideMenu, sideMenuWidth, setSideMenuWidth } = useWorkspaceLocalStore();
+    const { isBetaMode } = useWorkspaceStore();
 
     const { hasColumns } = useMemo(() => createAxisSideMenuConfig(storeColumns, sideMenuData), [storeColumns, sideMenuData]);
     const { plotType } = sideMenuData;
@@ -24,7 +26,10 @@ const SideMenu: React.FC = () => {
         if (plotType === 'histogram' && activeTab === 'ink') {
             setActiveTab('axis');
         }
-    }, [plotType, activeTab]);
+        if (!isBetaMode && activeTab === 'color') {
+            setActiveTab('axis');
+        }
+    }, [plotType, activeTab, isBetaMode]);
 
     // Resizing Logic
     React.useEffect(() => {
@@ -165,7 +170,7 @@ const SideMenu: React.FC = () => {
                 {renderTabButton('axis', 'Axis', 'bi-bar-chart-steps')}
                 {renderTabButton('filter', 'Filter', 'bi-funnel')}
                 {renderTabButton('group', 'Group', 'bi-diagram-3')}
-                {renderTabButton('color', 'Style', 'bi-palette')}
+                {isBetaMode && renderTabButton('color', 'Style', 'bi-palette')}
                 {plotType !== 'histogram' && renderTabButton('ink', 'Ink Ratio', 'bi-droplet')}
             </div>
 

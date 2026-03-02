@@ -21,12 +21,16 @@ interface WorkspaceState {
     setActiveWorkspaceId: (id: string) => void;
     toggleTopMenuBar: () => void;
     setTopMenuBarOpen: (isOpen: boolean) => void;
+
+    isBetaMode: boolean;
+    toggleBetaMode: () => void;
 }
 
 export const useWorkspaceStore = create<WorkspaceState>((set) => ({
     workspaces: [{ id: 'default', name: 'Workspace 1' }],
     activeWorkspaceId: 'default',
     isTopMenuBarOpen: true,
+    isBetaMode: false,
 
     addWorkspace: (workspace) => set((state) => ({
         workspaces: [...state.workspaces, workspace],
@@ -60,4 +64,5 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
     setActiveWorkspaceId: (id) => set({ activeWorkspaceId: id }),
     toggleTopMenuBar: () => set((state) => ({ isTopMenuBarOpen: !state.isTopMenuBarOpen })),
     setTopMenuBarOpen: (isOpen) => set({ isTopMenuBarOpen: isOpen }),
+    toggleBetaMode: () => set((state) => ({ isBetaMode: !state.isBetaMode })),
 }));
