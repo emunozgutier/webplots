@@ -6,17 +6,15 @@ import { useAxisSideMenuStore } from '../../store/AxisSideMenuStore';
 import { useGroupSideMenuStore } from '../../store/GroupSideMenuStore';
 import { useFilterSideMenuStore } from '../../store/FilterSideMenuStore';
 import { useColorSideMenuStore } from '../../store/ColorSideMenuStore';
-import HeaderSummary, { type SummaryMode } from './HeaderSummary';
+import HeaderSummary from './HeaderSummary';
 import { useWorkspaceLocalStore } from '../../store/WorkspaceLocalStore';
 import Plot from 'react-plotly.js';
 import TableAreaControlButtons from './TableAreaControlButtons';
 
 const TableArea: React.FC = () => {
-    const [datasetMode, setDatasetMode] = useState<'all' | 'plot'>('plot');
-    const [summaryMode, setSummaryMode] = useState<SummaryMode>('none');
     const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
-    const { setPopupContent } = useWorkspaceLocalStore();
+    const { setPopupContent, summaryMode, setSummaryMode, datasetMode, setDatasetMode, colorMode, setColorMode } = useWorkspaceLocalStore();
 
     const handleSortAsc = (key: string) => {
         if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') setSortConfig(null);
@@ -117,7 +115,7 @@ const TableArea: React.FC = () => {
 
     // Compute stats for detailed mode color coding
     const numericStats = useMemo(() => {
-        if (summaryMode !== 'detailed') return {};
+        if (colorMode !== 'color') return {};
 
         const stats: Record<string, { min: number, max: number }> = {};
         displayColumns.forEach(col => {
@@ -147,7 +145,7 @@ const TableArea: React.FC = () => {
             }
         });
         return stats;
-    }, [displayData, displayColumns, summaryMode]);
+    }, [displayData, displayColumns, colorMode]);
 
     const sortedData = useMemo(() => {
         if (!sortConfig) return displayData;
@@ -260,6 +258,8 @@ const TableArea: React.FC = () => {
                     setSummaryMode={setSummaryMode}
                     datasetMode={datasetMode}
                     setDatasetMode={setDatasetMode}
+                    colorMode={colorMode}
+                    setColorMode={setColorMode}
                 />
             </div>
 
@@ -338,7 +338,7 @@ const TableArea: React.FC = () => {
                                             bgColor = '#0d6efd'; // Primary blue
                                         } else if (isRowSelected || isColSelected) {
                                             bgColor = '#e9ecef'; // Light gray highlight
-                                        } else if (summaryMode === 'detailed' && numericStats[col]) {
+                                        } else if (colorMode === 'color' && numericStats[col]) {
                                             const { min, max } = numericStats[col];
                                             const numVal = Number(val);
                                             // Make sure we have a valid range

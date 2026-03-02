@@ -70,6 +70,10 @@ const PlotArea: React.FC = () => {
 
     return (
         <div className="d-flex flex-column h-100">
+            <PlotAreaControlButtons
+                onOpenSettings={handleOpenSettings}
+                onOpenDebug={handleOpenDebug}
+            />
             <div className="flex-grow-1 position-relative">
                 <Plot
                     data={plotData}
@@ -79,10 +83,6 @@ const PlotArea: React.FC = () => {
                     className="w-100 h-100"
                 />
             </div>
-            <PlotAreaControlButtons
-                onOpenSettings={handleOpenSettings}
-                onOpenDebug={handleOpenDebug}
-            />
         </div>
     );
 };
