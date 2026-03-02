@@ -1,5 +1,5 @@
 {
-    "commit_title": "Add absorptionMode and maxRadiusRatio to export",
-    "commit_message": "Destructure absorptionMode and maxRadiusRatio from useInkRatioStore and pass them into generatePlotConfig when building the saved HTML export. This ensures the exported plot respects the new absorption-based radius and maximum radius ratio settings.",
+    "commit_title": "Add GitHub button to top menu bar",
+    "commit_message": "Insert a small outlined GitHub button in TopMenuBar.tsx and add spacing between controls. The new Button links to the repository (opens in a new tab with noopener noreferrer), includes a GitHub icon and bold label, and the container gets a gap-2 class to space items. Existing beta toggle/button logic is unchanged.",
     "version_string": "2026.09.7"
 }
