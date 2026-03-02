@@ -20,10 +20,10 @@ const PlotAreaControlButtons: React.FC<PlotAreaControlButtonsProps> = ({ onOpenS
     const { sideMenuData } = useAxisSideMenuStore();
     const { groupSideMenuData } = useGroupSideMenuStore();
     const { colorData } = useColorSideMenuStore();
-    const { inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius } = useInkRatioStore();
+    const { inkRatio, absorptionMode, maxRadiusRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius } = useInkRatioStore();
 
     const handleSaveHTML = () => {
-        const { plotData, layout } = generatePlotConfig(data, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData, inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius);
+        const { plotData, layout } = generatePlotConfig(data, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData, absorptionMode, maxRadiusRatio, inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius);
 
         const htmlContent = `
 <!DOCTYPE html>
