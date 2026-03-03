@@ -270,6 +270,25 @@ const TopMenuBar: React.FC = () => {
                             <NavDropdown.Item onClick={handleLoadWeatherData}>
                                 Sample Weather Data
                             </NavDropdown.Item>
+                            <NavDropdown.Divider />
+                            <NavDropdown.Item onClick={() => {
+                                // Generate 1e6 points
+                                const numPoints = 1_000_000;
+                                const data: CsvDataStore[] = new Array(numPoints);
+                                for (let i = 0; i < numPoints; i++) {
+                                    const t = (i / numPoints) * 2 * Math.PI; // One full cycle
+                                    data[i] = {
+                                        "Time": t,
+                                        "Sine": Math.sin(t)
+                                    };
+                                }
+                                setPlotData(data);
+                                setColumns(["Time", "Sine"]);
+                                const activeStores = workspaceRegistry.get(useWorkspaceStore.getState().activeWorkspaceId);
+                                if (activeStores) activeStores.axisSideMenuStore.getState().setXAxis("Time");
+                            }}>
+                                1e6 Points Sine Wave
+                            </NavDropdown.Item>
                         </NavDropdown>
 
                         <NavDropdown title="Help" id="help-nav-dropdown">
