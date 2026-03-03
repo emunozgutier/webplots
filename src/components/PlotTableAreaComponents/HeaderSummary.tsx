@@ -108,11 +108,26 @@ const SparklineHistogram: React.FC<SparklineProps> = ({ data, width = 100, heigh
 
 
 const HeaderSummary: React.FC<HeaderSummaryProps> = ({ data, column, mode }) => {
-    if (mode === 'none' || !data || data.length === 0) return null;
-
     const stats = useMemo(() => {
-        // Extract raw column data, filtering out nulls
-        const rawValues = data.map(row => row[column]).filter(v => v !== null && v !== undefined && v !== '');
+        if (mode === 'none' || !data || data.length === 0) return null;
+
+        const MAX_SAMPLES = 5000;
+        let sampledData = data;
+
+        // Uniform sampling for large datasets to prevent locking the UI thread
+        if (data.length > MAX_SAMPLES) {
+            sampledData = [];
+            const step = data.length / MAX_SAMPLES;
+            for (let i = 0; i < MAX_SAMPLES; i++) {
+                const index = Math.floor(i * step);
+                if (index < data.length) {
+                    sampledData.push(data[index]);
+                }
+            }
+        }
+
+        // Extract raw column data from the sample, filtering out nulls
+        const rawValues = sampledData.map(row => row[column]).filter(v => v !== null && v !== undefined && v !== '');
         if (rawValues.length === 0) return null;
 
         const type = determineType(rawValues);
@@ -173,7 +188,7 @@ const HeaderSummary: React.FC<HeaderSummaryProps> = ({ data, column, mode }) => 
                 topCategories: sortedCategories.slice(0, 5) // Keep it brief
             };
         }
-    }, [data, column]);
+    }, [data, column, mode]);
 
     if (!stats) return null;
 

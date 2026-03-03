@@ -304,7 +304,7 @@ const TableArea: React.FC = () => {
             >
                 {/* Virtualized Container Inner Wrapper */}
                 <div style={{ height: sortedData.length * rowHeight, position: 'relative' }}>
-                    <Table bordered hover size="sm" className="mb-0" style={{ position: 'absolute', top: 0, left: 0, width: '100%', minWidth: 'max-content', transform: `translateY(${startIndex * rowHeight}px)` }}>
+                    <Table bordered hover size="sm" className="mb-0" style={{ position: 'absolute', top: 0, left: 0, width: '100%', minWidth: 'max-content' }}>
                         <thead className="bg-light" style={{ position: 'sticky', top: 0, zIndex: 12 }}>
                             <tr>
                                 <th className={selectedCell?.col === 0 ? 'bg-primary text-white' : 'bg-light'} style={{ position: 'sticky', left: 0, zIndex: 13 }}>#</th>
@@ -347,6 +347,12 @@ const TableArea: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
+                            {/* Spacer row to push down visible items correctly without moving the header */}
+                            {startIndex > 0 && (
+                                <tr style={{ height: `${startIndex * rowHeight}px` }}>
+                                    <td colSpan={displayColumns.length + 1} style={{ padding: 0, border: 'none' }}></td>
+                                </tr>
+                            )}
                             {slicedData.map((row: any, i: number) => {
                                 const rowIndex = startIndex + i;
                                 const isRowSelected = selectedCell?.row === rowIndex;
