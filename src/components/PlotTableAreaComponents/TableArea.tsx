@@ -119,29 +119,38 @@ const TableArea: React.FC = () => {
 
         const stats: Record<string, { min: number, max: number }> = {};
         displayColumns.forEach(col => {
-            // Sample values to check if mostly numeric
-            const rawValues = displayData.map(row => row[col]).filter(v => v !== null && v !== undefined && v !== '');
-            if (rawValues.length === 0) return;
-
             let numCount = 0;
-            const numericValues: number[] = [];
+            let min = Infinity;
+            let max = -Infinity;
+            let totalProcessed = 0;
 
-            for (const v of rawValues) {
+            // Iterate over all data without creating intermediate mapped arrays
+            // This prevents "Maximum call stack size" crashes from spreading huge arrays
+            for (let i = 0; i < displayData.length; i++) {
+                const row = displayData[i];
+                if (!row) continue;
+
+                const v = row[col];
+                if (v === null || v === undefined || v === '') continue;
+
+                totalProcessed++;
                 if (typeof v === 'number') {
                     numCount++;
-                    numericValues.push(v);
-                } else if (typeof v === 'string' && !isNaN(Number(v)) && v.trim() !== '') {
-                    numCount++;
-                    numericValues.push(Number(v));
+                    if (v < min) min = v;
+                    if (v > max) max = v;
+                } else if (typeof v === 'string') {
+                    const numV = Number(v);
+                    if (!isNaN(numV) && v.trim() !== '') {
+                        numCount++;
+                        if (numV < min) min = numV;
+                        if (numV > max) max = numV;
+                    }
                 }
             }
 
             // If more than 80% are numbers, treat as numeric column for color coding
-            if (numCount / rawValues.length > 0.8 && numericValues.length > 0) {
-                stats[col] = {
-                    min: Math.min(...numericValues),
-                    max: Math.max(...numericValues)
-                };
+            if (totalProcessed > 0 && numCount / totalProcessed > 0.8 && min !== Infinity) {
+                stats[col] = { min, max };
             }
         });
         return stats;
@@ -172,9 +181,24 @@ const TableArea: React.FC = () => {
         return sorted;
     }, [displayData, sortConfig]);
 
-    // Slice for performance (top 500 records)
-    const MAX_ROWS = 500;
-    const slicedData = sortedData.slice(0, MAX_ROWS);
+    const [scrollTop, setScrollTop] = useState(0);
+    const [clientHeight, setClientHeight] = useState(0);
+    const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+
+    // Track scroll position
+    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        setScrollTop(e.currentTarget.scrollTop);
+        if (clientHeight === 0) setClientHeight(e.currentTarget.clientHeight);
+    };
+
+    // Calculate visible rows for virtualization
+    const rowHeight = 36.5; // Estimated row height in pixels for Bootstrap size="sm" Table
+    const buffer = 10;
+    const startIndex = Math.max(0, Math.floor(scrollTop / rowHeight) - buffer);
+    const endIndex = Math.min(sortedData.length, startIndex + Math.ceil((clientHeight || 1000) / rowHeight) + buffer * 2);
+
+    // Virtualized slice
+    const slicedData = sortedData.slice(startIndex, endIndex);
 
     if (!displayData || displayData.length === 0) {
         return (
@@ -189,7 +213,7 @@ const TableArea: React.FC = () => {
     const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
         if (!selectedCell) return;
 
-        const maxRow = slicedData.length - 1;
+        const maxRow = sortedData.length - 1;
         // displayColumns length + 1 (for the index column)
         const maxCol = displayColumns.length;
 
@@ -213,13 +237,20 @@ const TableArea: React.FC = () => {
 
         setSelectedCell({ row, col });
 
-        // Ensure focused item scrolls into view
-        setTimeout(() => {
-            const cell = document.getElementById(`cell-${row}-${col}`);
-            if (cell) {
-                cell.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+        // Ensure focused item scrolls into view by manually adjusting scrollTop
+        if (scrollContainerRef.current) {
+            const rowOffsetTop = row * rowHeight;
+            const containerHeight = scrollContainerRef.current.clientHeight;
+            const currentScroll = scrollContainerRef.current.scrollTop;
+
+            if (rowOffsetTop < currentScroll) {
+                // Scroll up
+                scrollContainerRef.current.scrollTop = rowOffsetTop;
+            } else if (rowOffsetTop > currentScroll + containerHeight - rowHeight * 2) {
+                // Scroll down
+                scrollContainerRef.current.scrollTop = rowOffsetTop - containerHeight + rowHeight * 2;
             }
-        }, 0);
+        }
     };
 
     return (
@@ -252,7 +283,9 @@ const TableArea: React.FC = () => {
                 }
             `}</style>
             <div className="d-flex justify-content-between align-items-center mb-3">
-                <h5 className="mb-0 text-dark">Data Table</h5>
+                <h5 className="mb-0 text-dark">Data Table
+                    <span className="ms-2 fs-6 fw-normal text-muted">({sortedData.length.toLocaleString()} rows)</span>
+                </h5>
                 <TableAreaControlButtons
                     summaryMode={summaryMode}
                     setSummaryMode={setSummaryMode}
@@ -263,120 +296,123 @@ const TableArea: React.FC = () => {
                 />
             </div>
 
-            <div className="flex-grow-1 overflow-auto border rounded table-scroll-container" style={{ position: 'relative' }}>
-                <Table bordered hover size="sm" className="mb-0" style={{ minWidth: 'max-content' }}>
-                    <thead className="sticky-top bg-light" style={{ zIndex: 10 }}>
-                        <tr>
-                            <th className={selectedCell?.col === 0 ? 'bg-primary text-white' : 'bg-light'} style={{ position: 'sticky', left: 0, zIndex: 11 }}>#</th>
-                            {displayColumns.map((col: string, idx: number) => (
-                                <th
-                                    key={idx}
-                                    className={`text-nowrap align-top ${selectedCell?.col === idx + 1 ? 'bg-primary text-white' : 'bg-light'}`}
-                                >
-                                    <div className="d-flex justify-content-between align-items-center mb-1">
-                                        <div className="fw-bold">{col}</div>
-                                        <div className="d-flex gap-1 ms-2">
-                                            <div className="btn-group">
+            <div
+                className="flex-grow-1 overflow-auto border rounded table-scroll-container"
+                style={{ position: 'relative' }}
+                onScroll={handleScroll}
+                ref={scrollContainerRef}
+            >
+                {/* Virtualized Container Inner Wrapper */}
+                <div style={{ height: sortedData.length * rowHeight, position: 'relative' }}>
+                    <Table bordered hover size="sm" className="mb-0" style={{ position: 'absolute', top: 0, left: 0, width: '100%', minWidth: 'max-content', transform: `translateY(${startIndex * rowHeight}px)` }}>
+                        <thead className="bg-light" style={{ position: 'sticky', top: 0, zIndex: 12 }}>
+                            <tr>
+                                <th className={selectedCell?.col === 0 ? 'bg-primary text-white' : 'bg-light'} style={{ position: 'sticky', left: 0, zIndex: 13 }}>#</th>
+                                {displayColumns.map((col: string, idx: number) => (
+                                    <th
+                                        key={idx}
+                                        className={`text-nowrap align-top ${selectedCell?.col === idx + 1 ? 'bg-primary text-white' : 'bg-light'}`}
+                                    >
+                                        <div className="d-flex justify-content-between align-items-center mb-1">
+                                            <div className="fw-bold">{col}</div>
+                                            <div className="d-flex gap-1 ms-2">
+                                                <div className="btn-group">
+                                                    <button
+                                                        className={`btn btn-sm py-0 px-1 ${sortConfig?.key === col && sortConfig?.direction === 'asc' ? 'btn-secondary' : 'btn-outline-secondary'}`}
+                                                        title="Sort Ascending"
+                                                        onClick={() => handleSortAsc(col)}
+                                                    >
+                                                        <i className="bi bi-arrow-up"></i>
+                                                    </button>
+                                                    <button
+                                                        className={`btn btn-sm py-0 px-1 ${sortConfig?.key === col && sortConfig?.direction === 'desc' ? 'btn-secondary' : 'btn-outline-secondary'}`}
+                                                        title="Sort Descending"
+                                                        onClick={() => handleSortDesc(col)}
+                                                    >
+                                                        <i className="bi bi-arrow-down"></i>
+                                                    </button>
+                                                </div>
                                                 <button
-                                                    className={`btn btn-sm py-0 px-1 ${sortConfig?.key === col && sortConfig?.direction === 'asc' ? 'btn-secondary' : 'btn-outline-secondary'}`}
-                                                    title="Sort Ascending"
-                                                    onClick={() => handleSortAsc(col)}
+                                                    className="btn btn-sm btn-outline-info py-0 px-1 ms-1"
+                                                    title="Zoom Data"
+                                                    onClick={() => handleZoom(col)}
                                                 >
-                                                    <i className="bi bi-arrow-up"></i>
-                                                </button>
-                                                <button
-                                                    className={`btn btn-sm py-0 px-1 ${sortConfig?.key === col && sortConfig?.direction === 'desc' ? 'btn-secondary' : 'btn-outline-secondary'}`}
-                                                    title="Sort Descending"
-                                                    onClick={() => handleSortDesc(col)}
-                                                >
-                                                    <i className="bi bi-arrow-down"></i>
+                                                    <i className="bi bi-zoom-in"></i>
                                                 </button>
                                             </div>
-                                            <button
-                                                className="btn btn-sm btn-outline-info py-0 px-1 ms-1"
-                                                title="Zoom Data"
-                                                onClick={() => handleZoom(col)}
-                                            >
-                                                <i className="bi bi-zoom-in"></i>
-                                            </button>
                                         </div>
-                                    </div>
-                                    <HeaderSummary data={displayData} column={col} mode={summaryMode} />
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {slicedData.map((row: any, rowIndex: number) => {
-                            const isRowSelected = selectedCell?.row === rowIndex;
-                            return (
-                                <tr key={rowIndex}>
-                                    <td
-                                        id={`cell-${rowIndex}-0`}
-                                        className={`text-muted fw-bold ${isRowSelected ? 'bg-light' : ''} ${selectedCell?.col === 0 ? 'bg-primary text-white' : ''}`}
-                                        style={{ position: 'sticky', left: 0, zIndex: 5, backgroundColor: isRowSelected ? '#e9ecef' : '#fff' }}
-                                        onClick={() => setSelectedCell({ row: rowIndex, col: 0 })}
-                                        tabIndex={-1}
-                                    >
-                                        {rowIndex + 1}
-                                    </td>
-                                    {displayColumns.map((col: string, idx: number) => {
-                                        const colIndex = idx + 1;
-                                        const isColSelected = selectedCell?.col === colIndex;
-                                        const isCellSelected = isRowSelected && isColSelected;
+                                        <HeaderSummary data={displayData} column={col} mode={summaryMode} />
+                                    </th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {slicedData.map((row: any, i: number) => {
+                                const rowIndex = startIndex + i;
+                                const isRowSelected = selectedCell?.row === rowIndex;
+                                return (
+                                    <tr key={rowIndex} style={{ height: `${rowHeight}px` }}>
+                                        <td
+                                            id={`cell-${rowIndex}-0`}
+                                            className={`text-muted fw-bold ${isRowSelected ? 'bg-light' : ''} ${selectedCell?.col === 0 ? 'bg-primary text-white' : ''}`}
+                                            style={{ position: 'sticky', left: 0, zIndex: 5, backgroundColor: isRowSelected ? '#e9ecef' : '#fff' }}
+                                            onClick={() => setSelectedCell({ row: rowIndex, col: 0 })}
+                                            tabIndex={-1}
+                                        >
+                                            {rowIndex + 1}
+                                        </td>
+                                        {displayColumns.map((col: string, idx: number) => {
+                                            const colIndex = idx + 1;
+                                            const isColSelected = selectedCell?.col === colIndex;
+                                            const isCellSelected = isRowSelected && isColSelected;
 
-                                        // Make sure boolean and null map to string for display
-                                        const val = row[col];
-                                        let displayVal = val;
-                                        if (val === null || val === undefined) displayVal = '';
-                                        else if (typeof val === 'boolean') displayVal = String(val);
+                                            // Make sure boolean and null map to string for display
+                                            const val = row[col];
+                                            let displayVal = val;
+                                            if (val === null || val === undefined) displayVal = '';
+                                            else if (typeof val === 'boolean') displayVal = String(val);
 
-                                        let bgColor = '';
-                                        let textColor = isCellSelected ? '#fff' : '';
+                                            let bgColor = '';
+                                            let textColor = isCellSelected ? '#fff' : '';
 
-                                        if (isCellSelected) {
-                                            bgColor = '#0d6efd'; // Primary blue
-                                        } else if (isRowSelected || isColSelected) {
-                                            bgColor = '#e9ecef'; // Light gray highlight
-                                        } else if (colorMode === 'color' && numericStats[col]) {
-                                            const { min, max } = numericStats[col];
-                                            const numVal = Number(val);
-                                            // Make sure we have a valid range
-                                            if (!isNaN(numVal) && max > min) {
-                                                const ratio = (numVal - min) / (max - min);
-                                                // Color scale: Red (High) to Blue (Low)
-                                                // We can make the color vibrant but semi-transparent so text is readable
-                                                const r = Math.round(ratio * 255);
-                                                const b = Math.round((1 - ratio) * 255);
-                                                bgColor = `rgba(${r}, 40, ${b}, 0.25)`;
-                                                textColor = '#000'; // Force black text for contrast against gradient
+                                            if (isCellSelected) {
+                                                bgColor = '#0d6efd'; // Primary blue
+                                            } else if (isRowSelected || isColSelected) {
+                                                bgColor = '#e9ecef'; // Light gray highlight
+                                            } else if (colorMode === 'color' && numericStats[col]) {
+                                                const { min, max } = numericStats[col];
+                                                const numVal = Number(val);
+                                                // Make sure we have a valid range
+                                                if (!isNaN(numVal) && max > min) {
+                                                    const ratio = (numVal - min) / (max - min);
+                                                    // Color scale: Red (High) to Blue (Low)
+                                                    // We can make the color vibrant but semi-transparent so text is readable
+                                                    const r = Math.round(ratio * 255);
+                                                    const b = Math.round((1 - ratio) * 255);
+                                                    bgColor = `rgba(${r}, 40, ${b}, 0.25)`;
+                                                    textColor = '#000'; // Force black text for contrast against gradient
+                                                }
                                             }
-                                        }
 
-                                        return (
-                                            <td
-                                                id={`cell-${rowIndex}-${colIndex}`}
-                                                key={idx}
-                                                className="text-nowrap"
-                                                style={{ backgroundColor: bgColor, color: textColor, cursor: 'cell' }}
-                                                onClick={() => setSelectedCell({ row: rowIndex, col: colIndex })}
-                                            >
-                                                {displayVal as React.ReactNode}
-                                            </td>
-                                        );
-                                    })}
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </Table>
-            </div>
-
-            {displayData.length > MAX_ROWS && (
-                <div className="text-muted small mt-2">
-                    Showing first {MAX_ROWS} rows of {displayData.length} total rows.
+                                            return (
+                                                <td
+                                                    id={`cell-${rowIndex}-${colIndex}`}
+                                                    key={idx}
+                                                    className="text-nowrap"
+                                                    style={{ backgroundColor: bgColor, color: textColor, cursor: 'cell' }}
+                                                    onClick={() => setSelectedCell({ row: rowIndex, col: colIndex })}
+                                                >
+                                                    {displayVal as React.ReactNode}
+                                                </td>
+                                            );
+                                        })}
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </Table>
                 </div>
-            )}
+            </div>
         </div>
     );
 };
