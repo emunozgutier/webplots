@@ -82,6 +82,12 @@ export const generatePlotConfig = (
         let validX = numsX;
         let validY = numsY;
 
+        // PERFORMANCE CUTOFF: N^2 geometric distance checking for >50k points locks the UI thread for minutes.
+        if (xData.length > 50000) {
+            console.warn(`[InkRatio] Dataset too large (${xData.length} pts) for geometric point-overlap filter. Rendering raw WebGL dataset.`);
+            return { x: xData, y: yData, filteredCount: 0, absorbedCounts: new Array(xData.length).fill(0) };
+        }
+
         // Determine Min/Max based on VALID numbers
         const validNumsX = numsX.filter((n: number) => !isNaN(n));
         const validNumsY = numsY.filter((n: number) => !isNaN(n));
@@ -533,7 +539,7 @@ export const generatePlotConfig = (
             x: finalX,
             y: finalY,
             mode: mode,
-            type: 'scatter',
+            type: finalX.length > 50000 ? 'scattergl' : 'scatter',
             name: finalName,
             legendgroup: finalName,
             customdata: absorbedCounts, // inject it into Plotly for the hover template
