@@ -62,69 +62,149 @@ export const toEngineeringString = (value: number, sigDigits: number = 3): strin
     return `${finalValue}${prefix}`;
 };
 
+export interface GaussianComponent {
+    mean: number;
+    stdDev: number;
+    weight: number;
+}
+
 export interface GaussianStats {
     hasGaussianTest: boolean;
     isGaussian: boolean;
     gaussianScore: number;
+    components: GaussianComponent[];
 }
 
 /**
- * Calculates whether an array of numeric values follows a Gaussian (normal) distribution.
- * Returns heuristics based on the Empirical Rule, Skewness, and Excess Kurtosis.
+ * Calculates whether an array of numeric values follows a Gaussian Mixture distribution (up to 4 peaks).
+ * Uses Kernel Density Estimation (KDE) approximation and peak finding.
  */
-export const calculateGaussianStats = (numericValues: number[], avg: number, stdDev: number, count: number): GaussianStats => {
+export const calculateGaussianStats = (numericValues: number[], stdDev: number, count: number): GaussianStats => {
     let gaussianScore = 0;
     let isGaussian = false;
     let hasGaussianTest = false;
+    let components: GaussianComponent[] = [];
 
     if (stdDev > 0 && count > 10) {
         hasGaussianTest = true;
-        let within1Sd = 0;
-        let within2Sd = 0;
-        let within3Sd = 0;
 
-        let skewness = 0;
-        let kurtosis = 0;
+        // 1. Build Histogram
+        const min = Math.min(...numericValues);
+        const max = Math.max(...numericValues);
+        const range = max - min;
 
-        for (let v of numericValues) {
-            let z = (v - avg) / stdDev;
-            if (Math.abs(z) <= 1) within1Sd++;
-            if (Math.abs(z) <= 2) within2Sd++;
-            if (Math.abs(z) <= 3) within3Sd++;
+        if (range > 0) {
+            const numBins = 60;
+            const binSize = range / numBins;
+            const hist = new Array(numBins).fill(0);
 
-            let z2 = z * z;
-            let z3 = z2 * z;
-            let z4 = z2 * z2;
-            skewness += z3;
-            kurtosis += z4;
+            for (let i = 0; i < count; i++) {
+                let idx = Math.floor((numericValues[i] - min) / binSize);
+                if (idx >= numBins) idx = numBins - 1;
+                hist[idx]++;
+            }
+
+            // 2. Smooth Histogram (Gaussian kernel)
+            const smoothed = new Array(numBins).fill(0);
+            const kernel = [0.06, 0.24, 0.40, 0.24, 0.06]; // Approximation
+            const kOffset = 2;
+
+            for (let i = 0; i < numBins; i++) {
+                let sum = 0;
+                let weightSum = 0;
+                for (let k = 0; k < kernel.length; k++) {
+                    const idx = i + k - kOffset;
+                    if (idx >= 0 && idx < numBins) {
+                        sum += hist[idx] * kernel[k];
+                        weightSum += kernel[k];
+                    }
+                }
+                smoothed[i] = sum / weightSum;
+            }
+
+            // 3. Find Peaks
+            let peaks: { index: number; value: number }[] = [];
+            for (let i = 1; i < numBins - 1; i++) {
+                if (smoothed[i] > smoothed[i - 1] && smoothed[i] > smoothed[i + 1]) {
+                    peaks.push({ index: i, value: smoothed[i] });
+                }
+            }
+
+            // Check edges
+            if (smoothed[0] > smoothed[1]) peaks.push({ index: 0, value: smoothed[0] });
+            if (smoothed[numBins - 1] > smoothed[numBins - 2]) peaks.push({ index: numBins - 1, value: smoothed[numBins - 1] });
+
+            // 4. Filter and Sort
+            peaks.sort((a, b) => b.value - a.value);
+            const maxVal = peaks.length > 0 ? peaks[0].value : 0;
+
+            // Ignore peaks < 10% of max peak, and max 4 peaks
+            let validPeaks = peaks.filter(p => p.value >= maxVal * 0.1).slice(0, 4);
+
+            // 5. Estimate Parameters (Mean, Sigma, Weight)
+            let rawComponents = [];
+            let totalEstimatedArea = 0;
+
+            for (let p of validPeaks) {
+                const meanVal = min + (p.index + 0.5) * binSize;
+
+                // FWHM (Full Width at Half Maximum)
+                const halfMax = p.value / 2;
+                let leftIdx = p.index;
+                while (leftIdx > 0 && smoothed[leftIdx] > halfMax) leftIdx--;
+                let rightIdx = p.index;
+                while (rightIdx < numBins - 1 && smoothed[rightIdx] > halfMax) rightIdx++;
+
+                const fwhmBins = rightIdx - leftIdx || 1; // min 1 bin
+                const fwhmVal = fwhmBins * binSize;
+
+                // Sigma = FWHM / 2.355
+                let peakStdDev = fwhmVal / 2.355;
+                if (peakStdDev === 0) peakStdDev = binSize; // avoid 0
+
+                const area = p.value * peakStdDev;
+                totalEstimatedArea += area;
+
+                rawComponents.push({ mean: meanVal, stdDev: peakStdDev, rawWeight: area });
+            }
+
+            if (rawComponents.length > 0) {
+                // Normalize weights
+                components = rawComponents.map(c => ({
+                    mean: c.mean,
+                    stdDev: c.stdDev,
+                    weight: c.rawWeight / totalEstimatedArea
+                }));
+
+                // 6. Calculate Confidence Score (Fit)
+                let errorSum = 0;
+
+                for (let i = 0; i < numBins; i++) {
+                    const x = min + (i + 0.5) * binSize;
+                    const empiricalPdf = smoothed[i] / (count * binSize);
+
+                    let modelPdf = 0;
+                    for (let comp of components) {
+                        const z = (x - comp.mean) / comp.stdDev;
+                        modelPdf += comp.weight * (1 / (comp.stdDev * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * z * z);
+                    }
+
+                    errorSum += Math.abs(empiricalPdf - modelPdf) * binSize;
+                }
+
+                // Map Error to score. Score 0 to 100.
+                const confidence = Math.max(0, 100 - (errorSum * 150));
+                gaussianScore = Math.round(confidence);
+
+                isGaussian = gaussianScore >= 60 && components.length > 0 && components.length <= 4;
+            }
         }
-
-        let p1 = within1Sd / count;
-        let p2 = within2Sd / count;
-        let p3 = within3Sd / count;
-
-        skewness /= count;
-        kurtosis = (kurtosis / count) - 3; // Excess kurtosis (normal=0)
-
-        // Compare to empirical rule for normal distribution (~68%, ~95%, ~99.7%)
-        let err1 = Math.abs(p1 - 0.6827);
-        let err2 = Math.abs(p2 - 0.9545);
-        let err3 = Math.abs(p3 - 0.9973);
-
-        let shapeError = (Math.abs(skewness) + Math.abs(kurtosis)) / 2;
-        let distributionError = (err1 + err2 + err3) / 1.5;
-
-        let totalError = distributionError + shapeError;
-
-        // Convert to a percentage, capping at 100, floor at 0
-        let confidence = Math.max(0, 100 - (totalError * 100));
-        gaussianScore = Math.round(confidence);
-
-        // 70% threshold roughly captures normally distributed data without being too strict
-        isGaussian = gaussianScore >= 70;
     }
 
-    return { hasGaussianTest, isGaussian, gaussianScore };
+    // Sort components by mean ascending, for displaying left-to-right
+    components.sort((a, b) => a.mean - b.mean);
+
+    return { hasGaussianTest, isGaussian, gaussianScore, components };
 };
 
 export const generateTestGaussianData = (): { data: any[], columns: string[] } => {

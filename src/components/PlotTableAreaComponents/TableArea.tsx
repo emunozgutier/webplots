@@ -40,7 +40,7 @@ const TableArea: React.FC = () => {
             variance /= count;
             const stdDev = Math.sqrt(variance);
 
-            const { isGaussian } = calculateGaussianStats(numericValues, avg, stdDev, count);
+            const { isGaussian, components } = calculateGaussianStats(numericValues, stdDev, count);
 
             const min = Math.min(...numericValues);
             const max = Math.max(...numericValues);
@@ -55,17 +55,24 @@ const TableArea: React.FC = () => {
                 xbins: { start: min, end: max, size: binSize }
             }];
 
-            if (isGaussian && stdDev > 0) {
+            if (isGaussian && components && components.length > 0) {
                 const xs = [];
                 const ys = [];
-                const points = 100;
+                const points = 150;
+
+                const mixtureDist = (x: number) => {
+                    let pdf = 0;
+                    for (let comp of components) {
+                        const z = (x - comp.mean) / comp.stdDev;
+                        pdf += comp.weight * (1 / (comp.stdDev * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * z * z);
+                    }
+                    return pdf;
+                };
+
                 for (let i = 0; i <= points; i++) {
                     const x = min + (i / points) * (max - min);
-                    const z = (x - avg) / stdDev;
-                    const pdf = (1 / (stdDev * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * z * z);
                     xs.push(x);
-                    // Scale PDF to histogram count area
-                    ys.push(pdf * count * binSize);
+                    ys.push(mixtureDist(x) * count * binSize);
                 }
 
                 plotData.push({
@@ -73,7 +80,7 @@ const TableArea: React.FC = () => {
                     y: ys,
                     type: 'scatter',
                     mode: 'lines',
-                    name: 'Normal Fit',
+                    name: 'Gaussian Mixture Fit',
                     line: { color: '#28a745', width: 3 }
                 });
             }
@@ -81,18 +88,27 @@ const TableArea: React.FC = () => {
             const shapes: any[] = [];
             const annotations: any[] = [];
 
-            if (stdDev > 0) {
-                // Mean line
+            if (isGaussian && components && components.length > 0) {
+                components.forEach((comp, idx) => {
+                    const suffix = components.length > 1 ? `${idx + 1}` : '';
+                    const weightText = components.length > 1 ? ` (${Math.round(comp.weight * 100)}%)` : '';
+
+                    // Mean line
+                    shapes.push({ type: 'line', x0: comp.mean, x1: comp.mean, y0: 0, y1: 1, yref: 'paper', xref: 'x', line: { color: 'rgba(220, 53, 69, 0.8)', width: 2, dash: 'dash' } });
+                    annotations.push({ x: comp.mean, y: 1.05 + (idx % 2 === 0 ? 0 : 0.05), yref: 'paper', xref: 'x', text: `μ${suffix}${weightText}`, showarrow: false, font: { color: '#dc3545', size: 10 } });
+
+                    // -1 Sigma line
+                    shapes.push({ type: 'line', x0: comp.mean - comp.stdDev, x1: comp.mean - comp.stdDev, y0: 0, y1: 1, yref: 'paper', xref: 'x', line: { color: 'rgba(13, 110, 253, 0.4)', width: 1, dash: 'dot' } });
+                    annotations.push({ x: comp.mean - comp.stdDev, y: 1.02, yref: 'paper', xref: 'x', text: `-1σ${suffix}`, showarrow: false, font: { color: '#0d6efd', size: 9 } });
+
+                    // +1 Sigma line
+                    shapes.push({ type: 'line', x0: comp.mean + comp.stdDev, x1: comp.mean + comp.stdDev, y0: 0, y1: 1, yref: 'paper', xref: 'x', line: { color: 'rgba(13, 110, 253, 0.4)', width: 1, dash: 'dot' } });
+                    annotations.push({ x: comp.mean + comp.stdDev, y: 1.02, yref: 'paper', xref: 'x', text: `+1σ${suffix}`, showarrow: false, font: { color: '#0d6efd', size: 9 } });
+                });
+            } else if (stdDev > 0) {
+                // Global Mean line (Not a multi-gaussian fit)
                 shapes.push({ type: 'line', x0: avg, x1: avg, y0: 0, y1: 1, yref: 'paper', xref: 'x', line: { color: 'rgba(220, 53, 69, 0.8)', width: 2, dash: 'dash' } });
                 annotations.push({ x: avg, y: 1.05, yref: 'paper', xref: 'x', text: 'Mean', showarrow: false, font: { color: '#dc3545', size: 11 } });
-
-                // -1 Sigma line
-                shapes.push({ type: 'line', x0: avg - stdDev, x1: avg - stdDev, y0: 0, y1: 1, yref: 'paper', xref: 'x', line: { color: 'rgba(13, 110, 253, 0.5)', width: 1.5, dash: 'dot' } });
-                annotations.push({ x: avg - stdDev, y: 1.05, yref: 'paper', xref: 'x', text: '-1σ', showarrow: false, font: { color: '#0d6efd', size: 11 } });
-
-                // +1 Sigma line
-                shapes.push({ type: 'line', x0: avg + stdDev, x1: avg + stdDev, y0: 0, y1: 1, yref: 'paper', xref: 'x', line: { color: 'rgba(13, 110, 253, 0.5)', width: 1.5, dash: 'dot' } });
-                annotations.push({ x: avg + stdDev, y: 1.05, yref: 'paper', xref: 'x', text: '+1σ', showarrow: false, font: { color: '#0d6efd', size: 11 } });
             }
 
             setPopupContent(

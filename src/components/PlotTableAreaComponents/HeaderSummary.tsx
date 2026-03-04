@@ -56,7 +56,7 @@ interface SparklineProps {
     data: number[];
     width?: number;
     height?: number;
-    gaussian?: { isGaussian: boolean; avg: number; stdDev: number };
+    gaussian?: { isGaussian: boolean; components: { mean: number; stdDev: number; weight: number }[] };
 }
 
 // Extremely lightweight inline SVG sparkline histogram
@@ -87,20 +87,24 @@ const SparklineHistogram: React.FC<SparklineProps> = ({ data, width = 100, heigh
     const padding = 1;
 
     let gaussianPath = "";
-    if (gaussian?.isGaussian && gaussian.stdDev > 0) {
+    if (gaussian?.isGaussian && gaussian.components && gaussian.components.length > 0) {
         const points = 50;
         const totalCount = data.length;
 
-        const normalDist = (x: number) => {
-            const z = (x - gaussian.avg) / gaussian.stdDev;
-            return (1 / (gaussian.stdDev * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * z * z);
+        const mixtureDist = (x: number) => {
+            let pdf = 0;
+            for (let comp of gaussian.components) {
+                const z = (x - comp.mean) / comp.stdDev;
+                pdf += comp.weight * (1 / (comp.stdDev * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * z * z);
+            }
+            return pdf;
         };
 
         // Scale by area of histogram
         let path = "";
         for (let i = 0; i <= points; i++) {
             const xVal = min + (i / points) * (max - min);
-            const pdf = normalDist(xVal);
+            const pdf = mixtureDist(xVal);
             const expectedCount = pdf * totalCount * binSize;
 
             const px = (i / points) * width;
@@ -190,9 +194,8 @@ const HeaderSummary: React.FC<HeaderSummaryProps> = ({ data, column, mode }) => 
             variance /= count;
             const stdDev = Math.sqrt(variance);
 
-            const { hasGaussianTest, isGaussian, gaussianScore } = calculateGaussianStats(
+            const { hasGaussianTest, isGaussian, gaussianScore, components } = calculateGaussianStats(
                 numericValues,
-                avg,
                 stdDev,
                 count
             );
@@ -227,6 +230,13 @@ const HeaderSummary: React.FC<HeaderSummaryProps> = ({ data, column, mode }) => 
                 hasGaussianTest,
                 gaussianScore,
                 isGaussian,
+                components: components.map(c => ({
+                    meanStr: formatVal(c.mean),
+                    stdDevStr: formatDuration(c.stdDev),
+                    mean: c.mean,
+                    stdDev: c.stdDev,
+                    weight: c.weight
+                })),
                 rawAvg: avg,
                 rawStdDev: stdDev
             };
@@ -289,28 +299,35 @@ const HeaderSummary: React.FC<HeaderSummaryProps> = ({ data, column, mode }) => 
                         data={(stats as any).rawNumeric}
                         gaussian={((stats as any).hasGaussianTest) ? {
                             isGaussian: (stats as any).isGaussian,
-                            avg: (stats as any).rawAvg,
-                            stdDev: (stats as any).rawStdDev
+                            components: (stats as any).components
                         } : undefined}
                     />
                     <div className="d-grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
                         <div><strong>Min:</strong> {(stats as any).min}</div>
                         <div><strong>Max:</strong> {(stats as any).max}</div>
-                        {((stats as any).hasGaussianTest && (stats as any).gaussianScore > 50) ? (
-                            <>
-                                <div><strong>Mean:</strong> {(stats as any).avg}</div>
-                                <div><strong>Sigma:</strong> {(stats as any).stdDev}</div>
-                            </>
-                        ) : (
-                            <>
-                                <div><strong>Avg:</strong> {(stats as any).avg}</div>
-                                <div><strong>Med:</strong> {(stats as any).median}</div>
-                            </>
-                        )}
+                        <div><strong>Avg:</strong> {(stats as any).avg}</div>
+                        <div><strong>Med:</strong> {(stats as any).median}</div>
                     </div>
                     {((stats as any).hasGaussianTest) && (
                         <div className="mt-2 pt-1 border-top border-light" style={{ fontSize: '0.75rem' }}>
-                            <strong>Gaussian:</strong> {(stats as any).isGaussian ? <span className="text-success fw-bold">Yes</span> : <span>No</span>} <span className="opacity-75">({(stats as any).gaussianScore}% sure)</span>
+                            <div>
+                                <strong>Gaussian Mixture:</strong> {(stats as any).isGaussian ? <span className="text-success fw-bold">Yes</span> : <span>No</span>} <span className="opacity-75">({(stats as any).gaussianScore}% sure)</span>
+                            </div>
+                            {(stats as any).isGaussian && (stats as any).components && (stats as any).components.length > 0 && (
+                                <div className="mt-1 d-grid" style={{ gridTemplateColumns: '1fr', gap: '2px' }}>
+                                    {((stats as any).components).map((comp: any, i: number, arr: any[]) => {
+                                        const weightText = arr.length > 1
+                                            ? ` (${Math.round(comp.weight * 100)}%)`
+                                            : '';
+                                        return (
+                                            <div key={i} className="d-flex justify-content-between text-muted" style={{ fontSize: '0.7rem' }}>
+                                                <span title="Mean">μ: {comp.meanStr}</span>
+                                                <span title="Sigma">σ: {comp.stdDevStr}{weightText}</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
