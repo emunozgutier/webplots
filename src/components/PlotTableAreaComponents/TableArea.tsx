@@ -80,9 +80,32 @@ const TableArea: React.FC = () => {
                     y: ys,
                     type: 'scatter',
                     mode: 'lines',
-                    name: 'Gaussian Mixture Fit',
-                    line: { color: '#28a745', width: 3 }
+                    name: 'Total Fit',
+                    line: { color: '#28a745', width: 2, dash: 'solid' }
                 });
+
+                // Display individual Gaussians
+                if (components.length > 1) {
+                    components.forEach((comp, idx) => {
+                        const compXs = [];
+                        const compYs = [];
+                        for (let i = 0; i <= points; i++) {
+                            const x = min + (i / points) * (max - min);
+                            const z = (x - comp.mean) / comp.stdDev;
+                            const pdf = comp.weight * (1 / (comp.stdDev * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * z * z);
+                            compXs.push(x);
+                            compYs.push(pdf * count * binSize);
+                        }
+                        plotData.push({
+                            x: compXs,
+                            y: compYs,
+                            type: 'scatter',
+                            mode: 'lines',
+                            name: `Gaussian ${idx + 1} (${Math.round(comp.weight * 100)}%)`,
+                            line: { width: 1.5, dash: 'dot' } // Plotly will auto-color
+                        });
+                    });
+                }
             }
 
             const shapes: any[] = [];
