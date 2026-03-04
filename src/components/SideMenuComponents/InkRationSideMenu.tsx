@@ -2,116 +2,49 @@ import React from 'react';
 import { useInkRatioStore } from '../../store/InkRatioStore';
 import { useTraceConfigStore } from '../../store/TraceConfigStore';
 import InkRatioAnimation from './subcomponents/InkRatioAnimation';
+import InkRatioControl from './subcomponents/InkRatioControl';
 
 const InkRationSideMenu: React.FC = () => {
-    const { inkRatio, setInkRatio, filteredStats, absorptionMode, setAbsorptionMode, maxRadiusRatio, setMaxRadiusRatio } = useInkRatioStore();
+    const { filteredStats } = useInkRatioStore();
     const { traceConfig } = useTraceConfigStore();
     const { traceCustomizations } = traceConfig;
 
-    const handleRatioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newRatio = parseFloat(e.target.value);
-        setInkRatio(newRatio);
-    };
-
-    const handleMaxRadiusChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newRatio = parseFloat(e.target.value);
-        setMaxRadiusRatio(newRatio);
-    };
-
-
-
-    // Helper to format percentage
-    const formatPercent = (val: number) => `${Math.round(val * 100)}%`;
-
     return (
-        <div className="p-3">            {/* Visualization */}
+        <div className="p-3 w-100 h-100 d-flex flex-column" style={{ overflow: 'hidden' }}>
+            {/* Top 1/3: Animation */}
             <InkRatioAnimation />
 
-            <div className="mb-4 d-flex justify-content-center">
-                <div className="btn-group w-100" role="group" aria-label="Absorption Behavior">
-                    <button
-                        type="button"
-                        className={`btn btn-sm ${absorptionMode === 'size' ? 'btn-primary' : 'btn-outline-secondary'}`}
-                        onClick={() => setAbsorptionMode('size')}
-                    >
-                        Grow
-                    </button>
-                    <button
-                        type="button"
-                        className={`btn btn-sm ${absorptionMode === 'glow' ? 'btn-primary' : 'btn-outline-secondary'}`}
-                        onClick={() => setAbsorptionMode('glow')}
-                    >
-                        Glow
-                    </button>
-                    <button
-                        type="button"
-                        className={`btn btn-sm ${absorptionMode === 'none' ? 'btn-primary' : 'btn-outline-secondary'}`}
-                        onClick={() => setAbsorptionMode('none')}
-                    >
-                        Ignore
-                    </button>
-                </div>
-            </div>
+            {/* Middle 1/3: Controls */}
+            <InkRatioControl />
 
-            {absorptionMode !== 'none' && (
-                <div className="mb-4">
-                    <label className="form-label d-flex justify-content-between">
-                        <span>Radius Max (Ratio)</span>
-                        <span className="fw-bold">{maxRadiusRatio}x</span>
-                    </label>
-                    <input
-                        type="range"
-                        className="form-range"
-                        min="1"
-                        max="10"
-                        step="0.5"
-                        value={maxRadiusRatio}
-                        onChange={handleMaxRadiusChange}
-                    />
-                </div>
-            )}
+            {/* Bottom 1/3: Stats */}
+            <div className="d-flex flex-column" style={{ flex: '0 0 33.33%', minHeight: '33.33%', maxHeight: '33.33%', overflowY: 'auto', overflowX: 'hidden' }}>
+                <h6 className="mb-2">Filtering Stats</h6>
+                <ul className="list-group mb-0">
+                    {Object.entries(filteredStats).map(([traceName, stats]) => {
+                        // Try to get display name if available
+                        const displayName = traceCustomizations[traceName]?.displayName || traceName;
 
-            <div className="mb-4">
-                <label className="form-label d-flex justify-content-between">
-                    <span>Allowed Overlap</span>
-                    <span className="fw-bold">{formatPercent(inkRatio)}</span>
-                </label>
-                <input
-                    type="range"
-                    className="form-range"
-                    min="0"
-                    max="1"
-                    step="0.25"
-                    value={inkRatio}
-                    onChange={handleRatioChange}
-                />
-            </div>
-
-            <h6 className="mb-3">Filtering Stats</h6>
-            <ul className="list-group">
-                {Object.entries(filteredStats).map(([traceName, stats]) => {
-                    // Try to get display name if available
-                    const displayName = traceCustomizations[traceName]?.displayName || traceName;
-
-                    return (
-                        <li key={traceName} className="list-group-item d-flex flex-column gap-2">
-                            <div className="d-flex justify-content-between align-items-center">
-                                <span className="text-truncate fw-bold" title={displayName}>{displayName}</span>
-                                <span className="badge bg-secondary rounded-pill">{stats.filtered} filtered</span>
-                            </div>
-                            <div className="d-flex justify-content-between text-muted small">
-                                <span>Min/Max: {stats.min} / {stats.max}</span>
-                                <span>Avg: {stats.avg.toFixed(1)}</span>
-                            </div>
+                        return (
+                            <li key={traceName} className="list-group-item d-flex flex-column gap-2 py-1 px-2">
+                                <div className="d-flex justify-content-between align-items-center">
+                                    <span className="text-truncate fw-bold small" title={displayName}>{displayName}</span>
+                                    <span className="badge bg-secondary rounded-pill" style={{ fontSize: '0.65rem' }}>{stats.filtered} filtered</span>
+                                </div>
+                                <div className="d-flex justify-content-between text-muted" style={{ fontSize: '0.7rem' }}>
+                                    <span>Min/Max: {stats.min} / {stats.max}</span>
+                                    <span>Avg: {stats.avg.toFixed(1)}</span>
+                                </div>
+                            </li>
+                        );
+                    })}
+                    {Object.keys(filteredStats).length === 0 && (
+                        <li className="list-group-item text-center text-muted fst-italic small py-2">
+                            No filtering data yet.
                         </li>
-                    );
-                })}
-                {Object.keys(filteredStats).length === 0 && (
-                    <li className="list-group-item text-center text-muted fst-italic">
-                        No filtering data yet.
-                    </li>
-                )}
-            </ul>
+                    )}
+                </ul>
+            </div>
         </div>
     );
 };

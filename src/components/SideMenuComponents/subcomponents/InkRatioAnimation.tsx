@@ -17,7 +17,7 @@ const InkRatioAnimation: React.FC = () => {
     const fixedLeftCx = cxCenter - R;
 
     return (
-        <div className="mb-4 bg-light p-3 rounded d-flex flex-column align-items-center w-100">
+        <div className="bg-light p-2 rounded d-flex flex-column align-items-center w-100 mb-2" style={{ flex: '0 0 33.33%', minHeight: '33.33%', maxHeight: '33.33%', overflowY: 'auto', overflowX: 'hidden' }}>
             <style>
                 {`
                     @keyframes slideIn {
