@@ -1,5 +1,5 @@
 {
-    "commit_title": "Add Gaussian mixture detection and plotting",
-    "commit_message": "Detect and render Gaussian mixture fits instead of a single normal where applicable. MathHelper.calculateGaussianStats now performs histogram + KDE smoothing, peak finding and estimates up to 4 Gaussian components (adds GaussianComponent type and returns components & score). HeaderSummary and SparklineHistogram were updated to accept and draw mixture components and display per-component mean/\u03c3/weight. TableArea now plots a Gaussian mixture fit (higher resolution), and draws component mean and \u00b11\u03c3 lines/annotations; falls back to single global mean lines when no mixture is detected. Also adjusted thresholds and scoring logic for mixture confidence.",
+    "commit_title": "Plot total and individual Gaussian fits",
+    "commit_message": "Rename the main fit trace to \"Total Fit\" and adjust its styling, and add plotting of individual Gaussian components when more than one component is present. Each component trace computes the scaled PDF across the x-range (scaled by count * binSize to match the histogram), is added as a separate scatter line with a dotted style and a label showing its index and weight percentage. This makes it easier to visualize the total fit alongside its component contributions.",
     "version_string": "2026.10.3"
 }
