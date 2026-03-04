@@ -143,8 +143,45 @@ const SparklineHistogram: React.FC<SparklineProps> = ({ data, width = 100, heigh
     );
 };
 
+// Extremely lightweight inline SVG scatter plot
+const SparklineScatter: React.FC<SparklineProps> = ({ data, width = 100, height = 30 }) => {
+    if (data.length === 0) return null;
+
+    const min = Math.min(...data);
+    const max = Math.max(...data);
+    const range = max - min;
+
+    // Draw only a subset of points if there are too many, to avoid SVG lag
+    const maxPoints = 300;
+    const step = Math.max(1, Math.floor(data.length / maxPoints));
+
+    return (
+        <svg width={width} height={height} className="mt-1 mb-1 d-block" style={{ overflow: 'visible' }}>
+            {data.filter((_, i) => i % step === 0).map((val, i, arr) => {
+                // X depends on the value normalized to the min/max range
+                const x = range === 0 ? width / 2 : ((val - min) / range) * width;
+                // Y is randomly jittered to show density, or uniformly spread if sorted
+                const y = (i / arr.length) * height;
+
+                return (
+                    <circle
+                        key={i}
+                        cx={Math.max(1, Math.min(width - 1, x))}
+                        cy={y}
+                        r={1.5}
+                        fill="#0d6efd"
+                        opacity={0.5}
+                    />
+                );
+            })}
+        </svg>
+    );
+};
+
 
 const HeaderSummary: React.FC<HeaderSummaryProps> = ({ data, column, mode }) => {
+    const [showScatter, setShowScatter] = React.useState<boolean>(false);
+
     const stats = useMemo(() => {
         if (mode === 'none' || !data || data.length === 0) return null;
 
@@ -295,13 +332,33 @@ const HeaderSummary: React.FC<HeaderSummaryProps> = ({ data, column, mode }) => 
                 </div>
             ) : (
                 <div>
-                    <SparklineHistogram
-                        data={(stats as any).rawNumeric}
-                        gaussian={((stats as any).hasGaussianTest) ? {
-                            isGaussian: (stats as any).isGaussian,
-                            components: (stats as any).components
-                        } : undefined}
-                    />
+                    <div className="d-flex justify-content-between align-items-center mb-1">
+                        <span className="fw-bold text-dark" style={{ fontSize: '0.7rem' }}>Distribution</span>
+                        <button
+                            className="btn btn-sm btn-link p-0 text-decoration-none"
+                            style={{ fontSize: '0.65rem' }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setShowScatter(!showScatter);
+                            }}
+                        >
+                            {showScatter ? 'Show Histogram' : 'Show Scatter'}
+                        </button>
+                    </div>
+                    {showScatter ? (
+                        <SparklineScatter
+                            data={(stats as any).rawNumeric}
+                        />
+                    ) : (
+                        <SparklineHistogram
+                            data={(stats as any).rawNumeric}
+                            gaussian={((stats as any).hasGaussianTest) ? {
+                                isGaussian: (stats as any).isGaussian,
+                                components: (stats as any).components
+                            } : undefined}
+                        />
+                    )}
+
                     <div className="d-grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
                         <div><strong>Min:</strong> {(stats as any).min}</div>
                         <div><strong>Max:</strong> {(stats as any).max}</div>
