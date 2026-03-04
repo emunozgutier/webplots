@@ -4,7 +4,7 @@ import { useInkRatioStore } from '../../../store/InkRatioStore';
 const InkRatioAnimation: React.FC = () => {
     const { inkRatio, absorptionMode } = useInkRatioStore();
 
-    const R = 24; // Twice as big as previous (12)
+    const R = 12; // Adjusted to fit vertically
     const overlapNA = inkRatio * 100 - 10;
     const overlapA = inkRatio * 100 + 10;
 
@@ -13,7 +13,7 @@ const InkRatioAnimation: React.FC = () => {
     const distanceA = 2 * R * (1 - overlapA / 100);
 
     const cxCenter = 80;
-    const cyCenter = 40;
+    const cyCenter = 20;
     const fixedLeftCx = cxCenter - R;
 
     return (
@@ -43,12 +43,12 @@ const InkRatioAnimation: React.FC = () => {
                 `}
             </style>
 
-            <div className="d-flex flex-column align-items-center gap-3 w-100">
+            <div className="d-flex flex-column align-items-center gap-1 w-100 pb-1">
                 {/* Absorbed Box */}
                 {inkRatio < 1 ? (
-                    <div className="border border-secondary rounded p-2 d-flex flex-column align-items-center bg-white shadow-sm flex-fill" style={{ width: '100%' }}>
-                        <div className="mb-2 w-100">
-                            <svg key={absorptionMode} viewBox="0 0 160 80" style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
+                    <div className="border border-secondary rounded p-1 d-flex flex-column align-items-center bg-white shadow-sm w-100">
+                        <div className="mb-0 w-100">
+                            <svg key={absorptionMode} viewBox="0 0 160 40" style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
                                 <g>
                                     {/* Stationary Target Point */}
                                     <circle
@@ -77,17 +77,17 @@ const InkRatioAnimation: React.FC = () => {
                                 </g>
                             </svg>
                         </div>
-                        <span className="badge bg-danger small w-100 mb-1">Absorbed</span>
+                        <span className="badge bg-danger small w-100 mb-0 mt-1">Absorbed</span>
                         <div className="text-muted" style={{ fontSize: '0.7em' }}>
                             Overlap: {overlapA.toFixed(0)}%
                         </div>
                     </div>
                 ) : (
-                    <div className="border border-secondary rounded p-2 d-flex flex-column align-items-center bg-light justify-content-center shadow-sm flex-fill" style={{ width: '100%', opacity: 0.6 }}>
-                        <div className="mb-2 w-100 d-flex justify-content-center align-items-center" style={{ height: 'auto', minHeight: '80px' }}>
+                    <div className="border border-secondary rounded p-1 d-flex flex-column align-items-center bg-light justify-content-center shadow-sm w-100" style={{ opacity: 0.6 }}>
+                        <div className="mb-0 w-100 d-flex justify-content-center align-items-center" style={{ height: 'auto', minHeight: '40px' }}>
                             <span className="small fw-bold text-muted">N/A</span>
                         </div>
-                        <span className="badge bg-secondary small w-100 mb-1">Absorbed</span>
+                        <span className="badge bg-secondary small w-100 mb-0 mt-1">Absorbed</span>
                         <div className="text-muted" style={{ fontSize: '0.7em' }}>
                             Overlap: {overlapA.toFixed(0)}%
                         </div>
@@ -95,9 +95,9 @@ const InkRatioAnimation: React.FC = () => {
                 )}
 
                 {/* Not Absorbed Box */}
-                <div className="border border-secondary rounded p-2 d-flex flex-column align-items-center bg-white shadow-sm flex-fill" style={{ width: '100%' }}>
-                    <div className="mb-2 w-100">
-                        <svg viewBox="0 0 160 80" style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
+                <div className="border border-secondary rounded p-1 d-flex flex-column align-items-center bg-white shadow-sm w-100">
+                    <div className="mb-0 w-100">
+                        <svg viewBox="0 0 160 40" style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
                             <g>
                                 {/* Fixed Left Solid Point */}
                                 <circle cx={fixedLeftCx} cy={cyCenter} r={R} fill="#198754" opacity="0.8" />
@@ -106,7 +106,7 @@ const InkRatioAnimation: React.FC = () => {
                             </g>
                         </svg>
                     </div>
-                    <span className="badge bg-success small w-100 mb-1">Not Absorbed</span>
+                    <span className="badge bg-success small w-100 mb-0 mt-1">Not Absorbed</span>
                     <div className="text-muted" style={{ fontSize: '0.7em' }}>
                         Overlap: {overlapNA.toFixed(0)}%
                     </div>
