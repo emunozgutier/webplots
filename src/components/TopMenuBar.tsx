@@ -6,6 +6,7 @@ import Papa from 'papaparse';
 import type { CsvDataStore } from '../store/CsvDataStore';
 import { useWorkspaceStore, workspaceRegistry } from '../store/WorkspaceStore';
 import { getSmallDataset, getLargeColumnDataset, getSimulationDataset, getBinningTestData } from '../utils/TestDatasets';
+import { generateTestGaussianData } from '../utils/MathHelper';
 
 interface VersionData {
     commit_title: string;
@@ -129,7 +130,7 @@ const TopMenuBar: React.FC = () => {
         if (event.target) event.target.value = '';
     };
 
-    const handleLoadTestData = (datasetType: 'small' | 'large' | 'simulation' | 'binning') => {
+    const handleLoadTestData = (datasetType: 'small' | 'large' | 'simulation' | 'binning' | 'gaussian') => {
         let testData: CsvDataStore[] = [];
         switch (datasetType) {
             case 'small':
@@ -143,6 +144,9 @@ const TopMenuBar: React.FC = () => {
                 break;
             case 'binning':
                 testData = getBinningTestData();
+                break;
+            case 'gaussian':
+                testData = generateTestGaussianData().data as CsvDataStore[];
                 break;
         }
 
@@ -265,6 +269,9 @@ const TopMenuBar: React.FC = () => {
                         <NavDropdown title="Test" id="test-nav-dropdown">
                             <NavDropdown.Item onClick={() => handleLoadTestData('simulation')}>
                                 Simulation Dataset (Trig)
+                            </NavDropdown.Item>
+                            <NavDropdown.Item onClick={() => handleLoadTestData('gaussian')}>
+                                Gaussian Mixture Dataset
                             </NavDropdown.Item>
                             <NavDropdown.Divider />
                             <NavDropdown.Item onClick={handleLoadWeatherData}>

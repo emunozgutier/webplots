@@ -126,3 +126,80 @@ export const calculateGaussianStats = (numericValues: number[], avg: number, std
 
     return { hasGaussianTest, isGaussian, gaussianScore };
 };
+
+export const generateTestGaussianData = (): { data: any[], columns: string[] } => {
+    const generateGaussian = (mean = 0, stdDev = 1) => {
+        const u1 = Math.random();
+        const u2 = Math.random();
+        const z0 = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
+        return z0 * stdDev + mean;
+    };
+
+    const generateGaussianMixture = (gaussians: { mean: number, stdDev: number, weight: number }[]) => {
+        const totalWeight = gaussians.reduce((sum, g) => sum + g.weight, 0);
+        let rand = Math.random() * totalWeight;
+
+        let selectedGaussian = gaussians[0];
+        for (const g of gaussians) {
+            if (rand <= g.weight) {
+                selectedGaussian = g;
+                break;
+            }
+            rand -= g.weight;
+        }
+
+        return generateGaussian(selectedGaussian.mean, selectedGaussian.stdDev);
+    };
+
+    const HIGH_COUNT = 10000;
+    const LOW_COUNT = 100;
+
+    const mixtures = {
+        g1: [{ mean: 50, stdDev: 10, weight: 1 }],
+        g2: [
+            { mean: 30, stdDev: 5, weight: 0.5 },
+            { mean: 70, stdDev: 5, weight: 0.5 }
+        ],
+        g3: [
+            { mean: 20, stdDev: 4, weight: 0.33 },
+            { mean: 50, stdDev: 4, weight: 0.33 },
+            { mean: 80, stdDev: 4, weight: 0.33 }
+        ],
+        g4: [
+            { mean: 15, stdDev: 3, weight: 0.25 },
+            { mean: 40, stdDev: 3, weight: 0.25 },
+            { mean: 65, stdDev: 3, weight: 0.25 },
+            { mean: 90, stdDev: 3, weight: 0.25 }
+        ]
+    };
+
+    const columns = [
+        'High_1_Gaussian', 'Low_1_Gaussian',
+        'High_2_Gaussian', 'Low_2_Gaussian',
+        'High_3_Gaussian', 'Low_3_Gaussian',
+        'High_4_Gaussian', 'Low_4_Gaussian'
+    ];
+
+    const data: any[] = [];
+
+    for (let i = 0; i < HIGH_COUNT; i++) {
+        const row: any = {};
+
+        row['High_1_Gaussian'] = parseFloat(generateGaussianMixture(mixtures.g1).toFixed(4));
+        row['High_2_Gaussian'] = parseFloat(generateGaussianMixture(mixtures.g2).toFixed(4));
+        row['High_3_Gaussian'] = parseFloat(generateGaussianMixture(mixtures.g3).toFixed(4));
+        row['High_4_Gaussian'] = parseFloat(generateGaussianMixture(mixtures.g4).toFixed(4));
+
+        if (i < LOW_COUNT) {
+            row['Low_1_Gaussian'] = parseFloat(generateGaussianMixture(mixtures.g1).toFixed(4));
+            row['Low_2_Gaussian'] = parseFloat(generateGaussianMixture(mixtures.g2).toFixed(4));
+            row['Low_3_Gaussian'] = parseFloat(generateGaussianMixture(mixtures.g3).toFixed(4));
+            row['Low_4_Gaussian'] = parseFloat(generateGaussianMixture(mixtures.g4).toFixed(4));
+        }
+
+        data.push(row);
+    }
+
+    return { data, columns };
+};
+
