@@ -1,5 +1,5 @@
 {
-    "commit_title": "Extract InkRatioControl and update side menu layout",
-    "commit_message": "Refactor: move the ink-ratio controls and absorption options into a new InkRatioControl component and include it in InkRationSideMenu. InkRationSideMenu now composes three vertical sections (InkRatioAnimation, InkRatioControl, and filtering stats) with fixed one-third heights and improved overflow handling. InkRatioAnimation container styling was adjusted to match the new layout. Also cleaned up state usage in the parent (only filteredStats is read there) and slightly tightened stats list styling and empty-state messaging.",
-    "version_string": "2026.10.2"
+    "commit_title": "Add mean and sigma lines to distribution plot",
+    "commit_message": "Render mean and \u00b11\u03c3 guideline lines and annotations in the plot popup when stdDev > 0. Adds shapes and annotations (red dashed mean, blue dotted \u00b11\u03c3) to the Plotly layout and increases the top margin to accommodate the labels so they don't overlap the chart. This visually highlights the distribution center and spread in the popup histogram.",
+    "version_string": "2026.10.3"
 }
