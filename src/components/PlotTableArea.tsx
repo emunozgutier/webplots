@@ -1,7 +1,6 @@
 import React from 'react';
 import { useWorkspaceLocalStore } from '../store/WorkspaceLocalStore';
 import { ViewToggleButtons } from './PlotAreaComponents/ControllerButtons';
-import PopupMenu from './PopupMenu';
 import TableArea from './PlotTableAreaComponents/TableArea';
 import PlotArea from './PlotTableAreaComponents/PlotArea';
 import { useInkRatioStore } from '../store/InkRatioStore';
@@ -40,7 +39,6 @@ const PlotTableArea: React.FC = () => {
 
     return (
         <div className="flex-grow-1 p-4 d-flex flex-column position-relative" style={{ minWidth: 0 }}>
-            <PopupMenu />
             <div className="card shadow-sm flex-grow-1 mb-3">
                 <div className="card-header bg-white d-flex justify-content-start align-items-end pt-2 pb-0 px-3 border-bottom">
                     <ViewToggleButtons

@@ -5,6 +5,7 @@ import TopMenuBar from './components/TopMenuBar';
 import WorkspaceTabs from './components/WorkspaceTabs';
 import { WorkspaceProvider } from './store/WorkspaceContext';
 import { useWorkspaceStore } from './store/WorkspaceStore';
+import PopupMenu from './components/PopupMenu';
 import './App.css';
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
             <WorkspaceProvider workspaceId={ws.id}>
               <SideMenu />
               <PlotTableArea />
+              <PopupMenu />
             </WorkspaceProvider>
           </div>
         ))}
