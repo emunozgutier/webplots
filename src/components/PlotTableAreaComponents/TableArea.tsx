@@ -78,6 +78,23 @@ const TableArea: React.FC = () => {
                 });
             }
 
+            const shapes: any[] = [];
+            const annotations: any[] = [];
+
+            if (stdDev > 0) {
+                // Mean line
+                shapes.push({ type: 'line', x0: avg, x1: avg, y0: 0, y1: 1, yref: 'paper', xref: 'x', line: { color: 'rgba(220, 53, 69, 0.8)', width: 2, dash: 'dash' } });
+                annotations.push({ x: avg, y: 1.05, yref: 'paper', xref: 'x', text: 'Mean', showarrow: false, font: { color: '#dc3545', size: 11 } });
+
+                // -1 Sigma line
+                shapes.push({ type: 'line', x0: avg - stdDev, x1: avg - stdDev, y0: 0, y1: 1, yref: 'paper', xref: 'x', line: { color: 'rgba(13, 110, 253, 0.5)', width: 1.5, dash: 'dot' } });
+                annotations.push({ x: avg - stdDev, y: 1.05, yref: 'paper', xref: 'x', text: '-1σ', showarrow: false, font: { color: '#0d6efd', size: 11 } });
+
+                // +1 Sigma line
+                shapes.push({ type: 'line', x0: avg + stdDev, x1: avg + stdDev, y0: 0, y1: 1, yref: 'paper', xref: 'x', line: { color: 'rgba(13, 110, 253, 0.5)', width: 1.5, dash: 'dot' } });
+                annotations.push({ x: avg + stdDev, y: 1.05, yref: 'paper', xref: 'x', text: '+1σ', showarrow: false, font: { color: '#0d6efd', size: 11 } });
+            }
+
             setPopupContent(
                 <div className="bg-white p-4 rounded shadow d-flex flex-column" style={{ width: '100%', height: '100%' }}>
                     <h4>Distribution of {key}</h4>
@@ -86,8 +103,10 @@ const TableArea: React.FC = () => {
                             data={plotData}
                             layout={{
                                 autosize: true,
-                                margin: { l: 40, r: 40, t: 40, b: 40 },
-                                showlegend: isGaussian
+                                margin: { l: 40, r: 40, t: 60, b: 40 },
+                                showlegend: isGaussian,
+                                shapes,
+                                annotations
                             }}
                             useResizeHandler={true}
                             style={{ width: '100%', height: '100%' }}
