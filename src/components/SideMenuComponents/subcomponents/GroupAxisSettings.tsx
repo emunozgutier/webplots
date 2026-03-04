@@ -49,8 +49,11 @@ const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
         });
 
         // Consider numeric if more than 80% of non-empty values are valid numbers
+        // AND the number of unique categories is greater than 15.
+        // Columns like Year (e.g. 2021, 2022, 2023) should be treated as categorical for grouping.
         const totalRows = data.length;
-        const isNum = (validNumCount / totalRows) > 0.8;
+        const uniqueCategoryCount = Object.keys(counts).length;
+        const isNum = (validNumCount / totalRows) > 0.8 && uniqueCategoryCount > 15;
 
         if (min === Infinity) { min = 0; max = 100; }
         return { numericData: nums, dataMin: min, dataMax: max, isNumeric: isNum, categoryCounts: counts };
