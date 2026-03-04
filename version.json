@@ -1,5 +1,5 @@
 {
-    "commit_title": "Add GitHub button to top menu bar",
-    "commit_message": "Insert a small outlined GitHub button in TopMenuBar.tsx and add spacing between controls. The new Button links to the repository (opens in a new tab with noopener noreferrer), includes a GitHub icon and bold label, and the container gets a gap-2 class to space items. Existing beta toggle/button logic is unchanged.",
-    "version_string": "2026.09.7"
+    "commit_title": "Extract InkRatioControl and update side menu layout",
+    "commit_message": "Refactor: move the ink-ratio controls and absorption options into a new InkRatioControl component and include it in InkRationSideMenu. InkRationSideMenu now composes three vertical sections (InkRatioAnimation, InkRatioControl, and filtering stats) with fixed one-third heights and improved overflow handling. InkRatioAnimation container styling was adjusted to match the new layout. Also cleaned up state usage in the parent (only filteredStats is read there) and slightly tightened stats list styling and empty-state messaging.",
+    "version_string": "2026.10.2"
 }
