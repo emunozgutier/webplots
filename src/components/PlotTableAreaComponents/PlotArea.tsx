@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { useWorkspaceLocalStore } from '../../store/WorkspaceLocalStore';
-import Settings from '../PlotAreaComponents/Settings';
-import Debug from '../PlotAreaComponents/Debug';
+import Settings from './Settings';
+import Debug from './Debug';
 import Plot from 'react-plotly.js';
 
 import { useAxisSideMenuStore } from '../../store/AxisSideMenuStore';

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useWorkspaceLocalStore } from '../store/WorkspaceLocalStore';
-import { ViewToggleButtons } from './PlotAreaComponents/ControllerButtons';
+import { ViewToggleButtons } from './PlotTableAreaComponents/ControllerButtons';
 import TableArea from './PlotTableAreaComponents/TableArea';
 import PlotArea from './PlotTableAreaComponents/PlotArea';
 import { useInkRatioStore } from '../store/InkRatioStore';
