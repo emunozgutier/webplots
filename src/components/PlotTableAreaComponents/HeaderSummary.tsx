@@ -305,8 +305,12 @@ const HeaderSummary: React.FC<HeaderSummaryProps> = ({ data, column, mode }) => 
                     <div className="d-grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
                         <div><strong>Min:</strong> {(stats as any).min}</div>
                         <div><strong>Max:</strong> {(stats as any).max}</div>
-                        <div><strong>Avg:</strong> {(stats as any).avg}</div>
-                        <div><strong>Med:</strong> {(stats as any).median}</div>
+                        {!((stats as any).isGaussian && (stats as any).gaussianScore > 50) && (
+                            <>
+                                <div><strong>Avg:</strong> {(stats as any).avg}</div>
+                                <div><strong>Med:</strong> {(stats as any).median}</div>
+                            </>
+                        )}
                     </div>
                     {((stats as any).hasGaussianTest) && (
                         <div className="mt-2 pt-1 border-top border-light" style={{ fontSize: '0.75rem' }}>
