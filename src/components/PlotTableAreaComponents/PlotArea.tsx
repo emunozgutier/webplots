@@ -12,7 +12,7 @@ import { useInkRatioStore } from '../../store/InkRatioStore';
 import { useColorSideMenuStore } from '../../store/ColorSideMenuStore';
 import { generatePlotConfig } from '../../utils/PlotlyHelpers';
 import PlotAreaControlButtons from './PlotAreaControlButtons';
-import { useFilteredData } from '../../hooks/useFilteredData';
+import { useFilteredData } from '../../utils/useFilteredData';
 
 const PlotArea: React.FC = () => {
     const data = useFilteredData();

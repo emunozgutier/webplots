@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Table } from 'react-bootstrap';
 import { useCsvDataStore } from '../../store/CsvDataStore';
-import { useFilteredData } from '../../hooks/useFilteredData';
+import { useFilteredData } from '../../utils/useFilteredData';
 import { useAxisSideMenuStore } from '../../store/AxisSideMenuStore';
 import { useGroupSideMenuStore } from '../../store/GroupSideMenuStore';
 import { useFilterSideMenuStore } from '../../store/FilterSideMenuStore';
