@@ -21,46 +21,60 @@ const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
         bins: []
     });
 
-    // Extract numeric column data for preview
-    const { numericData, dataMin, dataMax } = React.useMemo(() => {
-        if (!data || data.length === 0) return { numericData: [], dataMin: 0, dataMax: 100 };
+    // Extract numeric column data for preview and categoric data for counts
+    const { numericData, dataMin, dataMax, isNumeric, categoryCounts } = React.useMemo(() => {
+        if (!data || data.length === 0) return { numericData: [], dataMin: 0, dataMax: 100, isNumeric: false, categoryCounts: {} };
         const nums: number[] = [];
+        const counts: Record<string, number> = {};
         let min = Infinity, max = -Infinity;
+        let validNumCount = 0;
+
         data.forEach((row: any) => {
-            const val = parseFloat(String(row[column]));
-            if (!isNaN(val)) {
-                nums.push(val);
-                if (val < min) min = val;
-                if (val > max) max = val;
+            const rawVal = row[column];
+            const strVal = String(rawVal);
+
+            // Count categories
+            counts[strVal] = (counts[strVal] || 0) + 1;
+
+            // Try numeric
+            if (rawVal !== null && rawVal !== undefined && rawVal !== '') {
+                const val = Number(rawVal);
+                if (!isNaN(val)) {
+                    validNumCount++;
+                    nums.push(val);
+                    if (val < min) min = val;
+                    if (val > max) max = val;
+                }
             }
         });
+
+        // Consider numeric if more than 80% of non-empty values are valid numbers
+        const totalRows = data.length;
+        const isNum = (validNumCount / totalRows) > 0.8;
+
         if (min === Infinity) { min = 0; max = 100; }
-        return { numericData: nums, dataMin: min, dataMax: max };
+        return { numericData: nums, dataMin: min, dataMax: max, isNumeric: isNum, categoryCounts: counts };
     }, [data, column]);
 
     useEffect(() => {
         if (groupSideMenuData.groupSettings && groupSideMenuData.groupSettings[column]) {
             const saved = groupSideMenuData.groupSettings[column];
-            if (saved.mode === 'manual' && saved.bins.length === 0) {
+            if (isNumeric && saved.bins.length === 0 && saved.mode !== 'auto') {
                 setLocalSettings({ mode: 'manual', bins: generateDefaultBins(dataMin, dataMax) });
             } else {
                 setLocalSettings(saved);
             }
         } else {
-            // Default: auto
-            setLocalSettings({ mode: 'auto', bins: [] });
-        }
-    }, [column, groupSideMenuData.groupSettings, dataMin, dataMax]);
-
-    // Used when toggling explicitly to manual
-    const handleModeToggle = (mode: 'auto' | 'manual') => {
-        setLocalSettings((prev: any) => {
-            if (mode === 'manual' && prev.bins.length === 0) {
-                return { mode: 'manual', bins: generateDefaultBins(dataMin, dataMax) };
+            // Default based on type
+            if (isNumeric) {
+                setLocalSettings({ mode: 'manual', bins: generateDefaultBins(dataMin, dataMax) });
+            } else {
+                setLocalSettings({ mode: 'auto', bins: [] });
             }
-            return { ...prev, mode };
-        });
-    };
+        }
+    }, [column, groupSideMenuData.groupSettings, dataMin, dataMax, isNumeric]);
+
+
 
     const generateDefaultBins = (min: number, max: number): GroupSettings['bins'] => {
         const diff = max - min;
@@ -116,35 +130,30 @@ const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
             </div>
 
             <div className="card-body overflow-auto">
-                <div className="mb-3">
-                    <label className="form-label fw-bold">Grouping Mode</label>
-                    <div className="btn-group w-100" role="group">
-                        <button
-                            type="button"
-                            className={`btn ${localSettings.mode === 'auto' ? 'btn-primary' : 'btn-outline-primary'}`}
-                            onClick={() => handleModeToggle('auto')}
-                        >
-                            Auto (Unique Values)
-                        </button>
-                        <button
-                            type="button"
-                            className={`btn ${localSettings.mode === 'manual' ? 'btn-primary' : 'btn-outline-primary'}`}
-                            onClick={() => handleModeToggle('manual')}
-                        >
-                            Manual (Bins)
-                        </button>
-                    </div>
-                    {localSettings.mode === 'auto' && (
-                        <div className="form-text text-muted mt-2">
-                            Automatically creates a group for each unique value found in the column. Limited to 8 groups.
+                {!isNumeric ? (
+                    <div className="mb-3 border rounded p-3 bg-white">
+                        <h6 className="fw-bold mb-3">Categorical Values</h6>
+                        <div className="d-flex flex-column gap-2" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                            {Object.entries(categoryCounts)
+                                .sort((a, b) => b[1] - a[1]) // Sort by count descending
+                                .map(([cat, count]) => (
+                                    <div key={cat} className="d-flex justify-content-between align-items-center border-bottom pb-1">
+                                        <span className="text-truncate" style={{ maxWidth: '70%' }} title={cat}>
+                                            {cat === '' || cat === 'undefined' || cat === 'null' ? <em className="text-muted">(Empty/Null)</em> : cat}
+                                        </span>
+                                        <span className="badge bg-secondary rounded-pill">{count}</span>
+                                    </div>
+                                ))}
                         </div>
-                    )}
-                </div>
+                        <div className="form-text mt-2 text-muted small">
+                            Groups will be automatically created for each unique category shown above.
+                        </div>
+                    </div>
+                ) : (
 
-                {localSettings.mode === 'manual' && (
                     <div>
                         <div className="d-flex justify-content-between align-items-center mb-2">
-                            <label className="form-label fw-bold mb-0">Bins</label>
+                            <label className="form-label fw-bold mb-0">Distribution Bins</label>
                             <button className="btn btn-sm btn-success" onClick={addBin}>+ Add Bin</button>
                         </div>
 
