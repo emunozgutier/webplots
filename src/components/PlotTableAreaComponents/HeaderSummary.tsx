@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { calculateGaussianStats } from '../../utils/MathHelper';
 
 export type SummaryMode = 'none' | 'slim' | 'detailed';
 
@@ -55,10 +56,11 @@ interface SparklineProps {
     data: number[];
     width?: number;
     height?: number;
+    gaussian?: { isGaussian: boolean; avg: number; stdDev: number };
 }
 
 // Extremely lightweight inline SVG sparkline histogram
-const SparklineHistogram: React.FC<SparklineProps> = ({ data, width = 100, height = 30 }) => {
+const SparklineHistogram: React.FC<SparklineProps> = ({ data, width = 100, height = 30, gaussian }) => {
     if (data.length === 0) return null;
 
     const bins = 15;
@@ -84,8 +86,36 @@ const SparklineHistogram: React.FC<SparklineProps> = ({ data, width = 100, heigh
     const barWidth = width / bins;
     const padding = 1;
 
+    let gaussianPath = "";
+    if (gaussian?.isGaussian && gaussian.stdDev > 0) {
+        const points = 50;
+        const totalCount = data.length;
+
+        const normalDist = (x: number) => {
+            const z = (x - gaussian.avg) / gaussian.stdDev;
+            return (1 / (gaussian.stdDev * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * z * z);
+        };
+
+        // Scale by area of histogram
+        let path = "";
+        for (let i = 0; i <= points; i++) {
+            const xVal = min + (i / points) * (max - min);
+            const pdf = normalDist(xVal);
+            const expectedCount = pdf * totalCount * binSize;
+
+            const px = (i / points) * width;
+            const py = height - (expectedCount / maxCount) * height;
+
+            const clampedPy = Math.max(-10, Math.min(height + 10, py));
+
+            if (i === 0) path += `M ${px + padding / 2} ${clampedPy} `;
+            else path += `L ${px + padding / 2} ${clampedPy} `;
+        }
+        gaussianPath = path;
+    }
+
     return (
-        <svg width={width} height={height} className="mt-1 mb-1 d-block">
+        <svg width={width} height={height} className="mt-1 mb-1 d-block" style={{ overflow: 'visible' }}>
             {binCounts.map((count, i) => {
                 const barHeight = (count / maxCount) * height;
                 const x = i * barWidth;
@@ -102,6 +132,9 @@ const SparklineHistogram: React.FC<SparklineProps> = ({ data, width = 100, heigh
                     />
                 );
             })}
+            {gaussianPath && (
+                <path d={gaussianPath} fill="none" stroke="#28a745" strokeWidth="2" opacity="0.8" />
+            )}
         </svg>
     );
 };
@@ -151,6 +184,19 @@ const HeaderSummary: React.FC<HeaderSummaryProps> = ({ data, column, mode }) => 
                 ? (numericValues[count / 2 - 1] + numericValues[count / 2]) / 2
                 : numericValues[Math.floor(count / 2)];
 
+            // Calculate standard deviation and distribution metrics
+            let variance = 0;
+            for (let v of numericValues) variance += Math.pow(v - avg, 2);
+            variance /= count;
+            const stdDev = Math.sqrt(variance);
+
+            const { hasGaussianTest, isGaussian, gaussianScore } = calculateGaussianStats(
+                numericValues,
+                avg,
+                stdDev,
+                count
+            );
+
             // Formatting helper
             const formatVal = (val: number) => {
                 if (type === 'date') {
@@ -162,13 +208,27 @@ const HeaderSummary: React.FC<HeaderSummaryProps> = ({ data, column, mode }) => 
                 return Number.isInteger(val) ? val.toString() : val.toFixed(2);
             };
 
+            const formatDuration = (val: number) => {
+                if (type === 'date') {
+                    const days = val / (1000 * 60 * 60 * 24);
+                    return days.toFixed(2) + 'd';
+                }
+                return Number.isInteger(val) ? val.toString() : val.toFixed(2);
+            };
+
             return {
                 type,
                 min: formatVal(min),
                 max: formatVal(max),
                 avg: formatVal(avg),
                 median: formatVal(median),
-                rawNumeric: numericValues // For sparkline
+                stdDev: formatDuration(stdDev),
+                rawNumeric: numericValues, // For sparkline
+                hasGaussianTest,
+                gaussianScore,
+                isGaussian,
+                rawAvg: avg,
+                rawStdDev: stdDev
             };
         } else {
             // Category
@@ -225,13 +285,34 @@ const HeaderSummary: React.FC<HeaderSummaryProps> = ({ data, column, mode }) => 
                 </div>
             ) : (
                 <div>
-                    <SparklineHistogram data={(stats as any).rawNumeric} />
+                    <SparklineHistogram
+                        data={(stats as any).rawNumeric}
+                        gaussian={((stats as any).hasGaussianTest) ? {
+                            isGaussian: (stats as any).isGaussian,
+                            avg: (stats as any).rawAvg,
+                            stdDev: (stats as any).rawStdDev
+                        } : undefined}
+                    />
                     <div className="d-grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
                         <div><strong>Min:</strong> {(stats as any).min}</div>
                         <div><strong>Max:</strong> {(stats as any).max}</div>
-                        <div><strong>Avg:</strong> {(stats as any).avg}</div>
-                        <div><strong>Med:</strong> {(stats as any).median}</div>
+                        {((stats as any).hasGaussianTest && (stats as any).gaussianScore > 50) ? (
+                            <>
+                                <div><strong>Mean:</strong> {(stats as any).avg}</div>
+                                <div><strong>Sigma:</strong> {(stats as any).stdDev}</div>
+                            </>
+                        ) : (
+                            <>
+                                <div><strong>Avg:</strong> {(stats as any).avg}</div>
+                                <div><strong>Med:</strong> {(stats as any).median}</div>
+                            </>
+                        )}
                     </div>
+                    {((stats as any).hasGaussianTest) && (
+                        <div className="mt-2 pt-1 border-top border-light" style={{ fontSize: '0.75rem' }}>
+                            <strong>Gaussian:</strong> {(stats as any).isGaussian ? <span className="text-success fw-bold">Yes</span> : <span>No</span>} <span className="opacity-75">({(stats as any).gaussianScore}% sure)</span>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

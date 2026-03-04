@@ -10,6 +10,7 @@ import HeaderSummary from './HeaderSummary';
 import { useWorkspaceLocalStore } from '../../store/WorkspaceLocalStore';
 import Plot from 'react-plotly.js';
 import TableAreaControlButtons from './TableAreaControlButtons';
+import { calculateGaussianStats } from '../../utils/MathHelper';
 
 const TableArea: React.FC = () => {
     const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
@@ -31,13 +32,63 @@ const TableArea: React.FC = () => {
         const numericValues = rawValues.map((v: any) => Number(v)).filter((v: any) => !isNaN(v));
 
         if (numericValues.length > 0) {
+            const count = numericValues.length;
+            const sum = numericValues.reduce((a, b) => a + b, 0);
+            const avg = sum / count;
+            let variance = 0;
+            for (let v of numericValues) variance += Math.pow(v - avg, 2);
+            variance /= count;
+            const stdDev = Math.sqrt(variance);
+
+            const { isGaussian } = calculateGaussianStats(numericValues, avg, stdDev, count);
+
+            const min = Math.min(...numericValues);
+            const max = Math.max(...numericValues);
+            const binsCount = Math.min(50, Math.max(15, Math.ceil(Math.log2(count) + 1)));
+            const binSize = max > min ? (max - min) / binsCount : 1;
+
+            const plotData: any[] = [{
+                x: numericValues,
+                type: 'histogram',
+                name: 'Data',
+                marker: { color: '#0d6efd' },
+                xbins: { start: min, end: max, size: binSize }
+            }];
+
+            if (isGaussian && stdDev > 0) {
+                const xs = [];
+                const ys = [];
+                const points = 100;
+                for (let i = 0; i <= points; i++) {
+                    const x = min + (i / points) * (max - min);
+                    const z = (x - avg) / stdDev;
+                    const pdf = (1 / (stdDev * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * z * z);
+                    xs.push(x);
+                    // Scale PDF to histogram count area
+                    ys.push(pdf * count * binSize);
+                }
+
+                plotData.push({
+                    x: xs,
+                    y: ys,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Normal Fit',
+                    line: { color: '#28a745', width: 3 }
+                });
+            }
+
             setPopupContent(
                 <div className="bg-white p-4 rounded shadow d-flex flex-column" style={{ width: '100%', height: '100%' }}>
                     <h4>Distribution of {key}</h4>
                     <div className="flex-grow-1 position-relative">
                         <Plot
-                            data={[{ x: numericValues, type: 'histogram', marker: { color: '#0d6efd' } }]}
-                            layout={{ autosize: true, margin: { l: 40, r: 40, t: 40, b: 40 } }}
+                            data={plotData}
+                            layout={{
+                                autosize: true,
+                                margin: { l: 40, r: 40, t: 40, b: 40 },
+                                showlegend: isGaussian
+                            }}
                             useResizeHandler={true}
                             style={{ width: '100%', height: '100%' }}
                         />

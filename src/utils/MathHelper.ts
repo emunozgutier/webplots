@@ -61,3 +61,68 @@ export const toEngineeringString = (value: number, sigDigits: number = 3): strin
     const finalValue = parseFloat(roundedScaledValue.toPrecision(sigDigits));
     return `${finalValue}${prefix}`;
 };
+
+export interface GaussianStats {
+    hasGaussianTest: boolean;
+    isGaussian: boolean;
+    gaussianScore: number;
+}
+
+/**
+ * Calculates whether an array of numeric values follows a Gaussian (normal) distribution.
+ * Returns heuristics based on the Empirical Rule, Skewness, and Excess Kurtosis.
+ */
+export const calculateGaussianStats = (numericValues: number[], avg: number, stdDev: number, count: number): GaussianStats => {
+    let gaussianScore = 0;
+    let isGaussian = false;
+    let hasGaussianTest = false;
+
+    if (stdDev > 0 && count > 10) {
+        hasGaussianTest = true;
+        let within1Sd = 0;
+        let within2Sd = 0;
+        let within3Sd = 0;
+
+        let skewness = 0;
+        let kurtosis = 0;
+
+        for (let v of numericValues) {
+            let z = (v - avg) / stdDev;
+            if (Math.abs(z) <= 1) within1Sd++;
+            if (Math.abs(z) <= 2) within2Sd++;
+            if (Math.abs(z) <= 3) within3Sd++;
+
+            let z2 = z * z;
+            let z3 = z2 * z;
+            let z4 = z2 * z2;
+            skewness += z3;
+            kurtosis += z4;
+        }
+
+        let p1 = within1Sd / count;
+        let p2 = within2Sd / count;
+        let p3 = within3Sd / count;
+
+        skewness /= count;
+        kurtosis = (kurtosis / count) - 3; // Excess kurtosis (normal=0)
+
+        // Compare to empirical rule for normal distribution (~68%, ~95%, ~99.7%)
+        let err1 = Math.abs(p1 - 0.6827);
+        let err2 = Math.abs(p2 - 0.9545);
+        let err3 = Math.abs(p3 - 0.9973);
+
+        let shapeError = (Math.abs(skewness) + Math.abs(kurtosis)) / 2;
+        let distributionError = (err1 + err2 + err3) / 1.5;
+
+        let totalError = distributionError + shapeError;
+
+        // Convert to a percentage, capping at 100, floor at 0
+        let confidence = Math.max(0, 100 - (totalError * 100));
+        gaussianScore = Math.round(confidence);
+
+        // 70% threshold roughly captures normally distributed data without being too strict
+        isGaussian = gaussianScore >= 70;
+    }
+
+    return { hasGaussianTest, isGaussian, gaussianScore };
+};
