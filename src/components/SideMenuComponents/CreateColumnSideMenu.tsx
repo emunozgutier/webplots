@@ -5,6 +5,8 @@ const CreateColumnSideMenu: React.FC = () => {
     const { data, columns, setPlotData, setColumns } = useCsvDataStore();
     const [col1, setCol1] = useState<string>('');
     const [col2, setCol2] = useState<string>('');
+    const [operandType, setOperandType] = useState<'column' | 'fixed'>('column');
+    const [fixedValue, setFixedValue] = useState<string>('');
     const [operation, setOperation] = useState<string>('+');
     const [newColName, setNewColName] = useState<string>('');
     const [targetSubstring, setTargetSubstring] = useState<string>('');
@@ -16,9 +18,15 @@ const CreateColumnSideMenu: React.FC = () => {
             setError('Please fill all required fields.');
             return;
         }
-        if (operation !== 'replace' && !col2) {
-            setError('Please select Column 2.');
-            return;
+        if (operation !== 'replace') {
+            if (operandType === 'column' && !col2) {
+                setError('Please select Column 2.');
+                return;
+            }
+            if (operandType === 'fixed' && !fixedValue) {
+                setError('Please provide a fixed value.');
+                return;
+            }
         }
         if (operation === 'replace' && !targetSubstring) {
             setError('Target substring cannot be empty.');
@@ -37,10 +45,10 @@ const CreateColumnSideMenu: React.FC = () => {
                 const strVal = val1 != null ? String(val1) : '';
                 result = strVal.split(targetSubstring).join(replacementSubstring);
             } else if (operation === 'concat') {
-                const val2 = row[col2];
+                const val2 = operandType === 'column' ? row[col2] : fixedValue;
                 result = `${val1 ?? ''}${val2 ?? ''}`;
             } else {
-                const val2 = row[col2];
+                const val2 = operandType === 'column' ? row[col2] : fixedValue;
                 const num1 = Number(val1);
                 const num2 = Number(val2);
 
@@ -93,11 +101,33 @@ const CreateColumnSideMenu: React.FC = () => {
 
             {operation !== 'replace' ? (
                 <div className="mb-3">
-                    <label className="form-label small fw-bold text-secondary">Column 2</label>
-                    <select className="form-select form-select-sm" value={col2} onChange={e => setCol2(e.target.value)}>
-                        <option value="">Select column...</option>
-                        {columns.map(col => <option key={col} value={col}>{col}</option>)}
-                    </select>
+                    <div className="d-flex justify-content-between align-items-center mb-1">
+                        <label className="form-label small fw-bold text-secondary mb-0">Operand 2</label>
+                        <div className="d-flex gap-2">
+                            <div className="form-check form-check-inline mb-0 me-0">
+                                <input className="form-check-input" type="radio" name="operandType" id="opCol" value="column" checked={operandType === 'column'} onChange={() => setOperandType('column')} />
+                                <label className="form-check-label small" htmlFor="opCol" style={{ cursor: 'pointer' }}>Column</label>
+                            </div>
+                            <div className="form-check form-check-inline mb-0 me-0">
+                                <input className="form-check-input" type="radio" name="operandType" id="opFixed" value="fixed" checked={operandType === 'fixed'} onChange={() => setOperandType('fixed')} />
+                                <label className="form-check-label small" htmlFor="opFixed" style={{ cursor: 'pointer' }}>Fixed Value</label>
+                            </div>
+                        </div>
+                    </div>
+                    {operandType === 'column' ? (
+                        <select className="form-select form-select-sm" value={col2} onChange={e => setCol2(e.target.value)}>
+                            <option value="">Select column...</option>
+                            {columns.map(col => <option key={col} value={col}>{col}</option>)}
+                        </select>
+                    ) : (
+                        <input
+                            type="text"
+                            className="form-control form-control-sm"
+                            value={fixedValue}
+                            onChange={e => setFixedValue(e.target.value)}
+                            placeholder="Enter fixed value..."
+                        />
+                    )}
                 </div>
             ) : (
                 <>
