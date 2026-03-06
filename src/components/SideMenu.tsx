@@ -8,8 +8,9 @@ import FilterSideMenu from './SideMenuComponents/FilterSideMenu';
 import InkRationSideMenu from './SideMenuComponents/InkRationSideMenu';
 import GroupSideMenu from './SideMenuComponents/GroupSideMenu';
 import ColorSideMenu from './SideMenuComponents/ColorSideMenu';
+import CreateColumnSideMenu from './SideMenuComponents/CreateColumnSideMenu';
 
-type SideMenuTab = 'axis' | 'filter' | 'group' | 'color' | 'ink';
+type SideMenuTab = 'create' | 'axis' | 'filter' | 'group' | 'color' | 'ink';
 
 const SideMenu: React.FC = () => {
     const { columns: storeColumns } = useCsvDataStore();
@@ -66,6 +67,8 @@ const SideMenu: React.FC = () => {
 
     const renderContent = () => {
         switch (activeTab) {
+            case 'create':
+                return <CreateColumnSideMenu />;
             case 'axis':
                 return <AxisSideMenu hasColumns={hasColumns} />;
             case 'filter':
@@ -125,6 +128,7 @@ const SideMenu: React.FC = () => {
             >
                 <div className="d-flex align-items-center p-2 justify-content-between border-bottom bg-white">
                     <span className="fw-bold text-nowrap ms-2">
+                        {activeTab === 'create' && 'Create Column'}
                         {activeTab === 'axis' && 'Axes Configuration'}
                         {activeTab === 'filter' && 'Filters'}
                         {activeTab === 'group' && 'Group Settings'}
@@ -167,6 +171,7 @@ const SideMenu: React.FC = () => {
                     </button>
                 )}
 
+                {renderTabButton('create', 'Create', 'bi-plus-square')}
                 {renderTabButton('axis', 'Axis', 'bi-bar-chart-steps')}
                 {renderTabButton('filter', 'Filter', 'bi-funnel')}
                 {renderTabButton('group', 'Group', 'bi-diagram-3')}
