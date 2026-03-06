@@ -1,5 +1,6 @@
 import { createStore } from 'zustand/vanilla';
 import { useStore } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { useContext } from 'react';
 import { WorkspaceContext } from './WorkspaceContext';
 
@@ -25,27 +26,34 @@ export type GroupSideMenuState = {
     loadProject: (groupAxis?: string | null, groupSettings?: Record<string, GroupSettings>) => void;
 }
 
-export const createGroupSideMenuStore = () => createStore<GroupSideMenuState>()((set) => ({
-    groupSideMenuData: {
-        groupAxis: null,
-        groupSettings: {}
-    },
-    setGroupAxis: (groupAxis) => set((state) => ({
-        groupSideMenuData: { ...state.groupSideMenuData, groupAxis }
-    })),
-    setGroupSettings: (column, settings) => set((state) => ({
-        groupSideMenuData: {
-            ...state.groupSideMenuData,
-            groupSettings: {
-                ...state.groupSideMenuData.groupSettings,
-                [column]: settings
-            }
+export const createGroupSideMenuStore = (workspaceId: string) => createStore<GroupSideMenuState>()(
+    persist(
+        (set) => ({
+            groupSideMenuData: {
+                groupAxis: null,
+                groupSettings: {}
+            },
+            setGroupAxis: (groupAxis) => set((state) => ({
+                groupSideMenuData: { ...state.groupSideMenuData, groupAxis }
+            })),
+            setGroupSettings: (column, settings) => set((state) => ({
+                groupSideMenuData: {
+                    ...state.groupSideMenuData,
+                    groupSettings: {
+                        ...state.groupSideMenuData.groupSettings,
+                        [column]: settings
+                    }
+                }
+            })),
+            loadProject: (groupAxis = null, groupSettings = {}) => set(() => ({
+                groupSideMenuData: { groupAxis, groupSettings }
+            }))
+        }),
+        {
+            name: `webplots-workspace-${workspaceId}-groupSideMenuStore`
         }
-    })),
-    loadProject: (groupAxis = null, groupSettings = {}) => set(() => ({
-        groupSideMenuData: { groupAxis, groupSettings }
-    }))
-}));
+    )
+);
 
 export const useGroupSideMenuStore = <T = GroupSideMenuState>(selector: (state: GroupSideMenuState) => T = (state) => state as unknown as T): T => {
     const context = useContext(WorkspaceContext);

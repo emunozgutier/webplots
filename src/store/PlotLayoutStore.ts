@@ -1,5 +1,6 @@
 import { createStore } from 'zustand/vanilla';
 import { useStore } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { useContext } from 'react';
 import { WorkspaceContext } from './WorkspaceContext';
 
@@ -29,47 +30,54 @@ export type PlotLayoutState = {
     loadProject: (plotLayout: PlotLayout) => void;
 }
 
-export const createPlotLayoutStore = () => createStore<PlotLayoutState>()((set) => ({
-    plotLayout: {
-        enableLogAxis: false,
-        plotTitle: '',
-        xAxisTitle: '',
-        yAxisTitle: '',
-        yRange: null,
-        xRange: null,
-        histogramBarmode: 'overlay',
-        legendOrientation: 'auto',
-        pointTip: 'default'
-    },
-    setEnableLogAxis: (enableLogAxis) => set((state) => ({
-        plotLayout: { ...state.plotLayout, enableLogAxis }
-    })),
-    setPlotTitle: (plotTitle) => set((state) => ({
-        plotLayout: { ...state.plotLayout, plotTitle }
-    })),
-    setXAxisTitle: (xAxisTitle) => set((state) => ({
-        plotLayout: { ...state.plotLayout, xAxisTitle }
-    })),
-    setYAxisTitle: (yAxisTitle) => set((state) => ({
-        plotLayout: { ...state.plotLayout, yAxisTitle }
-    })),
-    setXRange: (xRange) => set((state) => ({
-        plotLayout: { ...state.plotLayout, xRange }
-    })),
-    setYRange: (yRange) => set((state) => ({
-        plotLayout: { ...state.plotLayout, yRange }
-    })),
-    setHistogramBarmode: (histogramBarmode) => set((state) => ({
-        plotLayout: { ...state.plotLayout, histogramBarmode }
-    })),
-    setLegendOrientation: (legendOrientation) => set((state) => ({
-        plotLayout: { ...state.plotLayout, legendOrientation }
-    })),
-    setPointTip: (pointTip) => set((state) => ({
-        plotLayout: { ...state.plotLayout, pointTip }
-    })),
-    loadProject: (plotLayout) => set({ plotLayout })
-}));
+export const createPlotLayoutStore = (workspaceId: string) => createStore<PlotLayoutState>()(
+    persist(
+        (set) => ({
+            plotLayout: {
+                enableLogAxis: false,
+                plotTitle: '',
+                xAxisTitle: '',
+                yAxisTitle: '',
+                yRange: null,
+                xRange: null,
+                histogramBarmode: 'overlay',
+                legendOrientation: 'auto',
+                pointTip: 'default'
+            },
+            setEnableLogAxis: (enableLogAxis) => set((state) => ({
+                plotLayout: { ...state.plotLayout, enableLogAxis }
+            })),
+            setPlotTitle: (plotTitle) => set((state) => ({
+                plotLayout: { ...state.plotLayout, plotTitle }
+            })),
+            setXAxisTitle: (xAxisTitle) => set((state) => ({
+                plotLayout: { ...state.plotLayout, xAxisTitle }
+            })),
+            setYAxisTitle: (yAxisTitle) => set((state) => ({
+                plotLayout: { ...state.plotLayout, yAxisTitle }
+            })),
+            setXRange: (xRange) => set((state) => ({
+                plotLayout: { ...state.plotLayout, xRange }
+            })),
+            setYRange: (yRange) => set((state) => ({
+                plotLayout: { ...state.plotLayout, yRange }
+            })),
+            setHistogramBarmode: (histogramBarmode) => set((state) => ({
+                plotLayout: { ...state.plotLayout, histogramBarmode }
+            })),
+            setLegendOrientation: (legendOrientation) => set((state) => ({
+                plotLayout: { ...state.plotLayout, legendOrientation }
+            })),
+            setPointTip: (pointTip) => set((state) => ({
+                plotLayout: { ...state.plotLayout, pointTip }
+            })),
+            loadProject: (plotLayout) => set({ plotLayout })
+        }),
+        {
+            name: `webplots-workspace-${workspaceId}-plotLayoutStore`
+        }
+    )
+);
 
 export const usePlotLayoutStore = <T = PlotLayoutState>(selector: (state: PlotLayoutState) => T = (state) => state as unknown as T): T => {
     const context = useContext(WorkspaceContext);

@@ -1,5 +1,6 @@
 import { createStore } from 'zustand/vanilla';
 import { useStore } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { useContext } from 'react';
 import { WorkspaceContext } from './WorkspaceContext';
 
@@ -28,39 +29,46 @@ export type ColorSideMenuState = {
     setShape: (shape: Partial<AestheticMapping>) => void;
 }
 
-export const createColorSideMenuStore = () => createStore<ColorSideMenuState>()((set) => ({
-    colorData: {
-        hue: { source: 'group', value: '' }, // Default to grouping behavior 
-        saturation: { source: 'manual', value: 80 },
-        lightness: { source: 'manual', value: 50 },
-        shape: { source: 'manual', value: 'circle' }
-    },
+export const createColorSideMenuStore = (workspaceId: string) => createStore<ColorSideMenuState>()(
+    persist(
+        (set) => ({
+            colorData: {
+                hue: { source: 'group', value: '' }, // Default to grouping behavior 
+                saturation: { source: 'manual', value: 80 },
+                lightness: { source: 'manual', value: 50 },
+                shape: { source: 'manual', value: 'circle' }
+            },
 
-    setColorData: (data) =>
-        set((state) => ({
-            colorData: { ...state.colorData, ...data }
-        })),
+            setColorData: (data) =>
+                set((state) => ({
+                    colorData: { ...state.colorData, ...data }
+                })),
 
-    setHue: (hue) =>
-        set((state) => ({
-            colorData: { ...state.colorData, hue: { ...state.colorData.hue, ...hue } }
-        })),
+            setHue: (hue) =>
+                set((state) => ({
+                    colorData: { ...state.colorData, hue: { ...state.colorData.hue, ...hue } }
+                })),
 
-    setSaturation: (saturation) =>
-        set((state) => ({
-            colorData: { ...state.colorData, saturation: { ...state.colorData.saturation, ...saturation } }
-        })),
+            setSaturation: (saturation) =>
+                set((state) => ({
+                    colorData: { ...state.colorData, saturation: { ...state.colorData.saturation, ...saturation } }
+                })),
 
-    setLightness: (lightness) =>
-        set((state) => ({
-            colorData: { ...state.colorData, lightness: { ...state.colorData.lightness, ...lightness } }
-        })),
+            setLightness: (lightness) =>
+                set((state) => ({
+                    colorData: { ...state.colorData, lightness: { ...state.colorData.lightness, ...lightness } }
+                })),
 
-    setShape: (shape) =>
-        set((state) => ({
-            colorData: { ...state.colorData, shape: { ...state.colorData.shape, ...shape } }
-        }))
-}));
+            setShape: (shape) =>
+                set((state) => ({
+                    colorData: { ...state.colorData, shape: { ...state.colorData.shape, ...shape } }
+                }))
+        }),
+        {
+            name: `webplots-workspace-${workspaceId}-colorSideMenuStore`
+        }
+    )
+);
 
 export const useColorSideMenuStore = <T = ColorSideMenuState>(selector: (state: ColorSideMenuState) => T = (state) => state as unknown as T): T => {
     const context = useContext(WorkspaceContext);

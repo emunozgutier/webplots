@@ -1,5 +1,6 @@
 import { createStore } from 'zustand/vanilla';
 import { useStore } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { useContext } from 'react';
 import { WorkspaceContext } from './WorkspaceContext';
 
@@ -35,24 +36,31 @@ export type InkRatioState = {
     setChartDimensions: (width: number, height: number) => void;
 }
 
-export const createInkRatioStore = () => createStore<InkRatioState>()((set) => ({
-    inkRatio: 0, // Default to 0% overlap (max filtering)
-    absorptionMode: 'none',
-    filteredStats: {},
-    chartWidth: 1280,
-    chartHeight: 720,
-    pointRadius: 8,
-    useCustomRadius: false,
-    customRadius: 20, // Default to visible amount
-    maxRadiusRatio: 3, // Default ratio
-    setInkRatio: (ratio) => set({ inkRatio: ratio }),
-    setAbsorptionMode: (mode) => set({ absorptionMode: mode }),
-    setMaxRadiusRatio: (ratio) => set({ maxRadiusRatio: ratio }),
-    setUseCustomRadius: (use) => set({ useCustomRadius: use }),
-    setCustomRadius: (radius) => set({ customRadius: radius }),
-    setFilteredStats: (stats) => set({ filteredStats: stats }),
-    setChartDimensions: (width, height) => set({ chartWidth: width, chartHeight: height })
-}));
+export const createInkRatioStore = (workspaceId: string) => createStore<InkRatioState>()(
+    persist(
+        (set) => ({
+            inkRatio: 0, // Default to 0% overlap (max filtering)
+            absorptionMode: 'none',
+            filteredStats: {},
+            chartWidth: 1280,
+            chartHeight: 720,
+            pointRadius: 8,
+            useCustomRadius: false,
+            customRadius: 20, // Default to visible amount
+            maxRadiusRatio: 3, // Default ratio
+            setInkRatio: (ratio) => set({ inkRatio: ratio }),
+            setAbsorptionMode: (mode) => set({ absorptionMode: mode }),
+            setMaxRadiusRatio: (ratio) => set({ maxRadiusRatio: ratio }),
+            setUseCustomRadius: (use) => set({ useCustomRadius: use }),
+            setCustomRadius: (radius) => set({ customRadius: radius }),
+            setFilteredStats: (stats) => set({ filteredStats: stats }),
+            setChartDimensions: (width, height) => set({ chartWidth: width, chartHeight: height })
+        }),
+        {
+            name: `webplots-workspace-${workspaceId}-inkRatioStore`
+        }
+    )
+);
 
 export const useInkRatioStore = <T = InkRatioState>(selector: (state: InkRatioState) => T = (state) => state as unknown as T): T => {
     const context = useContext(WorkspaceContext);

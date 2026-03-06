@@ -1,5 +1,6 @@
 import { createStore } from 'zustand/vanilla';
 import { useStore } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { useContext } from 'react';
 import { WorkspaceContext } from './WorkspaceContext';
 import type { SummaryMode } from '../components/PlotTableAreaComponents/HeaderSummary';
@@ -21,24 +22,34 @@ export interface WorkspaceLocalState {
     setColorMode: (mode: 'none' | 'color') => void;
 }
 
-export const createWorkspaceLocalStore = () => {
-    return createStore<WorkspaceLocalState>()((set) => ({
-        isSideMenuOpen: true,
-        popupContent: null,
-        sideMenuWidth: 300,
+export const createWorkspaceLocalStore = (workspaceId: string) => {
+    return createStore<WorkspaceLocalState>()(
+        persist(
+            (set) => ({
+                isSideMenuOpen: true,
+                popupContent: null,
+                sideMenuWidth: 300,
 
-        toggleSideMenu: () => set((state) => ({ isSideMenuOpen: !state.isSideMenuOpen })),
-        setSideMenuOpen: (isOpen) => set({ isSideMenuOpen: isOpen }),
-        setPopupContent: (content) => set({ popupContent: content }),
-        closePopup: () => set({ popupContent: null }),
-        setSideMenuWidth: (width) => set({ sideMenuWidth: width }),
-        summaryMode: 'detailed',
-        datasetMode: 'all',
-        colorMode: 'color',
-        setSummaryMode: (mode) => set({ summaryMode: mode }),
-        setDatasetMode: (mode) => set({ datasetMode: mode }),
-        setColorMode: (mode) => set({ colorMode: mode })
-    }));
+                toggleSideMenu: () => set((state) => ({ isSideMenuOpen: !state.isSideMenuOpen })),
+                setSideMenuOpen: (isOpen) => set({ isSideMenuOpen: isOpen }),
+                setPopupContent: (content) => set({ popupContent: content }),
+                closePopup: () => set({ popupContent: null }),
+                setSideMenuWidth: (width) => set({ sideMenuWidth: width }),
+                summaryMode: 'detailed',
+                datasetMode: 'all',
+                colorMode: 'color',
+                setSummaryMode: (mode) => set({ summaryMode: mode }),
+                setDatasetMode: (mode) => set({ datasetMode: mode }),
+                setColorMode: (mode) => set({ colorMode: mode })
+            }),
+            {
+                name: `webplots-workspace-${workspaceId}-workspaceLocalStore`,
+                partialize: (state) => Object.fromEntries(
+                    Object.entries(state).filter(([key]) => key !== 'popupContent')
+                ) as WorkspaceLocalState // Don't persist React nodes like popupContent
+            }
+        )
+    );
 };
 
 export const useWorkspaceLocalStore = <T = WorkspaceLocalState>(selector: (state: WorkspaceLocalState) => T = (state) => state as unknown as T): T => {

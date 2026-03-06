@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import type { WorkspaceStores } from './WorkspaceContext';
 
 export const workspaceRegistry = new Map<string, WorkspaceStores>();
@@ -26,43 +27,58 @@ interface WorkspaceState {
     toggleBetaMode: () => void;
 }
 
-export const useWorkspaceStore = create<WorkspaceState>((set) => ({
-    workspaces: [{ id: 'default', name: 'Workspace 1' }],
-    activeWorkspaceId: 'default',
-    isTopMenuBarOpen: true,
-    isBetaMode: false,
+export const useWorkspaceStore = create<WorkspaceState>()(
+    persist(
+        (set) => ({
+            workspaces: [{ id: 'default', name: 'Workspace 1' }],
+            activeWorkspaceId: 'default',
+            isTopMenuBarOpen: true,
+            isBetaMode: false,
 
-    addWorkspace: (workspace) => set((state) => ({
-        workspaces: [...state.workspaces, workspace],
-        activeWorkspaceId: workspace.id
-    })),
-    removeWorkspace: (id) => set((state) => {
-        const remainingWorkspaces = state.workspaces.filter(w => w.id !== id);
-        // If we remove the active workspace, switch to another one if available
-        let newActiveId = state.activeWorkspaceId;
-        if (state.activeWorkspaceId === id) {
-            newActiveId = remainingWorkspaces.length > 0 ? remainingWorkspaces[0].id : '';
+            addWorkspace: (workspace) => set((state) => ({
+                workspaces: [...state.workspaces, workspace],
+                activeWorkspaceId: workspace.id
+            })),
+            removeWorkspace: (id) => set((state) => {
+                const remainingWorkspaces = state.workspaces.filter(w => w.id !== id);
+                let newActiveId = state.activeWorkspaceId;
+                if (state.activeWorkspaceId === id) {
+                    newActiveId = remainingWorkspaces.length > 0 ? remainingWorkspaces[0].id : '';
+                }
+
+                if (remainingWorkspaces.length === 0) {
+                    const defaultWorkspace = { id: 'default', name: 'Workspace 1' };
+                    return {
+                        workspaces: [defaultWorkspace],
+                        activeWorkspaceId: 'default'
+                    };
+                }
+
+                // Clean up workspace-specific stores from localStorage
+                localStorage.removeItem(`webplots-workspace-${id}-axisSideMenuStore`);
+                localStorage.removeItem(`webplots-workspace-${id}-colorSideMenuStore`);
+                localStorage.removeItem(`webplots-workspace-${id}-filterSideMenuStore`);
+                localStorage.removeItem(`webplots-workspace-${id}-groupSideMenuStore`);
+                localStorage.removeItem(`webplots-workspace-${id}-inkRatioStore`);
+                localStorage.removeItem(`webplots-workspace-${id}-plotLayoutStore`);
+                localStorage.removeItem(`webplots-workspace-${id}-traceConfigStore`);
+                localStorage.removeItem(`webplots-workspace-${id}-workspaceLocalStore`);
+
+                return {
+                    workspaces: remainingWorkspaces,
+                    activeWorkspaceId: newActiveId
+                };
+            }),
+            updateWorkspaceName: (id, name) => set((state) => ({
+                workspaces: state.workspaces.map(w => w.id === id ? { ...w, name } : w)
+            })),
+            setActiveWorkspaceId: (id) => set({ activeWorkspaceId: id }),
+            toggleTopMenuBar: () => set((state) => ({ isTopMenuBarOpen: !state.isTopMenuBarOpen })),
+            setTopMenuBarOpen: (isOpen) => set({ isTopMenuBarOpen: isOpen }),
+            toggleBetaMode: () => set((state) => ({ isBetaMode: !state.isBetaMode })),
+        }),
+        {
+            name: 'webplots-workspace-storage', // unique name
         }
-
-        // If no workspaces left (should not happen in UI ideally, but just in case), create a default one
-        if (remainingWorkspaces.length === 0) {
-            const defaultWorkspace = { id: 'default', name: 'Workspace 1' };
-            return {
-                workspaces: [defaultWorkspace],
-                activeWorkspaceId: 'default'
-            };
-        }
-
-        return {
-            workspaces: remainingWorkspaces,
-            activeWorkspaceId: newActiveId
-        };
-    }),
-    updateWorkspaceName: (id, name) => set((state) => ({
-        workspaces: state.workspaces.map(w => w.id === id ? { ...w, name } : w)
-    })),
-    setActiveWorkspaceId: (id) => set({ activeWorkspaceId: id }),
-    toggleTopMenuBar: () => set((state) => ({ isTopMenuBarOpen: !state.isTopMenuBarOpen })),
-    setTopMenuBarOpen: (isOpen) => set({ isTopMenuBarOpen: isOpen }),
-    toggleBetaMode: () => set((state) => ({ isBetaMode: !state.isBetaMode })),
-}));
+    )
+);

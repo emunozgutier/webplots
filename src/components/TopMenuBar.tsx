@@ -246,6 +246,24 @@ const TopMenuBar: React.FC = () => {
         setShowVersionModal(true);
     };
 
+    const handleNewProject = async () => {
+        if (window.confirm("Are you sure you want to start a new project? This will clear all current data, plots, and workspaces. This action cannot be undone.")) {
+            try {
+                // Clear the IndexedDB instance used by Zustand persist (idb-keyval)
+                const { clear } = await import('idb-keyval');
+                await clear();
+            } catch (e) {
+                console.error("Failed to clear indexedDB", e);
+            }
+
+            // Clear standard local storage
+            localStorage.clear();
+
+            // Reload the page to clear any in-memory state and re-initialize from empty storage
+            window.location.reload();
+        }
+    };
+
     return (
         <Navbar bg="dark" variant="dark" expand="lg" className="px-4 shadow-sm">
             <Container fluid className="p-0">
@@ -254,6 +272,10 @@ const TopMenuBar: React.FC = () => {
                 <Navbar.Collapse id="basic-navbar-nav">
                     <Nav className="me-auto">
                         <NavDropdown title="File" id="file-nav-dropdown">
+                            <NavDropdown.Item onClick={handleNewProject} className="text-danger">
+                                New Project
+                            </NavDropdown.Item>
+                            <NavDropdown.Divider />
                             <NavDropdown.Item onClick={() => csvInputRef.current?.click()}>
                                 Load CSV File
                             </NavDropdown.Item>
