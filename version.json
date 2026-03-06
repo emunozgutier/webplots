@@ -1,5 +1,5 @@
 {
-    "commit_title": "Plot total and individual Gaussian fits",
-    "commit_message": "Rename the main fit trace to \"Total Fit\" and adjust its styling, and add plotting of individual Gaussian components when more than one component is present. Each component trace computes the scaled PDF across the x-range (scaled by count * binSize to match the histogram), is added as a separate scatter line with a dotted style and a label showing its index and weight percentage. This makes it easier to visualize the total fit alongside its component contributions.",
-    "version_string": "2026.10.3"
+    "commit_title": "Add fixed-value operand option for column ops",
+    "commit_message": "Introduce support for using a fixed literal as the second operand when creating derived columns. Added operandType and fixedValue state, validation for the fixed value, and radio controls in the UI to toggle between selecting a column or entering a fixed value. Updated concat and arithmetic operations to read from fixedValue when operandType is 'fixed'. Validation and error messages updated to require the appropriate operand based on the selected type.",
+    "version_string": "2026.10.4"
 }
