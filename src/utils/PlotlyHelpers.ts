@@ -250,7 +250,7 @@ export const generatePlotConfig = (
                     generatedTraces.push({
                         yCol: yCol,
                         groupName: bin.label,
-                        fullTraceName: `${yCol} (${bin.label})`,
+                        fullTraceName: yAxis.length === 1 ? bin.label : `${yCol} (${bin.label})`,
                         xData: indices.map(i => data[i][xAxis]),
                         yData: indices.map(i => data[i][yCol]),
                         rowIndices: indices
@@ -276,7 +276,7 @@ export const generatePlotConfig = (
                     generatedTraces.push({
                         yCol: yCol,
                         groupName: `${groupAxis}=${groupValStr}`,
-                        fullTraceName: `${yCol} (${groupAxis}=${groupValStr})`,
+                        fullTraceName: yAxis.length === 1 ? `${groupAxis}=${groupValStr}` : `${yCol} (${groupAxis}=${groupValStr})`,
                         xData: indices.map(i => data[i][xAxis]),
                         yData: indices.map(i => data[i][yCol]),
                         rowIndices: indices
