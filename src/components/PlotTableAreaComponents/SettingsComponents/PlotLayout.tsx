@@ -6,7 +6,7 @@ import { useAxisSideMenuStore } from '../../../store/AxisSideMenuStore';
 import { useWorkspaceLocalStore } from '../../../store/WorkspaceLocalStore';
 
 const PlotLayout: React.FC = () => {
-    const { plotLayout, setPlotTitle, setXAxisTitle, setYAxisTitle, setXRange, setYRange, setHistogramBarmode } = usePlotLayoutStore();
+    const { plotLayout, setPlotTitle, setXAxisTitle, setYAxisTitle, setXRange, setYRange, setHistogramBarmode, setLegendOrientation } = usePlotLayoutStore();
     const { sideMenuData } = useAxisSideMenuStore();
     const { data } = useCsvDataStore();
     const { closePopup } = useWorkspaceLocalStore();
@@ -73,6 +73,7 @@ const PlotLayout: React.FC = () => {
     const [localYMax, setLocalYMax] = useState(plotLayout.yRange ? plotLayout.yRange[1].toString() : yRangeDefaults.max);
 
     const [localHistogramBarmode, setLocalHistogramBarmode] = useState<'overlay' | 'stack' | 'group'>(plotLayout.histogramBarmode || 'overlay');
+    const [localLegend, setLocalLegend] = useState<'auto' | 'right' | 'bottom' | 'hidden'>(plotLayout.legendOrientation || 'auto');
 
     // Update local state when visibility changes to ensure fresh defaults if data changed
     useEffect(() => {
@@ -89,7 +90,8 @@ const PlotLayout: React.FC = () => {
         setLocalYMax(plotLayout.yRange ? plotLayout.yRange[1].toString() : freshYDefaults.max);
 
         setLocalHistogramBarmode(plotLayout.histogramBarmode || 'overlay');
-    }, [plotLayout.plotTitle, plotLayout.xAxisTitle, plotLayout.yAxisTitle, plotLayout.xRange, plotLayout.yRange, plotLayout.histogramBarmode, sideMenuData, data]);
+        setLocalLegend(plotLayout.legendOrientation || 'auto');
+    }, [plotLayout.plotTitle, plotLayout.xAxisTitle, plotLayout.yAxisTitle, plotLayout.xRange, plotLayout.yRange, plotLayout.histogramBarmode, plotLayout.legendOrientation, sideMenuData, data]);
 
     const handleSave = () => {
         setPlotTitle(localPlotTitle);
@@ -111,6 +113,8 @@ const PlotLayout: React.FC = () => {
         if (sideMenuData.plotType === 'histogram') {
             setHistogramBarmode(localHistogramBarmode);
         }
+
+        setLegendOrientation(localLegend);
 
         closePopup();
     };
@@ -159,6 +163,20 @@ const PlotLayout: React.FC = () => {
                         <label className="form-label small fw-bold">Y-Axis Title</label>
                         <input type="text" className="form-control form-control-sm" value={localYTitle} onChange={e => setLocalYTitle(e.target.value)} />
                     </div>
+                </div>
+
+                <div className="mb-3">
+                    <label className="form-label small fw-bold">Legend</label>
+                    <select
+                        className="form-select form-select-sm"
+                        value={localLegend}
+                        onChange={(e) => setLocalLegend(e.target.value as any)}
+                    >
+                        <option value="auto">Auto (Right if multiple traces)</option>
+                        <option value="right">Right</option>
+                        <option value="bottom">Bottom</option>
+                        <option value="hidden">Hidden / None</option>
+                    </select>
                 </div>
 
                 <hr />

@@ -11,6 +11,8 @@ export interface PlotLayout {
     xRange: [number, number] | null;
     yRange: [number, number] | null;
     histogramBarmode?: 'overlay' | 'stack' | 'group';
+    legendOrientation?: 'auto' | 'right' | 'bottom' | 'hidden';
+    pointTip?: 'default' | 'xy' | 'xy_absorbed' | 'xy_trace';
 }
 
 export type PlotLayoutState = {
@@ -22,6 +24,8 @@ export type PlotLayoutState = {
     setXRange: (range: [number, number] | null) => void;
     setYRange: (range: [number, number] | null) => void;
     setHistogramBarmode: (barmode: 'overlay' | 'stack' | 'group') => void;
+    setLegendOrientation: (orientation: 'auto' | 'right' | 'bottom' | 'hidden') => void;
+    setPointTip: (tip: 'default' | 'xy' | 'xy_absorbed' | 'xy_trace') => void;
     loadProject: (plotLayout: PlotLayout) => void;
 }
 
@@ -33,7 +37,9 @@ export const createPlotLayoutStore = () => createStore<PlotLayoutState>()((set) 
         yAxisTitle: '',
         yRange: null,
         xRange: null,
-        histogramBarmode: 'overlay'
+        histogramBarmode: 'overlay',
+        legendOrientation: 'auto',
+        pointTip: 'default'
     },
     setEnableLogAxis: (enableLogAxis) => set((state) => ({
         plotLayout: { ...state.plotLayout, enableLogAxis }
@@ -55,6 +61,12 @@ export const createPlotLayoutStore = () => createStore<PlotLayoutState>()((set) 
     })),
     setHistogramBarmode: (histogramBarmode) => set((state) => ({
         plotLayout: { ...state.plotLayout, histogramBarmode }
+    })),
+    setLegendOrientation: (legendOrientation) => set((state) => ({
+        plotLayout: { ...state.plotLayout, legendOrientation }
+    })),
+    setPointTip: (pointTip) => set((state) => ({
+        plotLayout: { ...state.plotLayout, pointTip }
     })),
     loadProject: (plotLayout) => set({ plotLayout })
 }));

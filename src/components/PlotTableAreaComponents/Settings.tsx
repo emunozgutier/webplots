@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { useWorkspaceLocalStore } from '../../store/WorkspaceLocalStore';
 import PlotLayout from './SettingsComponents/PlotLayout';
 import TraceConfig from './SettingsComponents/TraceConfig';
+import PointTip from './SettingsComponents/PointTip';
 
 const Settings: React.FC = () => {
     const { closePopup } = useWorkspaceLocalStore();
-    const [activeTab, setActiveTab] = useState<'layout' | 'trace'>('layout');
+    const [activeTab, setActiveTab] = useState<'layout' | 'trace' | 'point'>('layout');
 
     return (
         <div className="card shadow-lg w-100 h-100" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -32,10 +33,20 @@ const Settings: React.FC = () => {
                             Trace Config
                         </button>
                     </li>
+                    <li className="nav-item">
+                        <button
+                            className={`nav-link rounded-0 ${activeTab === 'point' ? 'active bg-white fw-bold' : ''}`}
+                            onClick={() => setActiveTab('point')}
+                        >
+                            Point Tip
+                        </button>
+                    </li>
                 </ul>
 
                 <div className="p-0 flex-grow-1 overflow-auto" style={{ minHeight: 0 }}>
-                    {activeTab === 'layout' ? <PlotLayout /> : <TraceConfig />}
+                    {activeTab === 'layout' && <PlotLayout />}
+                    {activeTab === 'trace' && <TraceConfig />}
+                    {activeTab === 'point' && <PointTip />}
                 </div>
             </div>
         </div>

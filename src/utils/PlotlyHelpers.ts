@@ -25,7 +25,7 @@ export const generatePlotConfig = (
 ) => {
     const { plotType, xAxis, yAxis } = sideMenuData;
     const { groupAxis, groupSettings } = groupSideMenuData;
-    const { enableLogAxis, plotTitle, xAxisTitle, yAxisTitle, xRange, yRange, histogramBarmode } = plotLayout;
+    const { enableLogAxis, plotTitle, xAxisTitle, yAxisTitle, xRange, yRange, histogramBarmode, legendOrientation, pointTip } = plotLayout;
 
     // Trace config from the new store
     const { traceCustomizations, currentPaletteColors } = traceConfig;
@@ -535,6 +535,35 @@ export const generatePlotConfig = (
             }
         }
 
+        // Determine Hover Template
+        let hoverTemplateToUse = '';
+        let effectiveHoverMode = pointTip || 'default';
+
+        if (effectiveHoverMode === 'default' && legendOrientation === 'hidden') {
+            effectiveHoverMode = 'xy_trace';
+        }
+
+        switch (effectiveHoverMode) {
+            case 'xy':
+                hoverTemplateToUse = '%{x}, %{y}<extra></extra>';
+                break;
+            case 'xy_absorbed':
+                hoverTemplateToUse = '%{x}, %{y}<br>Absorbed: %{customdata}<extra></extra>';
+                break;
+            case 'xy_trace':
+                // Using Plotly's built-in extra trace name flag
+                hoverTemplateToUse = '%{x}, %{y}';
+                break;
+            case 'default':
+            default:
+                if (absorptionMode !== 'none') {
+                    hoverTemplateToUse = '%{x}, %{y}<br>Absorbed: %{customdata}<extra></extra>';
+                } else {
+                    hoverTemplateToUse = '%{x}, %{y}'; // normal plotly default with trace
+                }
+                break;
+        }
+
         const mainTrace: any = {
             x: finalX,
             y: finalY,
@@ -543,7 +572,7 @@ export const generatePlotConfig = (
             name: finalName,
             legendgroup: finalName,
             customdata: absorbedCounts, // inject it into Plotly for the hover template
-            hovertemplate: '%{x}, %{y}, Absorbed points: %{customdata}<extra></extra>',
+            hovertemplate: hoverTemplateToUse === '%{x}, %{y}' ? undefined : hoverTemplateToUse,
             line: {
                 color: Array.isArray(finalMarkerColor) ? finalMarkerColor[0] : finalMarkerColor,
             },
@@ -577,7 +606,8 @@ export const generatePlotConfig = (
         },
         autosize: true,
         margin: { l: 50, r: 50, b: 50, t: 50 },
-        showlegend: generatedTraces.length > 1,
+        showlegend: legendOrientation === 'hidden' ? false : (legendOrientation === 'auto' ? generatedTraces.length > 1 : true),
+        legend: legendOrientation === 'bottom' ? { orientation: 'h', yanchor: 'bottom', y: -0.2, xanchor: 'center', x: 0.5 } : undefined,
         barmode: plotType === 'histogram' ? (histogramBarmode || 'overlay') : undefined
     };
 
@@ -673,7 +703,7 @@ export const generatePlotConfig = (
     type: '${enableLogAxis ? 'log' : 'linear'}',
     ${yRange ? `range: [${yRange[0]}, ${yRange[1]}]` : '// autorange: true'}
   },
-  showlegend: ${generatedTraces.length > 1}
+  showlegend: ${legendOrientation === 'hidden' ? 'false' : (legendOrientation === 'auto' ? generatedTraces.length > 1 : 'true')}${legendOrientation === 'bottom' ? `,\n  legend: { orientation: 'h', yanchor: 'bottom', y: -0.2, xanchor: 'center', x: 0.5 }` : ''}
 };\n\n`;
 
     receipt += `Plotly.newPlot('myDiv', data, layout);`;
