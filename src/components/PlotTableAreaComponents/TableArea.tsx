@@ -56,56 +56,28 @@ const TableArea: React.FC = () => {
             }];
 
             if (isGaussian && components && components.length > 0) {
-                const xs = [];
-                const ys = [];
                 const points = 150;
 
-                const mixtureDist = (x: number) => {
-                    let pdf = 0;
-                    for (let comp of components) {
+                // Only display individual Gaussians, disable the "Total Fit" line
+                components.forEach((comp, idx) => {
+                    const compXs = [];
+                    const compYs = [];
+                    for (let i = 0; i <= points; i++) {
+                        const x = min + (i / points) * (max - min);
                         const z = (x - comp.mean) / comp.stdDev;
-                        pdf += comp.weight * (1 / (comp.stdDev * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * z * z);
+                        const pdf = comp.weight * (1 / (comp.stdDev * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * z * z);
+                        compXs.push(x);
+                        compYs.push(pdf * count * binSize);
                     }
-                    return pdf;
-                };
-
-                for (let i = 0; i <= points; i++) {
-                    const x = min + (i / points) * (max - min);
-                    xs.push(x);
-                    ys.push(mixtureDist(x) * count * binSize);
-                }
-
-                plotData.push({
-                    x: xs,
-                    y: ys,
-                    type: 'scatter',
-                    mode: 'lines',
-                    name: 'Total Fit',
-                    line: { color: '#28a745', width: 2, dash: 'solid' }
-                });
-
-                // Display individual Gaussians
-                if (components.length > 1) {
-                    components.forEach((comp, idx) => {
-                        const compXs = [];
-                        const compYs = [];
-                        for (let i = 0; i <= points; i++) {
-                            const x = min + (i / points) * (max - min);
-                            const z = (x - comp.mean) / comp.stdDev;
-                            const pdf = comp.weight * (1 / (comp.stdDev * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * z * z);
-                            compXs.push(x);
-                            compYs.push(pdf * count * binSize);
-                        }
-                        plotData.push({
-                            x: compXs,
-                            y: compYs,
-                            type: 'scatter',
-                            mode: 'lines',
-                            name: `Gaussian ${idx + 1} (${Math.round(comp.weight * 100)}%)`,
-                            line: { width: 1.5, dash: 'dot' } // Plotly will auto-color
-                        });
+                    plotData.push({
+                        x: compXs,
+                        y: compYs,
+                        type: 'scatter',
+                        mode: 'lines',
+                        name: components.length > 1 ? `Gaussian ${idx + 1} (${Math.round(comp.weight * 100)}%)` : 'Gaussian Fit',
+                        line: { width: components.length > 1 ? 1.5 : 2, dash: components.length > 1 ? 'dot' : 'solid' }
                     });
-                }
+                });
             }
 
             const shapes: any[] = [];
