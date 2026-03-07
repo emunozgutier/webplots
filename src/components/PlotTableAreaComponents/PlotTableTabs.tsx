@@ -6,7 +6,7 @@ export const ViewToggleButtons: React.FC<{ viewMode: 'plot' | 'table'; setViewMo
         <ul className="nav nav-tabs border-bottom-0">
             <li className="nav-item">
                 <button
-                    className={`nav-link fs-5 px-4 py-2 ${viewMode === 'plot' ? 'active fw-bold bg-white text-primary' : 'text-secondary bg-light border-0'}`}
+                    className={`nav-link fs-5 px-4 py-2 ${viewMode === 'plot' ? 'active fw-bold bg-white text-primary' : 'text-primary bg-light border-0'}`}
                     onClick={() => setViewMode('plot')}
                     title="View Plot"
                     style={{
@@ -21,7 +21,7 @@ export const ViewToggleButtons: React.FC<{ viewMode: 'plot' | 'table'; setViewMo
             </li>
             <li className="nav-item">
                 <button
-                    className={`nav-link fs-5 px-4 py-2 ${viewMode === 'table' ? 'active fw-bold bg-white text-primary' : 'text-secondary bg-light border-0'}`}
+                    className={`nav-link fs-5 px-4 py-2 ${viewMode === 'table' ? 'active fw-bold bg-white text-primary' : 'text-primary bg-light border-0'}`}
                     onClick={() => setViewMode('table')}
                     title="View Table"
                     style={{
