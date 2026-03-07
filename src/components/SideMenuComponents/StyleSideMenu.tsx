@@ -3,7 +3,7 @@ import { useColorSideMenuStore, type AestheticMapping, type MappingSource } from
 import { useCsvDataStore } from '../../store/CsvDataStore';
 
 const StyleSideMenu: React.FC = () => {
-    const { colorData, setHue, setSaturation, setLightness, setShape } = useColorSideMenuStore();
+    const { colorData, setHue, setLightness, setShape } = useColorSideMenuStore();
     const { columns } = useCsvDataStore();
 
     // Available Plotly shapes
@@ -106,7 +106,6 @@ const StyleSideMenu: React.FC = () => {
             </p>
 
             {renderMappingBlock('Hue (Color Base)', colorData.hue, setHue, 'number')}
-            {renderMappingBlock('Saturation (Richness)', colorData.saturation, setSaturation, 'number')}
             {renderMappingBlock('Lightness (Brightness)', colorData.lightness, setLightness, 'number')}
             {renderMappingBlock('Marker Shape', colorData.shape, setShape, 'shape')}
 
