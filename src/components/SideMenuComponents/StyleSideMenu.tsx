@@ -2,7 +2,7 @@ import React from 'react';
 import { useColorSideMenuStore, type AestheticMapping, type MappingSource } from '../../store/ColorSideMenuStore';
 import { useCsvDataStore } from '../../store/CsvDataStore';
 
-const ColorSideMenu: React.FC = () => {
+const StyleSideMenu: React.FC = () => {
     const { colorData, setHue, setSaturation, setLightness, setShape } = useColorSideMenuStore();
     const { columns } = useCsvDataStore();
 
@@ -114,4 +114,4 @@ const ColorSideMenu: React.FC = () => {
     );
 };
 
-export default ColorSideMenu;
+export default StyleSideMenu;

@@ -7,7 +7,7 @@ import AxisSideMenu from './SideMenuComponents/AxisSideMenu';
 import FilterSideMenu from './SideMenuComponents/FilterSideMenu';
 import InkRationSideMenu from './SideMenuComponents/InkRationSideMenu';
 import GroupSideMenu from './SideMenuComponents/GroupSideMenu';
-import ColorSideMenu from './SideMenuComponents/ColorSideMenu';
+import StyleSideMenu from './SideMenuComponents/StyleSideMenu';
 import CreateColumnSideMenu from './SideMenuComponents/CreateColumnSideMenu';
 import SubplotSideMenu from './SideMenuComponents/SubplotSideMenu';
 
@@ -77,7 +77,7 @@ const SideMenu: React.FC = () => {
             case 'group':
                 return <GroupSideMenu />;
             case 'color':
-                return <ColorSideMenu />;
+                return <StyleSideMenu />;
             case 'ink':
                 return <InkRationSideMenu />;
             case 'subplots':
