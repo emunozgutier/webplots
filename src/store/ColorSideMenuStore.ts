@@ -9,6 +9,7 @@ export type MappingSource = 'manual' | 'group' | 'column';
 export interface AestheticMapping {
     source: MappingSource;
     value: string | number; // 'manual' value OR the selected column name
+    range?: [number, number]; // [min, max] output range when mapped to a column
 }
 
 export interface ColorSideMenuData {

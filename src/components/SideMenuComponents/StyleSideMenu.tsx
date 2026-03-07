@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useColorSideMenuStore, type AestheticMapping, type MappingSource } from '../../store/ColorSideMenuStore';
 import { useCsvDataStore } from '../../store/CsvDataStore';
+import Plot from 'react-plotly.js';
+import { Modal, Button } from 'react-bootstrap';
 
 const StyleSideMenu: React.FC = () => {
     const { colorData, setHue, setLightness, setShape } = useColorSideMenuStore();
-    const { columns } = useCsvDataStore();
+    const { columns, data } = useCsvDataStore();
 
     // Available Plotly shapes
     const SHAPE_OPTIONS = [
@@ -12,6 +14,11 @@ const StyleSideMenu: React.FC = () => {
         'cross', 'cross-open', 'x', 'x-open', 'triangle-up', 'triangle-down',
         'pentagon', 'hexagram', 'star'
     ];
+
+    const [modalState, setModalState] = useState<Record<string, boolean>>({});
+
+    const handleShowModal = (title: string) => setModalState(prev => ({ ...prev, [title]: true }));
+    const handleCloseModal = (title: string) => setModalState(prev => ({ ...prev, [title]: false }));
 
     const renderMappingBlock = (
         title: string,
@@ -85,6 +92,77 @@ const StyleSideMenu: React.FC = () => {
                             <option value="">-- Select Column --</option>
                             {columns.map(col => <option key={col} value={col}>{col}</option>)}
                         </select>
+                        {type === 'number' && typeof mapping.value === 'string' && mapping.value !== '' && (
+                            <div className="mt-3">
+                                <Button variant="outline-primary" size="sm" className="w-100" onClick={() => handleShowModal(title)}>
+                                    <i className="bi bi-sliders me-2"></i>
+                                    Adjust Mapped Range
+                                </Button>
+
+                                <Modal show={modalState[title]} onHide={() => handleCloseModal(title)} centered>
+                                    <Modal.Header closeButton>
+                                        <Modal.Title className="fs-6">Adjust Distribution Range for {title}</Modal.Title>
+                                    </Modal.Header>
+                                    <Modal.Body>
+                                        <label className="form-label small text-muted mb-1 d-flex justify-content-between">
+                                            <span>Output Range (Min-Max)</span>
+                                        </label>
+                                        <div className="d-flex align-items-center gap-2 mb-3">
+                                            <input
+                                                type="number"
+                                                className="form-control"
+                                                value={mapping.range ? mapping.range[0] : 0}
+                                                onChange={e => updateFn({ range: [Number(e.target.value), mapping.range ? mapping.range[1] : (title === 'Hue (Color Base)' ? 360 : 100)] })}
+                                            />
+                                            <span className="text-muted">to</span>
+                                            <input
+                                                type="number"
+                                                className="form-control"
+                                                value={mapping.range ? mapping.range[1] : (title === 'Hue (Color Base)' ? 360 : 100)}
+                                                onChange={e => updateFn({ range: [mapping.range ? mapping.range[0] : 0, Number(e.target.value)] })}
+                                            />
+                                        </div>
+                                        <div className="border rounded bg-light p-1" style={{ height: '150px' }}>
+                                            <Plot
+                                                data={[
+                                                    {
+                                                        x: data.map(row => parseFloat(String(row[mapping.value]))).filter(v => !isNaN(v)),
+                                                        type: 'histogram',
+                                                        marker: { color: title === 'Hue (Color Base)' ? 'hsl(200, 80%, 50%)' : '#6c757d' }
+                                                    }
+                                                ]}
+                                                layout={{
+                                                    margin: { t: 5, r: 5, l: 30, b: 20 },
+                                                    xaxis: { fixedrange: true },
+                                                    yaxis: { fixedrange: true },
+                                                    paper_bgcolor: 'transparent',
+                                                    plot_bgcolor: 'transparent'
+                                                }}
+                                                config={{ displayModeBar: false }}
+                                                style={{ width: '100%', height: '100%' }}
+                                                useResizeHandler={true}
+                                            />
+                                        </div>
+                                        {(() => {
+                                            const vals = data.map(row => parseFloat(String(row[mapping.value]))).filter(v => !isNaN(v));
+                                            const min = vals.length > 0 ? Math.min(...vals) : 0;
+                                            const max = vals.length > 0 ? Math.max(...vals) : 0;
+                                            return (
+                                                <div className="d-flex justify-content-between text-muted mt-2" style={{ fontSize: '0.8rem' }}>
+                                                    <span>Data Min: {min.toFixed(2)}</span>
+                                                    <span>Data Max: {max.toFixed(2)}</span>
+                                                </div>
+                                            );
+                                        })()}
+                                    </Modal.Body>
+                                    <Modal.Footer>
+                                        <Button variant="secondary" size="sm" onClick={() => handleCloseModal(title)}>
+                                            Close
+                                        </Button>
+                                    </Modal.Footer>
+                                </Modal>
+                            </div>
+                        )}
                     </div>
                 )}
 

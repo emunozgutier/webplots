@@ -65,8 +65,8 @@ export const generatePlotConfig = (
             ? customRadius
             : effectiveRadius * 2 * (1 - inkRatio);
 
-        if (!useCustomRadius && inkRatio >= 1) return { x: xData, y: yData, filteredCount: 0, absorbedCounts: new Array(xData.length).fill(0) };
-        if (xData.length === 0) return { x: [], y: [], filteredCount: 0, absorbedCounts: [] };
+        if (!useCustomRadius && inkRatio >= 1) return { x: xData, y: yData, filteredCount: 0, absorbedCounts: new Array(xData.length).fill(0), survivingIndices: xData.map((_: any, i: number) => i) };
+        if (xData.length === 0) return { x: [], y: [], filteredCount: 0, absorbedCounts: [], survivingIndices: [] };
 
         // Robust conversion to numbers
         const toNum = (v: any): number => {
@@ -87,7 +87,7 @@ export const generatePlotConfig = (
         // PERFORMANCE CUTOFF: N^2 geometric distance checking for >50k points locks the UI thread for minutes.
         if (xData.length > 50000) {
             console.warn(`[InkRatio] Dataset too large (${xData.length} pts) for geometric point-overlap filter. Rendering raw WebGL dataset.`);
-            return { x: xData, y: yData, filteredCount: 0, absorbedCounts: new Array(xData.length).fill(0) };
+            return { x: xData, y: yData, filteredCount: 0, absorbedCounts: new Array(xData.length).fill(0), survivingIndices: xData.map((_: any, i: number) => i) };
         }
 
         // Determine Min/Max based on VALID numbers
@@ -96,7 +96,7 @@ export const generatePlotConfig = (
 
         if (validNumsX.length === 0 || validNumsY.length === 0) {
             console.warn('[InkRatio] Cannot determine numeric range for filtering. Skipping.');
-            return { x: xData, y: yData, filteredCount: 0, absorbedCounts: new Array(xData.length).fill(0) };
+            return { x: xData, y: yData, filteredCount: 0, absorbedCounts: new Array(xData.length).fill(0), survivingIndices: xData.map((_: any, i: number) => i) };
         }
 
         const xMin = Math.min(...validNumsX);
@@ -131,6 +131,7 @@ export const generatePlotConfig = (
         const filteredY: any[] = [];
         const absorbedCounts: number[] = [];
         const points: { px: number, py: number, absorbed: number, originalIndex: number }[] = [];
+        const survivingIndices: number[] = [];
 
         for (let i = 0; i < xData.length; i++) {
             const px = xToPx(validX[i]);
@@ -140,6 +141,7 @@ export const generatePlotConfig = (
                 filteredX.push(xData[i]);
                 filteredY.push(yData[i]);
                 absorbedCounts.push(0);
+                survivingIndices.push(i);
                 continue;
             }
 
@@ -162,6 +164,7 @@ export const generatePlotConfig = (
                 filteredX.push(xData[i]);
                 filteredY.push(yData[i]);
                 absorbedCounts.push(0); // Initialize its count to 0 in our output array
+                survivingIndices.push(i);
             } else {
                 // Absorbed by another point
                 points[keptBy].absorbed += 1;
@@ -187,7 +190,7 @@ export const generatePlotConfig = (
             }
         }
 
-        return { x: filteredX, y: filteredY, filteredCount: xData.length - filteredX.length, absorbedCounts: finalAbsorbedCounts };
+        return { x: filteredX, y: filteredY, filteredCount: xData.length - filteredX.length, absorbedCounts: finalAbsorbedCounts, survivingIndices };
     };
 
     // Prepare traces
@@ -346,7 +349,14 @@ export const generatePlotConfig = (
                     const num = typeof val === 'number' ? val : parseFloat(String(val));
                     if (isNaN(num)) return outMin;
                     const pct = (num - min) / range;
-                    return outMin + pct * (outMax - outMin);
+                    let result = outMin + pct * (outMax - outMin);
+                    // Clamp result to prevent CSS HSL parsing errors
+                    if (outMax > outMin) {
+                        result = Math.max(outMin, Math.min(outMax, result));
+                    } else {
+                        result = Math.max(outMax, Math.min(outMin, result));
+                    }
+                    return result;
                 };
             };
 
@@ -359,9 +369,9 @@ export const generatePlotConfig = (
             };
 
             // Pre-compute lookup functions for column mappings
-            const hueColMap = hue.source === 'column' ? getColumnMapRule(String(hue.value), 0, 360) : null;
-            const satColMap = saturation.source === 'column' ? getColumnMapRule(String(saturation.value), 0, 100) : null;
-            const litColMap = lightness.source === 'column' ? getColumnMapRule(String(lightness.value), 0, 100) : null;
+            const hueColMap = hue.source === 'column' ? getColumnMapRule(String(hue.value), hue.range ? hue.range[0] : 0, hue.range ? hue.range[1] : 360) : null;
+            const satColMap = saturation.source === 'column' ? getColumnMapRule(String(saturation.value), saturation.range ? saturation.range[0] : 0, saturation.range ? saturation.range[1] : 100) : null;
+            const litColMap = lightness.source === 'column' ? getColumnMapRule(String(lightness.value), lightness.range ? lightness.range[0] : 0, lightness.range ? lightness.range[1] : 100) : null;
 
             const SHAPE_OPTS = ['circle', 'square', 'diamond', 'cross', 'x', 'triangle-up', 'pentagon', 'hexagram', 'star'];
             const shapeColMap = shape.source === 'column' ? getColumnCategoryRule(String(shape.value), SHAPE_OPTS) : null;
@@ -465,7 +475,7 @@ export const generatePlotConfig = (
             }
 
             // Apply filtering for Scatter
-            const { x: finalX, y: finalY, filteredCount, absorbedCounts } = filterPoints(
+            const { x: finalX, y: finalY, filteredCount, absorbedCounts, survivingIndices } = filterPoints(
                 xData,
                 yData,
                 enableLogAxis ? 'log' : 'linear',
@@ -498,10 +508,10 @@ export const generatePlotConfig = (
             let finalMarkerSize = marker.size;
             let finalMarkerLine = marker.line;
 
-            if (filteredCount > 0 && Array.isArray(marker.color)) {
-                // Decalibrate custom color mappings if they've been stripped by filtering
-                finalMarkerColor = computedColors[0];
-                finalMarkerSymbol = computedShapes[0];
+            if (filteredCount > 0 && Array.isArray(marker.color) && survivingIndices) {
+                // Retain only surviving indices to keep gradient intact
+                finalMarkerColor = survivingIndices.map((idx: number) => computedColors[idx]);
+                finalMarkerSymbol = survivingIndices.map((idx: number) => computedShapes[idx]);
             }
 
             // Apply visual tweaks based on absorptionMode!
