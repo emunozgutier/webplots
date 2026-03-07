@@ -6,6 +6,7 @@ import { useCsvDataStore } from '../../store/CsvDataStore';
 import { useAxisSideMenuStore } from '../../store/AxisSideMenuStore';
 import { useGroupSideMenuStore } from '../../store/GroupSideMenuStore';
 import { useColorSideMenuStore } from '../../store/ColorSideMenuStore';
+import { useSubplotSideMenuStore } from '../../store/SubplotSideMenuStore';
 import { useInkRatioStore } from '../../store/InkRatioStore';
 
 interface PlotAreaControlButtonsProps {
@@ -20,10 +21,11 @@ const PlotAreaControlButtons: React.FC<PlotAreaControlButtonsProps> = ({ onOpenS
     const { sideMenuData } = useAxisSideMenuStore();
     const { groupSideMenuData } = useGroupSideMenuStore();
     const { colorData } = useColorSideMenuStore();
+    const subplotData = useSubplotSideMenuStore();
     const { inkRatio, absorptionMode, maxRadiusRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius } = useInkRatioStore();
 
     const handleSaveHTML = () => {
-        const { plotData, layout } = generatePlotConfig(data, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData, absorptionMode, maxRadiusRatio, inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius);
+        const { plotData, layout } = generatePlotConfig(data, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData, subplotData, absorptionMode, maxRadiusRatio, inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius);
 
         const htmlContent = `
 <!DOCTYPE html>
