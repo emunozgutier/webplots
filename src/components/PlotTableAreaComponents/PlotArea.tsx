@@ -10,6 +10,7 @@ import { usePlotLayoutStore } from '../../store/PlotLayoutStore';
 import { useTraceConfigStore } from '../../store/TraceConfigStore';
 import { useInkRatioStore } from '../../store/InkRatioStore';
 import { useColorSideMenuStore } from '../../store/ColorSideMenuStore';
+import { useSubplotSideMenuStore } from '../../store/SubplotSideMenuStore';
 import { generatePlotConfig } from '../../utils/PlotlyHelpers';
 import PlotAreaControlButtons from './PlotAreaControlButtons';
 import { useFilteredData } from '../../utils/useFilteredData';
@@ -22,12 +23,13 @@ const PlotArea: React.FC = () => {
     const { traceConfig, setActiveTraces } = useTraceConfigStore();
     const { inkRatio, absorptionMode, maxRadiusRatio, setFilteredStats, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius } = useInkRatioStore();
     const { colorData } = useColorSideMenuStore();
+    const subplotData = useSubplotSideMenuStore();
 
     const { setPopupContent } = useWorkspaceLocalStore();
 
     const { plotData, layout, hasData, receipt, stats, generatedTraces } = useMemo(
-        () => generatePlotConfig(data, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData, absorptionMode, maxRadiusRatio, inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius),
-        [data, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData, absorptionMode, maxRadiusRatio, inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius]
+        () => generatePlotConfig(data, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData, subplotData, absorptionMode, maxRadiusRatio, inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius),
+        [data, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData, subplotData, absorptionMode, maxRadiusRatio, inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius]
     );
 
     // Update stats in store

@@ -63,6 +63,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
                 localStorage.removeItem(`webplots-workspace-${id}-plotLayoutStore`);
                 localStorage.removeItem(`webplots-workspace-${id}-traceConfigStore`);
                 localStorage.removeItem(`webplots-workspace-${id}-workspaceLocalStore`);
+                localStorage.removeItem(`webplots-workspace-${id}-subplotSideMenuStore`);
 
                 return {
                     workspaces: remainingWorkspaces,

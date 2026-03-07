@@ -5,6 +5,7 @@ import type { GroupSideMenuData } from '../store/GroupSideMenuStore';
 import type { PlotLayout } from '../store/PlotLayoutStore';
 import type { TraceConfig } from '../store/TraceConfigStore';
 import type { ColorSideMenuData } from '../store/ColorSideMenuStore';
+import type { SubplotSideMenuState } from '../store/SubplotSideMenuStore';
 import type { TraceStats } from '../store/InkRatioStore';
 
 export const generatePlotConfig = (
@@ -14,6 +15,7 @@ export const generatePlotConfig = (
     plotLayout: PlotLayout,
     traceConfig: TraceConfig,
     colorSideMenuData: ColorSideMenuData,
+    subplotSideMenuData: SubplotSideMenuState,
     absorptionMode: 'none' | 'size' | 'glow',
     maxRadiusRatio: number = 3,
     inkRatio: number = 1,
@@ -27,8 +29,8 @@ export const generatePlotConfig = (
     const { groupAxis, groupSettings } = groupSideMenuData;
     const { enableLogAxis, plotTitle, xAxisTitle, yAxisTitle, xRange, yRange, histogramBarmode, legendOrientation, pointTip } = plotLayout;
 
-    // Trace config from the new store
     const { traceCustomizations, currentPaletteColors } = traceConfig;
+    const { rows, cols, traceToSubplots } = subplotSideMenuData;
 
     const hasData = plotType === 'histogram'
         ? data.length > 0 && yAxis.length > 0
@@ -311,281 +313,302 @@ export const generatePlotConfig = (
     const plotData: Data[] = generatedTraces.flatMap((traceInfo, index) => {
         const { fullTraceName, yCol, groupName, xData, yData, rowIndices } = traceInfo;
 
-        // Inherit configurations: exact name overrides > parent column overrides > defaults
-        const colCustomization = traceCustomizations?.[yCol] || {};
-        const exactCustomization = traceCustomizations?.[fullTraceName] || {};
-
-        // Merge settings
-        const customization = { ...colCustomization, ...exactCustomization };
-
-        const { hue, saturation, lightness, shape } = colorSideMenuData;
-
-        // Auto-scaled helpers for "column" mappings
-        const getColumnMapRule = (colName: string, outMin: number, outMax: number) => {
-            const vals = data.map(r => r[colName]);
-            const nums = vals.map(v => typeof v === 'number' ? v : parseFloat(String(v))).filter(n => !isNaN(n));
-            const min = nums.length > 0 ? Math.min(...nums) : 0;
-            const max = nums.length > 0 ? Math.max(...nums) : 1;
-            const range = (max - min) || 1;
-
-            return (val: any) => {
-                const num = typeof val === 'number' ? val : parseFloat(String(val));
-                if (isNaN(num)) return outMin;
-                const pct = (num - min) / range;
-                return outMin + pct * (outMax - outMin);
-            };
-        };
-
-        const getColumnCategoryRule = (colName: string, categories: string[]) => {
-            const uniqueVals = Array.from(new Set(data.map(r => String(r[colName])))).sort();
-            return (val: any) => {
-                const idx = uniqueVals.indexOf(String(val));
-                return categories[Math.max(0, idx) % categories.length];
-            };
-        };
-
-        // Pre-compute lookup functions for column mappings
-        const hueColMap = hue.source === 'column' ? getColumnMapRule(String(hue.value), 0, 360) : null;
-        const satColMap = saturation.source === 'column' ? getColumnMapRule(String(saturation.value), 0, 100) : null;
-        const litColMap = lightness.source === 'column' ? getColumnMapRule(String(lightness.value), 0, 100) : null;
-
-        const SHAPE_OPTS = ['circle', 'square', 'diamond', 'cross', 'x', 'triangle-up', 'pentagon', 'hexagram', 'star'];
-        const shapeColMap = shape.source === 'column' ? getColumnCategoryRule(String(shape.value), SHAPE_OPTS) : null;
-
-        // Compute aesthetics arrays
-        const computedColors: string[] = [];
-        const computedShapes: string[] = [];
-
-        rowIndices.forEach(dataIndex => {
-            const row = data[dataIndex];
-
-            // HUE
-            let h = 0;
-            if (hue.source === 'manual') h = Number(hue.value);
-            else if (hue.source === 'group') h = (index * 137.5) % 360; // Golden angle spread
-            else if (hue.source === 'column' && hueColMap) h = hueColMap(row[String(hue.value)]);
-
-            // SATURATION
-            let s = 80;
-            if (saturation.source === 'manual') s = Number(saturation.value);
-            else if (saturation.source === 'group') s = 50 + ((index * 30) % 50);
-            else if (saturation.source === 'column' && satColMap) s = satColMap(row[String(saturation.value)]);
-
-            // LIGHTNESS
-            let l = 50;
-            if (lightness.source === 'manual') l = Number(lightness.value);
-            else if (lightness.source === 'group') l = 40 + ((index * 20) % 40);
-            else if (lightness.source === 'column' && litColMap) l = litColMap(row[String(lightness.value)]);
-
-            computedColors.push(`hsl(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%)`);
-
-            // SHAPE
-            let sh = 'circle';
-            if (shape.source === 'manual') sh = String(shape.value);
-            else if (shape.source === 'group') sh = SHAPE_OPTS[index % SHAPE_OPTS.length];
-            else if (shape.source === 'column' && shapeColMap) sh = shapeColMap(row[String(shape.value)]);
-
-            computedShapes.push(sh);
-        });
-
-        // Resolve final display name
-        let finalName = exactCustomization.displayName || fullTraceName;
-        if (!exactCustomization.displayName && colCustomization.displayName && groupName) {
-            finalName = `${colCustomization.displayName} (${groupName})`;
+        const isSinglePlot = (rows * cols) <= 1;
+        let assignedSubplots = traceToSubplots[fullTraceName];
+        if (isSinglePlot || assignedSubplots === undefined) {
+            assignedSubplots = [1];
         }
 
-        // Trace level overrides (if a user explicitly forces a color/symbol from TraceConfig Menu, it kills dynamic behavior)
-        const traceColorOverlay = customization.color;
-        const traceSymbolOverlay = customization.symbol;
+        // We will map over the assigned subplots to duplicate the trace if necessary
+        return assignedSubplots.flatMap(subplotIndex => {
+            // Inherit configurations: exact name overrides > parent column overrides > defaults
+            const colCustomization = traceCustomizations?.[yCol] || {};
+            const exactCustomization = traceCustomizations?.[fullTraceName] || {};
 
-        // Default mode is 'markers' unless specified
-        let mode: 'lines' | 'markers' | 'lines+markers' = customization.mode || 'markers';
-        const marker: any = {};
+            // Generate axis strings
+            const xAxisBase = subplotIndex === 1 ? 'x' : `x${subplotIndex}`;
+            const yAxisBase = subplotIndex === 1 ? 'y' : `y${subplotIndex}`;
 
-        // Apply arrays or overlay
-        marker.color = traceColorOverlay || computedColors;
-        marker.symbol = traceSymbolOverlay || computedShapes;
-        marker.size = customization.size || 8;
+            // Merge settings
+            const customization = { ...colCustomization, ...exactCustomization };
 
-        if (plotType === 'histogram') {
-            let processedYData = yData;
-            const traceBins = customization.histogramBins;
-            if (traceBins) {
-                const { start, end, underflow, overflow } = traceBins;
-                const EPSILON = 1e-6; // Ensure values fall nicely into start/end bins
-                processedYData = yData.map(v => {
-                    let num = parseFloat(String(v));
-                    if (isNaN(num)) return v;
-                    if (underflow && num < start) num = start + EPSILON;
-                    if (overflow && num > end) num = end - EPSILON;
-                    return num;
-                });
-            }
+            const { hue, saturation, lightness, shape } = colorSideMenuData;
 
-            stats[fullTraceName] = { filtered: 0, min: 0, max: 0, avg: 0 }; // Histograms don't ink filter yet
+            // Auto-scaled helpers for "column" mappings
+            const getColumnMapRule = (colName: string, outMin: number, outMax: number) => {
+                const vals = data.map(r => r[colName]);
+                const nums = vals.map(v => typeof v === 'number' ? v : parseFloat(String(v))).filter(n => !isNaN(n));
+                const min = nums.length > 0 ? Math.min(...nums) : 0;
+                const max = nums.length > 0 ? Math.max(...nums) : 1;
+                const range = (max - min) || 1;
 
-            const histTrace: any = {
-                x: processedYData,
-                type: 'histogram',
-                name: finalName,
-                opacity: generatedTraces.length > 1 ? 0.7 : 1,
-                marker: {
-                    color: marker.color,
-                }
-            };
-
-            if (traceBins) {
-                histTrace.xbins = {
-                    start: traceBins.start,
-                    end: traceBins.end,
-                    size: traceBins.size
+                return (val: any) => {
+                    const num = typeof val === 'number' ? val : parseFloat(String(val));
+                    if (isNaN(num)) return outMin;
+                    const pct = (num - min) / range;
+                    return outMin + pct * (outMax - outMin);
                 };
-                histTrace.autobinx = false;
+            };
+
+            const getColumnCategoryRule = (colName: string, categories: string[]) => {
+                const uniqueVals = Array.from(new Set(data.map(r => String(r[colName])))).sort();
+                return (val: any) => {
+                    const idx = uniqueVals.indexOf(String(val));
+                    return categories[Math.max(0, idx) % categories.length];
+                };
+            };
+
+            // Pre-compute lookup functions for column mappings
+            const hueColMap = hue.source === 'column' ? getColumnMapRule(String(hue.value), 0, 360) : null;
+            const satColMap = saturation.source === 'column' ? getColumnMapRule(String(saturation.value), 0, 100) : null;
+            const litColMap = lightness.source === 'column' ? getColumnMapRule(String(lightness.value), 0, 100) : null;
+
+            const SHAPE_OPTS = ['circle', 'square', 'diamond', 'cross', 'x', 'triangle-up', 'pentagon', 'hexagram', 'star'];
+            const shapeColMap = shape.source === 'column' ? getColumnCategoryRule(String(shape.value), SHAPE_OPTS) : null;
+
+            // Compute aesthetics arrays
+            const computedColors: string[] = [];
+            const computedShapes: string[] = [];
+
+            rowIndices.forEach(dataIndex => {
+                const row = data[dataIndex];
+
+                // HUE
+                let h = 0;
+                if (hue.source === 'manual') h = Number(hue.value);
+                else if (hue.source === 'group') h = (index * 137.5) % 360; // Golden angle spread
+                else if (hue.source === 'column' && hueColMap) h = hueColMap(row[String(hue.value)]);
+
+                // SATURATION
+                let s = 80;
+                if (saturation.source === 'manual') s = Number(saturation.value);
+                else if (saturation.source === 'group') s = 50 + ((index * 30) % 50);
+                else if (saturation.source === 'column' && satColMap) s = satColMap(row[String(saturation.value)]);
+
+                // LIGHTNESS
+                let l = 50;
+                if (lightness.source === 'manual') l = Number(lightness.value);
+                else if (lightness.source === 'group') l = 40 + ((index * 20) % 40);
+                else if (lightness.source === 'column' && litColMap) l = litColMap(row[String(lightness.value)]);
+
+                computedColors.push(`hsl(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%)`);
+
+                // SHAPE
+                let sh = 'circle';
+                if (shape.source === 'manual') sh = String(shape.value);
+                else if (shape.source === 'group') sh = SHAPE_OPTS[index % SHAPE_OPTS.length];
+                else if (shape.source === 'column' && shapeColMap) sh = shapeColMap(row[String(shape.value)]);
+
+                computedShapes.push(sh);
+            });
+
+            // Resolve final display name
+            let finalName = exactCustomization.displayName || fullTraceName;
+            if (!exactCustomization.displayName && colCustomization.displayName && groupName) {
+                finalName = `${colCustomization.displayName} (${groupName})`;
             }
 
-            return [histTrace];
-        }
+            // Trace level overrides (if a user explicitly forces a color/symbol from TraceConfig Menu, it kills dynamic behavior)
+            const traceColorOverlay = customization.color;
+            const traceSymbolOverlay = customization.symbol;
 
-        // Apply filtering for Scatter
-        const { x: finalX, y: finalY, filteredCount, absorbedCounts } = filterPoints(
-            xData,
-            yData,
-            enableLogAxis ? 'log' : 'linear',
-            enableLogAxis ? 'log' : 'linear',
-            marker.size
-        );
+            // Default mode is 'markers' unless specified
+            let mode: 'lines' | 'markers' | 'lines+markers' = customization.mode || 'markers';
+            const marker: any = {};
 
-        // Calculate max absorbed in this trace
-        let maxAbsorbed = 0;
-        let minAbsorbed = 0;
-        let totalAbsorbed = 0;
+            // Apply arrays or overlay
+            marker.color = traceColorOverlay || computedColors;
+            marker.symbol = traceSymbolOverlay || computedShapes;
+            marker.size = customization.size || 8;
 
-        if (absorbedCounts.length > 0) {
-            maxAbsorbed = Math.max(...absorbedCounts);
-            minAbsorbed = Math.min(...absorbedCounts);
-            totalAbsorbed = absorbedCounts.reduce((acc, val) => acc + val, 0);
-        }
+            if (plotType === 'histogram') {
+                let processedYData = yData;
+                const traceBins = customization.histogramBins;
+                if (traceBins) {
+                    const { start, end, underflow, overflow } = traceBins;
+                    const EPSILON = 1e-6; // Ensure values fall nicely into start/end bins
+                    processedYData = yData.map(v => {
+                        let num = parseFloat(String(v));
+                        if (isNaN(num)) return v;
+                        if (underflow && num < start) num = start + EPSILON;
+                        if (overflow && num > end) num = end - EPSILON;
+                        return num;
+                    });
+                }
 
-        const avgAbsorbed = absorbedCounts.length > 0 ? (totalAbsorbed / absorbedCounts.length) : 0;
+                stats[fullTraceName] = { filtered: 0, min: 0, max: 0, avg: 0 }; // Histograms don't ink filter yet
 
-        stats[fullTraceName] = {
-            filtered: filteredCount,
-            min: minAbsorbed,
-            max: maxAbsorbed,
-            avg: avgAbsorbed
-        };
-
-        let finalMarkerColor = marker.color;
-        let finalMarkerSymbol = marker.symbol;
-        let finalMarkerSize = marker.size;
-        let finalMarkerLine = marker.line;
-
-        if (filteredCount > 0 && Array.isArray(marker.color)) {
-            // Decalibrate custom color mappings if they've been stripped by filtering
-            finalMarkerColor = computedColors[0];
-            finalMarkerSymbol = computedShapes[0];
-        }
-
-        // Apply visual tweaks based on absorptionMode!
-        /*
-          - If glow mode is selected, set max radius (or glow multiplier) to 3 based on absorbed ratio
-          - If grow mode is selected, set max radius (size multiplier) to 2
-        */
-
-        let glowTrace: any = null;
-
-        if (absorptionMode !== 'none' && absorbedCounts.length > 0 && maxAbsorbed > 0) {
-            const baseSize = marker.size || 8;
-            const baseColor = Array.isArray(finalMarkerColor) ? finalMarkerColor[0] : finalMarkerColor;
-
-            if (absorptionMode === 'size') {
-                // Scale from baseSize to baseSize * maxRadiusRatio linearly based on (absorbed / maxAbsorbed)
-                finalMarkerSize = absorbedCounts.map(count => {
-                    const ratio = count / maxAbsorbed;
-                    return baseSize + (baseSize * (maxRadiusRatio - 1) * ratio);
-                });
-            } else if (absorptionMode === 'glow') {
-                // Add a separate semi-transparent background trace for glow
-                const glowMarkerSize = absorbedCounts.map(count => {
-                    const ratio = count / maxAbsorbed;
-                    return baseSize + (baseSize * (maxRadiusRatio - 1) * ratio);
-                });
-
-                glowTrace = {
-                    x: finalX,
-                    y: finalY,
-                    mode: mode,
-                    type: 'scatter',
-                    name: finalName + ' (Glow)',
-                    hoverinfo: 'skip',
-                    showlegend: false,
-                    legendgroup: finalName,
-                    opacity: 0.3,
-                    line: {
-                        color: baseColor,
-                        width: 0,
-                    },
+                const histTrace: any = {
+                    x: processedYData,
+                    type: 'histogram',
+                    name: finalName,
+                    opacity: generatedTraces.length > 1 ? 0.7 : 1,
                     marker: {
-                        color: finalMarkerColor,
-                        symbol: finalMarkerSymbol,
-                        size: glowMarkerSize,
-                        line: { width: 0 }
+                        color: marker.color,
                     }
                 };
-            }
-        }
 
-        // Determine Hover Template
-        let hoverTemplateToUse = '';
-        let effectiveHoverMode = pointTip || 'default';
-
-        if (effectiveHoverMode === 'default' && legendOrientation === 'hidden') {
-            effectiveHoverMode = 'xy_trace';
-        }
-
-        switch (effectiveHoverMode) {
-            case 'xy':
-                hoverTemplateToUse = '%{x}, %{y}<extra></extra>';
-                break;
-            case 'xy_absorbed':
-                hoverTemplateToUse = '%{x}, %{y}<br>Absorbed: %{customdata}<extra></extra>';
-                break;
-            case 'xy_trace':
-                // Using Plotly's built-in extra trace name flag
-                hoverTemplateToUse = '%{x}, %{y}';
-                break;
-            case 'default':
-            default:
-                if (absorptionMode !== 'none') {
-                    hoverTemplateToUse = '%{x}, %{y}<br>Absorbed: %{customdata}<extra></extra>';
-                } else {
-                    hoverTemplateToUse = '%{x}, %{y}'; // normal plotly default with trace
+                if (traceBins) {
+                    histTrace.xbins = {
+                        start: traceBins.start,
+                        end: traceBins.end,
+                        size: traceBins.size
+                    };
+                    histTrace.autobinx = false;
                 }
-                break;
-        }
 
-        const mainTrace: any = {
-            x: finalX,
-            y: finalY,
-            mode: mode,
-            type: finalX.length > 50000 ? 'scattergl' : 'scatter',
-            name: finalName,
-            legendgroup: finalName,
-            customdata: absorbedCounts, // inject it into Plotly for the hover template
-            hovertemplate: hoverTemplateToUse === '%{x}, %{y}' ? undefined : hoverTemplateToUse,
-            line: {
-                color: Array.isArray(finalMarkerColor) ? finalMarkerColor[0] : finalMarkerColor,
-            },
-            marker: {
-                ...marker,
-                color: finalMarkerColor,
-                symbol: finalMarkerSymbol,
-                size: finalMarkerSize,
-                line: finalMarkerLine
+                // Assign axes
+                histTrace.xaxis = xAxisBase;
+                histTrace.yaxis = yAxisBase;
+
+                return [histTrace];
             }
-        };
 
-        return glowTrace ? [glowTrace, mainTrace] : [mainTrace];
+            // Apply filtering for Scatter
+            const { x: finalX, y: finalY, filteredCount, absorbedCounts } = filterPoints(
+                xData,
+                yData,
+                enableLogAxis ? 'log' : 'linear',
+                enableLogAxis ? 'log' : 'linear',
+                marker.size
+            );
+
+            // Calculate max absorbed in this trace
+            let maxAbsorbed = 0;
+            let minAbsorbed = 0;
+            let totalAbsorbed = 0;
+
+            if (absorbedCounts.length > 0) {
+                maxAbsorbed = Math.max(...absorbedCounts);
+                minAbsorbed = Math.min(...absorbedCounts);
+                totalAbsorbed = absorbedCounts.reduce((acc, val) => acc + val, 0);
+            }
+
+            const avgAbsorbed = absorbedCounts.length > 0 ? (totalAbsorbed / absorbedCounts.length) : 0;
+
+            stats[fullTraceName] = {
+                filtered: filteredCount,
+                min: minAbsorbed,
+                max: maxAbsorbed,
+                avg: avgAbsorbed
+            };
+
+            let finalMarkerColor = marker.color;
+            let finalMarkerSymbol = marker.symbol;
+            let finalMarkerSize = marker.size;
+            let finalMarkerLine = marker.line;
+
+            if (filteredCount > 0 && Array.isArray(marker.color)) {
+                // Decalibrate custom color mappings if they've been stripped by filtering
+                finalMarkerColor = computedColors[0];
+                finalMarkerSymbol = computedShapes[0];
+            }
+
+            // Apply visual tweaks based on absorptionMode!
+            /*
+              - If glow mode is selected, set max radius (or glow multiplier) to 3 based on absorbed ratio
+              - If grow mode is selected, set max radius (size multiplier) to 2
+            */
+
+            let glowTrace: any = null;
+
+            if (absorptionMode !== 'none' && absorbedCounts.length > 0 && maxAbsorbed > 0) {
+                const baseSize = marker.size || 8;
+                const baseColor = Array.isArray(finalMarkerColor) ? finalMarkerColor[0] : finalMarkerColor;
+
+                if (absorptionMode === 'size') {
+                    // Scale from baseSize to baseSize * maxRadiusRatio linearly based on (absorbed / maxAbsorbed)
+                    finalMarkerSize = absorbedCounts.map(count => {
+                        const ratio = count / maxAbsorbed;
+                        return baseSize + (baseSize * (maxRadiusRatio - 1) * ratio);
+                    });
+                } else if (absorptionMode === 'glow') {
+                    // Add a separate semi-transparent background trace for glow
+                    const glowMarkerSize = absorbedCounts.map(count => {
+                        const ratio = count / maxAbsorbed;
+                        return baseSize + (baseSize * (maxRadiusRatio - 1) * ratio);
+                    });
+
+                    glowTrace = {
+                        x: finalX,
+                        y: finalY,
+                        xaxis: xAxisBase,
+                        yaxis: yAxisBase,
+                        mode: mode,
+                        type: 'scatter',
+                        name: finalName + ' (Glow)',
+                        hoverinfo: 'skip',
+                        showlegend: false,
+                        legendgroup: finalName,
+                        opacity: 0.3,
+                        line: {
+                            color: baseColor,
+                            width: 0,
+                        },
+                        marker: {
+                            color: finalMarkerColor,
+                            symbol: finalMarkerSymbol,
+                            size: glowMarkerSize,
+                            line: { width: 0 }
+                        }
+                    };
+                }
+            }
+
+            // Determine Hover Template
+            let hoverTemplateToUse = '';
+            let effectiveHoverMode = pointTip || 'default';
+
+            if (effectiveHoverMode === 'default' && legendOrientation === 'hidden') {
+                effectiveHoverMode = 'xy_trace';
+            }
+
+            switch (effectiveHoverMode) {
+                case 'xy':
+                    hoverTemplateToUse = '%{x}, %{y}<extra></extra>';
+                    break;
+                case 'xy_absorbed':
+                    hoverTemplateToUse = '%{x}, %{y}<br>Absorbed: %{customdata}<extra></extra>';
+                    break;
+                case 'xy_trace':
+                    // Using Plotly's built-in extra trace name flag
+                    hoverTemplateToUse = '%{x}, %{y}';
+                    break;
+                case 'default':
+                default:
+                    if (absorptionMode !== 'none') {
+                        hoverTemplateToUse = '%{x}, %{y}<br>Absorbed: %{customdata}<extra></extra>';
+                    } else {
+                        hoverTemplateToUse = '%{x}, %{y}'; // normal plotly default with trace
+                    }
+                    break;
+            }
+
+            const mainTrace: any = {
+                x: finalX,
+                y: finalY,
+                xaxis: xAxisBase,
+                yaxis: yAxisBase,
+                mode: mode,
+                type: finalX.length > 50000 ? 'scattergl' : 'scatter',
+                name: finalName,
+                legendgroup: finalName,
+                customdata: absorbedCounts, // inject it into Plotly for the hover template
+                hovertemplate: hoverTemplateToUse === '%{x}, %{y}' ? undefined : hoverTemplateToUse,
+                line: {
+                    color: Array.isArray(finalMarkerColor) ? finalMarkerColor[0] : finalMarkerColor,
+                },
+                marker: {
+                    ...marker,
+                    color: finalMarkerColor,
+                    symbol: finalMarkerSymbol,
+                    size: finalMarkerSize,
+                    line: finalMarkerLine
+                }
+            };
+
+            return glowTrace ? [glowTrace, mainTrace] : [mainTrace];
+        });
     });
 
     const layout: Partial<Layout> = {
@@ -611,6 +634,37 @@ export const generatePlotConfig = (
         barmode: plotType === 'histogram' ? (histogramBarmode || 'overlay') : undefined
     };
 
+    // Subplots integration: if rows * cols > 1, inject grid configuration
+    const totalSubplots = rows * cols;
+    if (totalSubplots > 1) {
+        layout.grid = { rows, columns: cols, pattern: 'independent' };
+
+        // Construct standard axis configs
+        const baseTargetXAxis = {
+            title: { text: xAxisTitle || (plotType === 'histogram' ? 'Value' : xAxis) },
+            type: enableLogAxis ? 'log' : 'linear',
+            range: plotType === 'histogram' ? undefined : (xRange || undefined),
+            autorange: plotType === 'histogram' ? true : !xRange
+        };
+        const baseTargetYAxis = {
+            title: { text: yAxisTitle || (yAxis.length === 1 ? yAxis[0] : 'Values') },
+            type: enableLogAxis ? 'log' : 'linear',
+            range: plotType === 'histogram' ? undefined : (yRange || undefined),
+            autorange: plotType === 'histogram' ? true : !yRange
+        };
+
+        // Assign axes dynamically to Layout
+        for (let i = 1; i <= totalSubplots; i++) {
+            const xKey = i === 1 ? 'xaxis' : `xaxis${i}`;
+            const yKey = i === 1 ? 'yaxis' : `yaxis${i}`;
+            (layout as any)[xKey] = { ...baseTargetXAxis };
+            (layout as any)[yKey] = { ...baseTargetYAxis };
+
+            // Hide titles on non-first subplots to prevent huge clutter, unless explicitly requested maybe?
+            // Actually, keep it for now as 'independent' grids need their own scales labeled typically.
+        }
+    }
+
     // Generate Receipt
     let receipt = `// Generated Plotly Code\n\n`;
 
@@ -624,75 +678,117 @@ export const generatePlotConfig = (
     }
     receipt += `\n`;
 
-    // Traces
-    const tracesReceipt = generatedTraces.map((traceInfo, index) => {
+    let receiptTraces: string[] = [];
+    let receiptTraceCount = 0;
+
+    // Traces for receipt
+    generatedTraces.forEach((traceInfo, index) => {
         const { fullTraceName, yCol, groupName } = traceInfo;
-        const traceVar = `trace${index + 1}`;
 
-        const colCustomization = traceCustomizations?.[yCol] || {};
-        const exactCustomization = traceCustomizations?.[fullTraceName] || {};
-        const customization = { ...colCustomization, ...exactCustomization };
-        customization.color = exactCustomization.color || undefined;
-
-        let finalName = exactCustomization.displayName || fullTraceName;
-        if (!exactCustomization.displayName && colCustomization.displayName && groupName) {
-            finalName = `${colCustomization.displayName} (${groupName})`;
+        const isSinglePlot = (rows * cols) <= 1;
+        let assignedSubplots = traceToSubplots[fullTraceName];
+        if (isSinglePlot || assignedSubplots === undefined) {
+            assignedSubplots = [1];
         }
 
-        const baseColor = getColor(index);
-        const finalColor = customization.color || baseColor;
-        const finalSize = customization.size || 8;
+        assignedSubplots.forEach(subplotIndex => {
+            receiptTraceCount++;
+            const traceVar = `trace${receiptTraceCount}`;
+            const xAxisBase = subplotIndex === 1 ? 'x' : `x${subplotIndex}`;
+            const yAxisBase = subplotIndex === 1 ? 'y' : `y${subplotIndex}`;
 
-        let mode = customization.mode || 'markers';
-        let markerParams = '';
+            const colCustomization = traceCustomizations?.[yCol] || {};
+            const exactCustomization = traceCustomizations?.[fullTraceName] || {};
+            const customization = { ...colCustomization, ...exactCustomization };
+            customization.color = exactCustomization.color || undefined;
 
-        if (customization.symbol) {
-            if (mode === 'lines') mode = 'lines+markers';
-            markerParams = `, marker: { symbol: '${customization.symbol}', size: ${finalSize} }`;
-        }
+            let finalName = exactCustomization.displayName || fullTraceName;
+            if (!exactCustomization.displayName && colCustomization.displayName && groupName) {
+                finalName = `${colCustomization.displayName} (${groupName})`;
+            }
 
-        if (customization.mode === 'markers') {
-            mode = 'markers';
-            if (!customization.symbol) {
-                markerParams = `, marker: { symbol: 'circle', size: ${finalSize} }`;
-            } else {
+            const baseColor = getColor(index);
+            const finalColor = customization.color || baseColor;
+            const finalSize = customization.size || 8;
+
+            let mode = customization.mode || 'markers';
+            let markerParams = '';
+
+            if (customization.symbol) {
+                if (mode === 'lines') mode = 'lines+markers';
                 markerParams = `, marker: { symbol: '${customization.symbol}', size: ${finalSize} }`;
             }
-        }
 
-        if (plotType === 'histogram') {
-            let histCode = `var ${traceVar} = {
+            if (customization.mode === 'markers') {
+                mode = 'markers';
+                if (!customization.symbol) {
+                    markerParams = `, marker: { symbol: 'circle', size: ${finalSize} }`;
+                } else {
+                    markerParams = `, marker: { symbol: '${customization.symbol}', size: ${finalSize} }`;
+                }
+            }
+
+            if (plotType === 'histogram') {
+                let histCode = `var ${traceVar} = {
   // x: ..., // Histogram data mapped from yAxis
   type: 'histogram',
   name: '${finalName}',
   opacity: ${generatedTraces.length > 1 ? 0.7 : 1},
-  marker: { color: '${finalColor}' }`;
-            const traceBins = customization.histogramBins;
-            if (traceBins) {
-                histCode += `,\n  autobinx: false,
+  marker: { color: '${finalColor}' },
+  xaxis: '${xAxisBase}',
+  yaxis: '${yAxisBase}'`;
+                const traceBins = customization.histogramBins;
+                if (traceBins) {
+                    histCode += `,\n  autobinx: false,
   xbins: { start: ${traceBins.start}, end: ${traceBins.end}, size: ${traceBins.size} }`;
+                }
+                histCode += `\n};`;
+                receiptTraces.push(histCode);
+                return;
             }
-            histCode += `\n};`;
-            return histCode;
-        }
 
-        return `var ${traceVar} = {
+            receiptTraces.push(`var ${traceVar} = {
   // x: ..., // Filtered data
   // y: ..., // Filtered data
   mode: '${mode}',
   type: 'scatter',
   name: '${finalName}',
+  xaxis: '${xAxisBase}',
+  yaxis: '${yAxisBase}',
   line: { color: '${finalColor}' }${markerParams}
-};`;
-    }).join('\n\n');
+};`);
+        });
+    });
 
-    receipt += tracesReceipt + '\n\n';
+    receipt += receiptTraces.join('\n\n') + '\n\n';
 
-    receipt += `var data = [ ${generatedTraces.map((_, i) => `trace${i + 1}`).join(', ')} ];\n\n`;
+    receipt += `var data = [ ${receiptTraces.map((_, i) => `trace${i + 1}`).join(', ')} ];\n\n`;
 
     // Layout
     receipt += `var layout = {
   title: { text: '${layout.title?.text}' },
+  autosize: true,`;
+
+    if (totalSubplots > 1) {
+        receipt += `\n  grid: { rows: ${rows}, columns: ${cols}, pattern: 'independent' },`;
+        for (let i = 1; i <= totalSubplots; i++) {
+            const xKey = i === 1 ? 'xaxis' : `xaxis${i}`;
+            const yKey = i === 1 ? 'yaxis' : `yaxis${i}`;
+
+            receipt += `\n  ${xKey}: {
+    title: { text: '${layout.xaxis?.title?.text}' },
+    type: '${enableLogAxis ? 'log' : 'linear'}',
+    ${xRange ? `range: [${xRange[0]}, ${xRange[1]}]` : '// autorange: true'}
+  },`;
+            receipt += `\n  ${yKey}: {
+    title: { text: '${layout.yaxis?.title?.text}' },
+    type: '${enableLogAxis ? 'log' : 'linear'}',
+    ${yRange ? `range: [${yRange[0]}, ${yRange[1]}]` : '// autorange: true'}
+  },`;
+        }
+        receipt += `\n  `;
+    } else {
+        receipt += `
   xaxis: {
     title: { text: '${layout.xaxis?.title?.text}' },
     type: '${enableLogAxis ? 'log' : 'linear'}',
@@ -702,8 +798,10 @@ export const generatePlotConfig = (
     title: { text: '${layout.yaxis?.title?.text}' },
     type: '${enableLogAxis ? 'log' : 'linear'}',
     ${yRange ? `range: [${yRange[0]}, ${yRange[1]}]` : '// autorange: true'}
-  },
-  showlegend: ${legendOrientation === 'hidden' ? 'false' : (legendOrientation === 'auto' ? generatedTraces.length > 1 : 'true')}${legendOrientation === 'bottom' ? `,\n  legend: { orientation: 'h', yanchor: 'bottom', y: -0.2, xanchor: 'center', x: 0.5 }` : ''}
+  },`;
+    }
+
+    receipt += `\n  showlegend: ${legendOrientation === 'hidden' ? 'false' : (legendOrientation === 'auto' ? generatedTraces.length > 1 : 'true')}${legendOrientation === 'bottom' ? `,\n  legend: { orientation: 'h', yanchor: 'bottom', y: -0.2, xanchor: 'center', x: 0.5 }` : ''}
 };\n\n`;
 
     receipt += `Plotly.newPlot('myDiv', data, layout);`;

@@ -8,6 +8,7 @@ import { createInkRatioStore, type InkRatioState } from './InkRatioStore';
 import { createPlotLayoutStore, type PlotLayoutState } from './PlotLayoutStore';
 import { createTraceConfigStore, type TraceConfigState } from './TraceConfigStore';
 import { createWorkspaceLocalStore, type WorkspaceLocalState } from './WorkspaceLocalStore';
+import { createSubplotSideMenuStore, type SubplotSideMenuState } from './SubplotSideMenuStore';
 
 type StoreApi<T> = import('zustand/vanilla').StoreApi<T>;
 
@@ -20,6 +21,7 @@ export interface WorkspaceStores {
     plotLayoutStore: StoreApi<PlotLayoutState>;
     traceConfigStore: StoreApi<TraceConfigState>;
     workspaceLocalStore: StoreApi<WorkspaceLocalState>;
+    subplotSideMenuStore: StoreApi<SubplotSideMenuState>;
 }
 
 export const WorkspaceContext = createContext<WorkspaceStores | null>(null);
@@ -36,7 +38,8 @@ export const WorkspaceProvider: React.FC<{ workspaceId: string, children: React.
             inkRatioStore: createInkRatioStore(workspaceId),
             plotLayoutStore: createPlotLayoutStore(workspaceId),
             traceConfigStore: createTraceConfigStore(workspaceId),
-            workspaceLocalStore: createWorkspaceLocalStore(workspaceId)
+            workspaceLocalStore: createWorkspaceLocalStore(workspaceId),
+            subplotSideMenuStore: createSubplotSideMenuStore(workspaceId)
         };
 
         const cloneData = cloneStoreStates.get(workspaceId);
@@ -48,6 +51,7 @@ export const WorkspaceProvider: React.FC<{ workspaceId: string, children: React.
             storesRef.current.inkRatioStore.setState(cloneData.ink);
             storesRef.current.plotLayoutStore.setState(cloneData.plot);
             storesRef.current.traceConfigStore.setState(cloneData.trace);
+            storesRef.current.subplotSideMenuStore.setState(cloneData.subplot);
             cloneStoreStates.delete(workspaceId);
         }
 
