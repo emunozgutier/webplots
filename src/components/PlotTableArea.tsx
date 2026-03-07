@@ -23,16 +23,22 @@ const PlotTableArea: React.FC = () => {
     React.useEffect(() => {
         if (!containerRef.current) return;
 
+        let debounceTimer: ReturnType<typeof setTimeout>;
+
         const observer = new ResizeObserver((entries) => {
-            for (const entry of entries) {
-                const { width, height } = entry.contentRect;
-                setChartDimensions(Math.round(width), Math.round(height));
-            }
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                for (const entry of entries) {
+                    const { width, height } = entry.contentRect;
+                    setChartDimensions(Math.round(width), Math.round(height));
+                }
+            }, 200); // Debounce to prevent lag during SideMenu animation
         });
 
         observer.observe(containerRef.current);
 
         return () => {
+            clearTimeout(debounceTimer);
             observer.disconnect();
         };
     }, [setChartDimensions]);
@@ -40,7 +46,7 @@ const PlotTableArea: React.FC = () => {
     return (
         <div className="flex-grow-1 p-4 d-flex flex-column position-relative" style={{ minWidth: 0 }}>
             <div className="card shadow-sm flex-grow-1 mb-3">
-                <div className="card-header bg-white d-flex justify-content-start align-items-end pt-2 pb-0 px-3 border-bottom">
+                <div className="card-header bg-white pt-2 pb-0 px-3" style={{ borderBottom: '3px solid var(--bs-primary)' }}>
                     <ViewToggleButtons
                         viewMode={viewMode}
                         setViewMode={setViewMode}
