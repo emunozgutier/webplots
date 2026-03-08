@@ -17,6 +17,7 @@ export interface ColorSideMenuData {
     saturation: AestheticMapping;
     lightness: AestheticMapping;
     shape: AestheticMapping;
+    size: AestheticMapping;
 }
 
 export type ColorSideMenuState = {
@@ -28,6 +29,7 @@ export type ColorSideMenuState = {
     setSaturation: (saturation: Partial<AestheticMapping>) => void;
     setLightness: (lightness: Partial<AestheticMapping>) => void;
     setShape: (shape: Partial<AestheticMapping>) => void;
+    setSize: (size: Partial<AestheticMapping>) => void;
 }
 
 export const createColorSideMenuStore = (workspaceId: string) => createStore<ColorSideMenuState>()(
@@ -37,7 +39,8 @@ export const createColorSideMenuStore = (workspaceId: string) => createStore<Col
                 hue: { source: 'group', value: '' }, // Default to grouping behavior 
                 saturation: { source: 'manual', value: 80 },
                 lightness: { source: 'manual', value: 50 },
-                shape: { source: 'manual', value: 'circle' }
+                shape: { source: 'manual', value: 'circle' },
+                size: { source: 'manual', value: 8 }
             },
 
             setColorData: (data) =>
@@ -63,6 +66,11 @@ export const createColorSideMenuStore = (workspaceId: string) => createStore<Col
             setShape: (shape) =>
                 set((state) => ({
                     colorData: { ...state.colorData, shape: { ...state.colorData.shape, ...shape } }
+                })),
+
+            setSize: (size) =>
+                set((state) => ({
+                    colorData: { ...state.colorData, size: { ...state.colorData.size, ...size } }
                 }))
         }),
         {

@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useColorSideMenuStore, type AestheticMapping, type MappingSource } from '../../store/ColorSideMenuStore';
 import { useCsvDataStore } from '../../store/CsvDataStore';
+import { useInkRatioStore } from '../../store/InkRatioStore';
 import Plot from 'react-plotly.js';
-import { Modal, Button } from 'react-bootstrap';
+import { Modal, Button, Alert } from 'react-bootstrap';
 
 const StyleSideMenu: React.FC = () => {
-    const { colorData, setHue, setLightness, setShape } = useColorSideMenuStore();
+    const { colorData, setHue, setLightness, setShape, setSize } = useColorSideMenuStore();
     const { columns, data } = useCsvDataStore();
+    const { absorptionMode } = useInkRatioStore();
 
     // Available Plotly shapes
     const SHAPE_OPTIONS = [
@@ -30,6 +32,8 @@ const StyleSideMenu: React.FC = () => {
         const isManual = mapping.source === 'manual';
         const isColumn = mapping.source === 'column';
         const isGroup = mapping.source === 'group';
+        const isSizeBlock = title === 'Node Size';
+        const showSizeOverrideWarning = isSizeBlock && !isManual && absorptionMode === 'size';
 
         return (
             <div className="mb-4 bg-white border rounded p-3 shadow-sm">
@@ -55,13 +59,13 @@ const StyleSideMenu: React.FC = () => {
                     <div className="mt-2">
                         <label className="form-label d-flex justify-content-between small text-muted mb-1">
                             <span>Value</span>
-                            <span>{mapping.value} {title !== 'Hue' ? '%' : ''}</span>
+                            <span>{mapping.value} {title === 'Hue (Color Base)' ? '' : (title === 'Node Size' ? 'px' : '%')}</span>
                         </label>
                         <input
                             type="range"
                             className="form-range"
-                            min={0}
-                            max={title === 'Hue' ? 360 : 100}
+                            min={title === 'Node Size' ? 1 : 0}
+                            max={title === 'Hue (Color Base)' ? 360 : (title === 'Node Size' ? 100 : 100)}
                             value={Number(mapping.value) || 0}
                             onChange={e => updateFn({ value: Number(e.target.value) })}
                         />
@@ -111,15 +115,15 @@ const StyleSideMenu: React.FC = () => {
                                             <input
                                                 type="number"
                                                 className="form-control"
-                                                value={mapping.range ? mapping.range[0] : 0}
-                                                onChange={e => updateFn({ range: [Number(e.target.value), mapping.range ? mapping.range[1] : (title === 'Hue (Color Base)' ? 360 : 100)] })}
+                                                value={mapping.range ? mapping.range[0] : (title === 'Node Size' ? 2 : 0)}
+                                                onChange={e => updateFn({ range: [Number(e.target.value), mapping.range ? mapping.range[1] : (title === 'Hue (Color Base)' ? 360 : (title === 'Node Size' ? 20 : 100))] })}
                                             />
                                             <span className="text-muted">to</span>
                                             <input
                                                 type="number"
                                                 className="form-control"
-                                                value={mapping.range ? mapping.range[1] : (title === 'Hue (Color Base)' ? 360 : 100)}
-                                                onChange={e => updateFn({ range: [mapping.range ? mapping.range[0] : 0, Number(e.target.value)] })}
+                                                value={mapping.range ? mapping.range[1] : (title === 'Hue (Color Base)' ? 360 : (title === 'Node Size' ? 20 : 100))}
+                                                onChange={e => updateFn({ range: [mapping.range ? mapping.range[0] : (title === 'Node Size' ? 2 : 0), Number(e.target.value)] })}
                                             />
                                         </div>
                                         <div className="border rounded bg-light p-1" style={{ height: '150px' }}>
@@ -171,6 +175,13 @@ const StyleSideMenu: React.FC = () => {
                         <i className="bi bi-info-circle me-1"></i> Auto-assigns uniquely per Group.
                     </div>
                 )}
+
+                {showSizeOverrideWarning && (
+                    <Alert variant="warning" className="mt-3 mb-0 p-2" style={{ fontSize: '0.75rem' }}>
+                        <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                        Overlapped by <strong>Grow</strong> animation in Ink Ratio settings. Size map will be ignored!
+                    </Alert>
+                )}
             </div>
         );
     }
@@ -186,6 +197,7 @@ const StyleSideMenu: React.FC = () => {
             {renderMappingBlock('Hue (Color Base)', colorData.hue, setHue, 'number')}
             {renderMappingBlock('Lightness (Brightness)', colorData.lightness, setLightness, 'number')}
             {renderMappingBlock('Marker Shape', colorData.shape, setShape, 'shape')}
+            {renderMappingBlock('Node Size', colorData.size, setSize, 'number')}
 
         </div>
     );

@@ -335,7 +335,7 @@ export const generatePlotConfig = (
             // Merge settings
             const customization = { ...colCustomization, ...exactCustomization };
 
-            const { hue, saturation, lightness, shape } = colorSideMenuData;
+            const { hue, saturation, lightness, shape, size } = colorSideMenuData;
 
             // Auto-scaled helpers for "column" mappings
             const getColumnMapRule = (colName: string, outMin: number, outMax: number) => {
@@ -372,6 +372,7 @@ export const generatePlotConfig = (
             const hueColMap = hue.source === 'column' ? getColumnMapRule(String(hue.value), hue.range ? hue.range[0] : 0, hue.range ? hue.range[1] : 360) : null;
             const satColMap = saturation.source === 'column' ? getColumnMapRule(String(saturation.value), saturation.range ? saturation.range[0] : 0, saturation.range ? saturation.range[1] : 100) : null;
             const litColMap = lightness.source === 'column' ? getColumnMapRule(String(lightness.value), lightness.range ? lightness.range[0] : 0, lightness.range ? lightness.range[1] : 100) : null;
+            const sizeColMap = size.source === 'column' ? getColumnMapRule(String(size.value), size.range ? size.range[0] : 2, size.range ? size.range[1] : 20) : null;
 
             const SHAPE_OPTS = ['circle', 'square', 'diamond', 'cross', 'x', 'triangle-up', 'pentagon', 'hexagram', 'star'];
             const shapeColMap = shape.source === 'column' ? getColumnCategoryRule(String(shape.value), SHAPE_OPTS) : null;
@@ -379,6 +380,7 @@ export const generatePlotConfig = (
             // Compute aesthetics arrays
             const computedColors: string[] = [];
             const computedShapes: string[] = [];
+            const computedSizes: number[] = [];
 
             rowIndices.forEach(dataIndex => {
                 const row = data[dataIndex];
@@ -410,6 +412,14 @@ export const generatePlotConfig = (
                 else if (shape.source === 'column' && shapeColMap) sh = shapeColMap(row[String(shape.value)]);
 
                 computedShapes.push(sh);
+
+                // SIZE
+                let si = 8;
+                if (size.source === 'manual') si = Number(size.value);
+                else if (size.source === 'group') si = 8 + ((index * 2) % 10); // cycle sizes 8 to 16
+                else if (size.source === 'column' && sizeColMap) si = sizeColMap(row[String(size.value)]);
+
+                computedSizes.push(si);
             });
 
             // Resolve final display name
@@ -429,7 +439,7 @@ export const generatePlotConfig = (
             // Apply arrays or overlay
             marker.color = traceColorOverlay || computedColors;
             marker.symbol = traceSymbolOverlay || computedShapes;
-            marker.size = customization.size || 8;
+            marker.size = customization.size || computedSizes;
 
             if (plotType === 'histogram') {
                 let processedYData = yData;
@@ -474,13 +484,12 @@ export const generatePlotConfig = (
                 return [histTrace];
             }
 
-            // Apply filtering for Scatter
             const { x: finalX, y: finalY, filteredCount, absorbedCounts, survivingIndices } = filterPoints(
                 xData,
                 yData,
                 enableLogAxis ? 'log' : 'linear',
                 enableLogAxis ? 'log' : 'linear',
-                marker.size
+                Array.isArray(marker.size) ? (customization.size || 8) : (marker.size || 8)
             );
 
             // Calculate max absorbed in this trace
@@ -511,7 +520,12 @@ export const generatePlotConfig = (
             if (filteredCount > 0 && Array.isArray(marker.color) && survivingIndices) {
                 // Retain only surviving indices to keep gradient intact
                 finalMarkerColor = survivingIndices.map((idx: number) => computedColors[idx]);
+            }
+            if (filteredCount > 0 && Array.isArray(marker.symbol) && survivingIndices) {
                 finalMarkerSymbol = survivingIndices.map((idx: number) => computedShapes[idx]);
+            }
+            if (filteredCount > 0 && Array.isArray(marker.size) && survivingIndices) {
+                finalMarkerSize = survivingIndices.map((idx: number) => computedSizes[idx]);
             }
 
             // Apply visual tweaks based on absorptionMode!
@@ -523,20 +537,22 @@ export const generatePlotConfig = (
             let glowTrace: any = null;
 
             if (absorptionMode !== 'none' && absorbedCounts.length > 0 && maxAbsorbed > 0) {
-                const baseSize = marker.size || 8;
+                const baseSize = finalMarkerSize || 8;
                 const baseColor = Array.isArray(finalMarkerColor) ? finalMarkerColor[0] : finalMarkerColor;
 
                 if (absorptionMode === 'size') {
                     // Scale from baseSize to baseSize * maxRadiusRatio linearly based on (absorbed / maxAbsorbed)
-                    finalMarkerSize = absorbedCounts.map(count => {
+                    finalMarkerSize = absorbedCounts.map((count, i) => {
                         const ratio = count / maxAbsorbed;
-                        return baseSize + (baseSize * (maxRadiusRatio - 1) * ratio);
+                        const thisBaseSize = Array.isArray(baseSize) ? baseSize[i] : baseSize;
+                        return thisBaseSize + (thisBaseSize * (maxRadiusRatio - 1) * ratio);
                     });
                 } else if (absorptionMode === 'glow') {
                     // Add a separate semi-transparent background trace for glow
-                    const glowMarkerSize = absorbedCounts.map(count => {
+                    const glowMarkerSize = absorbedCounts.map((count, i) => {
                         const ratio = count / maxAbsorbed;
-                        return baseSize + (baseSize * (maxRadiusRatio - 1) * ratio);
+                        const thisBaseSize = Array.isArray(baseSize) ? baseSize[i] : baseSize;
+                        return thisBaseSize + (thisBaseSize * (maxRadiusRatio - 1) * ratio);
                     });
 
                     glowTrace = {

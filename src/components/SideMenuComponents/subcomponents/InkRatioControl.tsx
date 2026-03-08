@@ -1,5 +1,7 @@
 import React from 'react';
 import { useInkRatioStore } from '../../../store/InkRatioStore';
+import { useColorSideMenuStore } from '../../../store/ColorSideMenuStore';
+import { Alert } from 'react-bootstrap';
 
 const InkRatioControl: React.FC = () => {
     const {
@@ -10,6 +12,11 @@ const InkRatioControl: React.FC = () => {
         maxRadiusRatio,
         setMaxRadiusRatio
     } = useInkRatioStore();
+
+    const { colorData } = useColorSideMenuStore();
+
+    // Check if user is overriding size in Style while trying to use Grow
+    const isOverwritingSize = absorptionMode === 'size' && colorData.size.source !== 'manual';
 
     const handleRatioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newRatio = parseFloat(e.target.value);
@@ -50,6 +57,13 @@ const InkRatioControl: React.FC = () => {
                     </button>
                 </div>
             </div>
+
+            {isOverwritingSize && (
+                <Alert variant="warning" className="px-2 py-1 mb-3" style={{ fontSize: '0.75rem' }}>
+                    <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>Grow</strong> mode overrides any dynamic <strong>Node Size</strong> aesthetic mappings configured in the Style menu!
+                </Alert>
+            )}
 
             {absorptionMode !== 'none' && (
                 <div className="mb-3">
