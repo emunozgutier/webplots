@@ -1,6 +1,5 @@
 import { createStore } from 'zustand/vanilla';
 import { useStore } from 'zustand';
-import { persist } from 'zustand/middleware';
 import { useContext } from 'react';
 import { WorkspaceContext } from './WorkspaceContext';
 
@@ -12,37 +11,32 @@ export type SubplotSideMenuState = {
     assignTraceToSubplot: (traceName: string, subplotIndex: number, isAssigned: boolean) => void;
 };
 
-export const createSubplotSideMenuStore = (workspaceId: string) => createStore<SubplotSideMenuState>()(
-    persist(
-        (set) => ({
-            rows: 1,
-            cols: 1,
-            traceToSubplots: {},
-            setGrid: (rows, cols) => set({ rows, cols }),
-            assignTraceToSubplot: (traceName, subplotIndex, isAssigned) => set((state) => {
-                const currentSubplots = state.traceToSubplots[traceName] === undefined ? [1] : state.traceToSubplots[traceName];
-                let newSubplots;
-                if (isAssigned) {
-                    if (!currentSubplots.includes(subplotIndex)) {
-                        newSubplots = [...currentSubplots, subplotIndex].sort((a, b) => a - b);
-                    } else {
-                        newSubplots = currentSubplots;
-                    }
+export const createSubplotSideMenuStore = () => createStore<SubplotSideMenuState>()(
+    (set) => ({
+        rows: 1,
+        cols: 1,
+        traceToSubplots: {},
+        setGrid: (rows, cols) => set({ rows, cols }),
+        assignTraceToSubplot: (traceName, subplotIndex, isAssigned) => set((state) => {
+            const currentSubplots = state.traceToSubplots[traceName] === undefined ? [1] : state.traceToSubplots[traceName];
+            let newSubplots;
+            if (isAssigned) {
+                if (!currentSubplots.includes(subplotIndex)) {
+                    newSubplots = [...currentSubplots, subplotIndex].sort((a, b) => a - b);
                 } else {
-                    newSubplots = currentSubplots.filter(id => id !== subplotIndex);
+                    newSubplots = currentSubplots;
                 }
-                return {
-                    traceToSubplots: {
-                        ...state.traceToSubplots,
-                        [traceName]: newSubplots,
-                    }
-                };
-            }),
+            } else {
+                newSubplots = currentSubplots.filter(id => id !== subplotIndex);
+            }
+            return {
+                traceToSubplots: {
+                    ...state.traceToSubplots,
+                    [traceName]: newSubplots,
+                }
+            };
         }),
-        {
-            name: `webplots-workspace-${workspaceId}-subplotSideMenuStore`
-        }
-    )
+    })
 );
 
 export const useSubplotSideMenuStore = <T = SubplotSideMenuState>(selector: (state: SubplotSideMenuState) => T = (state) => state as unknown as T): T => {

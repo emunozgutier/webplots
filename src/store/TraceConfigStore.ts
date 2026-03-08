@@ -1,6 +1,5 @@
 import { createStore } from 'zustand/vanilla';
 import { useStore } from 'zustand';
-import { persist } from 'zustand/middleware';
 import { useContext } from 'react';
 import { WorkspaceContext } from './WorkspaceContext';
 import { COLOR_PALETTES } from '../utils/ColorPalettes';
@@ -46,50 +45,45 @@ export type TraceConfigState = {
 
 const DEFAULT_PALETTE = 'Default';
 
-export const createTraceConfigStore = (workspaceId: string) => createStore<TraceConfigState>()(
-    persist(
-        (set) => ({
+export const createTraceConfigStore = () => createStore<TraceConfigState>()(
+    (set) => ({
+        traceConfig: {
+            traceCustomizations: {},
+            colorPalette: DEFAULT_PALETTE,
+            currentPaletteColors: [...(COLOR_PALETTES[DEFAULT_PALETTE] || [])],
+            activeTraces: [],
+        },
+        setTraceCustomization: (columnName, settings) => set((state) => ({
             traceConfig: {
-                traceCustomizations: {},
-                colorPalette: DEFAULT_PALETTE,
-                currentPaletteColors: [...(COLOR_PALETTES[DEFAULT_PALETTE] || [])],
-                activeTraces: [],
-            },
-            setTraceCustomization: (columnName, settings) => set((state) => ({
-                traceConfig: {
-                    ...state.traceConfig,
-                    traceCustomizations: {
-                        ...state.traceConfig.traceCustomizations,
-                        [columnName]: { ...state.traceConfig.traceCustomizations[columnName], ...settings }
-                    }
+                ...state.traceConfig,
+                traceCustomizations: {
+                    ...state.traceConfig.traceCustomizations,
+                    [columnName]: { ...state.traceConfig.traceCustomizations[columnName], ...settings }
                 }
-            })),
-            setColorPalette: (paletteName) => set((state) => ({
-                traceConfig: {
-                    ...state.traceConfig,
-                    colorPalette: paletteName,
-                    currentPaletteColors: [...(COLOR_PALETTES[paletteName] || COLOR_PALETTES['Default'])]
-                }
-            })),
-            setPaletteColorOrder: (colors) => set((state) => ({
-                traceConfig: { ...state.traceConfig, currentPaletteColors: colors }
-            })),
-            updatePaletteColor: (index, color) => set((state) => {
-                const newColors = [...state.traceConfig.currentPaletteColors];
-                if (index >= 0 && index < newColors.length) {
-                    newColors[index] = color;
-                }
-                return {
-                    traceConfig: { ...state.traceConfig, currentPaletteColors: newColors }
-                };
-            }),
-            loadTraceConfig: (config) => set({ traceConfig: config }),
-            setActiveTraces: (traces) => set((state) => ({ traceConfig: { ...state.traceConfig, activeTraces: traces } }))
+            }
+        })),
+        setColorPalette: (paletteName) => set((state) => ({
+            traceConfig: {
+                ...state.traceConfig,
+                colorPalette: paletteName,
+                currentPaletteColors: [...(COLOR_PALETTES[paletteName] || COLOR_PALETTES['Default'])]
+            }
+        })),
+        setPaletteColorOrder: (colors) => set((state) => ({
+            traceConfig: { ...state.traceConfig, currentPaletteColors: colors }
+        })),
+        updatePaletteColor: (index, color) => set((state) => {
+            const newColors = [...state.traceConfig.currentPaletteColors];
+            if (index >= 0 && index < newColors.length) {
+                newColors[index] = color;
+            }
+            return {
+                traceConfig: { ...state.traceConfig, currentPaletteColors: newColors }
+            };
         }),
-        {
-            name: `webplots-workspace-${workspaceId}-traceConfigStore`
-        }
-    )
+        loadTraceConfig: (config) => set({ traceConfig: config }),
+        setActiveTraces: (traces) => set((state) => ({ traceConfig: { ...state.traceConfig, activeTraces: traces } }))
+    })
 );
 
 export const useTraceConfigStore = <T = TraceConfigState>(selector: (state: TraceConfigState) => T = (state) => state as unknown as T): T => {

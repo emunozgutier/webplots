@@ -6,6 +6,7 @@ import WorkspaceTabs from './components/WorkspaceTabs';
 import { WorkspaceProvider } from './store/WorkspaceContext';
 import { useWorkspaceStore } from './store/WorkspaceStore';
 import PopupMenu from './components/PopupMenu';
+import AutoSaveManager from './components/AutoSaveManager';
 import './App.css';
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
 
   return (
     <div className="container-fluid vh-100 d-flex flex-column p-0 position-relative">
+      <AutoSaveManager />
       {isTopMenuBarOpen && <TopMenuBar />}
       <WorkspaceTabs />
 

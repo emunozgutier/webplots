@@ -1,6 +1,5 @@
 import { createStore } from 'zustand/vanilla';
 import { useStore } from 'zustand';
-import { persist } from 'zustand/middleware';
 import { useContext } from 'react';
 import { WorkspaceContext } from './WorkspaceContext';
 
@@ -19,44 +18,39 @@ export type AxisSideMenuState = {
     loadProject: (xAxis: string, yAxis: string[], plotType?: 'scatter' | 'histogram') => void;
 }
 
-export const createAxisSideMenuStore = (workspaceId: string) => createStore<AxisSideMenuState>()(
-    persist(
-        (set) => ({
-            sideMenuData: {
-                plotType: 'scatter',
-                xAxis: '',
-                yAxis: []
-            },
-            setPlotType: (plotType) => set((state) => ({
-                sideMenuData: { ...state.sideMenuData, plotType }
-            })),
-            setXAxis: (xAxis) => set((state) => ({
-                sideMenuData: { ...state.sideMenuData, xAxis }
-            })),
-            addYAxisColumn: (column) => set((state) => {
-                if (state.sideMenuData.yAxis.includes(column)) return state;
-                if (state.sideMenuData.yAxis.length >= 8) return state;
-                return {
-                    sideMenuData: {
-                        ...state.sideMenuData,
-                        yAxis: [...state.sideMenuData.yAxis, column]
-                    }
-                };
-            }),
-            removeYAxisColumn: (column) => set((state) => ({
+export const createAxisSideMenuStore = () => createStore<AxisSideMenuState>()(
+    (set) => ({
+        sideMenuData: {
+            plotType: 'scatter',
+            xAxis: '',
+            yAxis: []
+        },
+        setPlotType: (plotType) => set((state) => ({
+            sideMenuData: { ...state.sideMenuData, plotType }
+        })),
+        setXAxis: (xAxis) => set((state) => ({
+            sideMenuData: { ...state.sideMenuData, xAxis }
+        })),
+        addYAxisColumn: (column) => set((state) => {
+            if (state.sideMenuData.yAxis.includes(column)) return state;
+            if (state.sideMenuData.yAxis.length >= 8) return state;
+            return {
                 sideMenuData: {
                     ...state.sideMenuData,
-                    yAxis: state.sideMenuData.yAxis.filter(c => c !== column)
+                    yAxis: [...state.sideMenuData.yAxis, column]
                 }
-            })),
-            loadProject: (xAxis, yAxis, plotType: 'scatter' | 'histogram' = 'scatter') => set(() => ({
-                sideMenuData: { plotType, xAxis, yAxis }
-            }))
+            };
         }),
-        {
-            name: `webplots-workspace-${workspaceId}-axisSideMenuStore`
-        }
-    )
+        removeYAxisColumn: (column) => set((state) => ({
+            sideMenuData: {
+                ...state.sideMenuData,
+                yAxis: state.sideMenuData.yAxis.filter(c => c !== column)
+            }
+        })),
+        loadProject: (xAxis, yAxis, plotType: 'scatter' | 'histogram' = 'scatter') => set(() => ({
+            sideMenuData: { plotType, xAxis, yAxis }
+        }))
+    })
 );
 
 export const createAxisSideMenuConfig = (columns: string[], sideMenuData: AxisSideMenuData) => {

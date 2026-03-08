@@ -31,15 +31,15 @@ export const WorkspaceProvider: React.FC<{ workspaceId: string, children: React.
 
     if (!storesRef.current) {
         storesRef.current = {
-            axisSideMenuStore: createAxisSideMenuStore(workspaceId),
-            colorSideMenuStore: createColorSideMenuStore(workspaceId),
-            filterSideMenuStore: createFilterSideMenuStore(workspaceId),
-            groupSideMenuStore: createGroupSideMenuStore(workspaceId),
-            inkRatioStore: createInkRatioStore(workspaceId),
-            plotLayoutStore: createPlotLayoutStore(workspaceId),
-            traceConfigStore: createTraceConfigStore(workspaceId),
-            workspaceLocalStore: createWorkspaceLocalStore(workspaceId),
-            subplotSideMenuStore: createSubplotSideMenuStore(workspaceId)
+            axisSideMenuStore: createAxisSideMenuStore(),
+            colorSideMenuStore: createColorSideMenuStore(),
+            filterSideMenuStore: createFilterSideMenuStore(),
+            groupSideMenuStore: createGroupSideMenuStore(),
+            inkRatioStore: createInkRatioStore(),
+            plotLayoutStore: createPlotLayoutStore(),
+            traceConfigStore: createTraceConfigStore(),
+            workspaceLocalStore: createWorkspaceLocalStore(),
+            subplotSideMenuStore: createSubplotSideMenuStore()
         };
 
         const cloneData = cloneStoreStates.get(workspaceId);
