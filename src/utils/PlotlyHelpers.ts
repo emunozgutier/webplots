@@ -32,9 +32,7 @@ export const generatePlotConfig = (
     const { traceCustomizations, currentPaletteColors } = traceConfig;
     const { rows, cols, traceToSubplots } = subplotSideMenuData;
 
-    const hasData = plotType === 'histogram'
-        ? data.length > 0 && yAxis.length > 0
-        : data.length > 0 && !!xAxis && yAxis.length > 0;
+    const hasData = data.length > 0 && yAxis.length > 0;
 
     if (!hasData) {
         return {
@@ -46,7 +44,7 @@ export const generatePlotConfig = (
         };
     }
 
-    const x = data.map(row => row[xAxis]);
+    const x = data.map((row, i) => xAxis ? row[xAxis] : i);
 
     // Helper to get color from current palette array (cycling if needed)
     const getColor = (index: number) => {
@@ -256,7 +254,7 @@ export const generatePlotConfig = (
                         yCol: yCol,
                         groupName: bin.label,
                         fullTraceName: yAxis.length === 1 ? bin.label : `${yCol} (${bin.label})`,
-                        xData: indices.map(i => data[i][xAxis]),
+                        xData: indices.map(i => xAxis ? data[i][xAxis] : i),
                         yData: indices.map(i => data[i][yCol]),
                         rowIndices: indices
                     });
@@ -282,7 +280,7 @@ export const generatePlotConfig = (
                         yCol: yCol,
                         groupName: `${groupAxis}=${groupValStr}`,
                         fullTraceName: yAxis.length === 1 ? `${groupAxis}=${groupValStr}` : `${yCol} (${groupAxis}=${groupValStr})`,
-                        xData: indices.map(i => data[i][xAxis]),
+                        xData: indices.map(i => xAxis ? data[i][xAxis] : i),
                         yData: indices.map(i => data[i][yCol]),
                         rowIndices: indices
                     });
@@ -293,13 +291,12 @@ export const generatePlotConfig = (
     } else {
         // Standard behavior
         yAxis.forEach(yCol => {
-            // For histograms, we don't necessarily have x since there's no xAxis selected
-            const hasXAxis = plotType !== 'histogram' && xAxis;
+            // If plotType is not histogram, x is already filled (with xAxis values or row numbers)
             generatedTraces.push({
                 yCol: yCol,
                 groupName: '',
                 fullTraceName: yCol,
-                xData: hasXAxis ? x : [],
+                xData: plotType === 'histogram' ? [] : x,
                 yData: data.map(row => row[yCol]),
                 rowIndices: data.map((_, i) => i) // Full dataset map
             });
@@ -640,9 +637,9 @@ export const generatePlotConfig = (
     const layout: Partial<Layout> = {
         width: undefined,
         height: undefined,
-        title: { text: plotTitle || (plotType === 'histogram' ? `Histogram: ${yAxis.join(', ')}` : `Plot: ${yAxis.join(', ')} vs ${xAxis}`) },
+        title: { text: plotTitle || (plotType === 'histogram' ? `Histogram: ${yAxis.join(', ')}` : `Plot: ${yAxis.join(', ')} vs ${xAxis || 'Row Number'}`) },
         xaxis: {
-            title: { text: xAxisTitle || (plotType === 'histogram' ? 'Value' : xAxis) },
+            title: { text: xAxisTitle || (plotType === 'histogram' ? 'Value' : (xAxis || 'Row Number')) },
             type: enableLogAxis ? 'log' : 'linear',
             range: plotType === 'histogram' ? undefined : (xRange || undefined),
             autorange: plotType === 'histogram' ? true : !xRange
@@ -667,7 +664,7 @@ export const generatePlotConfig = (
 
         // Construct standard axis configs
         const baseTargetXAxis = {
-            title: { text: xAxisTitle || (plotType === 'histogram' ? 'Value' : xAxis) },
+            title: { text: xAxisTitle || (plotType === 'histogram' ? 'Value' : (xAxis || 'Row Number')) },
             type: enableLogAxis ? 'log' : 'linear',
             range: plotType === 'histogram' ? undefined : (xRange || undefined),
             autorange: plotType === 'histogram' ? true : !xRange
@@ -696,7 +693,7 @@ export const generatePlotConfig = (
 
     // Config variables
     if (plotType !== 'histogram') {
-        receipt += `var xAxisName = '${xAxis}';\n`;
+        receipt += `var xAxisName = '${xAxis || 'Row Number'}';\n`;
     }
     receipt += `var yAxisNames = [${yAxis.map((y: string) => `'${y}'`).join(', ')}];\n`;
     if (groupAxis) {

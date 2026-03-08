@@ -119,7 +119,10 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
                                                     <button className="btn btn-sm btn-link text-danger p-0 ms-1" onClick={() => setXAxis('')}>&times;</button>
                                                 </div>
                                             ) : (
-                                                <div className="text-muted small fst-italic text-center" style={{ fontSize: '0.8rem' }}>Drag column here</div>
+                                                <div className="text-muted small fst-italic text-center d-flex flex-column" style={{ fontSize: '0.8rem' }}>
+                                                    <span className="fw-bold mb-1">Default: Row Number</span>
+                                                    <span>Drag column here to override</span>
+                                                </div>
                                             )}
                                         </div>
                                     </div>

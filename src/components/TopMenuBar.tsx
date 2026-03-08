@@ -37,7 +37,7 @@ const TopMenuBar: React.FC = () => {
                         setColumns(cols);
                         if (cols.length > 0) {
                             const activeStores = workspaceRegistry.get(useWorkspaceStore.getState().activeWorkspaceId);
-                            if (activeStores) activeStores.axisSideMenuStore.getState().setXAxis(cols[0]);
+                            if (activeStores) activeStores.axisSideMenuStore.getState().setXAxis('');
                         }
 
                     }
@@ -155,7 +155,7 @@ const TopMenuBar: React.FC = () => {
             setColumns(cols);
             if (cols.length > 0) {
                 const activeStores = workspaceRegistry.get(useWorkspaceStore.getState().activeWorkspaceId);
-                if (activeStores) activeStores.axisSideMenuStore.getState().setXAxis(cols[0]);
+                if (activeStores) activeStores.axisSideMenuStore.getState().setXAxis('');
             }
         }
     };
