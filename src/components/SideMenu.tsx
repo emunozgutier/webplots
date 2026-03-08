@@ -134,13 +134,7 @@ const SideMenu: React.FC = () => {
                         {activeTab === 'ink' && 'Ink Ratio'}
                         {activeTab === 'subplots' && 'Subplots Settings'}
                     </span>
-                    <button
-                        className="btn btn-sm btn-link text-secondary"
-                        onClick={toggleSideMenu}
-                        title="Collapse Menu"
-                    >
-                        <i className="bi bi-chevron-left"></i>
-                    </button>
+
                 </div>
 
                 <div className="flex-grow-1 overflow-hidden position-relative">
@@ -159,16 +153,7 @@ const SideMenu: React.FC = () => {
                     zIndex: 10
                 }}
             >
-                {/* Provide expand button when collapsed if needed, but tabs can also expand */}
-                {!isSideMenuOpen && (
-                    <button
-                        className="btn btn-sm btn-light text-secondary mb-3"
-                        onClick={toggleSideMenu}
-                        title="Expand Menu"
-                    >
-                        <i className="bi bi-chevron-right"></i>
-                    </button>
-                )}
+
 
                 {renderTabButton('create', 'Create', 'bi-plus-square')}
                 {renderTabButton('axis', 'Axis', 'bi-bar-chart-steps')}
