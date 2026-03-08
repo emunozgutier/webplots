@@ -23,14 +23,24 @@ const SearchColumn: React.FC = () => {
 
     return (
         <div className="d-flex flex-column h-100">
-            <div className="mb-2">
+            <div className="mb-2 position-relative">
                 <input
                     type="text"
                     className="form-control"
                     placeholder="Search columns..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
+                    style={{ paddingRight: searchTerm ? '2.2rem' : undefined }}
                 />
+                {searchTerm && (
+                    <span
+                        className="position-absolute top-50 translate-middle-y d-flex align-items-center justify-content-center text-muted"
+                        style={{ cursor: 'pointer', right: '10px', width: '20px', height: '20px', fontSize: '1.2rem', zIndex: 10 }}
+                        onClick={() => setSearchTerm('')}
+                    >
+                        &times;
+                    </span>
+                )}
             </div>
 
             <div className="flex-grow-1 overflow-auto" style={{ minHeight: 0 }}>
