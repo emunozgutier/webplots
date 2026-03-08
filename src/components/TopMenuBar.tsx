@@ -1,5 +1,5 @@
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { NavDropdown, Navbar, Nav, Container, Modal, Button } from 'react-bootstrap';
 import { useCsvDataStore } from '../store/CsvDataStore';
 import Papa from 'papaparse';
@@ -22,6 +22,22 @@ const TopMenuBar: React.FC = () => {
 
     const [showVersionModal, setShowVersionModal] = useState(false);
     const [versionData, setVersionData] = useState<VersionData | null>(null);
+
+    useEffect(() => {
+        const fetchVersion = async () => {
+            try {
+                const baseUrl = import.meta.env.BASE_URL || '/';
+                const response = await fetch(`${baseUrl}version.json`);
+                if (response.ok) {
+                    const data: VersionData = await response.json();
+                    setVersionData(data);
+                }
+            } catch (error) {
+                console.error("Error fetching version on mount:", error);
+            }
+        };
+        fetchVersion();
+    }, []);
 
     const handleCsvUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -328,7 +344,17 @@ const TopMenuBar: React.FC = () => {
                             </NavDropdown.Item>
                         </NavDropdown>
                     </Nav>
-                    <div className="d-flex align-items-center gap-2">
+                    <div className="d-flex align-items-center gap-3">
+                        {versionData && (
+                            <span
+                                className="text-secondary small fw-bold"
+                                style={{ cursor: 'pointer', opacity: 0.8 }}
+                                onClick={() => setShowVersionModal(true)}
+                                title="Click for details"
+                            >
+                                v{versionData.version_string.replace('v', '')}
+                            </span>
+                        )}
                         <Button
                             variant="outline-secondary"
                             size="sm"
