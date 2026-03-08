@@ -4,9 +4,7 @@ import { NavDropdown, Navbar, Nav, Container, Modal, Button } from 'react-bootst
 import { useCsvDataStore } from '../store/CsvDataStore';
 import Papa from 'papaparse';
 import type { CsvDataStore } from '../store/CsvDataStore';
-import { useWorkspaceStore, workspaceRegistry, cloneStoreStates } from '../store/WorkspaceStore';
-import { get } from 'idb-keyval';
-import { RECOVERY_KEY } from './AutoSaveManager';
+import { useWorkspaceStore, workspaceRegistry } from '../store/WorkspaceStore';
 import { getSmallDataset, getLargeColumnDataset, getSimulationDataset, getBinningTestData } from '../utils/TestDatasets';
 import { generateTestGaussianData } from '../utils/MathHelper';
 
@@ -18,7 +16,6 @@ interface VersionData {
 
 const TopMenuBar: React.FC = () => {
     const { data, columns, setPlotData, setColumns, loadProject: loadPlotDataProject } = useCsvDataStore();
-    const { isBetaMode, toggleBetaMode } = useWorkspaceStore();
 
     const csvInputRef = useRef<HTMLInputElement>(null);
     const projectInputRef = useRef<HTMLInputElement>(null);
@@ -266,66 +263,6 @@ const TopMenuBar: React.FC = () => {
         }
     };
 
-    const handleLoadRecoveredProject = async () => {
-        try {
-            const backup = await get(RECOVERY_KEY);
-            if (!backup) {
-                alert('No recovered project data found in browser storage.');
-                return;
-            }
-
-            // Populate cloneStoreStates for workspaces that haven't mounted yet
-            if (backup.localStores) {
-                for (const [wsId, localState] of Object.entries(backup.localStores)) {
-                    cloneStoreStates.set(wsId, localState as any);
-                }
-            }
-
-            // Restore global CSV Data
-            if (backup.csvData) {
-                useCsvDataStore.setState({
-                    data: backup.csvData.data,
-                    columns: backup.csvData.columns
-                });
-            }
-
-            // Restore global Workspace global metadata and tabs
-            if (backup.workspaceStore) {
-                useWorkspaceStore.setState({
-                    workspaces: backup.workspaceStore.workspaces,
-                    activeWorkspaceId: backup.workspaceStore.activeWorkspaceId,
-                    isTopMenuBarOpen: backup.workspaceStore.isTopMenuBarOpen,
-                    isBetaMode: backup.workspaceStore.isBetaMode
-                });
-
-                // Directly rehydrate any already-mounted Local Stores which won't trigger standard WorkspaceContext clones 
-                if (backup.localStores) {
-                    for (const [wsId, localState] of Object.entries(backup.localStores)) {
-                        const existingStores = workspaceRegistry.get(wsId);
-                        if (existingStores) {
-                            const ls = localState as any;
-                            if (ls.axis) existingStores.axisSideMenuStore.setState(ls.axis);
-                            if (ls.color) existingStores.colorSideMenuStore.setState(ls.color);
-                            if (ls.filter) existingStores.filterSideMenuStore.setState(ls.filter);
-                            if (ls.group) existingStores.groupSideMenuStore.setState(ls.group);
-                            if (ls.ink) existingStores.inkRatioStore.setState(ls.ink);
-                            if (ls.plot) existingStores.plotLayoutStore.setState(ls.plot);
-                            if (ls.trace) existingStores.traceConfigStore.setState(ls.trace);
-                            if (ls.subplot) existingStores.subplotSideMenuStore.setState(ls.subplot);
-                            if (ls.local) existingStores.workspaceLocalStore.setState(ls.local);
-
-                            cloneStoreStates.delete(wsId); // Clear it from memory since it's applied locally
-                        }
-                    }
-                }
-            }
-            alert('Recovered project successfully loaded! Your workspaces and plots have been restored.');
-        } catch (e) {
-            console.error("Failed to load recovery target:", e);
-            alert('Failed to load recovered project from local cache.');
-        }
-    };
-
     return (
         <Navbar bg="dark" variant="dark" expand="lg" className="px-4 shadow-sm">
             <Container fluid className="p-0">
@@ -336,10 +273,6 @@ const TopMenuBar: React.FC = () => {
                         <NavDropdown title="File" id="file-nav-dropdown">
                             <NavDropdown.Item onClick={handleNewProject} className="text-danger">
                                 New Project
-                            </NavDropdown.Item>
-                            <NavDropdown.Divider />
-                            <NavDropdown.Item onClick={handleLoadRecoveredProject} className="text-warning fw-bold">
-                                Load Recovered Project
                             </NavDropdown.Item>
                             <NavDropdown.Divider />
                             <NavDropdown.Item onClick={() => csvInputRef.current?.click()}>
@@ -406,15 +339,6 @@ const TopMenuBar: React.FC = () => {
                             title="See me on GitHub"
                         >
                             <i className="bi bi-github me-1"></i> See me on GitHub
-                        </Button>
-                        <Button
-                            variant={isBetaMode ? "warning" : "outline-secondary"}
-                            size="sm"
-                            onClick={toggleBetaMode}
-                            title="Toggle Beta Features"
-                            className="fw-bold"
-                        >
-                            <i className="bi bi-tools me-1"></i> {isBetaMode ? 'Beta: ON' : 'Beta Mode'}
                         </Button>
                     </div>
                 </Navbar.Collapse>
