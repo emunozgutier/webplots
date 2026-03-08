@@ -1,5 +1,5 @@
 {
-    "commit_title": "Make X-axis optional; default to Row Number",
-    "commit_message": "Allow plots to work without an explicit x-axis by treating row indices as the default X values. Update data mapping so x values use the selected column when present or the row number otherwise, and adapt trace generation, histogram handling, axis titles, and the generated receipt to reflect 'Row Number' when no xAxis is set. Change TopMenuBar to avoid auto-selecting the first column (set xAxis to '' on column updates). Add a UI hint in AxisSideMenu that indicates the default is Row Number and that dragging a column will override it.",
+    "commit_title": "Remove side menu toggle buttons",
+    "commit_message": "Remove the chevron collapse button from the SideMenu header and the conditional expand button shown when the menu is collapsed. This simplifies the UI by eliminating duplicate toggle controls since tabs can also expand the menu.",
     "version_string": "2026.10.6"
 }
