@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { useColorSideMenuStore, type AestheticMapping, type MappingSource } from '../../store/ColorSideMenuStore';
+import { useStyleSideMenuStore, type AestheticMapping, type MappingSource } from '../../store/StyleSideMenuStore';
 import { useCsvDataStore } from '../../store/CsvDataStore';
 import { useInkRatioStore } from '../../store/InkRatioStore';
 import Plot from 'react-plotly.js';
 import { Modal, Button, Alert } from 'react-bootstrap';
 
 const StyleSideMenu: React.FC = () => {
-    const { colorData, setHue, setLightness, setShape, setSize } = useColorSideMenuStore();
+
+    const { colorData, setHue, setLightness, setShape, setSize } = useStyleSideMenuStore();
     const { columns, data } = useCsvDataStore();
     const { absorptionMode } = useInkRatioStore();
 

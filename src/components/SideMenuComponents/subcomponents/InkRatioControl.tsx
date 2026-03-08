@@ -1,6 +1,6 @@
 import React from 'react';
 import { useInkRatioStore } from '../../../store/InkRatioStore';
-import { useColorSideMenuStore } from '../../../store/ColorSideMenuStore';
+import { useStyleSideMenuStore } from '../../../store/StyleSideMenuStore';
 import { Alert } from 'react-bootstrap';
 
 const InkRatioControl: React.FC = () => {
@@ -13,7 +13,7 @@ const InkRatioControl: React.FC = () => {
         setMaxRadiusRatio
     } = useInkRatioStore();
 
-    const { colorData } = useColorSideMenuStore();
+    const { colorData } = useStyleSideMenuStore();
 
     // Check if user is overriding size in Style while trying to use Grow
     const isOverwritingSize = absorptionMode === 'size' && colorData.size.source !== 'manual';

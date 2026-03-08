@@ -11,7 +11,7 @@ export interface AestheticMapping {
     range?: [number, number]; // [min, max] output range when mapped to a column
 }
 
-export interface ColorSideMenuData {
+export interface StyleSideMenuData {
     hue: AestheticMapping;
     saturation: AestheticMapping;
     lightness: AestheticMapping;
@@ -19,9 +19,9 @@ export interface ColorSideMenuData {
     size: AestheticMapping;
 }
 
-export type ColorSideMenuState = {
-    colorData: ColorSideMenuData;
-    setColorData: (data: Partial<ColorSideMenuData>) => void;
+export type StyleSideMenuState = {
+    colorData: StyleSideMenuData;
+    setColorData: (data: Partial<StyleSideMenuData>) => void;
 
     // Explicit updaters for individual attributes
     setHue: (hue: Partial<AestheticMapping>) => void;
@@ -31,7 +31,7 @@ export type ColorSideMenuState = {
     setSize: (size: Partial<AestheticMapping>) => void;
 }
 
-export const createColorSideMenuStore = () => createStore<ColorSideMenuState>()(
+export const createStyleSideMenuStore = () => createStore<StyleSideMenuState>()(
     (set) => ({
         colorData: {
             hue: { source: 'group', value: '' }, // Default to grouping behavior 
@@ -73,8 +73,8 @@ export const createColorSideMenuStore = () => createStore<ColorSideMenuState>()(
     })
 );
 
-export const useColorSideMenuStore = <T = ColorSideMenuState>(selector: (state: ColorSideMenuState) => T = (state) => state as unknown as T): T => {
+export const useStyleSideMenuStore = <T = StyleSideMenuState>(selector: (state: StyleSideMenuState) => T = (state) => state as unknown as T): T => {
     const context = useContext(WorkspaceContext);
-    if (!context) throw new Error('useColorSideMenuStore must be used within WorkspaceProvider');
-    return useStore(context.colorSideMenuStore, selector);
+    if (!context) throw new Error('useStyleSideMenuStore must be used within WorkspaceProvider');
+    return useStore(context.styleSideMenuStore, selector);
 };

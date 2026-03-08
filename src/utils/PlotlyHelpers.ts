@@ -4,7 +4,7 @@ import type { AxisSideMenuData } from '../store/AxisSideMenuStore';
 import type { GroupSideMenuData } from '../store/GroupSideMenuStore';
 import type { PlotLayout } from '../store/PlotLayoutStore';
 import type { TraceConfig } from '../store/TraceConfigStore';
-import type { ColorSideMenuData } from '../store/ColorSideMenuStore';
+import type { StyleSideMenuData } from '../store/StyleSideMenuStore';
 import type { SubplotSideMenuState } from '../store/SubplotSideMenuStore';
 import type { TraceStats } from '../store/InkRatioStore';
 
@@ -14,7 +14,7 @@ export const generatePlotConfig = (
     groupSideMenuData: GroupSideMenuData,
     plotLayout: PlotLayout,
     traceConfig: TraceConfig,
-    colorSideMenuData: ColorSideMenuData,
+    colorSideMenuData: StyleSideMenuData,
     subplotSideMenuData: SubplotSideMenuState,
     absorptionMode: 'none' | 'size' | 'glow',
     maxRadiusRatio: number = 3,

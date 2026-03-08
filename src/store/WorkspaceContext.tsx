@@ -1,7 +1,7 @@
 import React, { createContext, useRef, useEffect } from 'react';
 import { cloneStoreStates, workspaceRegistry } from './WorkspaceStore';
 import { createAxisSideMenuStore, type AxisSideMenuState } from './AxisSideMenuStore';
-import { createColorSideMenuStore, type ColorSideMenuState } from './ColorSideMenuStore';
+import { createStyleSideMenuStore, type StyleSideMenuState } from './StyleSideMenuStore';
 import { createFilterSideMenuStore, type FilterState } from './FilterSideMenuStore';
 import { createGroupSideMenuStore, type GroupSideMenuState } from './GroupSideMenuStore';
 import { createInkRatioStore, type InkRatioState } from './InkRatioStore';
@@ -14,7 +14,7 @@ type StoreApi<T> = import('zustand/vanilla').StoreApi<T>;
 
 export interface WorkspaceStores {
     axisSideMenuStore: StoreApi<AxisSideMenuState>;
-    colorSideMenuStore: StoreApi<ColorSideMenuState>;
+    styleSideMenuStore: StoreApi<StyleSideMenuState>;
     filterSideMenuStore: StoreApi<FilterState>;
     groupSideMenuStore: StoreApi<GroupSideMenuState>;
     inkRatioStore: StoreApi<InkRatioState>;
@@ -32,7 +32,7 @@ export const WorkspaceProvider: React.FC<{ workspaceId: string, children: React.
     if (!storesRef.current) {
         storesRef.current = {
             axisSideMenuStore: createAxisSideMenuStore(),
-            colorSideMenuStore: createColorSideMenuStore(),
+            styleSideMenuStore: createStyleSideMenuStore(),
             filterSideMenuStore: createFilterSideMenuStore(),
             groupSideMenuStore: createGroupSideMenuStore(),
             inkRatioStore: createInkRatioStore(),
@@ -45,7 +45,7 @@ export const WorkspaceProvider: React.FC<{ workspaceId: string, children: React.
         const cloneData = cloneStoreStates.get(workspaceId);
         if (cloneData) {
             storesRef.current.axisSideMenuStore.setState(cloneData.axis);
-            storesRef.current.colorSideMenuStore.setState(cloneData.color);
+            storesRef.current.styleSideMenuStore.setState(cloneData.color);
             storesRef.current.filterSideMenuStore.setState(cloneData.filter);
             storesRef.current.groupSideMenuStore.setState(cloneData.group);
             storesRef.current.inkRatioStore.setState(cloneData.ink);

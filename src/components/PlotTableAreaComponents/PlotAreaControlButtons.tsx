@@ -5,7 +5,7 @@ import { generatePlotConfig } from '../../utils/PlotlyHelpers';
 import { useCsvDataStore } from '../../store/CsvDataStore';
 import { useAxisSideMenuStore } from '../../store/AxisSideMenuStore';
 import { useGroupSideMenuStore } from '../../store/GroupSideMenuStore';
-import { useColorSideMenuStore } from '../../store/ColorSideMenuStore';
+import { useStyleSideMenuStore } from '../../store/StyleSideMenuStore';
 import { useSubplotSideMenuStore } from '../../store/SubplotSideMenuStore';
 import { useInkRatioStore } from '../../store/InkRatioStore';
 
@@ -20,7 +20,7 @@ const PlotAreaControlButtons: React.FC<PlotAreaControlButtonsProps> = ({ onOpenS
     const { data } = useCsvDataStore();
     const { sideMenuData } = useAxisSideMenuStore();
     const { groupSideMenuData } = useGroupSideMenuStore();
-    const { colorData } = useColorSideMenuStore();
+    const { colorData } = useStyleSideMenuStore();
     const subplotData = useSubplotSideMenuStore();
     const { inkRatio, absorptionMode, maxRadiusRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius } = useInkRatioStore();
 

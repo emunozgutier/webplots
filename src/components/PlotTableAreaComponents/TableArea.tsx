@@ -5,7 +5,7 @@ import { useFilteredData } from '../../utils/useFilteredData';
 import { useAxisSideMenuStore } from '../../store/AxisSideMenuStore';
 import { useGroupSideMenuStore } from '../../store/GroupSideMenuStore';
 import { useFilterSideMenuStore } from '../../store/FilterSideMenuStore';
-import { useColorSideMenuStore } from '../../store/ColorSideMenuStore';
+import { useStyleSideMenuStore } from '../../store/StyleSideMenuStore';
 import HeaderSummary from './HeaderSummary';
 import { useWorkspaceLocalStore } from '../../store/WorkspaceLocalStore';
 import Plot from 'react-plotly.js';
@@ -152,7 +152,7 @@ const TableArea: React.FC = () => {
     const { sideMenuData } = useAxisSideMenuStore();
     const { groupSideMenuData } = useGroupSideMenuStore();
     const { filters } = useFilterSideMenuStore();
-    const { colorData } = useColorSideMenuStore();
+    const { colorData } = useStyleSideMenuStore();
 
     // Compute which columns are currently "used" in the plot
     const usedColumns = useMemo(() => {

@@ -9,7 +9,7 @@ import { useGroupSideMenuStore } from '../../store/GroupSideMenuStore';
 import { usePlotLayoutStore } from '../../store/PlotLayoutStore';
 import { useTraceConfigStore } from '../../store/TraceConfigStore';
 import { useInkRatioStore } from '../../store/InkRatioStore';
-import { useColorSideMenuStore } from '../../store/ColorSideMenuStore';
+import { useStyleSideMenuStore } from '../../store/StyleSideMenuStore';
 import { useSubplotSideMenuStore } from '../../store/SubplotSideMenuStore';
 import { generatePlotConfig } from '../../utils/PlotlyHelpers';
 import PlotAreaControlButtons from './PlotAreaControlButtons';
@@ -22,7 +22,7 @@ const PlotArea: React.FC = () => {
     const { plotLayout } = usePlotLayoutStore();
     const { traceConfig, setActiveTraces } = useTraceConfigStore();
     const { inkRatio, absorptionMode, maxRadiusRatio, setFilteredStats, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius } = useInkRatioStore();
-    const { colorData } = useColorSideMenuStore();
+    const { colorData } = useStyleSideMenuStore();
     const subplotData = useSubplotSideMenuStore();
 
     const { setPopupContent } = useWorkspaceLocalStore();

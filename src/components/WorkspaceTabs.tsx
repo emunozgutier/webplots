@@ -75,7 +75,7 @@ const WorkspaceTabs: React.FC = () => {
                                 if (sourceStores) {
                                     const stateSnapshot = {
                                         axis: sourceStores.axisSideMenuStore.getState(),
-                                        color: sourceStores.colorSideMenuStore.getState(),
+                                        color: sourceStores.styleSideMenuStore.getState(),
                                         filter: sourceStores.filterSideMenuStore.getState(),
                                         group: sourceStores.groupSideMenuStore.getState(),
                                         ink: sourceStores.inkRatioStore.getState(),
