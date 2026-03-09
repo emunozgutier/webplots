@@ -282,16 +282,13 @@ const TopMenuBar: React.FC = () => {
     return (
         <Navbar bg="dark" variant="dark" expand="lg" className="px-4 shadow-sm">
             <Container fluid className="p-0">
-                <Navbar.Brand href="#home" className="d-flex align-items-center">
+                <Navbar.Brand href="#home" className="d-flex align-items-center p-0">
                     <img
-                        src={`${import.meta.env.BASE_URL || '/'}favicon.png`}
+                        src={`${import.meta.env.BASE_URL || '/'}logo_full.png`}
                         alt="WebPlots Logo"
-                        width="30"
-                        height="30"
-                        className="d-inline-block align-top me-2 rounded"
-                        style={{ border: '1px solid rgba(255,255,255,0.1)' }}
+                        height="40"
+                        className="d-inline-block align-top"
                     />
-                    <h1 className="m-0 fs-4 d-inline-block">WebPlots</h1>
                 </Navbar.Brand>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 <Navbar.Collapse id="basic-navbar-nav">
