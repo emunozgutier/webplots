@@ -2,6 +2,7 @@
   "name": "webplots",
   "private": true,
   "version": "0.0.0",
+  "homepage": "https://emunozgutier.github.io/webplots/",
   "type": "module",
   "scripts": {
     "dev": "vite",
