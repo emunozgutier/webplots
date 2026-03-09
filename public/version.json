@@ -1,5 +1,5 @@
 {
-    "commit_title": "Remove side menu toggle buttons",
-    "commit_message": "Remove the chevron collapse button from the SideMenu header and the conditional expand button shown when the menu is collapsed. This simplifies the UI by eliminating duplicate toggle controls since tabs can also expand the menu.",
-    "version_string": "2026.10.6"
+    "commit_title": "Add Google site verification meta tag",
+    "commit_message": "Add Google Search Console verification meta tag to index.html to verify site ownership. The head/body markup was reformatted to include the new meta tag; note that the <!doctype html> and opening <html lang=\"en\"> lines were removed in this change while the closing </html> remains.",
+    "version_string": "2026.10.7"
 }
