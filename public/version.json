@@ -1,5 +1,5 @@
 {
-    "commit_title": "Add Google site verification meta tag",
-    "commit_message": "Add Google Search Console verification meta tag to index.html to verify site ownership. The head/body markup was reformatted to include the new meta tag; note that the <!doctype html> and opening <html lang=\"en\"> lines were removed in this change while the closing </html> remains.",
+    "commit_title": "Remove public/vite.svg",
+    "commit_message": "Delete the Vite logo SVG from the public assets (public/vite.svg). The file is removed from the repository.",
     "version_string": "2026.10.7"
 }
