@@ -282,7 +282,9 @@ const TopMenuBar: React.FC = () => {
     return (
         <Navbar bg="dark" variant="dark" expand="lg" className="px-4 shadow-sm">
             <Container fluid className="p-0">
-                <Navbar.Brand href="#home">WebPlots</Navbar.Brand>
+                <Navbar.Brand href="#home">
+                    <h1 className="m-0 fs-4 d-inline-block">WebPlots</h1>
+                </Navbar.Brand>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 <Navbar.Collapse id="basic-navbar-nav">
                     <Nav className="me-auto">

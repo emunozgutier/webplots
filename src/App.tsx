@@ -16,7 +16,7 @@ function App() {
       {isTopMenuBarOpen && <TopMenuBar />}
       <WorkspaceTabs />
 
-      <div className="d-flex flex-row flex-grow-1 overflow-hidden">
+      <main className="d-flex flex-row flex-grow-1 overflow-hidden" role="main">
         {workspaces.map((ws) => (
           <div
             key={ws.id}
@@ -29,7 +29,7 @@ function App() {
             </WorkspaceProvider>
           </div>
         ))}
-      </div>
+      </main>
     </div>
   );
 }
