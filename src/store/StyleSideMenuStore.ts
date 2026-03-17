@@ -9,6 +9,7 @@ export interface AestheticMapping {
     source: MappingSource;
     value: string | number; // 'manual' value OR the selected column name
     range?: [number, number]; // [min, max] output range when mapped to a column
+    enabled?: boolean;
 }
 
 export interface StyleSideMenuData {
@@ -34,11 +35,11 @@ export type StyleSideMenuState = {
 export const createStyleSideMenuStore = () => createStore<StyleSideMenuState>()(
     (set) => ({
         colorData: {
-            hue: { source: 'group', value: '' }, // Default to grouping behavior 
-            saturation: { source: 'manual', value: 80 },
-            lightness: { source: 'manual', value: 50 },
-            shape: { source: 'manual', value: 'circle' },
-            size: { source: 'manual', value: 8 }
+            hue: { source: 'group', value: '', enabled: true }, // Default to grouping behavior 
+            saturation: { source: 'manual', value: 80, enabled: true },
+            lightness: { source: 'manual', value: 50, enabled: true },
+            shape: { source: 'manual', value: 'circle', enabled: true },
+            size: { source: 'manual', value: 8, enabled: true }
         },
 
         setColorData: (data) =>
