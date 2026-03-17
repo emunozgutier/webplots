@@ -303,12 +303,6 @@ export const generatePlotConfig = (
         });
     }
 
-    // Enforce 8 trace limit
-    if (generatedTraces.length > 8) {
-        console.warn(`[Plot] Too many traces (${generatedTraces.length}). Truncating to 8.`);
-        generatedTraces = generatedTraces.slice(0, 8);
-    }
-
     // Create Plotly traces
     const plotData: Data[] = generatedTraces.flatMap((traceInfo, index) => {
         const { fullTraceName, yCol, groupName, xData, yData, rowIndices } = traceInfo;

@@ -10,7 +10,7 @@ const GroupSideMenu: React.FC = () => {
     const { groupSideMenuData, setGroupAxis } = useGroupSideMenuStore();
     const { setPopupContent } = useWorkspaceLocalStore();
     const { groupAxis } = groupSideMenuData;
-    const { data, columns } = useCsvDataStore();
+    const { columns } = useCsvDataStore();
 
     const [dragOverGroup, setDragOverGroup] = useState(false);
 
@@ -29,22 +29,6 @@ const GroupSideMenu: React.FC = () => {
         setDragOverGroup(false);
         const colName = e.dataTransfer.getData('text/plain');
         if (!colName) return;
-
-        // Check unique values
-        const uniqueValues = new Set(data.map((row: any) => row[colName])).size;
-
-        if (uniqueValues > 8) {
-            const confirmBin = window.confirm(
-                `The column "${colName}" has ${uniqueValues} unique values. This will create many traces and might slow down the plot. Would you like to bin these values?`
-            );
-
-            if (confirmBin) {
-                setGroupAxis(colName);
-                setPopupContent(<GroupAxisSettings column={colName} />);
-                return;
-            }
-        }
-
         setGroupAxis(colName);
     };
 

@@ -33,7 +33,6 @@ export const createAxisSideMenuStore = () => createStore<AxisSideMenuState>()(
         })),
         addYAxisColumn: (column) => set((state) => {
             if (state.sideMenuData.yAxis.includes(column)) return state;
-            if (state.sideMenuData.yAxis.length >= 8) return state;
             return {
                 sideMenuData: {
                     ...state.sideMenuData,
