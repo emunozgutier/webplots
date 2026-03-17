@@ -1,5 +1,5 @@
 {
-    "commit_title": "Remove public/vite.svg",
-    "commit_message": "Delete the Vite logo SVG from the public assets (public/vite.svg). The file is removed from the repository.",
-    "version_string": "2026.10.7"
+    "commit_title": "Remove 8-trace limit and bin prompt",
+    "commit_message": "Allow more than eight traces/columns by removing the previous 8-item guard and truncation logic. Changes:\n- GroupSideMenu.tsx: removed reading of `data` from CSV store and the unique-values check that prompted the user to bin a grouping column when >8 unique values.\n- AxisSideMenuStore.ts: removed the hard cap that prevented adding a y-axis column when there were already 8 columns.\n- PlotlyHelpers.ts: removed the warning and slice that truncated generated traces to 8.\nThis lifts the former 8-trace restriction across the UI and plot generation; be aware of potential performance impacts when plotting many traces.",
+    "version_string": "2026.12.1"
 }
