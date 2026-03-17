@@ -377,38 +377,48 @@ export const generatePlotConfig = (
                 const row = data[dataIndex];
 
                 // HUE
-                let h = 0;
-                if (hue.source === 'manual') h = Number(hue.value);
-                else if (hue.source === 'group') h = (index * 137.5) % 360; // Golden angle spread
-                else if (hue.source === 'column' && hueColMap) h = hueColMap(row[String(hue.value)]);
+                let h = 200; // Default when disabled
+                if (hue.enabled !== false) {
+                    if (hue.source === 'manual') h = Number(hue.value);
+                    else if (hue.source === 'group') h = (index * 137.5) % 360; // Golden angle spread
+                    else if (hue.source === 'column' && hueColMap) h = hueColMap(row[String(hue.value)]);
+                }
 
                 // SATURATION
-                let s = 80;
-                if (saturation.source === 'manual') s = Number(saturation.value);
-                else if (saturation.source === 'group') s = 50 + ((index * 30) % 50);
-                else if (saturation.source === 'column' && satColMap) s = satColMap(row[String(saturation.value)]);
+                let s = 80; // Default when disabled
+                if (saturation.enabled !== false) {
+                    if (saturation.source === 'manual') s = Number(saturation.value);
+                    else if (saturation.source === 'group') s = 50 + ((index * 30) % 50);
+                    else if (saturation.source === 'column' && satColMap) s = satColMap(row[String(saturation.value)]);
+                }
 
                 // LIGHTNESS
-                let l = 50;
-                if (lightness.source === 'manual') l = Number(lightness.value);
-                else if (lightness.source === 'group') l = 40 + ((index * 20) % 40);
-                else if (lightness.source === 'column' && litColMap) l = litColMap(row[String(lightness.value)]);
+                let l = 50; // Default when disabled
+                if (lightness.enabled !== false) {
+                    if (lightness.source === 'manual') l = Number(lightness.value);
+                    else if (lightness.source === 'group') l = 40 + ((index * 20) % 40);
+                    else if (lightness.source === 'column' && litColMap) l = litColMap(row[String(lightness.value)]);
+                }
 
                 computedColors.push(`hsl(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%)`);
 
                 // SHAPE
-                let sh = 'circle';
-                if (shape.source === 'manual') sh = String(shape.value);
-                else if (shape.source === 'group') sh = SHAPE_OPTS[index % SHAPE_OPTS.length];
-                else if (shape.source === 'column' && shapeColMap) sh = shapeColMap(row[String(shape.value)]);
+                let sh = 'circle'; // Default when disabled
+                if (shape.enabled !== false) {
+                    if (shape.source === 'manual') sh = String(shape.value);
+                    else if (shape.source === 'group') sh = SHAPE_OPTS[index % SHAPE_OPTS.length];
+                    else if (shape.source === 'column' && shapeColMap) sh = shapeColMap(row[String(shape.value)]);
+                }
 
                 computedShapes.push(sh);
 
                 // SIZE
-                let si = 8;
-                if (size.source === 'manual') si = Number(size.value);
-                else if (size.source === 'group') si = 8 + ((index * 2) % 10); // cycle sizes 8 to 16
-                else if (size.source === 'column' && sizeColMap) si = sizeColMap(row[String(size.value)]);
+                let si = 8; // Default when disabled
+                if (size.enabled !== false) {
+                    if (size.source === 'manual') si = Number(size.value);
+                    else if (size.source === 'group') si = 8 + ((index * 2) % 10); // cycle sizes 8 to 16
+                    else if (size.source === 'column' && sizeColMap) si = sizeColMap(row[String(size.value)]);
+                }
 
                 computedSizes.push(si);
             });
