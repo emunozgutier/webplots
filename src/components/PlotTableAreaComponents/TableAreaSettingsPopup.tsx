@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Form, Row, Col, Button, ButtonGroup } from 'react-bootstrap';
+import { Card, Form, Button, ButtonGroup } from 'react-bootstrap';
 import { useWorkspaceLocalStore } from '../../store/WorkspaceLocalStore';
 import { formatNumber } from '../../utils/NumberFormatter';
 
@@ -113,24 +113,35 @@ const TableAreaSettingsPopup: React.FC = () => {
                         <i className="bi bi-eye-fill me-2"></i>
                         Live Preview
                     </h6>
-                    <div className="bg-dark rounded-3 p-3 overflow-auto border-start border-4 border-info">
-                        <div style={{ fontFamily: "'Source Code Pro', monospace", fontSize: '0.9rem', color: '#0dcaf0' }}>
-                            {demoValues.map((val, idx) => {
-                                const formatted = formatNumber(val, numberFormat, significantDigits, alignDecimal);
-                                return (
-                                    <div key={idx} className="d-flex align-items-center mb-1">
-                                        <span className="text-white-50 small me-3" style={{ width: '80px', textAlign: 'right' }}>{val}:</span>
-                                        <span className="bg-secondary bg-opacity-25 px-2 rounded" style={{ whiteSpace: 'pre' }}>
-                                            {formatted}
-                                        </span>
-                                    </div>
-                                );
-                            })}
-                        </div>
+                    <div className="rounded-3 overflow-hidden border">
+                        <table className="table table-sm table-hover mb-0" style={{ fontSize: '0.85rem' }}>
+                            <thead className="table-light">
+                                <tr>
+                                    <th className="ps-3 py-2 text-muted small fw-bold text-uppercase" style={{ width: '40%' }}>Original Value</th>
+                                    <th className="ps-3 py-2 text-primary small fw-bold text-uppercase">Formatted Display</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {demoValues.map((val, idx) => {
+                                    const formatted = formatNumber(val, numberFormat, significantDigits, alignDecimal);
+                                    return (
+                                        <tr key={idx}>
+                                            <td className="ps-3 py-2 text-muted border-end">{val.toString()}</td>
+                                            <td className="ps-3 py-2 fw-bold text-info bg-dark bg-opacity-10" style={{ 
+                                                fontFamily: "'Source Code Pro', monospace",
+                                                whiteSpace: 'pre'
+                                            }}>
+                                                {formatted}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
                     </div>
                     <div className="mt-2 text-center text-muted small italic">
                         <i className="bi bi-info-circle me-1"></i>
-                        Numbers show how they will appear in the data table.
+                        Verifying decimal alignment across diverse scales.
                     </div>
                 </div>
 
