@@ -28,7 +28,8 @@ const TableArea: React.FC = () => {
         colorMode, 
         setColorMode,
         numberFormat,
-        significantDigits
+        significantDigits,
+        alignDecimal
     } = useWorkspaceLocalStore();
 
     const handleSortAsc = (key: string) => {
@@ -534,10 +535,10 @@ const TableArea: React.FC = () => {
                                                 } else if (typeof val === 'boolean') {
                                                     displayVal = String(val);
                                                 } else if (typeof val === 'number') {
-                                                    displayVal = formatNumber(val, numberFormat, significantDigits);
+                                                    displayVal = formatNumber(val, numberFormat, significantDigits, alignDecimal);
                                                 } else if (typeof val === 'string' && !isNaN(Number(val)) && val.trim() !== '') {
                                                     // Also format strings that look like numbers
-                                                    displayVal = formatNumber(Number(val), numberFormat, significantDigits);
+                                                    displayVal = formatNumber(Number(val), numberFormat, significantDigits, alignDecimal);
                                                 }
  
                                                 let bgColor = '';
