@@ -12,13 +12,24 @@ import Plot from 'react-plotly.js';
 import TableAreaControlButtons from './TableAreaControlButtons';
 import TableAreaBatchButtons from './TableAreaBatchButtons';
 import { calculateGaussianStats } from '../../utils/MathHelper';
+import { formatNumber } from '../../utils/NumberFormatter';
 
 const TableArea: React.FC = () => {
     const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
     const [currentBatch, setCurrentBatch] = useState(0);
     const BATCH_SIZE = 100;
-    const { setPopupContent, summaryMode, setSummaryMode, datasetMode, setDatasetMode, colorMode, setColorMode } = useWorkspaceLocalStore();
+    const { 
+        setPopupContent, 
+        summaryMode, 
+        setSummaryMode, 
+        datasetMode, 
+        setDatasetMode, 
+        colorMode, 
+        setColorMode,
+        numberFormat,
+        significantDigits
+    } = useWorkspaceLocalStore();
 
     const handleSortAsc = (key: string) => {
         if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') setSortConfig(null);
@@ -510,9 +521,18 @@ const TableArea: React.FC = () => {
  
                                                 // Make sure boolean and null map to string for display
                                                 const val = row[col];
-                                                let displayVal = val;
-                                                if (val === null || val === undefined) displayVal = '';
-                                                else if (typeof val === 'boolean') displayVal = String(val);
+                                                let displayVal: any = val;
+                                                
+                                                if (val === null || val === undefined) {
+                                                    displayVal = '';
+                                                } else if (typeof val === 'boolean') {
+                                                    displayVal = String(val);
+                                                } else if (typeof val === 'number') {
+                                                    displayVal = formatNumber(val, numberFormat, significantDigits);
+                                                } else if (typeof val === 'string' && !isNaN(Number(val)) && val.trim() !== '') {
+                                                    // Also format strings that look like numbers
+                                                    displayVal = formatNumber(Number(val), numberFormat, significantDigits);
+                                                }
  
                                                 let bgColor = '';
                                                 let textColor = isCellSelected ? '#fff' : '';

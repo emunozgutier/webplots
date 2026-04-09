@@ -19,6 +19,10 @@ export interface WorkspaceLocalState {
     setSummaryMode: (mode: SummaryMode) => void;
     setDatasetMode: (mode: 'all' | 'plot') => void;
     setColorMode: (mode: 'none' | 'color') => void;
+    numberFormat: 'generic' | 'engineering' | 'scientific';
+    significantDigits: number;
+    setNumberFormat: (format: 'generic' | 'engineering' | 'scientific') => void;
+    setSignificantDigits: (digits: number) => void;
 }
 
 export const createWorkspaceLocalStore = () => {
@@ -38,7 +42,11 @@ export const createWorkspaceLocalStore = () => {
             colorMode: 'color',
             setSummaryMode: (mode) => set({ summaryMode: mode }),
             setDatasetMode: (mode) => set({ datasetMode: mode }),
-            setColorMode: (mode) => set({ colorMode: mode })
+            setColorMode: (mode) => set({ colorMode: mode }),
+            numberFormat: 'generic',
+            significantDigits: 4,
+            setNumberFormat: (numberFormat) => set({ numberFormat }),
+            setSignificantDigits: (significantDigits) => set({ significantDigits })
         })
     );
 };

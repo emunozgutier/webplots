@@ -1,6 +1,8 @@
 import React from 'react';
-import { ButtonGroup, ToggleButton } from 'react-bootstrap';
+import { ButtonGroup, ToggleButton, Button } from 'react-bootstrap';
 import type { SummaryMode } from './HeaderSummary';
+import { useWorkspaceLocalStore } from '../../store/WorkspaceLocalStore';
+import TableAreaSettingsPopup from './TableAreaSettingsPopup';
 
 interface TableAreaControlButtonsProps {
     summaryMode: SummaryMode;
@@ -21,6 +23,11 @@ const TableAreaControlButtons: React.FC<TableAreaControlButtonsProps> = ({
     setColorMode,
     hasPlotData
 }) => {
+    const { setPopupContent } = useWorkspaceLocalStore();
+
+    const handleOpenSettings = () => {
+        setPopupContent(<TableAreaSettingsPopup />);
+    };
     return (
         <div className="d-flex gap-4 align-items-center">
             {/* Summary Controls */}
@@ -123,6 +130,20 @@ const TableAreaControlButtons: React.FC<TableAreaControlButtonsProps> = ({
                         Off
                     </ToggleButton>
                 </ButtonGroup>
+            </div>
+
+            {/* Settings Button */}
+            <div className="ms-auto">
+                <Button 
+                    variant="outline-secondary" 
+                    size="sm" 
+                    onClick={handleOpenSettings}
+                    title="Table Settings"
+                    className="rounded-circle"
+                    style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                    <i className="bi bi-gear-fill"></i>
+                </Button>
             </div>
         </div>
     );
