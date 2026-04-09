@@ -312,7 +312,7 @@ const HeaderSummary: React.FC<HeaderSummaryProps> = ({ data, column, mode }) => 
             <div className="text-muted fw-normal" style={{ fontSize: '0.75rem', marginTop: '2px' }}>
                 <div className="d-flex flex-column">
                     <span>{stats.type === 'category' ? `${(stats as any).uniqueCount} groups` : `Max: ${(stats as any).max}`}</span>
-                    <span className="opacity-75">Pts: {(stats as any).validCount}</span>
+                    <span className="opacity-75">Point Count: {(stats as any).validCount}</span>
                 </div>
             </div>
         );
@@ -370,7 +370,7 @@ const HeaderSummary: React.FC<HeaderSummaryProps> = ({ data, column, mode }) => 
                     )}
 
                     <div className="d-grid mb-2" style={{ gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
-                        <div><strong>Pts:</strong> {(stats as any).validCount}</div>
+                        <div><strong>Point Count:</strong> {(stats as any).validCount}</div>
                         <div><strong>Min:</strong> {(stats as any).min}</div>
                         <div><strong>Max:</strong> {(stats as any).max}</div>
                         {!((stats as any).isGaussian && (stats as any).gaussianScore > 50) && (
