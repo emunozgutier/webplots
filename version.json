@@ -1,5 +1,5 @@
 {
-    "commit_title": "Use Source Code Pro for table cells",
-    "commit_message": "Replace Roboto Mono with Source Code Pro for table cell rendering. Updated src/components/PlotTableAreaComponents/TableArea.tsx to set fontFamily to 'Source Code Pro', and added a Google Fonts @import in src/index.css to load the typeface for consistent monospace rendering.",
+    "commit_title": "Refactor TableAreaSettingsPopup UI",
+    "commit_message": "Revamp the TableAreaSettingsPopup layout and styling for a cleaner, more compact UI. Switched card background to white and simplified header spacing/icon sizes; reduced paddings and adjusted button sizes. Reworked notation, precision and options sections (smaller controls, clearer labels, switch for alignment) and tightened the live preview table (sticky header, updated column labels and monospace formatting). Minor copy clarifications for notation descriptions and button styling tweaks for a subtler action appearance.",
     "version_string": "2026.15.4"
 }
