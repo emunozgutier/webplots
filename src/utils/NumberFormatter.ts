@@ -23,26 +23,30 @@ export function formatNumber(
 
     if (val === 0) return "0";
 
-    const sign = val < 0 ? "-" : "";
+    const signStr = val < 0 ? "-" : " ";
     const absVal = Math.abs(val);
 
     if (format === 'scientific') {
-        return val.toExponential(sigDigits - 1);
+        return `${signStr}${absVal.toExponential(sigDigits - 1)}`;
     }
 
     if (format === 'engineering') {
-        // Engineering notation: exponent must be a multiple of 3
-        // Mantissa must be in [1.0, 1000.0)
         let exp = Math.floor(Math.log10(absVal) / 3) * 3;
         let mantissa = absVal / Math.pow(10, exp);
         
-        // Handle edge case where mantissa might round up to 1000 due to precision issues
         if (parseFloat(mantissa.toPrecision(sigDigits)) >= 1000) {
             mantissa /= 1000;
             exp += 3;
         }
 
-        return `${sign}${mantissa.toPrecision(sigDigits)}${exp !== 0 ? 'e' + exp : ''}`;
+        const mantissaStr = mantissa.toPrecision(sigDigits);
+        // Align decimal point by padding left part (up to 3 digits)
+        const dotIndex = mantissaStr.indexOf('.');
+        const preDot = dotIndex === -1 ? mantissaStr : mantissaStr.substring(0, dotIndex);
+        const paddedPreDot = preDot.padStart(3, ' ');
+        const postDot = dotIndex === -1 ? '' : mantissaStr.substring(dotIndex);
+        
+        return `${signStr}${paddedPreDot}${postDot}${exp !== 0 ? 'e' + exp : ''}`;
     }
 
     return val.toString();

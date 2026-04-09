@@ -561,7 +561,13 @@ const TableArea: React.FC = () => {
                                                         id={`cell-${rowIndex}-${colIndex}`}
                                                         key={idx}
                                                         className="text-nowrap"
-                                                        style={{ backgroundColor: bgColor, color: textColor, cursor: 'cell' }}
+                                                        style={{ 
+                                                            backgroundColor: bgColor, 
+                                                            color: textColor, 
+                                                            cursor: 'cell',
+                                                            fontFamily: "'Roboto Mono', 'Courier New', monospace",
+                                                            whiteSpace: 'pre'
+                                                        }}
                                                         onClick={() => setSelectedCell({ row: rowIndex, col: colIndex })}
                                                     >
                                                         {displayVal as React.ReactNode}
