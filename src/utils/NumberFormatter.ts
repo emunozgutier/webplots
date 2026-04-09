@@ -2,6 +2,10 @@
  * Formats a number according to the specified format and significant digits.
  * Ensure that decimal points align vertically when using a monospaced font.
  * 
+ * Target Alignment:
+ * - Scientific: Sign at index 0, digit at index 1, dot at index 2 (3rd character).
+ * - Engineering: Sign at index 0, digit slots at indices 1-3, dot at index 4 (5th character).
+ * 
  * @param val The number to format
  * @param format 'generic' | 'engineering' | 'scientific'
  * @param sigDigits Number of significant digits to keep
@@ -21,21 +25,30 @@ export function formatNumber(
     const signStr = val < 0 ? "-" : " ";
     const absVal = Math.abs(val);
 
+    // Default Generic formatting with sign alignment
     if (format === 'generic') {
-        return `${signStr}${absVal.toString()}`;
+        const str = absVal.toString();
+        return `${signStr}${str}`;
     }
 
     if (val === 0) {
-        // Find how many spaces to pad to match Scientific/Engineering decimal point
-        // Scientific has 1 digit before dot + sign = 2 chars
-        // Engineering has up to 3 digits before dot + sign = 4 chars
-        if (format === 'scientific') return `${signStr}0${'.'.padEnd(sigDigits, '0')}`;
-        if (format === 'engineering') return `${signStr}  0${'.'.padEnd(sigDigits, '0')}`;
+        if (format === 'scientific') {
+            // Index 0: sign, 1: '0', 2: '.', 3+: '0's
+            const fractional = sigDigits > 1 ? '.'.padEnd(sigDigits, '0') : ' ';
+            return `${signStr}0${fractional}`;
+        }
+        if (format === 'engineering') {
+            // Index 0: sign, 1-2: sp, 3: '0', 4: '.', 5+: '0's
+            const fractional = sigDigits > 1 ? '.'.padEnd(sigDigits, '0') : ' ';
+            return `${signStr}  0${fractional}`;
+        }
         return `${signStr}0`;
     }
 
     if (format === 'scientific') {
         const expStr = absVal.toExponential(sigDigits - 1);
+        // absVal.toExponential(N) always returns one digit before dot.
+        // Format: "X.XXXXe+XX"
         return `${signStr}${expStr}`;
     }
 
@@ -49,28 +62,25 @@ export function formatNumber(
             exp += 3;
         }
 
-        let mantissaStr = mantissa.toPrecision(sigDigits);
-        
-        // Ensure decimal point alignment even for integers
-        if (mantissaStr.indexOf('.') === -1) {
-            // If sigDigits > length of integer part, toPrecision usually adds a dot.
-            // If not, we might need to pad. 
-            // However, with Engineering, mantissa is [1, 1000).
-            // Example: 500.toPrecision(3) is "500".
-            // We'll append a dot and spaces to keep alignment if needed? 
-            // Actually, better to just let it be, and pad the integer part.
-        }
-
+        const mantissaStr = mantissa.toPrecision(sigDigits);
         const dotIndex = mantissaStr.indexOf('.');
-        const preDot = dotIndex === -1 ? mantissaStr : mantissaStr.substring(0, dotIndex);
-        const postDot = dotIndex === -1 ? "" : mantissaStr.substring(dotIndex);
         
-        // Pad preDot to 3 characters
+        let preDot: string;
+        let postDot: string;
+
+        if (dotIndex === -1) {
+            preDot = mantissaStr;
+            // If dot is missing, we need a placeholder for alignment
+            postDot = ' '; 
+        } else {
+            preDot = mantissaStr.substring(0, dotIndex);
+            postDot = mantissaStr.substring(dotIndex);
+        }
+        
+        // Pad preDot to exactly 3 characters. 
+        // Index 0 of the final string is signStr. 
+        // Indices 1, 2, 3 are for preDot.
         const paddedPreDot = preDot.padStart(3, ' ');
-        
-        // If there's no dot but other numbers have one, alignment breaks.
-        // In Engineering, if mantissa is integer >= 100 and sigDigits is small, dot might be missing.
-        // We'll consistently use a space-padded approach.
         
         return `${signStr}${paddedPreDot}${postDot}${exp !== 0 ? 'e' + exp : ''}`;
     }
