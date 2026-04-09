@@ -1,5 +1,5 @@
 {
-    "commit_title": "Add enable toggle for style mappings",
-    "commit_message": "Introduce an enable/disable switch for each style mapping in the Style side menu, greying out and disabling inputs when a mapping is turned off. Hooked up saturation setters/rendering (setSaturation and Saturation block) in the UI. Update PlotlyHelpers to respect mapping.enabled and use sensible defaults when a mapping is disabled for hue, saturation, lightness, shape and size so visual output falls back correctly.",
-    "version_string": "2026.12.1"
+    "commit_title": "Use Source Code Pro for table cells",
+    "commit_message": "Replace Roboto Mono with Source Code Pro for table cell rendering. Updated src/components/PlotTableAreaComponents/TableArea.tsx to set fontFamily to 'Source Code Pro', and added a Google Fonts @import in src/index.css to load the typeface for consistent monospace rendering.",
+    "version_string": "2026.15.4"
 }
