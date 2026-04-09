@@ -202,7 +202,10 @@ const HeaderSummary: React.FC<HeaderSummaryProps> = ({ data, column, mode }) => 
 
         // Extract raw column data from the sample, filtering out nulls
         const rawValues = sampledData.map(row => row[column]).filter(v => v !== null && v !== undefined && v !== '');
-        if (rawValues.length === 0) return null;
+        // Count non-empty values
+        const validCount = rawValues.length;
+ 
+        if (validCount === 0) return null;
 
         const type = determineType(rawValues);
 
@@ -275,7 +278,9 @@ const HeaderSummary: React.FC<HeaderSummaryProps> = ({ data, column, mode }) => 
                     weight: c.weight
                 })),
                 rawAvg: avg,
-                rawStdDev: stdDev
+                rawStdDev: stdDev,
+                validCount,
+                sampleSize: sampledData.length
             };
         } else {
             // Category
@@ -292,7 +297,9 @@ const HeaderSummary: React.FC<HeaderSummaryProps> = ({ data, column, mode }) => 
             return {
                 type: 'category',
                 uniqueCount: sortedCategories.length,
-                topCategories: sortedCategories.slice(0, 5) // Keep it brief
+                topCategories: sortedCategories.slice(0, 5), // Keep it brief
+                validCount,
+                sampleSize: sampledData.length
             };
         }
     }, [data, column, mode]);
@@ -303,14 +310,10 @@ const HeaderSummary: React.FC<HeaderSummaryProps> = ({ data, column, mode }) => 
     if (mode === 'slim') {
         return (
             <div className="text-muted fw-normal" style={{ fontSize: '0.75rem', marginTop: '2px' }}>
-                {stats.type === 'category' ? (
-                    <span>{(stats as any).uniqueCount} distinct</span>
-                ) : (
-                    <div className="d-flex flex-column">
-                        <span>Max: {(stats as any).max}</span>
-                        <span>Min: {(stats as any).min}</span>
-                    </div>
-                )}
+                <div className="d-flex flex-column">
+                    <span>{stats.type === 'category' ? `${(stats as any).uniqueCount} groups` : `Max: ${(stats as any).max}`}</span>
+                    <span className="opacity-75">Pts: {(stats as any).validCount}</span>
+                </div>
             </div>
         );
     }
@@ -318,9 +321,16 @@ const HeaderSummary: React.FC<HeaderSummaryProps> = ({ data, column, mode }) => 
     // ---------- DETAILED MODE ----------
     return (
         <div className="mt-2 pt-2 border-top border-light text-muted fw-normal" style={{ fontSize: '0.8rem', minWidth: '150px' }}>
+            <div className="mb-2 pb-2 border-bottom border-light">
+                <div className="d-flex justify-content-between">
+                    <span className="fw-bold text-dark">Point Count:</span>
+                    <span>{(stats as any).validCount} <small className="opacity-75">({Math.round(((stats as any).validCount / (stats as any).sampleSize) * 100)}%)</small></span>
+                </div>
+            </div>
+
             {stats.type === 'category' ? (
                 <div>
-                    <div className="mb-1 text-dark fw-bold">{(stats as any).uniqueCount} distinct values</div>
+                    <div className="mb-1 text-dark fw-bold">{(stats as any).uniqueCount} distinct groups</div>
                     <ul className="list-unstyled mb-0" style={{ maxHeight: '80px', overflowY: 'auto' }}>
                         {((stats as any).topCategories as [string, number][]).map(([val, count], idx) => (
                             <li key={idx} className="d-flex justify-content-between text-truncate">
@@ -359,7 +369,8 @@ const HeaderSummary: React.FC<HeaderSummaryProps> = ({ data, column, mode }) => 
                         />
                     )}
 
-                    <div className="d-grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
+                    <div className="d-grid mb-2" style={{ gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
+                        <div><strong>Pts:</strong> {(stats as any).validCount}</div>
                         <div><strong>Min:</strong> {(stats as any).min}</div>
                         <div><strong>Max:</strong> {(stats as any).max}</div>
                         {!((stats as any).isGaussian && (stats as any).gaussianScore > 50) && (
