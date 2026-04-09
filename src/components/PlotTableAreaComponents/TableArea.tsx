@@ -198,6 +198,13 @@ const TableArea: React.FC = () => {
         setCurrentBatch(0);
     }, [datasetMode, displayData, displayColumns]);
 
+    // Automatically switch back to 'all' if nothing is plotted on Y-axis
+    React.useEffect(() => {
+        if (datasetMode === 'plot' && sideMenuData.yAxis.length === 0) {
+            setDatasetMode('all');
+        }
+    }, [sideMenuData.yAxis.length, datasetMode, setDatasetMode]);
+
     // Compute stats for detailed mode color coding
     const numericStats = useMemo(() => {
         if (colorMode !== 'color') return {};
@@ -384,6 +391,7 @@ const TableArea: React.FC = () => {
                     setDatasetMode={setDatasetMode}
                     colorMode={colorMode}
                     setColorMode={setColorMode}
+                    hasPlotData={sideMenuData.yAxis.length > 0}
                 />
             </div>
 

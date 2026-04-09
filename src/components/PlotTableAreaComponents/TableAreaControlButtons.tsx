@@ -9,6 +9,7 @@ interface TableAreaControlButtonsProps {
     setDatasetMode: (mode: 'all' | 'plot') => void;
     colorMode: 'none' | 'color';
     setColorMode: (mode: 'none' | 'color') => void;
+    hasPlotData: boolean;
 }
 
 const TableAreaControlButtons: React.FC<TableAreaControlButtonsProps> = ({
@@ -17,7 +18,8 @@ const TableAreaControlButtons: React.FC<TableAreaControlButtonsProps> = ({
     datasetMode,
     setDatasetMode,
     colorMode,
-    setColorMode
+    setColorMode,
+    hasPlotData
 }) => {
     return (
         <div className="d-flex gap-4 align-items-center">
@@ -83,7 +85,9 @@ const TableAreaControlButtons: React.FC<TableAreaControlButtonsProps> = ({
                         name="datasetMode"
                         value="plot"
                         checked={datasetMode === 'plot'}
+                        disabled={!hasPlotData}
                         onChange={(e) => setDatasetMode(e.currentTarget.value as 'all' | 'plot')}
+                        title={!hasPlotData ? "No data currently plotted" : "Show only plotted data"}
                     >
                         Plot Data
                     </ToggleButton>
