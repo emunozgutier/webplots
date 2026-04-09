@@ -566,7 +566,7 @@ const TableArea: React.FC = () => {
                                                     <td
                                                         id={`cell-${rowIndex}-${colIndex}`}
                                                         key={idx}
-                                                        className="text-nowrap"
+                                                        className=""
                                                         style={{ 
                                                             backgroundColor: bgColor, 
                                                             color: textColor, 
