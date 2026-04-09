@@ -505,10 +505,16 @@ const TableArea: React.FC = () => {
                                     const isRowSelected = selectedCell?.row === rowIndex;
                                     return (
                                         <tr key={rowIndex} style={{ height: `${rowHeight}px` }}>
-                                            <td
-                                                id={`cell-${rowIndex}-0`}
-                                                className={`text-muted fw-bold ${isRowSelected ? 'bg-light' : ''} ${selectedCell?.col === 0 ? 'bg-primary text-white' : ''}`}
-                                                style={{ position: 'sticky', left: 0, zIndex: 5, backgroundColor: isRowSelected ? '#e9ecef' : '#fff' }}
+                                                <td
+                                                    id={`cell-${rowIndex}-0`}
+                                                    className={`text-muted fw-bold ${isRowSelected ? 'bg-light' : ''} ${selectedCell?.col === 0 ? 'bg-primary text-white' : ''}`}
+                                                    style={{ 
+                                                        position: 'sticky', 
+                                                        left: 0, 
+                                                        zIndex: 5, 
+                                                        backgroundColor: isRowSelected ? '#e9ecef' : '#fff',
+                                                        fontFamily: "'Source Code Pro', monospace"
+                                                    }}
                                                 onClick={() => setSelectedCell({ row: rowIndex, col: 0 })}
                                                 tabIndex={-1}
                                             >
