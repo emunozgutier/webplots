@@ -6,7 +6,7 @@ import PlotArea from './PlotTableAreaComponents/PlotArea';
 import { useInkRatioStore } from '../store/InkRatioStore';
 
 const PlotTableArea: React.FC = () => {
-    const [viewMode, setViewMode] = React.useState<'plot' | 'table'>('plot');
+    const [viewMode, setViewMode] = React.useState<'plot' | 'table'>('table');
     const { isSideMenuOpen } = useWorkspaceLocalStore();
     const { setChartDimensions } = useInkRatioStore();
     const containerRef = React.useRef<HTMLDivElement>(null);

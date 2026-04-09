@@ -20,7 +20,7 @@ export const ViewToggleButtons: React.FC<{ viewMode: 'plot' | 'table'; setViewMo
                         zIndex: viewMode === 'plot' ? 1 : 0
                     }}
                 >
-                    🎨 Plot
+                    Plot
                 </button>
             </li>
             <li className="nav-item">
@@ -39,7 +39,7 @@ export const ViewToggleButtons: React.FC<{ viewMode: 'plot' | 'table'; setViewMo
                         zIndex: viewMode === 'table' ? 1 : 0
                     }}
                 >
-                    📇 Table
+                    Table
                 </button>
             </li>
         </ul>
