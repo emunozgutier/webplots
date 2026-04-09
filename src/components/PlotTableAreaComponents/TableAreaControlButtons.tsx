@@ -89,7 +89,9 @@ const TableAreaControlButtons: React.FC<TableAreaControlButtonsProps> = ({
                         onChange={(e) => setDatasetMode(e.currentTarget.value as 'all' | 'plot')}
                         title={!hasPlotData ? "No data currently plotted" : "Show only plotted data"}
                     >
-                        Plot Data
+                        <span style={{ textDecoration: !hasPlotData ? 'line-through' : 'none' }}>
+                            Plot Data
+                        </span>
                     </ToggleButton>
                 </ButtonGroup>
             </div>
