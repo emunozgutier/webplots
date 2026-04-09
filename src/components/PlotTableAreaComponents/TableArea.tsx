@@ -421,11 +421,11 @@ const TableArea: React.FC = () => {
                             <thead className="bg-light" style={{ position: 'sticky', top: 0, zIndex: 12 }}>
                                 <tr>
                                     <th 
-                                        className={selectedCell?.col === 0 ? 'bg-primary text-white' : 'bg-light'} 
+                                        className={`text-nowrap align-top ${selectedCell?.col === 0 ? 'bg-primary text-white' : 'bg-light'}`}
                                         style={{ position: 'sticky', left: 0, zIndex: 13, minWidth: '100px' }}
                                     >
-                                        <div className="d-flex justify-content-between align-items-center">
-                                            <span className="fw-bold">row</span>
+                                        <div className="d-flex justify-content-between align-items-center mb-1">
+                                            <div className="fw-bold">row</div>
                                             <div className="btn-group ms-2">
                                                 <button
                                                     className={`btn btn-sm py-0 px-1 ${sortConfig?.key === '__originalRow' && sortConfig?.direction === 'asc' ? 'btn-secondary' : 'btn-outline-secondary'}`}
