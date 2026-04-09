@@ -436,25 +436,25 @@ const TableArea: React.FC = () => {
                             <thead className="bg-light" style={{ position: 'sticky', top: 0, zIndex: 12 }}>
                                 <tr>
                                     <th 
-                                        className="bg-light align-top"
-                                        style={{ position: 'sticky', left: 0, zIndex: 13, minWidth: '100px' }}
+                                        className="bg-light align-top p-1"
+                                        style={{ position: 'sticky', left: 0, zIndex: 13, minWidth: '45px' }}
                                     >
-                                        <div className="d-flex justify-content-between align-items-center mb-1">
-                                            <div className="fw-bold">row</div>
-                                            <div className="btn-group ms-2">
+                                        <div className="d-flex flex-column align-items-center">
+                                            <div className="fw-bold small mb-1">row</div>
+                                            <div className="btn-group-vertical">
                                                 <button
                                                     className={`btn btn-sm py-0 px-1 ${sortConfig?.key === '__originalRow' && sortConfig?.direction === 'asc' ? 'btn-secondary' : 'btn-outline-secondary'}`}
                                                     title="Sort row Ascending"
                                                     onClick={() => handleSortAsc('__originalRow')}
                                                 >
-                                                    <i className="bi bi-arrow-up"></i>
+                                                    <i className="bi bi-arrow-up" style={{ fontSize: '0.7rem' }}></i>
                                                 </button>
                                                 <button
                                                     className={`btn btn-sm py-0 px-1 ${sortConfig?.key === '__originalRow' && sortConfig?.direction === 'desc' ? 'btn-secondary' : 'btn-outline-secondary'}`}
                                                     title="Sort row Descending"
                                                     onClick={() => handleSortDesc('__originalRow')}
                                                 >
-                                                    <i className="bi bi-arrow-down"></i>
+                                                    <i className="bi bi-arrow-down" style={{ fontSize: '0.7rem' }}></i>
                                                 </button>
                                             </div>
                                         </div>
