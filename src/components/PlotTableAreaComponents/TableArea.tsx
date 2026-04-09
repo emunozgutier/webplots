@@ -188,7 +188,20 @@ const TableArea: React.FC = () => {
         return Array.from(cols);
     }, [sideMenuData, groupSideMenuData, filters, colorData]);
 
-    const displayData = datasetMode === 'all' ? allData : filteredData;
+    const indexedData = useMemo(() => {
+        const raw = datasetMode === 'all' ? allData : filteredData;
+        
+        // Use a Map for O(1) lookup of original indices
+        const rowToIndex = new Map<any, number>();
+        allData.forEach((r, i) => rowToIndex.set(r, i + 1));
+        
+        return raw.map(r => ({ 
+            ...r, 
+            __originalRow: rowToIndex.get(r) || 0 
+        }));
+    }, [allData, filteredData, datasetMode]);
+
+    const displayData = indexedData;
     const displayColumns = datasetMode === 'all' ? allColumns : usedColumns;
 
     // Reset selection and batch when dataset changes
@@ -222,7 +235,7 @@ const TableArea: React.FC = () => {
                 const row = displayData[i];
                 if (!row) continue;
 
-                const v = row[col];
+                const v = (row as any)[col];
                 if (v === null || v === undefined || v === '') continue;
 
                 totalProcessed++;
@@ -253,8 +266,8 @@ const TableArea: React.FC = () => {
 
         const sorted = [...displayData];
         sorted.sort((a, b) => {
-            let aVal = a[sortConfig.key];
-            let bVal = b[sortConfig.key];
+            let aVal = (a as any)[sortConfig.key];
+            let bVal = (b as any)[sortConfig.key];
 
             // Handle nulls
             if (aVal === null || aVal === undefined) aVal = '';
@@ -407,7 +420,30 @@ const TableArea: React.FC = () => {
                         <Table bordered hover size="sm" className="mb-0" style={{ position: 'absolute', top: 0, left: 0, width: '100%', minWidth: 'max-content' }}>
                             <thead className="bg-light" style={{ position: 'sticky', top: 0, zIndex: 12 }}>
                                 <tr>
-                                    <th className={selectedCell?.col === 0 ? 'bg-primary text-white' : 'bg-light'} style={{ position: 'sticky', left: 0, zIndex: 13 }}>#</th>
+                                    <th 
+                                        className={selectedCell?.col === 0 ? 'bg-primary text-white' : 'bg-light'} 
+                                        style={{ position: 'sticky', left: 0, zIndex: 13, minWidth: '100px' }}
+                                    >
+                                        <div className="d-flex justify-content-between align-items-center">
+                                            <span className="fw-bold">row</span>
+                                            <div className="btn-group ms-2">
+                                                <button
+                                                    className={`btn btn-sm py-0 px-1 ${sortConfig?.key === '__originalRow' && sortConfig?.direction === 'asc' ? 'btn-secondary' : 'btn-outline-secondary'}`}
+                                                    title="Sort row Ascending"
+                                                    onClick={() => handleSortAsc('__originalRow')}
+                                                >
+                                                    <i className="bi bi-arrow-up"></i>
+                                                </button>
+                                                <button
+                                                    className={`btn btn-sm py-0 px-1 ${sortConfig?.key === '__originalRow' && sortConfig?.direction === 'desc' ? 'btn-secondary' : 'btn-outline-secondary'}`}
+                                                    title="Sort row Descending"
+                                                    onClick={() => handleSortDesc('__originalRow')}
+                                                >
+                                                    <i className="bi bi-arrow-down"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </th>
                                     {displayColumns.map((col: string, idx: number) => (
                                         <th
                                             key={idx}
@@ -465,7 +501,7 @@ const TableArea: React.FC = () => {
                                                 onClick={() => setSelectedCell({ row: rowIndex, col: 0 })}
                                                 tabIndex={-1}
                                             >
-                                                {currentBatch * BATCH_SIZE + rowIndex + 1}
+                                                {(row as any).__originalRow}
                                             </td>
                                             {displayColumns.map((col: string, idx: number) => {
                                                 const colIndex = idx + 1;
