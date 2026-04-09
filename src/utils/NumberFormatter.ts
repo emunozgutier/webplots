@@ -14,7 +14,8 @@
 export function formatNumber(
     val: number | null | undefined, 
     format: 'generic' | 'engineering' | 'scientific', 
-    sigDigits: number
+    sigDigits: number,
+    alignDecimal: boolean = true
 ): string {
     if (val === null || val === undefined) return '';
     if (isNaN(val)) return String(val);
@@ -22,10 +23,10 @@ export function formatNumber(
     // If it's not a finite number, return as string (Infinity, NaN)
     if (!Number.isFinite(val)) return String(val);
 
-    const signStr = val < 0 ? "-" : " ";
+    const signStr = alignDecimal ? (val < 0 ? "-" : " ") : (val < 0 ? "-" : "");
     const absVal = Math.abs(val);
 
-    // Default Generic formatting with sign alignment
+    // Default Generic formatting with optional sign alignment
     if (format === 'generic') {
         const str = absVal.toString();
         return `${signStr}${str}`;
@@ -34,21 +35,20 @@ export function formatNumber(
     if (val === 0) {
         if (format === 'scientific') {
             // Index 0: sign, 1: '0', 2: '.', 3+: '0's
-            const fractional = sigDigits > 1 ? '.'.padEnd(sigDigits, '0') : ' ';
-            return `${signStr}0${fractional}`;
+            const fractional = sigDigits > 1 ? '.'.padEnd(sigDigits, '0') : (alignDecimal ? ' ' : '');
+            if (alignDecimal) return `${signStr}0${fractional}`;
+            return `0${sigDigits > 1 ? '.'.padEnd(sigDigits, '0') : ''}`;
         }
         if (format === 'engineering') {
-            // Index 0: sign, 1-2: sp, 3: '0', 4: '.', 5+: '0's
-            const fractional = sigDigits > 1 ? '.'.padEnd(sigDigits, '0') : ' ';
-            return `${signStr}  0${fractional}`;
+            const fractional = sigDigits > 1 ? '.'.padEnd(sigDigits, '0') : (alignDecimal ? ' ' : '');
+            if (alignDecimal) return `${signStr}  0${fractional}`;
+            return `0${sigDigits > 1 ? '.'.padEnd(sigDigits, '0') : ''}`;
         }
         return `${signStr}0`;
     }
 
     if (format === 'scientific') {
         const expStr = absVal.toExponential(sigDigits - 1);
-        // absVal.toExponential(N) always returns one digit before dot.
-        // Format: "X.XXXXe+XX"
         return `${signStr}${expStr}`;
     }
 
@@ -71,16 +71,13 @@ export function formatNumber(
         if (dotIndex === -1) {
             preDot = mantissaStr;
             // If dot is missing, we need a placeholder for alignment
-            postDot = ' '; 
+            postDot = alignDecimal ? ' ' : ''; 
         } else {
             preDot = mantissaStr.substring(0, dotIndex);
             postDot = mantissaStr.substring(dotIndex);
         }
         
-        // Pad preDot to exactly 3 characters. 
-        // Index 0 of the final string is signStr. 
-        // Indices 1, 2, 3 are for preDot.
-        const paddedPreDot = preDot.padStart(3, ' ');
+        const paddedPreDot = alignDecimal ? preDot.padStart(3, ' ') : preDot;
         
         return `${signStr}${paddedPreDot}${postDot}${exp !== 0 ? 'e' + exp : ''}`;
     }

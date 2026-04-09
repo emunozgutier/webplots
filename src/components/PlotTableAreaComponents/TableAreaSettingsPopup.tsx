@@ -8,6 +8,8 @@ const TableAreaSettingsPopup: React.FC = () => {
         setNumberFormat, 
         significantDigits, 
         setSignificantDigits,
+        alignDecimal,
+        setAlignDecimal,
         closePopup 
     } = useWorkspaceLocalStore();
 
@@ -25,7 +27,7 @@ const TableAreaSettingsPopup: React.FC = () => {
             <Card.Body className="p-4">
                 <div className="mb-4">
                     <h6 className="text-muted fw-bold mb-3">Number Formatting</h6>
-                    <ButtonGroup className="w-100 shadow-sm">
+                    <ButtonGroup className="w-100 shadow-sm mb-3">
                         <Button
                             variant={numberFormat === 'generic' ? 'primary' : 'outline-primary'}
                             onClick={() => setNumberFormat('generic')}
@@ -48,7 +50,22 @@ const TableAreaSettingsPopup: React.FC = () => {
                             Engineering
                         </Button>
                     </ButtonGroup>
-                    <Form.Text className="text-muted mt-2 d-block">
+                    
+                    <Form.Group className="mb-2">
+                        <Form.Check 
+                            type="checkbox"
+                            id="align-decimal-checkbox"
+                            label="Decimal Point Alignment"
+                            checked={alignDecimal}
+                            onChange={(e) => setAlignDecimal(e.target.checked)}
+                            className="small fw-bold text-dark"
+                        />
+                        <Form.Text className="text-muted d-block ms-4 mt-1">
+                            Ensures decimal points align vertically using monospaced padding.
+                        </Form.Text>
+                    </Form.Group>
+
+                    <Form.Text className="text-muted mt-3 d-block border-top pt-2">
                         {numberFormat === 'engineering' && "Engineering: Exponent is multiple of 3, Mantissa is [1, 1000)."}
                         {numberFormat === 'scientific' && "Scientific: Standard 'e' notation with one digit before decimal."}
                         {numberFormat === 'generic' && "Generic: Standard browser number representation."}

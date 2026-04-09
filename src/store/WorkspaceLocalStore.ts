@@ -21,8 +21,10 @@ export interface WorkspaceLocalState {
     setColorMode: (mode: 'none' | 'color') => void;
     numberFormat: 'generic' | 'engineering' | 'scientific';
     significantDigits: number;
+    alignDecimal: boolean;
     setNumberFormat: (format: 'generic' | 'engineering' | 'scientific') => void;
     setSignificantDigits: (digits: number) => void;
+    setAlignDecimal: (align: boolean) => void;
 }
 
 export const createWorkspaceLocalStore = () => {
@@ -45,8 +47,10 @@ export const createWorkspaceLocalStore = () => {
             setColorMode: (mode) => set({ colorMode: mode }),
             numberFormat: 'engineering',
             significantDigits: 4,
+            alignDecimal: true,
             setNumberFormat: (numberFormat) => set({ numberFormat }),
-            setSignificantDigits: (significantDigits) => set({ significantDigits })
+            setSignificantDigits: (significantDigits) => set({ significantDigits }),
+            setAlignDecimal: (alignDecimal) => set({ alignDecimal })
         })
     );
 };
