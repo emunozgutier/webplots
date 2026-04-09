@@ -565,7 +565,7 @@ const TableArea: React.FC = () => {
                                                             backgroundColor: bgColor, 
                                                             color: textColor, 
                                                             cursor: 'cell',
-                                                            fontFamily: "'Roboto Mono', 'Courier New', monospace",
+                                                            fontFamily: "'Source Code Pro', monospace",
                                                             whiteSpace: 'pre'
                                                         }}
                                                         onClick={() => setSelectedCell({ row: rowIndex, col: colIndex })}
