@@ -404,6 +404,9 @@ const TableArea: React.FC = () => {
                     scrollbar-width: thin;
                     scrollbar-color: #adb5bd #f8f9fa;
                 }
+                .monospaced-cell {
+                    white-space: pre !important;
+                }
             `}</style>
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <h5 className="mb-0 text-dark">Data Table
@@ -565,13 +568,12 @@ const TableArea: React.FC = () => {
                                                     <td
                                                         id={`cell-${rowIndex}-${colIndex}`}
                                                         key={idx}
-                                                        className=""
+                                                        className="monospaced-cell"
                                                         style={{ 
                                                             backgroundColor: bgColor, 
                                                             color: textColor, 
                                                             cursor: 'cell',
-                                                            fontFamily: "'Source Code Pro', monospace",
-                                                            whiteSpace: 'pre !important'
+                                                            fontFamily: "'Source Code Pro', monospace"
                                                         }}
                                                         onClick={() => setSelectedCell({ row: rowIndex, col: colIndex })}
                                                     >
