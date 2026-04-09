@@ -1,5 +1,5 @@
 {
-    "commit_title": "Refactor TableAreaSettingsPopup UI",
-    "commit_message": "Revamp the TableAreaSettingsPopup layout and styling for a cleaner, more compact UI. Switched card background to white and simplified header spacing/icon sizes; reduced paddings and adjusted button sizes. Reworked notation, precision and options sections (smaller controls, clearer labels, switch for alignment) and tightened the live preview table (sticky header, updated column labels and monospace formatting). Minor copy clarifications for notation descriptions and button styling tweaks for a subtler action appearance.",
+    "commit_title": "Default to table view and remove emojis from tabs",
+    "commit_message": "Set the initial viewMode in PlotTableArea to 'table' instead of 'plot' so the UI opens showing the table by default. Also remove emoji characters from the Plot/Table toggle buttons in PlotTableTabs to provide cleaner labels and improve accessibility.",
     "version_string": "2026.15.4"
 }
