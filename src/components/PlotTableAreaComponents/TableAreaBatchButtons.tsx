@@ -16,8 +16,8 @@ const TableAreaBatchButtons: React.FC<TableAreaBatchButtonsProps> = ({
     const isLast = currentBatch === totalBatches - 1;
 
     return (
-        <div className="d-flex flex-column h-100 bg-light border-start" style={{ width: '60px' }}>
-            <div className="d-flex flex-column align-items-center py-3 gap-3">
+        <div className="d-flex flex-column justify-content-center h-100 bg-light border-start" style={{ width: '64px' }}>
+            <div className="d-flex flex-column align-items-center gap-4">
                 <ButtonGroup vertical className="gap-1 shadow-sm">
                     <Button
                         variant="outline-secondary"
