@@ -43,7 +43,7 @@ export const createWorkspaceLocalStore = () => {
             setSummaryMode: (mode) => set({ summaryMode: mode }),
             setDatasetMode: (mode) => set({ datasetMode: mode }),
             setColorMode: (mode) => set({ colorMode: mode }),
-            numberFormat: 'generic',
+            numberFormat: 'engineering',
             significantDigits: 4,
             setNumberFormat: (numberFormat) => set({ numberFormat }),
             setSignificantDigits: (significantDigits) => set({ significantDigits })

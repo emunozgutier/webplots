@@ -432,7 +432,7 @@ const TableArea: React.FC = () => {
                             <thead className="bg-light" style={{ position: 'sticky', top: 0, zIndex: 12 }}>
                                 <tr>
                                     <th 
-                                        className={`text-nowrap align-top ${selectedCell?.col === 0 ? 'bg-primary text-white' : 'bg-light'}`}
+                                        className="bg-light align-top"
                                         style={{ position: 'sticky', left: 0, zIndex: 13, minWidth: '100px' }}
                                     >
                                         <div className="d-flex justify-content-between align-items-center mb-1">
@@ -458,7 +458,7 @@ const TableArea: React.FC = () => {
                                     {displayColumns.map((col: string, idx: number) => (
                                         <th
                                             key={idx}
-                                            className={`text-nowrap align-top ${selectedCell?.col === idx + 1 ? 'bg-primary text-white' : 'bg-light'}`}
+                                            className="bg-light align-top"
                                         >
                                             <div className="d-flex justify-content-between align-items-center mb-1">
                                                 <div className="fw-bold">{col}</div>
@@ -507,12 +507,12 @@ const TableArea: React.FC = () => {
                                         <tr key={rowIndex} style={{ height: `${rowHeight}px` }}>
                                                 <td
                                                     id={`cell-${rowIndex}-0`}
-                                                    className={`text-muted fw-bold ${isRowSelected ? 'bg-light' : ''} ${selectedCell?.col === 0 ? 'bg-primary text-white' : ''}`}
+                                                    className="text-muted fw-bold"
                                                     style={{ 
                                                         position: 'sticky', 
                                                         left: 0, 
                                                         zIndex: 5, 
-                                                        backgroundColor: isRowSelected ? '#e9ecef' : '#fff',
+                                                        backgroundColor: '#fff',
                                                         fontFamily: "'Source Code Pro', monospace"
                                                     }}
                                                 onClick={() => setSelectedCell({ row: rowIndex, col: 0 })}
@@ -545,8 +545,6 @@ const TableArea: React.FC = () => {
  
                                                 if (isCellSelected) {
                                                     bgColor = '#0d6efd'; // Primary blue
-                                                } else if (isRowSelected || isColSelected) {
-                                                    bgColor = '#e9ecef'; // Light gray highlight
                                                 } else if (colorMode === 'color' && numericStats[col]) {
                                                     const { min, max } = numericStats[col];
                                                     const numVal = Number(val);
@@ -572,7 +570,7 @@ const TableArea: React.FC = () => {
                                                             color: textColor, 
                                                             cursor: 'cell',
                                                             fontFamily: "'Source Code Pro', monospace",
-                                                            whiteSpace: 'pre'
+                                                            whiteSpace: 'pre !important'
                                                         }}
                                                         onClick={() => setSelectedCell({ row: rowIndex, col: colIndex })}
                                                     >
