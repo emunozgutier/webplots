@@ -12,11 +12,15 @@ import { useInkRatioStore } from '../../store/InkRatioStore';
 import { useStyleSideMenuStore } from '../../store/StyleSideMenuStore';
 import { useSubplotSideMenuStore } from '../../store/SubplotSideMenuStore';
 import { generatePlotConfig } from '../../utils/PlotlyHelpers';
+import { Step_2_grouping, Step_3_ink_ratio_filter, Step_1_filter } from '../../utils/DataFrameLib';
+import { useCsvDataStore } from '../../store/CsvDataStore';
+import { useFilterSideMenuStore } from '../../store/FilterSideMenuStore';
 import PlotAreaControlButtons from './PlotAreaControlButtons';
-import { useFilteredData } from '../../utils/useFilteredData';
 
 const PlotArea: React.FC = () => {
-    const data = useFilteredData();
+    const { data: rawData } = useCsvDataStore();
+    const { filters } = useFilterSideMenuStore();
+    const data = useMemo(() => Step_1_filter(rawData, filters), [rawData, filters]);
     const { sideMenuData } = useAxisSideMenuStore();
     const { groupSideMenuData } = useGroupSideMenuStore();
     const { plotLayout } = usePlotLayoutStore();
@@ -27,10 +31,40 @@ const PlotArea: React.FC = () => {
 
     const { setPopupContent } = useWorkspaceLocalStore();
 
-    const { plotData, layout, hasData, receipt, stats, generatedTraces } = useMemo(
-        () => generatePlotConfig(data, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData, subplotData, absorptionMode, maxRadiusRatio, inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius),
-        [data, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData, subplotData, absorptionMode, maxRadiusRatio, inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius]
-    );
+    const { plotData, layout, hasData, receipt, stats, generatedTraces } = useMemo(() => {
+        // Step 2: Grouping
+        const traces = Step_2_grouping(data, sideMenuData, groupSideMenuData);
+
+        // Step 3: Ink Ratio Filtering (Geometric reduction)
+        const processedTraces = Step_3_ink_ratio_filter(traces, {
+            inkRatio,
+            chartWidth,
+            chartHeight,
+            pointRadius,
+            useCustomRadius,
+            customRadius,
+            enableLogAxis: plotLayout.enableLogAxis
+        });
+
+        // Step 4: Final Plotly Configuration
+        return generatePlotConfig(
+            data,
+            processedTraces,
+            sideMenuData,
+            plotLayout,
+            traceConfig,
+            colorData,
+            subplotData,
+            absorptionMode,
+            maxRadiusRatio,
+            groupSideMenuData.groupAxis
+        );
+    }, [
+        data, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData,
+        subplotData, absorptionMode, maxRadiusRatio, inkRatio, chartWidth,
+        chartHeight, pointRadius, useCustomRadius, customRadius
+    ]);
+
 
     // Update stats in store
     const prevStatsRef = React.useRef<string | null>(null);

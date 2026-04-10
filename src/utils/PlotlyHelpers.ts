@@ -1,32 +1,27 @@
 import type { Layout, Data } from 'plotly.js';
 import type { CsvDataStore } from '../store/CsvDataStore';
 import type { AxisSideMenuData } from '../store/AxisSideMenuStore';
-import type { GroupSideMenuData } from '../store/GroupSideMenuStore';
 import type { PlotLayout } from '../store/PlotLayoutStore';
 import type { TraceConfig } from '../store/TraceConfigStore';
 import type { StyleSideMenuData } from '../store/StyleSideMenuStore';
 import type { SubplotSideMenuState } from '../store/SubplotSideMenuStore';
 import type { TraceStats } from '../store/InkRatioStore';
 
+import type { TraceData } from './DataFrameLib';
+
 export const generatePlotConfig = (
     data: CsvDataStore[],
+    processedTraces: TraceData[],
     sideMenuData: AxisSideMenuData,
-    groupSideMenuData: GroupSideMenuData,
     plotLayout: PlotLayout,
     traceConfig: TraceConfig,
     colorSideMenuData: StyleSideMenuData,
     subplotSideMenuData: SubplotSideMenuState,
     absorptionMode: 'none' | 'size' | 'glow',
     maxRadiusRatio: number = 3,
-    inkRatio: number = 1,
-    chartWidth: number = 1280,
-    chartHeight: number = 720,
-    pointRadius: number = 8,
-    useCustomRadius: boolean = false,
-    customRadius: number = 20
+    groupAxis: string | null = null
 ) => {
     const { plotType, xAxis, yAxis } = sideMenuData;
-    const { groupAxis, groupSettings } = groupSideMenuData;
     const { enableLogAxis, plotTitle, xAxisTitle, yAxisTitle, xRange, yRange, histogramBarmode, legendOrientation, pointTip } = plotLayout;
 
     const { traceCustomizations, currentPaletteColors } = traceConfig;
@@ -44,267 +39,10 @@ export const generatePlotConfig = (
         };
     }
 
-    const x = data.map((row, i) => xAxis ? row[xAxis] : i);
-
-    // Helper to get color from current palette array (cycling if needed)
-    const getColor = (index: number) => {
-        if (!currentPaletteColors || currentPaletteColors.length === 0) return '#000000';
-        return currentPaletteColors[index % currentPaletteColors.length];
-    };
-
     const stats: Record<string, TraceStats> = {};
 
-    // Helper to filter points (mainly for Scatter)
-    const filterPoints = (xData: any, yData: any, xType: 'log' | 'linear', yType: 'log' | 'linear', traceRadius?: number) => {
-        // Determine effective radius for this trace
-        const effectiveRadius = traceRadius || pointRadius;
-
-        const minPixelDist = useCustomRadius
-            ? customRadius
-            : effectiveRadius * 2 * (1 - inkRatio);
-
-        if (!useCustomRadius && inkRatio >= 1) return { x: xData, y: yData, filteredCount: 0, absorbedCounts: new Array(xData.length).fill(0), survivingIndices: xData.map((_: any, i: number) => i) };
-        if (xData.length === 0) return { x: [], y: [], filteredCount: 0, absorbedCounts: [], survivingIndices: [] };
-
-        // Robust conversion to numbers
-        const toNum = (v: any): number => {
-            if (typeof v === 'number') return v;
-            const n = parseFloat(v);
-            if (!isNaN(n) && isFinite(n)) return n;
-            const d = Date.parse(v);
-            if (!isNaN(d)) return d;
-            return NaN;
-        };
-
-        const numsX = xData.map(toNum);
-        const numsY = yData.map(toNum);
-
-        let validX = numsX;
-        let validY = numsY;
-
-        // PERFORMANCE CUTOFF: N^2 geometric distance checking for >50k points locks the UI thread for minutes.
-        if (xData.length > 50000) {
-            console.warn(`[InkRatio] Dataset too large (${xData.length} pts) for geometric point-overlap filter. Rendering raw WebGL dataset.`);
-            return { x: xData, y: yData, filteredCount: 0, absorbedCounts: new Array(xData.length).fill(0), survivingIndices: xData.map((_: any, i: number) => i) };
-        }
-
-        // Determine Min/Max based on VALID numbers
-        const validNumsX = numsX.filter((n: number) => !isNaN(n));
-        const validNumsY = numsY.filter((n: number) => !isNaN(n));
-
-        if (validNumsX.length === 0 || validNumsY.length === 0) {
-            console.warn('[InkRatio] Cannot determine numeric range for filtering. Skipping.');
-            return { x: xData, y: yData, filteredCount: 0, absorbedCounts: new Array(xData.length).fill(0), survivingIndices: xData.map((_: any, i: number) => i) };
-        }
-
-        const xMin = Math.min(...validNumsX);
-        const xMax = Math.max(...validNumsX);
-        const yMin = Math.min(...validNumsY);
-        const yMax = Math.max(...validNumsY);
-
-        // Avoid division by zero
-        const safeW = chartWidth || 1;
-        const safeH = chartHeight || 1;
-
-        const xRangeVal = (xType === 'log' ? Math.log10(xMax) - Math.log10(xMin) : xMax - xMin) || 1;
-        const yRangeVal = (yType === 'log' ? Math.log10(yMax) - Math.log10(yMin) : yMax - yMin) || 1;
-
-        const xToPx = (val: number) => {
-            if (isNaN(val)) return -9999;
-            const normalized = xType === 'log'
-                ? (Math.log10(val) - Math.log10(xMin)) / xRangeVal
-                : (val - xMin) / xRangeVal;
-            return normalized * safeW;
-        };
-
-        const yToPx = (val: number) => {
-            if (isNaN(val)) return -9999;
-            const normalized = yType === 'log'
-                ? (Math.log10(val) - Math.log10(yMin)) / yRangeVal
-                : (val - yMin) / yRangeVal;
-            return (1 - normalized) * safeH; // Y is inverted in screen coords
-        };
-
-        const filteredX: any[] = [];
-        const filteredY: any[] = [];
-        const absorbedCounts: number[] = [];
-        const points: { px: number, py: number, absorbed: number, originalIndex: number }[] = [];
-        const survivingIndices: number[] = [];
-
-        for (let i = 0; i < xData.length; i++) {
-            const px = xToPx(validX[i]);
-            const py = yToPx(validY[i]);
-
-            if (px === -9999 || py === -9999) {
-                filteredX.push(xData[i]);
-                filteredY.push(yData[i]);
-                absorbedCounts.push(0);
-                survivingIndices.push(i);
-                continue;
-            }
-
-            let keptBy = -1;
-
-            // Simple check against all kept points.
-            for (let j = 0; j < points.length; j++) {
-                const dx = px - points[j].px;
-                const dy = py - points[j].py;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < minPixelDist) {
-                    keptBy = j;
-                    break;
-                }
-            }
-
-            if (keptBy === -1) {
-                // Keep this point
-                points.push({ px, py, absorbed: 0, originalIndex: i });
-                filteredX.push(xData[i]);
-                filteredY.push(yData[i]);
-                absorbedCounts.push(0); // Initialize its count to 0 in our output array
-                survivingIndices.push(i);
-            } else {
-                // Absorbed by another point
-                points[keptBy].absorbed += 1;
-                // Update the count for the point that absorbed this one
-                absorbedCounts[points[keptBy].originalIndex] = points[keptBy].absorbed;
-            }
-        }
-
-        const finalAbsorbedCounts = new Array(filteredX.length).fill(0);
-
-        let pointIdx = 0;
-        for (let i = 0; i < xData.length; i++) {
-            const px = xToPx(validX[i]);
-            const py = yToPx(validY[i]);
-            if (px === -9999 || py === -9999) {
-                finalAbsorbedCounts[pointIdx++] = 0;
-            } else {
-                // Is this point in our kept list?
-                const keptPoint = points.find(p => p.originalIndex === i);
-                if (keptPoint) {
-                    finalAbsorbedCounts[pointIdx++] = keptPoint.absorbed;
-                }
-            }
-        }
-
-        return { x: filteredX, y: filteredY, filteredCount: xData.length - filteredX.length, absorbedCounts: finalAbsorbedCounts, survivingIndices };
-    };
-
-    // Prepare traces
-    let generatedTraces: {
-        yCol: string;
-        groupName: string; // The suffix or group identifier
-        fullTraceName: string; // The unique key for customization
-        xData: any[];
-        yData: any[];
-        rowIndices: number[]; // the original indices of these points in the 'data' array for column mapping lookup
-    }[] = [];
-
-    if (groupAxis) {
-        const settings = groupSettings[groupAxis];
-        const isManual = settings && settings.mode === 'manual';
-
-        if (isManual) {
-            const bins = settings.bins;
-
-            yAxis.forEach(yCol => {
-                // Group indices by bin index
-                const binGroups: Record<number, number[]> = {};
-
-                data.forEach((row, idx) => {
-                    const val = row[groupAxis];
-                    const numVal = typeof val === 'number' ? val : parseFloat(String(val));
-
-
-                    for (let i = 0; i < bins.length; i++) {
-                        const bin = bins[i];
-                        let match = false;
-
-                        // Handle numeric comparisons
-                        if (!isNaN(numVal)) {
-                            switch (bin.operator) {
-                                case '>': match = numVal > bin.value; break;
-                                case '>=': match = numVal >= bin.value; break;
-                                case '<': match = numVal < bin.value; break;
-                                case '<=': match = numVal <= bin.value; break;
-                                case '==': match = numVal == bin.value; break;
-                                case '!=': match = numVal != bin.value; break;
-                            }
-                        } else {
-                            // Non-numeric fallback (only == and !=)
-                            if (bin.operator === '==') match = String(val) === String(bin.value);
-                            if (bin.operator === '!=') match = String(val) !== String(bin.value);
-                        }
-
-                        if (match) {
-                            if (!binGroups[i]) binGroups[i] = [];
-                            binGroups[i].push(idx);
-                            break;
-                        }
-                    }
-                });
-
-                // Create traces for matched bins
-                bins.forEach((bin: any, binIdx: number) => {
-                    const indices = binGroups[binIdx];
-                    if (!indices || indices.length === 0) return;
-
-                    generatedTraces.push({
-                        yCol: yCol,
-                        groupName: bin.label,
-                        fullTraceName: yAxis.length === 1 ? bin.label : `${yCol} (${bin.label})`,
-                        xData: indices.map(i => xAxis ? data[i][xAxis] : i),
-                        yData: indices.map(i => data[i][yCol]),
-                        rowIndices: indices
-                    });
-                });
-            });
-
-        } else {
-            // 1. Find unique values for the group axis
-            const groupValues = Array.from(new Set(data.map(row => row[groupAxis]))).filter(v => v !== null && v !== undefined);
-            // Sort for consistency
-            groupValues.sort();
-
-            // 2. For each Y-axis, create traces for each group
-            yAxis.forEach(yCol => {
-                groupValues.forEach(groupVal => {
-                    const groupValStr = String(groupVal);
-                    // Filter data for this group
-                    const indices = data.map((row, idx) => row[groupAxis] == groupVal ? idx : -1).filter(idx => idx !== -1);
-
-                    if (indices.length === 0) return;
-
-                    generatedTraces.push({
-                        yCol: yCol,
-                        groupName: `${groupAxis}=${groupValStr}`,
-                        fullTraceName: yAxis.length === 1 ? `${groupAxis}=${groupValStr}` : `${yCol} (${groupAxis}=${groupValStr})`,
-                        xData: indices.map(i => xAxis ? data[i][xAxis] : i),
-                        yData: indices.map(i => data[i][yCol]),
-                        rowIndices: indices
-                    });
-                });
-            });
-        }
-
-    } else {
-        // Standard behavior
-        yAxis.forEach(yCol => {
-            // If plotType is not histogram, x is already filled (with xAxis values or row numbers)
-            generatedTraces.push({
-                yCol: yCol,
-                groupName: '',
-                fullTraceName: yCol,
-                xData: plotType === 'histogram' ? [] : x,
-                yData: data.map(row => row[yCol]),
-                rowIndices: data.map((_, i) => i) // Full dataset map
-            });
-        });
-    }
-
     // Create Plotly traces
-    const plotData: Data[] = generatedTraces.flatMap((traceInfo, index) => {
+    const plotData: Data[] = processedTraces.flatMap((traceInfo, index) => {
         const { fullTraceName, yCol, groupName, xData, yData, rowIndices } = traceInfo;
 
         const isSinglePlot = (rows * cols) <= 1;
@@ -463,7 +201,7 @@ export const generatePlotConfig = (
                     x: processedYData,
                     type: 'histogram',
                     name: finalName,
-                    opacity: generatedTraces.length > 1 ? 0.7 : 1,
+                    opacity: processedTraces.length > 1 ? 0.7 : 1,
                     marker: {
                         color: marker.color,
                     }
@@ -485,13 +223,12 @@ export const generatePlotConfig = (
                 return [histTrace];
             }
 
-            const { x: finalX, y: finalY, filteredCount, absorbedCounts, survivingIndices } = filterPoints(
-                xData,
-                yData,
-                enableLogAxis ? 'log' : 'linear',
-                enableLogAxis ? 'log' : 'linear',
-                Array.isArray(marker.size) ? (customization.size || 8) : (marker.size || 8)
-            );
+            const finalX = xData;
+            const finalY = yData;
+            const filteredCount = traceInfo.filteredCount || 0;
+            const absorbedCounts = traceInfo.absorbedCounts || [];
+            const survivingIndices = traceInfo.survivingIndices;
+
 
             // Calculate max absorbed in this trace
             let maxAbsorbed = 0;
@@ -656,7 +393,7 @@ export const generatePlotConfig = (
         },
         autosize: true,
         margin: { l: 50, r: 50, b: 50, t: 50 },
-        showlegend: legendOrientation === 'hidden' ? false : (legendOrientation === 'auto' ? generatedTraces.length > 1 : true),
+        showlegend: legendOrientation === 'hidden' ? false : (legendOrientation === 'auto' ? processedTraces.length > 1 : true),
         legend: legendOrientation === 'bottom' ? { orientation: 'h', yanchor: 'bottom', y: -0.2, xanchor: 'center', x: 0.5 } : undefined,
         barmode: plotType === 'histogram' ? (histogramBarmode || 'overlay') : undefined
     };
@@ -686,9 +423,6 @@ export const generatePlotConfig = (
             const yKey = i === 1 ? 'yaxis' : `yaxis${i}`;
             (layout as any)[xKey] = { ...baseTargetXAxis };
             (layout as any)[yKey] = { ...baseTargetYAxis };
-
-            // Hide titles on non-first subplots to prevent huge clutter, unless explicitly requested maybe?
-            // Actually, keep it for now as 'independent' grids need their own scales labeled typically.
         }
     }
 
@@ -709,8 +443,13 @@ export const generatePlotConfig = (
     let receiptTraceCount = 0;
 
     // Traces for receipt
-    generatedTraces.forEach((traceInfo, index) => {
+    processedTraces.forEach((traceInfo, index) => {
         const { fullTraceName, yCol, groupName } = traceInfo;
+
+        const getColor = (idx: number) => {
+            if (!currentPaletteColors || currentPaletteColors.length === 0) return '#000000';
+            return currentPaletteColors[idx % currentPaletteColors.length];
+        };
 
         const isSinglePlot = (rows * cols) <= 1;
         let assignedSubplots = traceToSubplots[fullTraceName];
@@ -760,7 +499,7 @@ export const generatePlotConfig = (
   // x: ..., // Histogram data mapped from yAxis
   type: 'histogram',
   name: '${finalName}',
-  opacity: ${generatedTraces.length > 1 ? 0.7 : 1},
+  opacity: ${processedTraces.length > 1 ? 0.7 : 1},
   marker: { color: '${finalColor}' },
   xaxis: '${xAxisBase}',
   yaxis: '${yAxisBase}'`;
@@ -789,7 +528,7 @@ export const generatePlotConfig = (
 
     receipt += receiptTraces.join('\n\n') + '\n\n';
 
-    receipt += `var data = [ ${receiptTraces.map((_, i) => `trace${i + 1}`).join(', ')} ];\n\n`;
+    receipt += `var data = [ ${Array.from({ length: receiptTraceCount }, (_, i) => `trace${i + 1}`).join(', ')} ];\n\n`;
 
     // Layout
     receipt += `var layout = {
@@ -828,7 +567,7 @@ export const generatePlotConfig = (
   },`;
     }
 
-    receipt += `\n  showlegend: ${legendOrientation === 'hidden' ? 'false' : (legendOrientation === 'auto' ? generatedTraces.length > 1 : 'true')}${legendOrientation === 'bottom' ? `,\n  legend: { orientation: 'h', yanchor: 'bottom', y: -0.2, xanchor: 'center', x: 0.5 }` : ''}
+    receipt += `\n  showlegend: ${legendOrientation === 'hidden' ? 'false' : (legendOrientation === 'auto' ? processedTraces.length > 1 : 'true')}${legendOrientation === 'bottom' ? `,\n  legend: { orientation: 'h', yanchor: 'bottom', y: -0.2, xanchor: 'center', x: 0.5 }` : ''}
 };\n\n`;
 
     receipt += `Plotly.newPlot('myDiv', data, layout);`;
@@ -839,10 +578,11 @@ export const generatePlotConfig = (
         hasData: true,
         stats,
         receipt,
-        generatedTraces: generatedTraces.map(t => ({
+        generatedTraces: processedTraces.map(t => ({
             fullTraceName: t.fullTraceName,
             yCol: t.yCol,
             groupName: t.groupName
         }))
     };
 };
+
