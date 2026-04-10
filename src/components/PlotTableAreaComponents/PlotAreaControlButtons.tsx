@@ -8,6 +8,8 @@ import { useGroupSideMenuStore } from '../../store/GroupSideMenuStore';
 import { useStyleSideMenuStore } from '../../store/StyleSideMenuStore';
 import { useSubplotSideMenuStore } from '../../store/SubplotSideMenuStore';
 import { useInkRatioStore } from '../../store/InkRatioStore';
+import { useFilterSideMenuStore } from '../../store/FilterSideMenuStore';
+import { runDataPipeline } from '../../utils/DataFrameLib';
 
 interface PlotAreaControlButtonsProps {
     onOpenSettings: () => void;
@@ -22,10 +24,32 @@ const PlotAreaControlButtons: React.FC<PlotAreaControlButtonsProps> = ({ onOpenS
     const { groupSideMenuData } = useGroupSideMenuStore();
     const { colorData } = useStyleSideMenuStore();
     const subplotData = useSubplotSideMenuStore();
+    const { filters } = useFilterSideMenuStore();
     const { inkRatio, absorptionMode, maxRadiusRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius } = useInkRatioStore();
 
     const handleSaveHTML = () => {
-        const { plotData, layout } = generatePlotConfig(data, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData, subplotData, absorptionMode, maxRadiusRatio, inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius);
+        const { processedTraces } = runDataPipeline(data, filters, sideMenuData, groupSideMenuData, {
+            inkRatio,
+            chartWidth,
+            chartHeight,
+            pointRadius,
+            useCustomRadius,
+            customRadius,
+            enableLogAxis: plotLayout.enableLogAxis
+        });
+
+        const { plotData, layout } = generatePlotConfig(
+            data,
+            processedTraces,
+            sideMenuData,
+            plotLayout,
+            traceConfig,
+            colorData,
+            subplotData,
+            absorptionMode,
+            maxRadiusRatio,
+            groupSideMenuData.groupAxis
+        );
 
         const htmlContent = `
 <!DOCTYPE html>

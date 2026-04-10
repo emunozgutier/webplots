@@ -1,10 +1,6 @@
 import type { Filter } from '../store/FilterSideMenuStore';
 import type { AxisSideMenuData } from '../store/AxisSideMenuStore';
-import type { GroupSideMenuData } from '../store/GroupSideMenuStore';
-
-export type PreFilterMode = 'none' | 'uniform' | 'random' | 'inkRatio';
-
-export interface DataRow {
+import type { GroupSideMenuData } from '../store/GroupSideMenuStore';export interface DataRow {
     [key: string]: string | number | null | any;
 }
 
@@ -19,117 +15,6 @@ export interface TraceData {
     absorbedCounts?: number[];
     survivingIndices?: number[];
 }
-
-/**
- * Step 0: Pre-filter massive datasets (>100k) to prevent UI crashes.
- */
-export const Step_0_pre_filter = (
-    data: DataRow[],
-    config: {
-        mode: PreFilterMode;
-        uniformStep: number;
-        randomSampleCount: number;
-        inkRatio: number;
-        densityX: string | null;
-        densityY: string | null;
-    }
-): DataRow[] => {
-    const { mode, uniformStep, randomSampleCount, inkRatio, densityX, densityY } = config;
-
-    if (data.length === 0) return data;
-
-    if (mode === 'none') return data;
-
-    if (mode === 'uniform') {
-        const result: DataRow[] = [];
-        const step = Math.max(1, uniformStep);
-        for (let i = 0; i < data.length; i += step) {
-            result.push(data[i]);
-        }
-        return result;
-    }
-
-    if (mode === 'random') {
-        if (data.length <= randomSampleCount) return data;
-        const result: DataRow[] = [];
-        const step = data.length / randomSampleCount;
-        for (let i = 0; i < randomSampleCount; i++) {
-            const index = Math.floor(i * step + Math.random() * step);
-            if (index < data.length) result.push(data[index]);
-        }
-        return result;
-    }
-
-    if (mode === 'inkRatio') {
-        if (!densityX || !densityY) return data;
-
-        // Determination of effective radius
-        const minPixelDist = 20 * (1 - inkRatio); // Fixed virtual chart size 1000x1000
-        if (inkRatio >= 1) return data;
-
-        const toNum = (v: any): number => {
-            if (typeof v === 'number') return v;
-            const n = parseFloat(v);
-            if (!isNaN(n) && isFinite(n)) return n;
-            const d = Date.parse(v);
-            if (!isNaN(d)) return d;
-            return NaN;
-        };
-
-        // Find min/max and scale factors without re-mapping the whole array
-        let xMin = Infinity, xMax = -Infinity, yMin = Infinity, yMax = -Infinity;
-        const validIndices: number[] = [];
-        
-        for (let i = 0; i < data.length; i++) {
-            const vx = toNum(data[i][densityX]);
-            const vy = toNum(data[i][densityY]);
-            if (!isNaN(vx) && !isNaN(vy)) {
-                if (vx < xMin) xMin = vx;
-                if (vx > xMax) xMax = vx;
-                if (vy < yMin) yMin = vy;
-                if (vy > yMax) yMax = vy;
-                validIndices.push(i);
-            }
-        }
-
-        if (validIndices.length === 0) return data;
-
-        const xRange = (xMax - xMin) || 1;
-        const yRange = (yMax - yMin) || 1;
-
-        const points: { px: number, py: number }[] = [];
-        const result: DataRow[] = [];
-
-        // Single pass for geometric filtering
-        for (let i = 0; i < validIndices.length; i++) {
-            const idx = validIndices[i];
-            const row = data[idx];
-            const px = ((toNum(row[densityX]) - xMin) / xRange) * 1000;
-            const py = ((toNum(row[densityY]) - yMin) / yRange) * 1000;
-
-            let keptBy = -1;
-            // Check last 200 points to verify density
-            const checkLimit = Math.max(0, points.length - 200);
-            for (let j = points.length - 1; j >= checkLimit; j--) {
-                const dx = px - points[j].px;
-                const dy = py - points[j].py;
-                if ((dx * dx + dy * dy) < (minPixelDist * minPixelDist)) {
-                    keptBy = j;
-                    break;
-                }
-            }
-
-            if (keptBy === -1) {
-                points.push({ px, py });
-                result.push(row);
-            }
-        }
-
-        return result;
-    }
-
-    return data;
-};
 
 /**
  * Step 1: Filter raw data based on side-menu filter rules.
@@ -426,4 +311,35 @@ export const Step_3_ink_ratio_filter = (
             survivingIndices
         };
     });
+};
+
+/**
+ * Higher-level orchestrator that runs the entire processing pipeline.
+ * Combine this with generatePlotConfig for the final output.
+ */
+export const runDataPipeline = (
+    rawData: DataRow[],
+    filters: Filter[],
+    axisConfig: AxisSideMenuData,
+    groupConfig: GroupSideMenuData,
+    inkRatioConfig: {
+        inkRatio: number;
+        chartWidth: number;
+        chartHeight: number;
+        pointRadius: number;
+        useCustomRadius: boolean;
+        customRadius: number;
+        enableLogAxis: boolean;
+    }
+) => {
+    // Step 1: Logical filters
+    const filtered = Step_1_filter(rawData, filters);
+    
+    // Step 2: Grouping into traces
+    const traces = Step_2_grouping(filtered, axisConfig, groupConfig);
+    
+    // Step 3: Ink Ratio reduction
+    const processedTraces = Step_3_ink_ratio_filter(traces, inkRatioConfig);
+    
+    return { filtered, processedTraces };
 };

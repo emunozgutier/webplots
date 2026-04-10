@@ -12,21 +12,17 @@ import { useInkRatioStore } from '../../store/InkRatioStore';
 import { useStyleSideMenuStore } from '../../store/StyleSideMenuStore';
 import { useSubplotSideMenuStore } from '../../store/SubplotSideMenuStore';
 import { generatePlotConfig } from '../../utils/PlotlyHelpers';
-import { Step_0_pre_filter, Step_1_filter, Step_2_grouping, Step_3_ink_ratio_filter } from '../../utils/DataFrameLib';
+import { Step_1_filter, runDataPipeline } from '../../utils/DataFrameLib';
 import { useCsvDataStore } from '../../store/CsvDataStore';
 import { useFilterSideMenuStore } from '../../store/FilterSideMenuStore';
-import { usePreFilterStore } from '../../store/PreFilterStore';
 import PlotAreaControlButtons from './PlotAreaControlButtons';
 
 const PlotArea: React.FC = () => {
     const { data: rawDataTable } = useCsvDataStore();
     const { filters } = useFilterSideMenuStore();
-    const preFilterConfig = usePreFilterStore();
-
     const data = useMemo(() => {
-        const preFiltered = Step_0_pre_filter(rawDataTable, preFilterConfig);
-        return Step_1_filter(preFiltered, filters);
-    }, [rawDataTable, preFilterConfig, filters]);
+        return Step_1_filter(rawDataTable, filters);
+    }, [rawDataTable, filters]);
 
     const { sideMenuData } = useAxisSideMenuStore();
     const { groupSideMenuData } = useGroupSideMenuStore();
@@ -39,11 +35,7 @@ const PlotArea: React.FC = () => {
     const { setPopupContent } = useWorkspaceLocalStore();
 
     const { plotData, layout, hasData, receipt, stats, generatedTraces } = useMemo(() => {
-        // Step 2: Grouping
-        const traces = Step_2_grouping(data, sideMenuData, groupSideMenuData);
-
-        // Step 3: Ink Ratio Filtering (Geometric reduction)
-        const processedTraces = Step_3_ink_ratio_filter(traces, {
+        const { processedTraces } = runDataPipeline(rawDataTable, filters, sideMenuData, groupSideMenuData, {
             inkRatio,
             chartWidth,
             chartHeight,
