@@ -2,6 +2,8 @@ import type { Filter } from '../store/FilterSideMenuStore';
 import type { AxisSideMenuData } from '../store/AxisSideMenuStore';
 import type { GroupSideMenuData } from '../store/GroupSideMenuStore';
 
+export type PreFilterMode = 'none' | 'uniform' | 'random' | 'inkRatio';
+
 export interface DataRow {
     [key: string]: string | number | null | any;
 }
@@ -17,6 +19,104 @@ export interface TraceData {
     absorbedCounts?: number[];
     survivingIndices?: number[];
 }
+
+/**
+ * Step 0: Pre-filter massive datasets (>100k) to prevent UI crashes.
+ */
+export const Step_0_pre_filter = (
+    data: DataRow[],
+    config: {
+        mode: PreFilterMode;
+        uniformStep: number;
+        randomSampleCount: number;
+        inkRatio: number;
+        densityX: string | null;
+        densityY: string | null;
+    }
+): DataRow[] => {
+    const { mode, uniformStep, randomSampleCount, inkRatio, densityX, densityY } = config;
+
+    if (mode === 'none' || data.length === 0) return data;
+
+    if (mode === 'uniform') {
+        return data.filter((_, i) => i % uniformStep === 0);
+    }
+
+    if (mode === 'random') {
+        if (data.length <= randomSampleCount) return data;
+        const result: DataRow[] = [];
+        const step = data.length / randomSampleCount;
+        for (let i = 0; i < randomSampleCount; i++) {
+            const index = Math.floor(i * step + Math.random() * step);
+            if (index < data.length) result.push(data[index]);
+        }
+        return result;
+    }
+
+    if (mode === 'inkRatio') {
+        if (!densityX || !densityY) return data;
+
+        // Determination of effective radius
+        const minPixelDist = 20 * (1 - inkRatio); // Fixed virtual chart size 1000x1000
+        if (inkRatio >= 1) return data;
+
+        const toNum = (v: any): number => {
+            if (typeof v === 'number') return v;
+            const n = parseFloat(v);
+            if (!isNaN(n) && isFinite(n)) return n;
+            const d = Date.parse(v);
+            if (!isNaN(d)) return d;
+            return NaN;
+        };
+
+        const validPoints = data.map(row => ({
+            x: toNum(row[densityX]),
+            y: toNum(row[densityY]),
+            row
+        })).filter(p => !isNaN(p.x) && !isNaN(p.y));
+
+        if (validPoints.length === 0) return data;
+
+        const xMin = Math.min(...validPoints.map(p => p.x));
+        const xMax = Math.max(...validPoints.map(p => p.x));
+        const yMin = Math.min(...validPoints.map(p => p.y));
+        const yMax = Math.max(...validPoints.map(p => p.y));
+
+        const xRange = (xMax - xMin) || 1;
+        const yRange = (yMax - yMin) || 1;
+
+        const points: { px: number, py: number }[] = [];
+        const result: DataRow[] = [];
+
+        // For massive datasets, we use a simple grid or a limited distance check
+        // To keep it semi-fast, we'll only check the last 200 kept points
+        for (let i = 0; i < validPoints.length; i++) {
+            const p = validPoints[i];
+            const px = ((p.x - xMin) / xRange) * 1000;
+            const py = ((p.y - yMin) / yRange) * 1000;
+
+            let keptBy = -1;
+            const checkLimit = Math.max(0, points.length - 200);
+            for (let j = points.length - 1; j >= checkLimit; j--) {
+                const dx = px - points[j].px;
+                const dy = py - points[j].py;
+                if (Math.sqrt(dx * dx + dy * dy) < minPixelDist) {
+                    keptBy = j;
+                    break;
+                }
+            }
+
+            if (keptBy === -1) {
+                points.push({ px, py });
+                result.push(p.row);
+            }
+        }
+
+        return result;
+    }
+
+    return data;
+};
 
 /**
  * Step 1: Filter raw data based on side-menu filter rules.

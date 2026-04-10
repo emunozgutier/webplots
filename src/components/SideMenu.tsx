@@ -10,13 +10,16 @@ import StyleSideMenu from './SideMenuComponents/StyleSideMenu';
 import CreateColumnSideMenu from './SideMenuComponents/CreateColumnSideMenu';
 import SubplotSideMenu from './SideMenuComponents/SubplotSideMenu';
 
-type SideMenuTab = 'create' | 'axis' | 'filter' | 'group' | 'color' | 'ink' | 'subplots';
+import PreFilterSideMenu from './SideMenuComponents/PreFilterSideMenu';
+
+type SideMenuTab = 'create' | 'axis' | 'filter' | 'group' | 'color' | 'ink' | 'subplots' | 'prefilter';
 
 const SideMenu: React.FC = () => {
-    const { columns: storeColumns } = useCsvDataStore();
+    const { data: rawData, columns: storeColumns } = useCsvDataStore();
     const { sideMenuData } = useAxisSideMenuStore();
     const { isSideMenuOpen, toggleSideMenu, sideMenuWidth, setSideMenuWidth } = useWorkspaceLocalStore();
 
+    const isLargeDataset = rawData.length > 100000;
     const { hasColumns } = useMemo(() => createAxisSideMenuConfig(storeColumns, sideMenuData), [storeColumns, sideMenuData]);
     const { plotType } = sideMenuData;
     const [activeTab, setActiveTab] = useState<SideMenuTab>('axis');
@@ -65,6 +68,8 @@ const SideMenu: React.FC = () => {
         switch (activeTab) {
             case 'create':
                 return <CreateColumnSideMenu />;
+            case 'prefilter':
+                return <PreFilterSideMenu />;
             case 'axis':
                 return <AxisSideMenu hasColumns={hasColumns} />;
             case 'filter':
@@ -82,26 +87,40 @@ const SideMenu: React.FC = () => {
         }
     };
 
-    const renderTabButton = (tab: SideMenuTab, label: string, iconClass: string) => (
-        <button
-            className={`btn btn-sm w-100 mb-2 p-2 ${activeTab === tab ? 'btn-primary' : 'btn-light text-secondary'} border-0 rounded-0 rounded-start`}
-            onClick={() => {
-                if (activeTab === tab) {
-                    toggleSideMenu();
-                } else {
-                    if (!isSideMenuOpen) toggleSideMenu();
-                    setActiveTab(tab);
-                }
-            }}
-            title={label}
-            style={{ borderRadius: '4px 0 0 4px', position: 'relative', right: '-1px' }}
-        >
-            <div className="d-flex flex-column align-items-center">
-                <i className={`bi ${iconClass} fs-5`}></i>
-                <span style={{ fontSize: '0.65rem', marginTop: '2px', textAlign: 'center', lineHeight: '1.1' }}>{label}</span>
-            </div>
-        </button>
-    );
+    const renderTabButton = (tab: SideMenuTab, label: string, iconClass: string) => {
+        const isPrefilterTab = tab === 'prefilter';
+        const showWarning = isPrefilterTab && isLargeDataset;
+
+        return (
+            <button
+                className={`btn btn-sm w-100 mb-2 p-2 ${activeTab === tab ? 'btn-primary' : 'btn-light text-secondary'} border-0 rounded-0 rounded-start`}
+                onClick={() => {
+                    if (activeTab === tab) {
+                        toggleSideMenu();
+                    } else {
+                        if (!isSideMenuOpen) toggleSideMenu();
+                        setActiveTab(tab);
+                    }
+                }}
+                title={label}
+                style={{ borderRadius: '4px 0 0 4px', position: 'relative', right: '-1px' }}
+            >
+                <div className="d-flex flex-column align-items-center">
+                    <i className={`bi ${iconClass} fs-5 ${showWarning ? 'text-warning' : ''}`} style={showWarning ? { animation: 'pulse-warning 2s infinite' } : {}}></i>
+                    <span style={{ fontSize: '0.65rem', marginTop: '2px', textAlign: 'center', lineHeight: '1.1' }}>{label}</span>
+                </div>
+                {showWarning && (
+                    <style>{`
+                        @keyframes pulse-warning {
+                            0% { transform: scale(1); }
+                            50% { transform: scale(1.2); text-shadow: 0 0 5px rgba(255, 193, 7, 0.5); }
+                            100% { transform: scale(1); }
+                        }
+                    `}</style>
+                )}
+            </button>
+        );
+    };
 
     return (
         <div
@@ -127,6 +146,7 @@ const SideMenu: React.FC = () => {
                 <div className="d-flex align-items-center p-2 justify-content-between border-bottom bg-white">
                     <span className="fw-bold text-nowrap ms-2">
                         {activeTab === 'create' && 'Create Column'}
+                        {activeTab === 'prefilter' && 'Pre-filter (Step 0)'}
                         {activeTab === 'axis' && 'Axes Configuration'}
                         {activeTab === 'filter' && 'Filters'}
                         {activeTab === 'group' && 'Group Settings'}
@@ -156,6 +176,7 @@ const SideMenu: React.FC = () => {
 
 
                 {renderTabButton('create', 'Create', 'bi-plus-square')}
+                {renderTabButton('prefilter', 'Pre-filter', 'bi-hourglass-split')}
                 {renderTabButton('axis', 'Axis', 'bi-bar-chart-steps')}
                 {renderTabButton('filter', 'Filter', 'bi-funnel')}
                 {renderTabButton('group', 'Group', 'bi-diagram-3')}

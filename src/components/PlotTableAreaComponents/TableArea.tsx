@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { Table } from 'react-bootstrap';
 import { useCsvDataStore } from '../../store/CsvDataStore';
-import { Step_1_filter } from '../../utils/DataFrameLib';
+import { Step_0_pre_filter, Step_1_filter } from '../../utils/DataFrameLib';
+import { usePreFilterStore } from '../../store/PreFilterStore';
 import { useAxisSideMenuStore } from '../../store/AxisSideMenuStore';
 import { useGroupSideMenuStore } from '../../store/GroupSideMenuStore';
 import { useFilterSideMenuStore } from '../../store/FilterSideMenuStore';
@@ -163,10 +164,14 @@ const TableArea: React.FC = () => {
     const { groupSideMenuData } = useGroupSideMenuStore();
     const { filters } = useFilterSideMenuStore();
     const { colorData } = useStyleSideMenuStore();
+    const preFilterConfig = usePreFilterStore();
 
     // Data Sources
     const { data: allData, columns: allColumns } = useCsvDataStore();
-    const filteredData = useMemo(() => Step_1_filter(allData, filters), [allData, filters]);
+    const filteredData = useMemo(() => {
+        const preFiltered = Step_0_pre_filter(allData, preFilterConfig);
+        return Step_1_filter(preFiltered, filters);
+    }, [allData, preFilterConfig, filters]);
 
     // Compute which columns are currently "used" in the plot
     const usedColumns = useMemo(() => {

@@ -12,15 +12,22 @@ import { useInkRatioStore } from '../../store/InkRatioStore';
 import { useStyleSideMenuStore } from '../../store/StyleSideMenuStore';
 import { useSubplotSideMenuStore } from '../../store/SubplotSideMenuStore';
 import { generatePlotConfig } from '../../utils/PlotlyHelpers';
-import { Step_2_grouping, Step_3_ink_ratio_filter, Step_1_filter } from '../../utils/DataFrameLib';
+import { Step_0_pre_filter, Step_1_filter, Step_2_grouping, Step_3_ink_ratio_filter } from '../../utils/DataFrameLib';
 import { useCsvDataStore } from '../../store/CsvDataStore';
 import { useFilterSideMenuStore } from '../../store/FilterSideMenuStore';
+import { usePreFilterStore } from '../../store/PreFilterStore';
 import PlotAreaControlButtons from './PlotAreaControlButtons';
 
 const PlotArea: React.FC = () => {
-    const { data: rawData } = useCsvDataStore();
+    const { data: rawDataTable } = useCsvDataStore();
     const { filters } = useFilterSideMenuStore();
-    const data = useMemo(() => Step_1_filter(rawData, filters), [rawData, filters]);
+    const preFilterConfig = usePreFilterStore();
+
+    const data = useMemo(() => {
+        const preFiltered = Step_0_pre_filter(rawDataTable, preFilterConfig);
+        return Step_1_filter(preFiltered, filters);
+    }, [rawDataTable, preFilterConfig, filters]);
+
     const { sideMenuData } = useAxisSideMenuStore();
     const { groupSideMenuData } = useGroupSideMenuStore();
     const { plotLayout } = usePlotLayoutStore();
