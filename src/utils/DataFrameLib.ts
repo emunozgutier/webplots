@@ -38,17 +38,6 @@ export const Step_0_pre_filter = (
 
     if (data.length === 0) return data;
 
-    // Emergency Protection Pass:
-    // If > 500k rows and No strategy is selected, we must force a 1/10th sample
-    // to keep the browser alive.
-    if (data.length > 500000 && mode === 'none') {
-        const emergencyResult: DataRow[] = [];
-        for (let i = 0; i < data.length; i += 10) {
-            emergencyResult.push(data[i]);
-        }
-        return emergencyResult;
-    }
-
     if (mode === 'none') return data;
 
     if (mode === 'uniform') {
