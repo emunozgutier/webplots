@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, Form, Button, ButtonGroup } from 'react-bootstrap';
 import { useWorkspaceLocalStore } from '../../store/WorkspaceLocalStore';
-import { formatNumber } from '../../utils/NumberFormatter';
+import { formatNumber } from '../../utils/TableMathLib';
 
 const TableAreaSettingsPopup: React.FC = () => {
     const { 

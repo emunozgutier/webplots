@@ -11,8 +11,7 @@ import { useWorkspaceLocalStore } from '../../store/WorkspaceLocalStore';
 import Plot from 'react-plotly.js';
 import TableAreaControlButtons from './TableAreaControlButtons';
 import TableAreaBatchButtons from './TableAreaBatchButtons';
-import { calculateGaussianStats } from '../../utils/MathHelper';
-import { formatNumber } from '../../utils/NumberFormatter';
+import { calculateGaussianStats, formatNumber } from '../../utils/TableMathLib';
 
 const TableArea: React.FC = () => {
     const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);

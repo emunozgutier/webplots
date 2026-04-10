@@ -6,7 +6,7 @@ import Papa from 'papaparse';
 import type { CsvDataStore } from '../store/CsvDataStore';
 import { useWorkspaceStore, workspaceRegistry } from '../store/WorkspaceStore';
 import { getSmallDataset, getLargeColumnDataset, getSimulationDataset, getBinningTestData } from '../utils/TestDatasets';
-import { generateTestGaussianData } from '../utils/MathHelper';
+import { generateTestGaussianData } from '../utils/TableMathLib';
 
 interface VersionData {
     commit_title: string;

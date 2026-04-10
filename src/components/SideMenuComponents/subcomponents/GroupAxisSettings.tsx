@@ -5,7 +5,7 @@ import { useWorkspaceLocalStore } from '../../../store/WorkspaceLocalStore';
 import { useCsvDataStore } from '../../../store/CsvDataStore';
 import Plot from 'react-plotly.js';
 import { v4 as uuidv4 } from 'uuid';
-import { roundToSignificantDigits, toEngineeringString } from '../../../utils/MathHelper';
+import { roundToSignificantDigits, toEngineeringString } from '../../../utils/TableMathLib';
 
 interface GroupAxisSettingsProps {
     column: string;
