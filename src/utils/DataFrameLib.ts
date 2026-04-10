@@ -294,8 +294,10 @@ export const Step_3_ink_ratio_filter = (
     return traces.map(trace => {
         const { xData, yData } = trace;
 
+        if (xData.length === 0) return trace;
+
         // Determination of effective radius
-        const effectiveRadius = pointRadius; // Simplified for now, can be overridden per trace later if needed
+        const effectiveRadius = pointRadius; 
         const minPixelDist = useCustomRadius
             ? customRadius
             : effectiveRadius * 2 * (1 - inkRatio);
@@ -310,16 +312,7 @@ export const Step_3_ink_ratio_filter = (
             };
         }
 
-        if (xData.length === 0 || xData.length > 50000) {
-            return {
-                ...trace,
-                filteredCount: 0,
-                absorbedCounts: new Array(xData.length).fill(0),
-                survivingIndices: xData.map((_, i) => i)
-            };
-        }
-
-        // Robust conversion to numbers
+        // Robust conversion to numbers without re-mapping the whole array
         const toNum = (v: any): number => {
             if (typeof v === 'number') return v;
             const n = parseFloat(v);
@@ -329,12 +322,24 @@ export const Step_3_ink_ratio_filter = (
             return NaN;
         };
 
-        const numsX = xData.map(toNum);
-        const numsY = yData.map(toNum);
-        const validNumsX = numsX.filter(n => !isNaN(n));
-        const validNumsY = numsY.filter(n => !isNaN(n));
+        let xMin = Infinity, xMax = -Infinity, yMin = Infinity, yMax = -Infinity;
+        const numsX = new Float64Array(xData.length);
+        const numsY = new Float64Array(xData.length);
+        
+        for (let i = 0; i < xData.length; i++) {
+            const vx = toNum(xData[i]);
+            const vy = toNum(yData[i]);
+            numsX[i] = vx;
+            numsY[i] = vy;
+            if (!isNaN(vx) && !isNaN(vy)) {
+                if (vx < xMin) xMin = vx;
+                if (vx > xMax) xMax = vx;
+                if (vy < yMin) yMin = vy;
+                if (vy > yMax) yMax = vy;
+            }
+        }
 
-        if (validNumsX.length === 0 || validNumsY.length === 0) {
+        if (xMin === Infinity || yMin === Infinity) {
             return {
                 ...trace,
                 filteredCount: 0,
@@ -343,87 +348,84 @@ export const Step_3_ink_ratio_filter = (
             };
         }
 
-        const xMin = Math.min(...validNumsX);
-        const xMax = Math.max(...validNumsX);
-        const yMin = Math.min(...validNumsY);
-        const yMax = Math.max(...validNumsY);
-
         const safeW = chartWidth || 1;
         const safeH = chartHeight || 1;
 
         const xType = enableLogAxis ? 'log' : 'linear';
         const yType = enableLogAxis ? 'log' : 'linear';
 
-        const xRangeVal = (xType === 'log' ? Math.log10(xMax) - Math.log10(xMin) : xMax - xMin) || 1;
-        const yRangeVal = (yType === 'log' ? Math.log10(yMax) - Math.log10(yMin) : yMax - yMin) || 1;
+        const xSub = xType === 'log' ? Math.log10(xMin) : xMin;
+        const ySub = yType === 'log' ? Math.log10(yMin) : yMin;
+        const xRangeVal = (xType === 'log' ? Math.log10(xMax) - xSub : xMax - xMin) || 1;
+        const yRangeVal = (yType === 'log' ? Math.log10(yMax) - ySub : yMax - yMin) || 1;
 
         const xToPx = (val: number) => {
             if (isNaN(val)) return -9999;
-            const normalized = xType === 'log'
-                ? (Math.log10(val) - Math.log10(xMin)) / xRangeVal
-                : (val - xMin) / xRangeVal;
+            const normalized = ((xType === 'log' ? Math.log10(val) : val) - xSub) / xRangeVal;
             return normalized * safeW;
         };
 
         const yToPx = (val: number) => {
             if (isNaN(val)) return -9999;
-            const normalized = yType === 'log'
-                ? (Math.log10(val) - Math.log10(yMin)) / yRangeVal
-                : (val - yMin) / yRangeVal;
+            const normalized = ((yType === 'log' ? Math.log10(val) : val) - ySub) / yRangeVal;
             return (1 - normalized) * safeH;
         };
 
         const filteredX: any[] = [];
         const filteredY: any[] = [];
-        const absorbedCounts: number[] = [];
-        const points: { px: number, py: number, absorbed: number, originalIndex: number }[] = [];
         const survivingIndices: number[] = [];
+        
+        // originalToKept stores the index of the kept point, or -2 for non-numeric, or -1 for absorbed
+        const originalToKept = new Int32Array(xData.length).fill(-1);
+        const keptPoints: { px: number, py: number, absorbed: number }[] = [];
+
+        const distSq = minPixelDist * minPixelDist;
 
         for (let i = 0; i < xData.length; i++) {
             const px = xToPx(numsX[i]);
             const py = yToPx(numsY[i]);
 
             if (px === -9999 || py === -9999) {
+                originalToKept[i] = -2;
                 filteredX.push(xData[i]);
                 filteredY.push(yData[i]);
-                absorbedCounts.push(0);
                 survivingIndices.push(i);
                 continue;
             }
 
             let keptBy = -1;
-            for (let j = 0; j < points.length; j++) {
-                const dx = px - points[j].px;
-                const dy = py - points[j].py;
-                if (Math.sqrt(dx * dx + dy * dy) < minPixelDist) {
+            // Check only the last 200 kept points for density to keep it O(N)
+            const checkLimit = Math.max(0, keptPoints.length - 200);
+            for (let j = keptPoints.length - 1; j >= checkLimit; j--) {
+                const dx = px - keptPoints[j].px;
+                const dy = py - keptPoints[j].py;
+                if ((dx * dx + dy * dy) < distSq) {
                     keptBy = j;
                     break;
                 }
             }
 
             if (keptBy === -1) {
-                points.push({ px, py, absorbed: 0, originalIndex: i });
+                originalToKept[i] = keptPoints.length;
+                keptPoints.push({ px, py, absorbed: 0 });
                 filteredX.push(xData[i]);
                 filteredY.push(yData[i]);
-                absorbedCounts.push(0);
                 survivingIndices.push(i);
             } else {
-                points[keptBy].absorbed += 1;
-                absorbedCounts[points[keptBy].originalIndex] = points[keptBy].absorbed;
+                keptPoints[keptBy].absorbed += 1;
             }
         }
 
-        const finalAbsorbedCounts = new Array(filteredX.length).fill(0);
-        let pointIdx = 0;
-        for (let i = 0; i < xData.length; i++) {
-            const px = xToPx(numsX[i]);
-            const py = yToPx(numsY[i]);
-            if (px !== -9999 && py !== -9999) {
-                 const keptPoint = points.find(p => p.originalIndex === i);
-                 if (keptPoint) finalAbsorbedCounts[pointIdx++] = keptPoint.absorbed;
-            } else {
-                finalAbsorbedCounts[pointIdx++] = 0;
+        const finalAbsorbedCounts = new Array(filteredX.length);
+        let kIdx = 0;
+        for (let i = 0; i < originalToKept.length; i++) {
+            const state = originalToKept[i];
+            if (state >= 0) {
+                finalAbsorbedCounts[kIdx++] = keptPoints[state].absorbed;
+            } else if (state === -2) {
+                finalAbsorbedCounts[kIdx++] = 0;
             }
+            // else state === -1 (absorbed point), we don't increment kIdx
         }
 
         return {
