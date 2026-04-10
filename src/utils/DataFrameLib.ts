@@ -36,10 +36,28 @@ export const Step_0_pre_filter = (
 ): DataRow[] => {
     const { mode, uniformStep, randomSampleCount, inkRatio, densityX, densityY } = config;
 
-    if (mode === 'none' || data.length === 0) return data;
+    if (data.length === 0) return data;
+
+    // Emergency Protection Pass:
+    // If > 500k rows and No strategy is selected, we must force a 1/10th sample
+    // to keep the browser alive.
+    if (data.length > 500000 && mode === 'none') {
+        const emergencyResult: DataRow[] = [];
+        for (let i = 0; i < data.length; i += 10) {
+            emergencyResult.push(data[i]);
+        }
+        return emergencyResult;
+    }
+
+    if (mode === 'none') return data;
 
     if (mode === 'uniform') {
-        return data.filter((_, i) => i % uniformStep === 0);
+        const result: DataRow[] = [];
+        const step = Math.max(1, uniformStep);
+        for (let i = 0; i < data.length; i += step) {
+            result.push(data[i]);
+        }
+        return result;
     }
 
     if (mode === 'random') {
@@ -69,18 +87,23 @@ export const Step_0_pre_filter = (
             return NaN;
         };
 
-        const validPoints = data.map(row => ({
-            x: toNum(row[densityX]),
-            y: toNum(row[densityY]),
-            row
-        })).filter(p => !isNaN(p.x) && !isNaN(p.y));
+        // Find min/max and scale factors without re-mapping the whole array
+        let xMin = Infinity, xMax = -Infinity, yMin = Infinity, yMax = -Infinity;
+        const validIndices: number[] = [];
+        
+        for (let i = 0; i < data.length; i++) {
+            const vx = toNum(data[i][densityX]);
+            const vy = toNum(data[i][densityY]);
+            if (!isNaN(vx) && !isNaN(vy)) {
+                if (vx < xMin) xMin = vx;
+                if (vx > xMax) xMax = vx;
+                if (vy < yMin) yMin = vy;
+                if (vy > yMax) yMax = vy;
+                validIndices.push(i);
+            }
+        }
 
-        if (validPoints.length === 0) return data;
-
-        const xMin = Math.min(...validPoints.map(p => p.x));
-        const xMax = Math.max(...validPoints.map(p => p.x));
-        const yMin = Math.min(...validPoints.map(p => p.y));
-        const yMax = Math.max(...validPoints.map(p => p.y));
+        if (validIndices.length === 0) return data;
 
         const xRange = (xMax - xMin) || 1;
         const yRange = (yMax - yMin) || 1;
@@ -88,19 +111,20 @@ export const Step_0_pre_filter = (
         const points: { px: number, py: number }[] = [];
         const result: DataRow[] = [];
 
-        // For massive datasets, we use a simple grid or a limited distance check
-        // To keep it semi-fast, we'll only check the last 200 kept points
-        for (let i = 0; i < validPoints.length; i++) {
-            const p = validPoints[i];
-            const px = ((p.x - xMin) / xRange) * 1000;
-            const py = ((p.y - yMin) / yRange) * 1000;
+        // Single pass for geometric filtering
+        for (let i = 0; i < validIndices.length; i++) {
+            const idx = validIndices[i];
+            const row = data[idx];
+            const px = ((toNum(row[densityX]) - xMin) / xRange) * 1000;
+            const py = ((toNum(row[densityY]) - yMin) / yRange) * 1000;
 
             let keptBy = -1;
+            // Check last 200 points to verify density
             const checkLimit = Math.max(0, points.length - 200);
             for (let j = points.length - 1; j >= checkLimit; j--) {
                 const dx = px - points[j].px;
                 const dy = py - points[j].py;
-                if (Math.sqrt(dx * dx + dy * dy) < minPixelDist) {
+                if ((dx * dx + dy * dy) < (minPixelDist * minPixelDist)) {
                     keptBy = j;
                     break;
                 }
@@ -108,7 +132,7 @@ export const Step_0_pre_filter = (
 
             if (keptBy === -1) {
                 points.push({ px, py });
-                result.push(p.row);
+                result.push(row);
             }
         }
 

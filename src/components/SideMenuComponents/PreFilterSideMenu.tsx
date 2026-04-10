@@ -19,11 +19,19 @@ const PreFilterSideMenu: React.FC = () => {
         <div className="p-3 overflow-auto h-100">
             <h6 className="mb-3">Pre-filter (Step 0)</h6>
             
-            {isLargeDataset && mode === 'none' && (
+            {data.length > 500000 && mode === 'none' && (
+                <Alert variant="danger" className="small py-2 mb-3">
+                    <i className="bi bi-shield-lock-fill me-2"></i>
+                    <strong>Emergency Protection Active!</strong><br/>
+                    Dataset exceeds 500,000 rows. A 1:10 sample is being forced to prevent browser crash. Select a strategy below to override.
+                </Alert>
+            )}
+
+            {isLargeDataset && mode === 'none' && data.length <= 500000 && (
                 <Alert variant="warning" className="small py-2 mb-3">
                     <i className="bi bi-exclamation-triangle me-2"></i>
                     Large dataset detected ({data.length.toLocaleString()} rows). 
-                    It is highly recommended to enable a pre-filter to prevent UI lags or crashes.
+                    It is highly recommended to enable a pre-filter.
                 </Alert>
             )}
 

@@ -204,20 +204,9 @@ const TableArea: React.FC = () => {
         return Array.from(cols);
     }, [sideMenuData, groupSideMenuData, filters, colorData]);
 
-    const indexedData = useMemo(() => {
-        const raw = datasetMode === 'all' ? allData : filteredData;
-        
-        // Use a Map for O(1) lookup of original indices
-        const rowToIndex = new Map<any, number>();
-        allData.forEach((r, i) => rowToIndex.set(r, i + 1));
-        
-        return raw.map(r => ({ 
-            ...r, 
-            __originalRow: rowToIndex.get(r) || 0 
-        }));
+    const displayData = useMemo(() => {
+        return datasetMode === 'all' ? allData : filteredData;
     }, [allData, filteredData, datasetMode]);
-
-    const displayData = indexedData;
     const displayColumns = datasetMode === 'all' ? allColumns : usedColumns;
 
     // Reset selection and batch when dataset changes
@@ -447,16 +436,16 @@ const TableArea: React.FC = () => {
                                             <div className="fw-bold small mb-1">row</div>
                                             <div className="btn-group-vertical">
                                                 <button
-                                                    className={`btn btn-sm py-0 px-1 ${sortConfig?.key === '__originalRow' && sortConfig?.direction === 'asc' ? 'btn-secondary' : 'btn-outline-secondary'}`}
+                                                    className={`btn btn-sm py-0 px-1 ${sortConfig?.key === '__idx' && sortConfig?.direction === 'asc' ? 'btn-secondary' : 'btn-outline-secondary'}`}
                                                     title="Sort row Ascending"
-                                                    onClick={() => handleSortAsc('__originalRow')}
+                                                    onClick={() => handleSortAsc('__idx')}
                                                 >
                                                     <i className="bi bi-arrow-up" style={{ fontSize: '0.7rem' }}></i>
                                                 </button>
                                                 <button
-                                                    className={`btn btn-sm py-0 px-1 ${sortConfig?.key === '__originalRow' && sortConfig?.direction === 'desc' ? 'btn-secondary' : 'btn-outline-secondary'}`}
+                                                    className={`btn btn-sm py-0 px-1 ${sortConfig?.key === '__idx' && sortConfig?.direction === 'desc' ? 'btn-secondary' : 'btn-outline-secondary'}`}
                                                     title="Sort row Descending"
-                                                    onClick={() => handleSortDesc('__originalRow')}
+                                                    onClick={() => handleSortDesc('__idx')}
                                                 >
                                                     <i className="bi bi-arrow-down" style={{ fontSize: '0.7rem' }}></i>
                                                 </button>
@@ -526,7 +515,7 @@ const TableArea: React.FC = () => {
                                                 onClick={() => setSelectedCell({ row: rowIndex, col: 0 })}
                                                 tabIndex={-1}
                                             >
-                                                {(row as any).__originalRow}
+                                                {(row as any).__idx}
                                             </td>
                                             {displayColumns.map((col: string, idx: number) => {
                                                 const colIndex = idx + 1;
