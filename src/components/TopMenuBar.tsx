@@ -327,7 +327,7 @@ const TopMenuBar: React.FC = () => {
                                 const numPoints = 1_000_000;
                                 const data: CsvDataStore[] = new Array(numPoints);
                                 for (let i = 0; i < numPoints; i++) {
-                                    const t = (i / numPoints) * 2 * Math.PI; // One full cycle
+                                    const t = (i / numPoints) * 10 * 2 * Math.PI; // Ten full cycles
                                     data[i] = {
                                         "Time": t,
                                         "Sine": Math.sin(t)
