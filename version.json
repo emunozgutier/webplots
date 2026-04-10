@@ -1,5 +1,5 @@
 {
-    "commit_title": "Default to table view and remove emojis from tabs",
-    "commit_message": "Set the initial viewMode in PlotTableArea to 'table' instead of 'plot' so the UI opens showing the table by default. Also remove emoji characters from the Plot/Table toggle buttons in PlotTableTabs to provide cleaner labels and improve accessibility.",
+    "commit_title": "Remove pre-filter UI/store and add runDataPipeline",
+    "commit_message": "Delete PreFilterSideMenu and PreFilterStore and simplify data processing by introducing runDataPipeline in DataFrameLib. Components (PlotArea, TableArea, PlotAreaControlButtons) now call runDataPipeline or directly use Step_1_filter instead of the removed Step_0_pre_filter; imports were adjusted accordingly. The new runDataPipeline orchestrates filtering, grouping and ink-ratio reduction and returns processed traces (and filtered data) to be used when generating plot config and exporting HTML.",
     "version_string": "2026.15.4"
 }
