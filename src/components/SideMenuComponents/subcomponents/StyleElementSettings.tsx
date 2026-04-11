@@ -104,8 +104,9 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, mapping, upd
                 y0: rangeMin,
                 x1: mapDomain[1],
                 y1: rangeMax,
-                line: { color: title === 'Hue/Color' ? '#d63384' : '#0d6efd', width: 3 },
-                editable: true
+                line: { color: 'black', width: 3 },
+                editable: true,
+                layer: 'above'
             }
         ],
         dragmode: false
@@ -159,6 +160,14 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, mapping, upd
                                 y: [rangeMin, Math.max(rangeMin, rangeMax)], 
                                 type: 'scatter',
                                 mode: 'none', 
+                                hoverinfo: 'none'
+                            },
+                            {
+                                x: [mapDomain[0], mapDomain[1]],
+                                y: [rangeMin, rangeMax],
+                                type: 'scatter',
+                                mode: 'markers',
+                                marker: { color: 'black', size: 14, line: { color: 'white', width: 2 } },
                                 hoverinfo: 'none'
                             }
                         ]}
