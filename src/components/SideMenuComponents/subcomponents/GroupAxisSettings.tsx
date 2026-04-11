@@ -184,8 +184,8 @@ const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
         setColorData({
             groupColorOverrides: colorOverrides,
             groupSymbolOverrides: symbolOverrides,
-            hue: { ...colorData.hue, source: hueSource },
-            shape: { ...colorData.shape, source: shapeSource }
+            hue: { ...colorData.hue, source: hueSource, enabled: hueSource === 'group' ? true : colorData.hue.enabled },
+            shape: { ...colorData.shape, source: shapeSource, enabled: shapeSource === 'group' ? true : colorData.shape.enabled }
         });
 
         // Strip color and symbol array before saving to GroupSideMenu since they are now in StyleSideMenu

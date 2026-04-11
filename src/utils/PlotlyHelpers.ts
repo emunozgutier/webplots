@@ -46,6 +46,10 @@ export const generatePlotConfig = (
     const { enableLogAxis, plotTitle, xAxisTitle, yAxisTitle, xRange, yRange, histogramBarmode, legendOrientation, pointTip } = plotLayout;
 
     const { traceCustomizations, currentPaletteColors } = traceConfig;
+    const getColor = (idx: number) => {
+        if (!currentPaletteColors || currentPaletteColors.length === 0) return '#000000';
+        return currentPaletteColors[idx % currentPaletteColors.length];
+    };
     const { rows, cols, traceToSubplots } = subplotSideMenuData;
 
     const hasData = data.length > 0 && yAxis.length > 0;
@@ -204,10 +208,17 @@ export const generatePlotConfig = (
             let mode: 'lines' | 'markers' | 'lines+markers' = customization.mode || 'markers';
             const marker: any = {};
 
+            const baseColor = getColor(index);
+            const finalColor = traceColorOverlay || groupColorOverlay || baseColor;
+
+            const useComputedColors = hue.enabled !== false || saturation.enabled !== false || lightness.enabled !== false;
+            const useComputedShapes = shape.enabled !== false;
+            const useComputedSizes = size.enabled !== false;
+
             // Apply arrays or overlay (Trace > Group > Computed arrays)
-            marker.color = traceColorOverlay || groupColorOverlay || computedColors;
-            marker.symbol = traceSymbolOverlay || groupSymbolOverlay || computedShapes;
-            marker.size = customization.size || computedSizes;
+            marker.color = traceColorOverlay || groupColorOverlay || (useComputedColors ? computedColors : finalColor);
+            marker.symbol = traceSymbolOverlay || groupSymbolOverlay || (useComputedShapes ? computedShapes : undefined);
+            marker.size = customization.size || (useComputedSizes ? computedSizes : undefined);
 
             if (plotType === 'histogram') {
                 const { processedData: compatibleYData, isDate: yIsDate } = ensurePlotlyCompatibleData(yData);
@@ -402,7 +413,7 @@ export const generatePlotConfig = (
                     color: finalMarkerColor,
                     symbol: finalMarkerSymbol,
                     size: finalMarkerSize,
-                    line: finalMarkerLine
+                    line: { color: finalMarkerColor, ...finalMarkerLine }
                 }
             };
 
@@ -480,11 +491,6 @@ export const generatePlotConfig = (
     // Traces for receipt
     processedTraces.forEach((traceInfo, index) => {
         const { fullTraceName, yCol, groupName } = traceInfo;
-
-        const getColor = (idx: number) => {
-            if (!currentPaletteColors || currentPaletteColors.length === 0) return '#000000';
-            return currentPaletteColors[idx % currentPaletteColors.length];
-        };
 
         const isSinglePlot = (rows * cols) <= 1;
         let assignedSubplots = traceToSubplots[fullTraceName];
