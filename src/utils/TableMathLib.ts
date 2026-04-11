@@ -225,7 +225,7 @@ export const calculateGaussianStats = (
 
             // Check edges
             if (smoothed[0] > smoothed[1]) peaks.push({ index: 0, value: smoothed[0] });
-            if (smoothed[numBins - 1] > smoothed[numBins - 2]) peaks.push({ index: numBins - 1, value: smoothed[numBins - 2] });
+            if (smoothed[numBins - 1] > smoothed[numBins - 2]) peaks.push({ index: numBins - 1, value: smoothed[numBins - 1] });
 
             // 4. Filter and Sort
             peaks.sort((a, b) => b.value - a.value);
@@ -286,7 +286,7 @@ export const calculateGaussianStats = (
                 }
 
                 // Map Error to score. Score 0 to 100.
-                const confidence = Math.max(0, 100 - (errorSum * 150));
+                const confidence = Math.max(0, 100 - (errorSum * 120));
                 gaussianScore = Math.round(confidence);
 
                 isGaussian = gaussianScore >= confidenceThreshold && components.length > 0 && components.length <= maxComponents;

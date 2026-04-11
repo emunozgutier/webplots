@@ -7,6 +7,8 @@ interface HeaderSummaryProps {
     data: any[];
     column: string;
     mode: SummaryMode;
+    confidenceThreshold: number;
+    maxComponents: number;
 }
 
 // Helper to determine type of an array of values
@@ -179,7 +181,7 @@ const SparklineScatter: React.FC<SparklineProps> = ({ data, width = 100, height 
 };
 
 
-const HeaderSummary: React.FC<HeaderSummaryProps> = ({ data, column, mode }) => {
+const HeaderSummary: React.FC<HeaderSummaryProps> = ({ data, column, mode, confidenceThreshold, maxComponents }) => {
     const [showScatter, setShowScatter] = React.useState<boolean>(false);
 
     const stats = useMemo(() => {
@@ -237,7 +239,9 @@ const HeaderSummary: React.FC<HeaderSummaryProps> = ({ data, column, mode }) => 
             const { hasGaussianTest, isGaussian, gaussianScore, components } = calculateGaussianStats(
                 numericValues,
                 stdDev,
-                count
+                count,
+                confidenceThreshold,
+                maxComponents
             );
 
             // Formatting helper
