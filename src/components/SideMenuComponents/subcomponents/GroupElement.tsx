@@ -41,7 +41,12 @@ const GroupElement: React.FC<GroupElementProps> = ({ column }) => {
     return (
         <div className="card shadow-sm border-0 w-100 p-2">
             <div className="card-header bg-white p-1 ps-2 pe-1">
-                <div className="d-flex justify-content-end align-items-center mb-0">
+                <div className="d-flex justify-content-between align-items-center mb-0">
+                    <div className="overflow-hidden me-2">
+                        <span className="fw-bold text-truncate d-block" style={{ maxWidth: '100%', fontSize: '0.85rem' }} title={column}>
+                            {column}
+                        </span>
+                    </div>
                     <div className="d-flex align-items-center flex-shrink-0">
                         <button
                             className="btn btn-sm btn-link p-0 me-2 text-primary"
@@ -73,11 +78,6 @@ const GroupElement: React.FC<GroupElementProps> = ({ column }) => {
                             <span className="position-relative" style={{ zIndex: 1, marginTop: '-2px' }}>&times;</span>
                         </button>
                     </div>
-                </div>
-                <div className="mt-n1 overflow-hidden pb-1">
-                    <span className="fw-bold text-truncate d-block" style={{ maxWidth: '100%', fontSize: '0.85rem' }} title={column}>
-                        {column}
-                    </span>
                 </div>
             </div>
         </div>
