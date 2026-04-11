@@ -33,24 +33,27 @@ const StyleElement: React.FC<StyleElementProps> = ({ title, mapping, updateFn, t
 
     return (
         <div className="card shadow-sm border-0 w-100 mb-3 p-2">
-            <div className="card-header bg-white p-2">
+            <div className={`card-header bg-white p-2 ${!isEnabled || isGroup ? 'border-bottom-0 rounded' : ''}`}>
                 <div className="d-flex justify-content-between align-items-center">
-                    <span className={`fw-bold text-truncate ${!isEnabled ? 'text-muted' : ''}`} style={{ fontSize: '0.85rem' }}>
-                        {title}
+                    <span className={`fw-bold text-truncate ${!isEnabled && !isGroup ? 'text-muted' : ''}`} style={{ fontSize: '0.85rem' }}>
+                        {title} {isGroup && <span className="ms-1 fw-normal text-muted fst-italic">(by Group)</span>}
                     </span>
-                    <div className="form-check form-switch m-0 d-flex align-items-center">
-                        <input
-                            className="form-check-input"
-                            type="checkbox"
-                            checked={isEnabled}
-                            onChange={e => updateFn({ enabled: e.target.checked })}
-                            style={{ cursor: 'pointer' }}
-                        />
-                    </div>
+                    {!isGroup && (
+                        <div className="form-check form-switch m-0 d-flex align-items-center">
+                            <input
+                                className="form-check-input"
+                                type="checkbox"
+                                checked={isEnabled}
+                                onChange={e => updateFn({ enabled: e.target.checked })}
+                                style={{ cursor: 'pointer' }}
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
 
-            <div className={`card-body p-2 ${!isEnabled ? 'opacity-50' : ''}`} style={{ pointerEvents: isEnabled ? 'auto' : 'none' }}>
+            {isEnabled && !isGroup && (
+                <div className="card-body p-2">
                 <div className="mb-2">
                     <label className="form-label text-muted small mb-1" style={{ fontSize: '0.75rem' }}>Source Mode</label>
                     <select
@@ -180,19 +183,14 @@ const StyleElement: React.FC<StyleElementProps> = ({ title, mapping, updateFn, t
                     </div>
                 )}
 
-                {isGroup && (
-                    <div className="mt-2 text-muted px-2 py-1 bg-light border rounded" style={{ fontSize: '0.75rem' }}>
-                        <i className="bi bi-info-circle me-1"></i> Auto-assigns uniquely per Group.
-                    </div>
-                )}
-
                 {showSizeOverrideWarning && (
                     <Alert variant="warning" className="mt-2 mb-0 p-2" style={{ fontSize: '0.75rem' }}>
                         <i className="bi bi-exclamation-triangle-fill me-2"></i>
                         Overlapped by <strong>Grow</strong> animation in Ink Ratio settings. Size map will be ignored!
                     </Alert>
                 )}
-            </div>
+                </div>
+            )}
         </div>
     );
 };
