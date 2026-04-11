@@ -18,6 +18,33 @@ const FilterElement: React.FC<FilterElementProps> = ({ filter, stats, getMinMax,
     const { removeFilter, updateFilter } = useFilterSideMenuStore();
     const { setPopupContent } = useWorkspaceLocalStore();
     const [isShrunk, setIsShrunk] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const deleteTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+
+    React.useEffect(() => {
+        return () => {
+            if (deleteTimerRef.current) {
+                clearTimeout(deleteTimerRef.current);
+            }
+        };
+    }, []);
+
+    const startDelete = (e: React.MouseEvent | React.TouchEvent) => {
+        e.stopPropagation();
+        setIsDeleting(true);
+        deleteTimerRef.current = setTimeout(() => {
+            removeFilter(filter.id);
+        }, 2000);
+    };
+
+    const cancelDelete = (e: React.MouseEvent | React.TouchEvent) => {
+        e.stopPropagation();
+        if (deleteTimerRef.current) {
+            clearTimeout(deleteTimerRef.current);
+            deleteTimerRef.current = null;
+        }
+        setIsDeleting(false);
+    };
 
     const renderHeader = () => (
         <div className="card-header bg-white p-1 ps-2 pe-1">
@@ -53,12 +80,25 @@ const FilterElement: React.FC<FilterElementProps> = ({ filter, stats, getMinMax,
                         </button>
                     )}
                     <button
-                        className="btn btn-sm btn-link text-danger p-0 ms-1"
-                        style={{ textDecoration: 'none', fontSize: '1.1rem', lineHeight: '1' }}
-                        onClick={(e) => { e.stopPropagation(); removeFilter(filter.id); }}
-                        title="Remove Filter"
+                        className="btn btn-sm btn-link text-danger p-0 ms-1 position-relative overflow-hidden d-flex align-items-center justify-content-center"
+                        style={{ textDecoration: 'none', fontSize: '1.2rem', lineHeight: '1', width: '22px', height: '22px', borderRadius: '4px' }}
+                        onMouseDown={startDelete}
+                        onMouseUp={cancelDelete}
+                        onMouseLeave={cancelDelete}
+                        onTouchStart={startDelete}
+                        onTouchEnd={cancelDelete}
+                        onClick={(e) => e.stopPropagation()} // Prevent any default click actions
+                        title="Hold 2s to Remove Filter"
                     >
-                        &times;
+                        <div 
+                            className="bg-danger position-absolute top-0 start-0 h-100" 
+                            style={{ 
+                                width: isDeleting ? '100%' : '0%', 
+                                transition: isDeleting ? 'width 2s linear' : 'width 0.2s ease-out',
+                                opacity: 0.2,
+                            }} 
+                        />
+                        <span className="position-relative" style={{ zIndex: 1, marginTop: '-2px' }}>&times;</span>
                     </button>
                 </div>
             </div>
