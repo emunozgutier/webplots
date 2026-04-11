@@ -2,7 +2,7 @@ import { createStore } from 'zustand/vanilla';
 import { useStore } from 'zustand';
 import { useContext } from 'react';
 import { WorkspaceContext } from './WorkspaceContext';
-import type { SummaryMode } from '../components/PlotTableAreaComponents/HeaderSummary';
+import type { SummaryMode } from '../../components/PlotTableAreaComponents/TableAreaComponents/HeaderSummary';
 
 export interface WorkspaceLocalState {
     isSideMenuOpen: boolean;

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { calculateGaussianStats } from '../../utils/TableMathLib';
+import { calculateGaussianStats } from '../../../utils/TableMathLib';
 
 export type SummaryMode = 'none' | 'slim' | 'detailed';
 

@@ -6,11 +6,11 @@ import { useAxisSideMenuStore } from '../../store/SideMenu/useAxisSideMenuStore'
 import { useGroupSideMenuStore } from '../../store/SideMenu/useGroupSideMenuStore';
 import { useFilterSideMenuStore } from '../../store/SideMenu/useFilterSideMenuStore';
 import { useStyleSideMenuStore } from '../../store/SideMenu/useStyleSideMenuStore';
-import HeaderSummary from './HeaderSummary';
+import HeaderSummary from './TableAreaComponents/HeaderSummary';
 import { useWorkspaceLocalStore } from '../../store/Workspace/useWorkspaceLocalStore';
 import Plot from 'react-plotly.js';
-import TableAreaControlButtons from './TableAreaControlButtons';
-import TableAreaBatchButtons from './TableAreaBatchButtons';
+import TableAreaControlButtons from './TableAreaComponents/TableAreaControlButtons';
+import TableAreaBatchButtons from './TableAreaComponents/TableAreaBatchButtons';
 import { calculateGaussianStats, formatNumber, parseToNumeric } from '../../utils/TableMathLib';
 
 const TableArea: React.FC = () => {
