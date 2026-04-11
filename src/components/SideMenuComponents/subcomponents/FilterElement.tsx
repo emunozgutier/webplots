@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useFilterSideMenuStore, type Filter } from '../../../store/SideMenu/useFilterSideMenuStore';
 
 interface FilterElementProps {
@@ -14,19 +14,36 @@ interface FilterElementProps {
 
 const FilterElement: React.FC<FilterElementProps> = ({ filter, stats, getMinMax, getUniqueValues }) => {
     const { removeFilter, updateFilter } = useFilterSideMenuStore();
+    const [isShrunk, setIsShrunk] = useState(false);
 
     const renderHeader = () => (
         <div className="card-header bg-white d-flex justify-content-between align-items-center py-1 ps-2 pe-1">
-            <div className="d-flex align-items-center overflow-hidden">
-                <span className="fw-bold text-truncate me-2" style={{ maxWidth: '100px', fontSize: '0.85rem' }} title={filter.column}>
-                    {filter.column}
-                </span>
-                <span className="badge bg-secondary opacity-75" style={{ fontSize: '0.6rem' }}>
-                    {filter.type}
-                </span>
+            <div className="d-flex align-items-center overflow-hidden flex-grow-1">
+                <button
+                    className="btn btn-sm btn-link p-0 me-2 text-secondary"
+                    onClick={() => setIsShrunk(!isShrunk)}
+                    style={{ textDecoration: 'none' }}
+                    title={isShrunk ? "Expand" : "Shrink"}
+                >
+                    <i className={`bi ${isShrunk ? 'bi-plus-square' : 'bi-dash-square'}`} style={{ fontSize: '0.8rem' }}></i>
+                </button>
+                <div className="d-flex flex-column overflow-hidden flex-grow-1">
+                    <span className="fw-bold text-truncate" style={{ maxWidth: '150px', fontSize: '0.85rem' }} title={filter.column}>
+                        {filter.column}
+                    </span>
+                    {isShrunk ? (
+                        <span className="text-primary fw-bold" style={{ fontSize: '0.65rem' }}>
+                            {stats.percentRemaining}% Kept
+                        </span>
+                    ) : (
+                        <span className="text-muted mt-n1" style={{ fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            {filter.type}
+                        </span>
+                    )}
+                </div>
             </div>
             <button
-                className="btn btn-sm btn-link text-danger p-0"
+                className="btn btn-sm btn-link text-danger p-0 ms-2"
                 style={{ textDecoration: 'none', fontSize: '1.2rem', lineHeight: '1' }}
                 onClick={() => removeFilter(filter.id)}
                 title="Remove Filter"
@@ -50,9 +67,9 @@ const FilterElement: React.FC<FilterElementProps> = ({ filter, stats, getMinMax,
 
         return (
             <div className="card-body p-2">
-                <div className="row g-1">
-                    <div className="col-6">
-                        <label className="form-label mb-0 text-muted" style={{ fontSize: '0.7rem' }}>Min ({bounds.min})</label>
+                <div className="d-flex flex-column gap-2">
+                    <div className="d-flex align-items-center">
+                        <label className="form-label mb-0 text-muted me-2" style={{ fontSize: '0.75rem', minWidth: '35px' }}>Min</label>
                         <input
                             type="number"
                             className="form-control form-control-sm"
@@ -62,8 +79,8 @@ const FilterElement: React.FC<FilterElementProps> = ({ filter, stats, getMinMax,
                             onChange={(e) => updateFilter(filter.id, { min: e.target.value === '' ? undefined : Number(e.target.value) })}
                         />
                     </div>
-                    <div className="col-6">
-                        <label className="form-label mb-0 text-muted" style={{ fontSize: '0.7rem' }}>Max ({bounds.max})</label>
+                    <div className="d-flex align-items-center">
+                        <label className="form-label mb-0 text-muted me-2" style={{ fontSize: '0.75rem', minWidth: '35px' }}>Max</label>
                         <input
                             type="number"
                             className="form-control form-control-sm"
@@ -130,8 +147,12 @@ const FilterElement: React.FC<FilterElementProps> = ({ filter, stats, getMinMax,
     return (
         <div className="card mb-2 shadow-sm border-0">
             {renderHeader()}
-            {filter.type === 'number' ? renderNumberControls() : renderCategoryControls()}
-            {renderStats()}
+            {!isShrunk && (
+                <>
+                    {filter.type === 'number' ? renderNumberControls() : renderCategoryControls()}
+                    {renderStats()}
+                </>
+            )}
         </div>
     );
 };
