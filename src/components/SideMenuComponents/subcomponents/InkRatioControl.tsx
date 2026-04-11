@@ -21,8 +21,8 @@ const InkRatioControl: React.FC = () => {
     const isLargeDataset = totalRows > 100000;
     const maxSafeOverlap = isLargeDataset ? 0.75 : 1.0;
 
-    // Check if user is overriding size in Style while trying to use Grow
-    const isOverwritingSize = absorptionMode === 'size' && colorData.size.source !== 'manual';
+    // Check if user has explicitly enabled size controls in Style Menu
+    const isSizeActive = colorData.size.enabled;
 
     const handleRatioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newRatio = parseFloat(e.target.value);
@@ -44,7 +44,10 @@ const InkRatioControl: React.FC = () => {
                     <button
                         type="button"
                         className={`btn btn-sm ${absorptionMode === 'size' ? 'btn-primary' : 'btn-outline-secondary'}`}
-                        onClick={() => setAbsorptionMode('size')}
+                        onClick={() => { if (!isSizeActive) setAbsorptionMode('size'); }}
+                        disabled={!!isSizeActive}
+                        style={{ textDecoration: isSizeActive ? 'line-through' : 'none' }}
+                        title={isSizeActive ? "Disabled because Node Size is mapped in Style Settings" : ""}
                     >
                         Grow
                     </button>
@@ -65,12 +68,7 @@ const InkRatioControl: React.FC = () => {
                 </div>
             </div>
 
-            {isOverwritingSize && (
-                <Alert variant="warning" className="px-2 py-1 mb-3" style={{ fontSize: '0.75rem' }}>
-                    <i className="bi bi-exclamation-triangle-fill me-2"></i>
-                    <strong>Grow</strong> mode overrides Node Size mappings.
-                </Alert>
-            )}
+
 
             {isLargeDataset && (
                 <Alert variant="info" className="px-2 py-1 mb-3 border-0" style={{ fontSize: '0.72rem', backgroundColor: '#f0f7ff', color: '#055160' }}>
