@@ -9,10 +9,14 @@ interface FilterElementSettingsProps {
     filter: Filter;
 }
 
-const FilterElementSettings: React.FC<FilterElementSettingsProps> = ({ filter }) => {
+const FilterElementSettings: React.FC<FilterElementSettingsProps> = ({ filter: initialFilter }) => {
     const { data } = useCsvDataStore();
-    const { updateFilter } = useFilterSideMenuStore();
+    const filters = useFilterSideMenuStore(state => state.filters);
+    const updateFilter = useFilterSideMenuStore(state => state.updateFilter);
     const { closePopup } = useWorkspaceLocalStore();
+
+    // Derive the reactive filter from the store so it updates when dragging sliders
+    const filter = filters.find(f => f.id === initialFilter.id) || initialFilter;
 
     const columnData = useMemo(() => {
         return data.map(row => row[filter.column]).filter(v => typeof v === 'number') as number[];
@@ -86,7 +90,7 @@ const FilterElementSettings: React.FC<FilterElementSettingsProps> = ({ filter })
                     <small className="text-muted">of total points kept with current range</small>
                 </div>
 
-                <div className="flex-grow-1 border rounded bg-white overflow-hidden mb-3" style={{ minHeight: '300px' }}>
+                <div className="flex-grow-1 border rounded bg-white overflow-hidden mb-3" style={{ minHeight: '250px' }}>
                     <Plot
                         data={[
                             {
@@ -159,20 +163,20 @@ const FilterElementSettings: React.FC<FilterElementSettingsProps> = ({ filter })
                 </div>
 
                 {/* Double Slider UI */}
-                <div className="px-4 mb-4">
-                    <div className="position-relative" style={{ height: '30px' }}>
+                <div className="px-4 py-3 bg-light rounded-3 mb-3 border shadow-sm">
+                    <div className="position-relative" style={{ height: '40px', padding: '10px 0' }}>
                         {/* Track */}
                         <div 
                             className="position-absolute w-100 bg-secondary bg-opacity-25" 
-                            style={{ height: '6px', top: '12px', borderRadius: '3px' }}
+                            style={{ height: '8px', top: '16px', borderRadius: '4px' }}
                         />
                         {/* Active Area */}
                         <div 
                             className="position-absolute bg-primary" 
                             style={{ 
-                                height: '6px', 
-                                top: '12px', 
-                                borderRadius: '3px',
+                                height: '8px', 
+                                top: '16px', 
+                                borderRadius: '4px',
                                 left: `${((activeMin - bounds.min) / (bounds.max - bounds.min)) * 100}%`,
                                 right: `${100 - ((activeMax - bounds.min) / (bounds.max - bounds.min)) * 100}%`
                             }}
@@ -182,75 +186,89 @@ const FilterElementSettings: React.FC<FilterElementSettingsProps> = ({ filter })
                             type="range"
                             min={bounds.min}
                             max={bounds.max}
-                            step={(bounds.max - bounds.min) / 100}
+                            step={(bounds.max - bounds.min) / 1000}
                             value={activeMin}
                             onChange={(e) => {
                                 const val = Math.min(activeMax, Number(e.target.value));
                                 updateFilter(filter.id, { min: val, max: activeMax });
                             }}
-                            className="position-absolute w-100"
-                            style={{ 
-                                top: '0', 
-                                height: '30px', 
-                                pointerEvents: 'none', 
-                                appearance: 'none', 
-                                background: 'transparent',
-                                zIndex: 10
-                            }}
+                            className="custom-range-slider"
+                            style={{ zIndex: 20 }}
                         />
                         <input
                             type="range"
                             min={bounds.min}
                             max={bounds.max}
-                            step={(bounds.max - bounds.min) / 100}
+                            step={(bounds.max - bounds.min) / 1000}
                             value={activeMax}
                             onChange={(e) => {
                                 const val = Math.max(activeMin, Number(e.target.value));
                                 updateFilter(filter.id, { min: activeMin, max: val });
                             }}
-                            className="position-absolute w-100"
-                            style={{ 
-                                top: '0', 
-                                height: '30px', 
-                                pointerEvents: 'none', 
-                                appearance: 'none', 
-                                background: 'transparent',
-                                zIndex: 11
-                            }}
+                            className="custom-range-slider"
+                            style={{ zIndex: 21 }}
                         />
-                        {/* Custom Slider CSS would be needed here for better look, but this handles the logic */}
                         <style>{`
-                            input[type=range]::-webkit-slider-thumb {
+                            .custom-range-slider {
+                                -webkit-appearance: none;
+                                appearance: none;
+                                width: 100%;
+                                position: absolute;
+                                top: 5px;
+                                left: 0;
+                                height: 30px;
+                                background: transparent;
+                                pointer-events: none;
+                                margin: 0;
+                                padding: 0;
+                            }
+                            .custom-range-slider:focus {
+                                outline: none;
+                            }
+                            .custom-range-slider::-webkit-slider-runnable-track {
+                                width: 100%;
+                                height: 100%;
+                                background: transparent;
+                                border: none;
+                            }
+                            .custom-range-slider::-moz-range-track {
+                                width: 100%;
+                                height: 100%;
+                                background: transparent;
+                                border: none;
+                            }
+                            .custom-range-slider::-webkit-slider-thumb {
                                 pointer-events: auto;
                                 cursor: pointer;
                                 -webkit-appearance: none;
-                                height: 18px;
-                                width: 18px;
+                                height: 24px;
+                                width: 24px;
                                 border-radius: 50%;
                                 background: #0d6efd;
-                                border: 2px solid white;
-                                box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+                                border: 3px solid white;
+                                box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+                                margin-top: 3px;
                             }
-                            input[type=range]::-moz-range-thumb {
+                            .custom-range-slider::-moz-range-thumb {
                                 pointer-events: auto;
                                 cursor: pointer;
-                                height: 18px;
-                                width: 18px;
+                                height: 24px;
+                                width: 24px;
                                 border-radius: 50%;
                                 background: #0d6efd;
-                                border: 2px solid white;
-                                box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+                                border: 3px solid white;
+                                box-shadow: 0 2px 5px rgba(0,0,0,0.4);
                             }
                         `}</style>
                     </div>
                 </div>
 
-                <div className="d-flex justify-content-between gap-3">
+                <div className="d-flex justify-content-between gap-3 mb-3">
                     <div className="flex-grow-1">
                         <label className="small text-muted fw-bold mb-1">Min Limit</label>
                         <input 
                             type="number" 
-                            className="form-control form-control-sm" 
+                            className="form-control form-control-sm border-primary border-opacity-25" 
                             value={Math.round(activeMin * 100) / 100} 
                             onChange={(e) => updateFilter(filter.id, { min: Number(e.target.value) })}
                         />
@@ -259,14 +277,14 @@ const FilterElementSettings: React.FC<FilterElementSettingsProps> = ({ filter })
                         <label className="small text-muted fw-bold mb-1">Max Limit</label>
                         <input 
                             type="number" 
-                            className="form-control form-control-sm" 
+                            className="form-control form-control-sm border-primary border-opacity-25" 
                             value={Math.round(activeMax * 100) / 100} 
                             onChange={(e) => updateFilter(filter.id, { max: Number(e.target.value) })}
                         />
                     </div>
                 </div>
 
-                <Button variant="primary" className="mt-4 w-100 fw-bold rounded-pill shadow-sm" onClick={closePopup}>
+                <Button variant="primary" className="mt-auto w-100 fw-bold rounded-pill shadow-sm py-2" onClick={closePopup}>
                     Apply Selection
                 </Button>
             </Card.Body>
