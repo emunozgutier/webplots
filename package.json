@@ -9,7 +9,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "predeploy": "python3 scripts/generate_version.py && npm run build",
+    "predeploy": "python3 miscellaneous/generate_version.py && npm run build",
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
