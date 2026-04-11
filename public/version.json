@@ -1,5 +1,5 @@
 {
-    "commit_title": "Remove pre-filter UI/store and add runDataPipeline",
-    "commit_message": "Delete PreFilterSideMenu and PreFilterStore and simplify data processing by introducing runDataPipeline in DataFrameLib. Components (PlotArea, TableArea, PlotAreaControlButtons) now call runDataPipeline or directly use Step_1_filter instead of the removed Step_0_pre_filter; imports were adjusted accordingly. The new runDataPipeline orchestrates filtering, grouping and ink-ratio reduction and returns processed traces (and filtered data) to be used when generating plot config and exporting HTML.",
-    "version_string": "2026.15.4"
+    "commit_title": "Use React.Fragment and drop overflow style",
+    "commit_message": "Replace shorthand fragment (<>...</>) with explicit React.Fragment for consistency. Remove the 'overflow-auto' class and the inline maxHeight style from the .card-body wrapper, reverting to normal flow (likely to avoid nested scrollbars and let outer layout handle scrolling).",
+    "version_string": "2026.15.6"
 }
