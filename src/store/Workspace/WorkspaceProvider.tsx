@@ -41,6 +41,7 @@ export const WorkspaceProvider: React.FC<{ workspaceId: string, children: React.
             storesRef.current.plotLayoutStore.setState(cloneData.plot);
             storesRef.current.traceConfigStore.setState(cloneData.trace);
             storesRef.current.subplotSideMenuStore.setState(cloneData.subplot);
+            if (cloneData.table) storesRef.current.tableStore.setState(cloneData.table);
             cloneStoreStates.delete(workspaceId);
         }
 

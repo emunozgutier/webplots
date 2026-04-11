@@ -3,12 +3,14 @@ import { Form, Badge } from 'react-bootstrap';
 import { useTableStore } from '../../../../store/PlotTable/useTableStore';
 
 const Gaussian: React.FC = () => {
-    const { 
-        gaussianConfidenceThreshold, 
-        setGaussianConfidenceThreshold,
-        gaussianMaxComponents,
-        setGaussianMaxComponents
-    } = useTableStore();
+    const gaussianConfidenceThreshold = useTableStore(s => s.gaussianConfidenceThreshold);
+    const setGaussianConfidenceThreshold = useTableStore(s => s.setGaussianConfidenceThreshold);
+    const gaussianMaxComponents = useTableStore(s => s.gaussianMaxComponents);
+    const setGaussianMaxComponents = useTableStore(s => s.setGaussianMaxComponents);
+
+    // Provide safe defaults to prevent empty inputs
+    const displayThreshold = gaussianConfidenceThreshold ?? 60;
+    const displayMaxComponents = gaussianMaxComponents ?? 4;
 
     return (
         <div className="d-flex flex-column gap-4">
@@ -16,13 +18,13 @@ const Gaussian: React.FC = () => {
             <div>
                 <div className="d-flex justify-content-between align-items-center mb-2">
                     <label className="fw-bold text-primary text-uppercase small tracking-wide mb-0">Detection Threshold</label>
-                    <Badge bg="primary" className="rounded-pill px-3">{gaussianConfidenceThreshold}%</Badge>
+                    <Badge bg="primary" className="rounded-pill px-3">{displayThreshold}%</Badge>
                 </div>
                 <Form.Range 
                     min={0}
                     max={100}
                     step={1}
-                    value={gaussianConfidenceThreshold}
+                    value={displayThreshold}
                     onChange={(e) => setGaussianConfidenceThreshold(parseInt(e.target.value))}
                     className="mb-2"
                 />
@@ -40,7 +42,7 @@ const Gaussian: React.FC = () => {
                         type="number" 
                         min={1} 
                         max={4}
-                        value={gaussianMaxComponents}
+                        value={displayMaxComponents}
                         onChange={(e) => setGaussianMaxComponents(Math.min(4, Math.max(1, parseInt(e.target.value) || 1)))}
                         style={{ width: '80px' }}
                         className="fw-bold text-center"
