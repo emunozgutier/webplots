@@ -1,14 +1,14 @@
 import React, { createContext, useRef, useEffect } from 'react';
 import { cloneStoreStates, workspaceRegistry } from './useWorkspaceStore';
-import { createAxisSideMenuStore, type AxisSideMenuState } from './SideMenu/useAxisSideMenuStore';
-import { createStyleSideMenuStore, type StyleSideMenuState } from './SideMenu/useStyleSideMenuStore';
-import { createFilterSideMenuStore, type FilterState } from './SideMenu/useFilterSideMenuStore';
-import { createGroupSideMenuStore, type GroupSideMenuState } from './SideMenu/useGroupSideMenuStore';
-import { createInkRatioStore, type InkRatioState } from './SideMenu/useInkRatioStore';
+import { createAxisSideMenuStore, type AxisSideMenuState } from '../SideMenu/useAxisSideMenuStore';
+import { createStyleSideMenuStore, type StyleSideMenuState } from '../SideMenu/useStyleSideMenuStore';
+import { createFilterSideMenuStore, type FilterState } from '../SideMenu/useFilterSideMenuStore';
+import { createGroupSideMenuStore, type GroupSideMenuState } from '../SideMenu/useGroupSideMenuStore';
+import { createInkRatioStore, type InkRatioState } from '../SideMenu/useInkRatioStore';
 import { createPlotLayoutStore, type PlotLayoutState } from './usePlotLayoutStore';
-import { createTraceConfigStore, type TraceConfigState } from './SideMenu/useTraceConfigStore';
+import { createTraceConfigStore, type TraceConfigState } from '../SideMenu/useTraceConfigStore';
 import { createWorkspaceLocalStore, type WorkspaceLocalState } from './useWorkspaceLocalStore';
-import { createSubplotSideMenuStore, type SubplotSideMenuState } from './SideMenu/useSubplotSideMenuStore';
+import { createSubplotSideMenuStore, type SubplotSideMenuState } from '../SideMenu/useSubplotSideMenuStore';
 
 type StoreApi<T> = import('zustand/vanilla').StoreApi<T>;
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { ButtonGroup, ToggleButton, Button } from 'react-bootstrap';
 import type { SummaryMode } from './HeaderSummary';
-import { useWorkspaceLocalStore } from '../../store/useWorkspaceLocalStore';
+import { useWorkspaceLocalStore } from '../../store/Workspace/useWorkspaceLocalStore';
 import TableAreaSettingsPopup from './TableAreaSettingsPopup';
 
 interface TableAreaControlButtonsProps {

@@ -1,12 +1,12 @@
 import React, { useMemo } from 'react';
-import { useWorkspaceLocalStore } from '../../store/useWorkspaceLocalStore';
+import { useWorkspaceLocalStore } from '../../store/Workspace/useWorkspaceLocalStore';
 import Settings from './Settings';
 import Debug from './Debug';
 import Plot from 'react-plotly.js';
 
 import { useAxisSideMenuStore } from '../../store/SideMenu/useAxisSideMenuStore';
 import { useGroupSideMenuStore } from '../../store/SideMenu/useGroupSideMenuStore';
-import { usePlotLayoutStore } from '../../store/usePlotLayoutStore';
+import { usePlotLayoutStore } from '../../store/Workspace/usePlotLayoutStore';
 import { useTraceConfigStore } from '../../store/SideMenu/useTraceConfigStore';
 import { useInkRatioStore } from '../../store/SideMenu/useInkRatioStore';
 import { useStyleSideMenuStore } from '../../store/SideMenu/useStyleSideMenuStore';

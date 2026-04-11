@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { usePlotLayoutStore } from '../../../store/usePlotLayoutStore';
-import { useWorkspaceLocalStore } from '../../../store/useWorkspaceLocalStore';
+import { usePlotLayoutStore } from '../../../store/Workspace/usePlotLayoutStore';
+import { useWorkspaceLocalStore } from '../../../store/Workspace/useWorkspaceLocalStore';
 
 const PointTip: React.FC = () => {
     const { plotLayout, setPointTip } = usePlotLayoutStore();

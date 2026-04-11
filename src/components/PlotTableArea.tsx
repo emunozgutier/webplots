@@ -1,5 +1,5 @@
 import React from 'react';
-import { useWorkspaceLocalStore } from '../store/useWorkspaceLocalStore';
+import { useWorkspaceLocalStore } from '../store/Workspace/useWorkspaceLocalStore';
 import { ViewToggleButtons } from './PlotTableAreaComponents/PlotTableTabs';
 import TableArea from './PlotTableAreaComponents/TableArea';
 import PlotArea from './PlotTableAreaComponents/PlotArea';

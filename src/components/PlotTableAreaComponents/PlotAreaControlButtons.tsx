@@ -1,5 +1,5 @@
 import React from 'react';
-import { usePlotLayoutStore } from '../../store/usePlotLayoutStore';
+import { usePlotLayoutStore } from '../../store/Workspace/usePlotLayoutStore';
 import { useTraceConfigStore } from '../../store/SideMenu/useTraceConfigStore';
 import { generatePlotConfig } from '../../utils/PlotlyHelpers';
 import { useCsvDataStore } from '../../store/useCsvDataStore';

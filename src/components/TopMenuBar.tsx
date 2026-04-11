@@ -4,7 +4,7 @@ import { NavDropdown, Navbar, Nav, Container, Modal, Button } from 'react-bootst
 import { useCsvDataStore } from '../store/useCsvDataStore';
 import Papa from 'papaparse';
 import type { CsvDataStore } from '../store/useCsvDataStore';
-import { useWorkspaceStore, workspaceRegistry } from '../store/useWorkspaceStore';
+import { useWorkspaceStore, workspaceRegistry } from '../store/Workspace/useWorkspaceStore';
 import { getSmallDataset, getLargeColumnDataset, getSimulationDataset, getBinningTestData } from '../utils/TestDatasets';
 import { generateTestGaussianData } from '../utils/TableMathLib';
 

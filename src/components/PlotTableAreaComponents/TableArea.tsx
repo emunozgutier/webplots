@@ -7,7 +7,7 @@ import { useGroupSideMenuStore } from '../../store/SideMenu/useGroupSideMenuStor
 import { useFilterSideMenuStore } from '../../store/SideMenu/useFilterSideMenuStore';
 import { useStyleSideMenuStore } from '../../store/SideMenu/useStyleSideMenuStore';
 import HeaderSummary from './HeaderSummary';
-import { useWorkspaceLocalStore } from '../../store/useWorkspaceLocalStore';
+import { useWorkspaceLocalStore } from '../../store/Workspace/useWorkspaceLocalStore';
 import Plot from 'react-plotly.js';
 import TableAreaControlButtons from './TableAreaControlButtons';
 import TableAreaBatchButtons from './TableAreaBatchButtons';

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTraceConfigStore } from '../../../store/SideMenu/useTraceConfigStore';
 import { useAxisSideMenuStore } from '../../../store/SideMenu/useAxisSideMenuStore';
-import { useWorkspaceLocalStore } from '../../../store/useWorkspaceLocalStore';
+import { useWorkspaceLocalStore } from '../../../store/Workspace/useWorkspaceLocalStore';
 import { COLOR_PALETTES } from '../../../utils/ColorPalettes';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { HexColorPicker } from 'react-colorful';

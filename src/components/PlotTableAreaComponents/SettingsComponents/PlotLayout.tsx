@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { usePlotLayoutStore } from '../../../store/usePlotLayoutStore';
+import { usePlotLayoutStore } from '../../../store/Workspace/usePlotLayoutStore';
 
 import { useCsvDataStore } from '../../../store/useCsvDataStore';
 import { useAxisSideMenuStore } from '../../../store/SideMenu/useAxisSideMenuStore';
-import { useWorkspaceLocalStore } from '../../../store/useWorkspaceLocalStore';
+import { useWorkspaceLocalStore } from '../../../store/Workspace/useWorkspaceLocalStore';
 
 const PlotLayout: React.FC = () => {
     const { plotLayout, setPlotTitle, setXAxisTitle, setYAxisTitle, setXRange, setYRange, setHistogramBarmode, setLegendOrientation } = usePlotLayoutStore();

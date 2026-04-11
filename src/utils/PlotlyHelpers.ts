@@ -1,7 +1,7 @@
 import type { Layout, Data } from 'plotly.js';
 import type { CsvDataStore } from '../store/useCsvDataStore';
 import type { AxisSideMenuData } from '../store/SideMenu/useAxisSideMenuStore';
-import type { PlotLayout } from '../store/usePlotLayoutStore';
+import type { PlotLayout } from '../store/Workspace/usePlotLayoutStore';
 import type { TraceConfig } from '../store/SideMenu/useTraceConfigStore';
 import type { StyleSideMenuData } from '../store/SideMenu/useStyleSideMenuStore';
 import type { SubplotSideMenuState } from '../store/SideMenu/useSubplotSideMenuStore';
