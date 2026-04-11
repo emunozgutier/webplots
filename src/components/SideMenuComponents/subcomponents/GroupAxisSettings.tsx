@@ -12,6 +12,16 @@ import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-p
 import { HexColorPicker } from 'react-colorful';
 import { OverlayTrigger, Popover, Dropdown } from 'react-bootstrap';
 
+const SYMBOLS = [
+    { id: 'circle', label: 'Circle', icon: 'bi-circle-fill' },
+    { id: 'square', label: 'Square', icon: 'bi-square-fill' },
+    { id: 'diamond', label: 'Diamond', icon: 'bi-diamond-fill' },
+    { id: 'cross', label: 'Cross', icon: 'bi-plus-lg' },
+    { id: 'x', label: 'X', icon: 'bi-x-lg' },
+    { id: 'triangle-up', label: 'Triangle', icon: 'bi-triangle-fill' },
+    { id: 'star', label: 'Star', icon: 'bi-star-fill' }
+];
+
 interface GroupAxisSettingsProps {
     column: string;
 }
@@ -154,14 +164,12 @@ const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
         });
     };
 
-    const SHAPE_OPTS = ['circle', 'square', 'diamond', 'cross', 'x', 'triangle-up', 'pentagon', 'hexagram', 'star'];
-
     const renderStyleControls = (colorVal: string | undefined, symbolVal: string | undefined, onColorChange: (val: string) => void, onSymbolChange: (val: string) => void, isCategorical: boolean = false, defaultColor?: string) => {
-        const mode = isCategorical ? 'color' : (localSettings.styleMode || 'color');
+        const mode = localSettings.styleMode || 'color';
         if (mode === 'none') return null;
 
         const effectiveColor = colorVal || (isCategorical ? defaultColor : '#888888');
-        const showClear = !!colorVal;
+        const showClear = !!colorVal || !!symbolVal;
 
         return (
             <div className={`d-flex align-items-center bg-light rounded px-1 border`} style={{ height: '30px' }}>
@@ -183,16 +191,39 @@ const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
                         )}
                     </>
                 )}
-                {mode === 'symbol' && !isCategorical && (
-                    <select 
-                        className="form-select form-select-sm border-0 bg-transparent text-secondary shadow-none" 
-                        style={{ width: '100px', fontSize: '0.75rem', padding: '0.1rem 1rem 0.1rem 0.2rem', cursor: 'pointer' }}
-                        value={symbolVal || ''}
-                        onChange={(e) => onSymbolChange(e.target.value)}
-                    >
-                        <option value="">Auto Shape</option>
-                        {SHAPE_OPTS.map(s => <option key={s} value={s}>{s}</option>)}
-                    </select>
+                {mode === 'symbol' && (
+                    <>
+                        <Dropdown>
+                            <Dropdown.Toggle as="button" className="btn btn-sm btn-link p-0 text-decoration-none shadow-none text-secondary d-flex align-items-center" style={{ minWidth: '100px', fontSize: '0.75rem' }}>
+                                {symbolVal ? (
+                                    <>
+                                        <i className={`bi ${SYMBOLS.find(s => s.id === symbolVal)?.icon || 'bi-circle'} me-2`}></i>
+                                        {SYMBOLS.find(s => s.id === symbolVal)?.label || symbolVal}
+                                    </>
+                                ) : (
+                                    <span className="text-muted">Auto Shape</span>
+                                )}
+                            </Dropdown.Toggle>
+                            <Dropdown.Menu className="p-2 shadow border-0" style={{ minWidth: '180px' }}>
+                                <div className="d-flex flex-wrap gap-2">
+                                    {SYMBOLS.map((s) => (
+                                        <button
+                                            key={s.id}
+                                            className={`btn btn-sm ${symbolVal === s.id ? 'btn-primary' : 'btn-outline-secondary'} d-flex align-items-center justify-content-center`}
+                                            style={{ width: '32px', height: '32px' }}
+                                            onClick={() => { onSymbolChange(s.id); document.body.click(); }}
+                                            title={s.label}
+                                        >
+                                            <i className={`bi ${s.icon}`}></i>
+                                        </button>
+                                    ))}
+                                </div>
+                            </Dropdown.Menu>
+                        </Dropdown>
+                        {symbolVal && (
+                            <button type="button" className="btn btn-link p-0 text-muted ms-1 text-decoration-none lh-1 me-1" style={{ fontSize: '1rem' }} onClick={() => onSymbolChange('')} title="Clear Shape">&times;</button>
+                        )}
+                    </>
                 )}
             </div>
         );
@@ -222,21 +253,19 @@ const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
             </div>
 
             <div className="card-body overflow-auto">
-                {isNumeric && (
-                    <div className="mb-3 d-flex align-items-center justify-content-between p-2 bg-light rounded border">
-                        <label className="form-label mb-0 fw-bold small">Customize Individual Groups By:</label>
-                        <select 
-                            className="form-select form-select-sm" 
-                            style={{ width: '150px' }}
-                            value={localSettings.styleMode || 'color'}
-                            onChange={(e) => setLocalSettings(prev => ({ ...prev, styleMode: e.target.value as any }))}
-                        >
-                            <option value="color">Colors Only</option>
-                            <option value="symbol">Markers Only</option>
-                            <option value="none">None (Hide Options)</option>
-                        </select>
-                    </div>
-                )}
+                <div className="mb-3 d-flex align-items-center justify-content-between p-2 bg-light rounded border">
+                    <label className="form-label mb-0 fw-bold small">Customize Individual Groups By:</label>
+                    <select 
+                        className="form-select form-select-sm" 
+                        style={{ width: '150px' }}
+                        value={localSettings.styleMode || 'color'}
+                        onChange={(e) => setLocalSettings(prev => ({ ...prev, styleMode: e.target.value as any }))}
+                    >
+                        <option value="color">Colors Only</option>
+                        <option value="symbol">Markers Only</option>
+                        <option value="none">None (Hide Options)</option>
+                    </select>
+                </div>
 
                 {localSettings.styleMode !== 'none' && (!localSettings.styleMode || localSettings.styleMode === 'color') && (
                     <div className="mb-4 bg-light p-3 rounded border">

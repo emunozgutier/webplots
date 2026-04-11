@@ -210,6 +210,7 @@ const TraceConfig: React.FC = () => {
     const { data } = useCsvDataStore();
 
     const isGroupColorManaged = groupSideMenuData.groupAxis && (!groupSideMenuData.groupSettings[groupSideMenuData.groupAxis]?.styleMode || groupSideMenuData.groupSettings[groupSideMenuData.groupAxis]?.styleMode === 'color');
+    const isGroupSymbolManaged = groupSideMenuData.groupAxis && groupSideMenuData.groupSettings[groupSideMenuData.groupAxis]?.styleMode === 'symbol';
 
     const activeTraces = traceConfig.activeTraces || [];
 
@@ -440,19 +441,26 @@ const TraceConfig: React.FC = () => {
                                             {sideMenuData.plotType !== 'histogram' && currentMode === 'markers' && (
                                                 <div className="mb-3">
                                                     <label className="form-label small fw-bold">Marker Symbol</label>
-                                                    <div className="d-flex flex-wrap gap-2 border p-2 rounded bg-light">
-                                                        {SYMBOLS.map((s) => (
-                                                            <button
-                                                                key={s.id}
-                                                                className={`btn btn-sm ${currentSymbol === s.id ? 'btn-primary' : 'btn-outline-secondary'} d-flex align-items-center justify-content-center`}
-                                                                style={{ width: '36px', height: '36px' }}
-                                                                onClick={() => handleSymbolChange(trace.fullTraceName, s.id)}
-                                                                title={s.label}
-                                                            >
-                                                                <i className={`bi ${s.icon}`}></i>
-                                                            </button>
-                                                        ))}
-                                                    </div>
+                                                    {isGroupSymbolManaged ? (
+                                                        <div className="p-2 bg-light rounded border text-muted small">
+                                                            <i className="bi bi-info-circle me-1 text-primary"></i>
+                                                            Marker symbols are currently mapped by the active Group Element settings.
+                                                        </div>
+                                                    ) : (
+                                                        <div className="d-flex flex-wrap gap-2 border p-2 rounded bg-light">
+                                                            {SYMBOLS.map((s) => (
+                                                                <button
+                                                                    key={s.id}
+                                                                    className={`btn btn-sm ${currentSymbol === s.id ? 'btn-primary' : 'btn-outline-secondary'} d-flex align-items-center justify-content-center`}
+                                                                    style={{ width: '36px', height: '36px' }}
+                                                                    onClick={() => handleSymbolChange(trace.fullTraceName, s.id)}
+                                                                    title={s.label}
+                                                                >
+                                                                    <i className={`bi ${s.icon}`}></i>
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
 
