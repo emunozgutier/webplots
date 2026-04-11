@@ -3,7 +3,7 @@ import { Card, Form, Button, ButtonGroup } from 'react-bootstrap';
 import { useWorkspaceLocalStore } from '../../../store/Workspace/useWorkspaceLocalStore';
 import { formatNumber } from '../../../utils/TableMathLib';
 
-const TableAreaSettingsPopup: React.FC = () => {
+const SettingsPopup: React.FC = () => {
     const { 
         numberFormat, 
         setNumberFormat, 
@@ -142,4 +142,4 @@ const TableAreaSettingsPopup: React.FC = () => {
     );
 };
 
-export default TableAreaSettingsPopup;
+export default SettingsPopup;

@@ -1,13 +1,13 @@
 import React from 'react';
 import { Button, ButtonGroup } from 'react-bootstrap';
 
-interface TableAreaBatchButtonsProps {
+interface BatchButtonsProps {
     currentBatch: number;
     totalBatches: number;
     onBatchChange: (batch: number) => void;
 }
 
-const TableAreaBatchButtons: React.FC<TableAreaBatchButtonsProps> = ({
+const BatchButtons: React.FC<BatchButtonsProps> = ({
     currentBatch,
     totalBatches,
     onBatchChange,
@@ -86,4 +86,4 @@ const TableAreaBatchButtons: React.FC<TableAreaBatchButtonsProps> = ({
     );
 };
 
-export default TableAreaBatchButtons;
+export default BatchButtons;

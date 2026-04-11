@@ -2,9 +2,9 @@ import React from 'react';
 import { ButtonGroup, ToggleButton, Button } from 'react-bootstrap';
 import type { SummaryMode } from './HeaderSummary';
 import { useWorkspaceLocalStore } from '../../../store/Workspace/useWorkspaceLocalStore';
-import TableAreaSettingsPopup from './TableAreaSettingsPopup';
+import SettingsPopup from './SettingsPopup';
 
-interface TableAreaControlButtonsProps {
+interface ControlButtonsProps {
     summaryMode: SummaryMode;
     setSummaryMode: (mode: SummaryMode) => void;
     datasetMode: 'all' | 'plot';
@@ -14,7 +14,7 @@ interface TableAreaControlButtonsProps {
     hasPlotData: boolean;
 }
 
-const TableAreaControlButtons: React.FC<TableAreaControlButtonsProps> = ({
+const ControlButtons: React.FC<ControlButtonsProps> = ({
     summaryMode,
     setSummaryMode,
     datasetMode,
@@ -26,7 +26,7 @@ const TableAreaControlButtons: React.FC<TableAreaControlButtonsProps> = ({
     const { setPopupContent } = useWorkspaceLocalStore();
 
     const handleOpenSettings = () => {
-        setPopupContent(<TableAreaSettingsPopup />);
+        setPopupContent(<SettingsPopup />);
     };
     return (
         <div className="d-flex gap-4 align-items-center">
@@ -149,4 +149,4 @@ const TableAreaControlButtons: React.FC<TableAreaControlButtonsProps> = ({
     );
 };
 
-export default TableAreaControlButtons;
+export default ControlButtons;

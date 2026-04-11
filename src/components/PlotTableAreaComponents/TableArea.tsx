@@ -9,8 +9,8 @@ import { useStyleSideMenuStore } from '../../store/SideMenu/useStyleSideMenuStor
 import HeaderSummary from './TableAreaComponents/HeaderSummary';
 import { useWorkspaceLocalStore } from '../../store/Workspace/useWorkspaceLocalStore';
 import Plot from 'react-plotly.js';
-import TableAreaControlButtons from './TableAreaComponents/TableAreaControlButtons';
-import TableAreaBatchButtons from './TableAreaComponents/TableAreaBatchButtons';
+import ControlButtons from './TableAreaComponents/ControlButtons';
+import BatchButtons from './TableAreaComponents/BatchButtons';
 import { calculateGaussianStats, formatNumber, parseToNumeric } from '../../utils/TableMathLib';
 
 const TableArea: React.FC = () => {
@@ -394,7 +394,7 @@ const TableArea: React.FC = () => {
             `}</style>
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <div></div>
-                <TableAreaControlButtons
+                <ControlButtons
                     summaryMode={summaryMode}
                     setSummaryMode={setSummaryMode}
                     datasetMode={datasetMode}
@@ -580,7 +580,7 @@ const TableArea: React.FC = () => {
                         </Table>
                     </div>
                 </div>
-                <TableAreaBatchButtons
+                <BatchButtons
                     currentBatch={currentBatch}
                     totalBatches={totalBatches}
                     onBatchChange={setCurrentBatch}
