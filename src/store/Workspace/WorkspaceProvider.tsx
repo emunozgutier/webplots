@@ -1,0 +1,59 @@
+import React, { useRef, useEffect } from 'react';
+import { WorkspaceContext, type WorkspaceStores } from './WorkspaceContext';
+import { cloneStoreStates, workspaceRegistry } from './useWorkspaceStore';
+
+// Factory imports (these are what caused the circular dependency when in WorkspaceContext)
+import { createAxisSideMenuStore } from '../SideMenu/useAxisSideMenuStore';
+import { createStyleSideMenuStore } from '../SideMenu/useStyleSideMenuStore';
+import { createFilterSideMenuStore } from '../SideMenu/useFilterSideMenuStore';
+import { createGroupSideMenuStore } from '../SideMenu/useGroupSideMenuStore';
+import { createInkRatioStore } from '../SideMenu/useInkRatioStore';
+import { createPlotLayoutStore } from '../PlotTable/usePlotLayoutStore';
+import { createTraceConfigStore } from '../PlotTable/useTraceConfigStore';
+import { createWorkspaceLocalStore } from './useWorkspaceLocalStore';
+import { createSubplotSideMenuStore } from '../SideMenu/useSubplotSideMenuStore';
+
+export const WorkspaceProvider: React.FC<{ workspaceId: string, children: React.ReactNode }> = ({ workspaceId, children }) => {
+    const storesRef = useRef<WorkspaceStores | null>(null);
+
+    if (!storesRef.current) {
+        storesRef.current = {
+            axisSideMenuStore: createAxisSideMenuStore(),
+            styleSideMenuStore: createStyleSideMenuStore(),
+            filterSideMenuStore: createFilterSideMenuStore(),
+            groupSideMenuStore: createGroupSideMenuStore(),
+            inkRatioStore: createInkRatioStore(),
+            plotLayoutStore: createPlotLayoutStore(),
+            traceConfigStore: createTraceConfigStore(),
+            workspaceLocalStore: createWorkspaceLocalStore(),
+            subplotSideMenuStore: createSubplotSideMenuStore()
+        };
+
+        const cloneData = cloneStoreStates.get(workspaceId);
+        if (cloneData) {
+            storesRef.current.axisSideMenuStore.setState(cloneData.axis);
+            storesRef.current.styleSideMenuStore.setState(cloneData.color);
+            storesRef.current.filterSideMenuStore.setState(cloneData.filter);
+            storesRef.current.groupSideMenuStore.setState(cloneData.group);
+            storesRef.current.inkRatioStore.setState(cloneData.ink);
+            storesRef.current.plotLayoutStore.setState(cloneData.plot);
+            storesRef.current.traceConfigStore.setState(cloneData.trace);
+            storesRef.current.subplotSideMenuStore.setState(cloneData.subplot);
+            cloneStoreStates.delete(workspaceId);
+        }
+
+        workspaceRegistry.set(workspaceId, storesRef.current);
+    }
+
+    useEffect(() => {
+        return () => {
+            workspaceRegistry.delete(workspaceId);
+        };
+    }, [workspaceId]);
+
+    return (
+        <WorkspaceContext.Provider value={storesRef.current}>
+            {children}
+        </WorkspaceContext.Provider>
+    );
+};
