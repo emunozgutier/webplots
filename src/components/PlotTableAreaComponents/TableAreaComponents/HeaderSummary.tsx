@@ -306,7 +306,7 @@ const HeaderSummary: React.FC<HeaderSummaryProps> = ({ data, column, mode, confi
                 sampleSize: sampledData.length
             };
         }
-    }, [data, column, mode]);
+    }, [data, column, mode, confidenceThreshold, maxComponents]);
 
     if (!stats) return null;
 
