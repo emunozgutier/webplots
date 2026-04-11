@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { type AestheticMapping, type MappingSource } from '../../../store/SideMenu/useStyleSideMenuStore';
 import { useCsvDataStore } from '../../../store/useCsvDataStore';
 import { useInkRatioStore } from '../../../store/SideMenu/useInkRatioStore';
+import { useGroupSideMenuStore } from '../../../store/SideMenu/useGroupSideMenuStore';
 import Plot from 'react-plotly.js';
 import { Modal, Button, Alert } from 'react-bootstrap';
 
@@ -22,23 +23,31 @@ const SHAPE_OPTIONS = [
 const StyleElement: React.FC<StyleElementProps> = ({ title, mapping, updateFn, type }) => {
     const { columns, data } = useCsvDataStore();
     const { absorptionMode } = useInkRatioStore();
+    const { groupSideMenuData } = useGroupSideMenuStore();
+    const { groupAxis, groupSettings } = groupSideMenuData;
     const [showModal, setShowModal] = useState(false);
 
     const isEnabled = mapping.enabled !== false;
     const isManual = mapping.source === 'manual';
     const isColumn = mapping.source === 'column';
-    const isGroup = mapping.source === 'group';
     const isSizeBlock = title === 'Node Size';
     const showSizeOverrideWarning = isSizeBlock && !isManual && absorptionMode === 'size';
 
+    let isManagedByGroup = false;
+    if (groupAxis) {
+        const mode = groupSettings[groupAxis]?.styleMode || 'color';
+        if (title === 'Hue/Color' && mode === 'color') isManagedByGroup = true;
+        if (title === 'Marker Shape' && mode === 'symbol') isManagedByGroup = true;
+    }
+
     return (
         <div className="card shadow-sm border-0 w-100 mb-3 p-2">
-            <div className={`card-header bg-white p-2 ${!isEnabled || isGroup ? 'border-bottom-0 rounded' : ''}`}>
+            <div className={`card-header bg-white p-2 ${!isEnabled || isManagedByGroup ? 'border-bottom-0 rounded' : ''}`}>
                 <div className="d-flex justify-content-between align-items-center">
-                    <span className={`fw-bold text-truncate ${!isEnabled && !isGroup ? 'text-muted' : ''}`} style={{ fontSize: '0.85rem' }}>
-                        {title} {isGroup && <span className="ms-1 fw-normal text-muted fst-italic">(by Group)</span>}
+                    <span className={`fw-bold text-truncate ${!isEnabled && !isManagedByGroup ? 'text-muted' : ''}`} style={{ fontSize: '0.85rem' }}>
+                        {title} {isManagedByGroup && <span className="ms-1 fw-normal text-muted fst-italic">(by Group)</span>}
                     </span>
-                    {!isGroup && (
+                    {!isManagedByGroup && (
                         <div className="form-check form-switch m-0 d-flex align-items-center">
                             <input
                                 className="form-check-input"
@@ -52,7 +61,7 @@ const StyleElement: React.FC<StyleElementProps> = ({ title, mapping, updateFn, t
                 </div>
             </div>
 
-            {isEnabled && !isGroup && (
+            {isEnabled && !isManagedByGroup && (
                 <div className="card-body p-2">
                 <div className="mb-2">
                     <label className="form-label text-muted small mb-1" style={{ fontSize: '0.75rem' }}>Source Mode</label>
