@@ -11,7 +11,7 @@ import { useWorkspaceLocalStore } from '../../store/WorkspaceLocalStore';
 import Plot from 'react-plotly.js';
 import TableAreaControlButtons from './TableAreaControlButtons';
 import TableAreaBatchButtons from './TableAreaBatchButtons';
-import { calculateGaussianStats, formatNumber } from '../../utils/TableMathLib';
+import { calculateGaussianStats, formatNumber, parseToNumeric } from '../../utils/TableMathLib';
 
 const TableArea: React.FC = () => {
     const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
@@ -241,17 +241,11 @@ const TableArea: React.FC = () => {
                 if (v === null || v === undefined || v === '') continue;
 
                 totalProcessed++;
-                if (typeof v === 'number') {
+                const numV = parseToNumeric(v);
+                if (numV !== null) {
                     numCount++;
-                    if (v < min) min = v;
-                    if (v > max) max = v;
-                } else if (typeof v === 'string') {
-                    const numV = Number(v);
-                    if (!isNaN(numV) && v.trim() !== '') {
-                        numCount++;
-                        if (numV < min) min = numV;
-                        if (numV > max) max = numV;
-                    }
+                    if (numV < min) min = numV;
+                    if (numV > max) max = numV;
                 }
             }
 
@@ -541,9 +535,9 @@ const TableArea: React.FC = () => {
                                                     bgColor = '#0d6efd'; // Primary blue
                                                 } else if (colorMode === 'color' && numericStats[col]) {
                                                     const { min, max } = numericStats[col];
-                                                    const numVal = Number(val);
+                                                    const numVal = parseToNumeric(val);
                                                     // Make sure we have a valid range
-                                                    if (!isNaN(numVal) && max > min) {
+                                                    if (numVal !== null && max > min) {
                                                         const ratio = (numVal - min) / (max - min);
                                                         // Color scale: Red (High) to Blue (Low)
                                                         // We can make the color vibrant but semi-transparent so text is readable

@@ -6,7 +6,7 @@ import type { TraceConfig } from '../store/TraceConfigStore';
 import type { StyleSideMenuData } from '../store/StyleSideMenuStore';
 import type { SubplotSideMenuState } from '../store/SubplotSideMenuStore';
 import type { TraceStats } from '../store/InkRatioStore';
-
+import { parseToNumeric } from './TableMathLib';
 import type { TraceData } from './DataFrameLib';
 
 const ensurePlotlyCompatibleData = (data: any[]): { processedData: any[], isDate: boolean } => {
@@ -17,30 +17,13 @@ const ensurePlotlyCompatibleData = (data: any[]): { processedData: any[], isDate
     const timePattern = /^\d{1,2}:\d{2}(:\d{2})?$/;
 
     const processedData = data.map(v => {
-        if (typeof v !== 'string') return v;
-
-        const str = v.trim();
-        if (str === '') return v;
-
-        if (datePattern.test(str)) {
-            const d = Date.parse(str);
-            if (!isNaN(d)) {
+        const numV = parseToNumeric(v);
+        if (numV !== null) {
+            if (typeof v === 'string' && (datePattern.test(v.trim()) || timePattern.test(v.trim()))) {
                 detectedDate = true;
-                return d;
             }
+            return numV;
         }
-
-        if (timePattern.test(str)) {
-            // Normalize time string (HH:MM or H:MM) into a full datetime string for parsing
-            const timePart = str.split(':').length === 2 ? `${str}:00` : str;
-            const fullStr = `1970-01-01T${timePart.padStart(8, '0')}`;
-            const d = Date.parse(fullStr);
-            if (!isNaN(d)) {
-                detectedDate = true;
-                return d;
-            }
-        }
-
         return v;
     });
 

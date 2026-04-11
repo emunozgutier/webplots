@@ -369,3 +369,43 @@ export const generateTestGaussianData = (): { data: any[], columns: string[] } =
 
     return { data, columns };
 };
+
+/**
+ * Parses a value into a numeric representation.
+ * Supports numbers, date strings (YYYY-MM-DD), and time strings (HH:MM).
+ * @param v The value to parse.
+ * @returns The numeric value (timestamp for dates) or null if unparseable.
+ */
+export const parseToNumeric = (v: any): number | null => {
+    if (v === null || v === undefined || v === '') return null;
+    if (typeof v === 'number') return v;
+    
+    const str = String(v).trim();
+    if (str === '') return null;
+
+    // Standard numeric parsing
+    const num = Number(str);
+    if (!isNaN(num)) return num;
+
+    // Date/Time pattern detection
+    const datePattern = /^\d{4}-\d{2}-\d{2}/;
+    const timePattern = /^\d{1,2}:\d{2}(:\d{2})?$/;
+
+    // Handle full date strings
+    if (datePattern.test(str)) {
+        const d = Date.parse(str);
+        if (!isNaN(d)) return d;
+    }
+
+    // Handle standalone time strings (normalize to an epoch date)
+    if (timePattern.test(str)) {
+        const parts = str.split(':');
+        const timePart = parts.length === 2 ? `${str}:00` : str;
+        const fullISO = `1970-01-01T${timePart.padStart(8, '0')}`;
+        const d = Date.parse(fullISO);
+        if (!isNaN(d)) return d;
+    }
+
+    return null;
+};
+
