@@ -118,7 +118,7 @@ const FilterSideMenu: React.FC = () => {
         <div className="d-flex flex-column h-100 overflow-hidden">
             {/* Reusing SearchColumn for convenience source */}
             {/* Reusing SearchColumn for convenience source */}
-            <div className="p-2 border-bottom" style={{ height: '40%', minHeight: '150px', display: 'flex', flexDirection: 'column' }}>
+            <div className="p-2 border-bottom" style={{ flex: '1 1 0', minHeight: '150px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                 <div className="d-flex flex-column h-100 overflow-hidden">
                     <div className="p-2 h-100 overflow-hidden d-flex flex-column">
                         <SearchColumn />
@@ -126,7 +126,7 @@ const FilterSideMenu: React.FC = () => {
                 </div>
             </div>
 
-            <div className="p-2 flex-grow-1" style={{ height: '60%', minHeight: '200px', display: 'flex', flexDirection: 'column' }}>
+            <div className="p-2 flex-grow-1" style={{ flex: '1 1 0', minHeight: '200px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                 <div className="d-flex flex-column h-100 overflow-hidden">
                     <div
                         className={`overflow-auto h-100 p-2 ${dragOver ? 'bg-info bg-opacity-10' : ''}`}

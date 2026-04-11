@@ -50,17 +50,9 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
 
     return (
         <div className="d-flex flex-column h-100 overflow-hidden">
-            <div className="p-2 border-bottom text-center">
-                <div className="btn-group w-100" role="group">
-                    <input type="radio" className="btn-check" name="plotType" id="plotScatter" autoComplete="off" checked={plotType === 'scatter'} onChange={() => setPlotType('scatter')} />
-                    <label className="btn btn-outline-primary btn-sm" htmlFor="plotScatter">Scatter</label>
 
-                    <input type="radio" className="btn-check" name="plotType" id="plotHistogram" autoComplete="off" checked={plotType === 'histogram'} onChange={() => setPlotType('histogram')} />
-                    <label className="btn btn-outline-primary btn-sm" htmlFor="plotHistogram">Histogram</label>
-                </div>
-            </div>
             {hasColumns && (
-                <div className="p-2 border-bottom" style={{ flex: '0 1 auto', maxHeight: '50%', minHeight: '150px', display: 'flex', flexDirection: 'column' }}>
+                <div className="p-2 border-bottom" style={{ flex: '1 1 0', minHeight: '150px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                     <div className="d-flex flex-column h-100 overflow-hidden">
                         <div className="p-2 h-100 overflow-hidden d-flex flex-column">
                             <SearchColumn />
@@ -68,7 +60,7 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
                     </div>
                 </div>
             )}
-            <div className="p-2 flex-grow-1" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            <div className="p-2" style={{ flex: '1 1 0', minHeight: '150px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                 <div className="d-flex flex-column h-100 overflow-hidden">
                     <div className="overflow-auto h-100">
                         {hasColumns ? (
@@ -134,6 +126,24 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
                     </div>
                 </div>
             </div>
+            {hasColumns && (
+                <div className="p-3 bg-white border-top shadow-sm" style={{ flex: '0 0 auto' }}>
+                    <div className="d-flex justify-content-center align-items-center mb-2">
+                        <span className="badge bg-secondary-subtle text-secondary border small fw-bold px-3 py-1">PLOT TYPE</span>
+                    </div>
+                    <div className="btn-group w-100" role="group">
+                        <input type="radio" className="btn-check" name="plotType" id="plotScatter" autoComplete="off" checked={plotType === 'scatter'} onChange={() => setPlotType('scatter')} />
+                        <label className="btn btn-outline-primary btn-sm py-2" htmlFor="plotScatter">
+                            <i className="bi bi-graph-up me-1"></i> Scatter
+                        </label>
+
+                        <input type="radio" className="btn-check" name="plotType" id="plotHistogram" autoComplete="off" checked={plotType === 'histogram'} onChange={() => setPlotType('histogram')} />
+                        <label className="btn btn-outline-primary btn-sm py-2" htmlFor="plotHistogram">
+                            <i className="bi bi-bar-chart-fill me-1"></i> Histogram
+                        </label>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

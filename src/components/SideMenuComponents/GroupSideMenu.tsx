@@ -35,7 +35,7 @@ const GroupSideMenu: React.FC = () => {
     return (
         <div className="d-flex flex-column h-100 overflow-hidden">
             {columns.length > 0 && (
-                <div className="p-2 border-bottom" style={{ flex: '0 1 auto', maxHeight: '50%', minHeight: '150px', display: 'flex', flexDirection: 'column' }}>
+                <div className="p-2 border-bottom" style={{ flex: '1 1 0', minHeight: '150px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                     <div className="d-flex flex-column h-100 overflow-hidden">
                         <div className="p-2 h-100 overflow-hidden d-flex flex-column">
                             <SearchColumn />
@@ -43,7 +43,7 @@ const GroupSideMenu: React.FC = () => {
                     </div>
                 </div>
             )}
-            <div className="p-2 flex-grow-1" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            <div className="p-2 flex-grow-1" style={{ flex: '1 1 0', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                 <div className="d-flex flex-column h-100 overflow-hidden">
                     <div className="overflow-auto h-100">
                         {columns.length > 0 ? (
