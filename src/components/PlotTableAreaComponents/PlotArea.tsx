@@ -6,8 +6,8 @@ import Plot from 'react-plotly.js';
 
 import { useAxisSideMenuStore } from '../../store/SideMenu/useAxisSideMenuStore';
 import { useGroupSideMenuStore } from '../../store/SideMenu/useGroupSideMenuStore';
-import { usePlotLayoutStore } from '../../store/Workspace/usePlotLayoutStore';
-import { useTraceConfigStore } from '../../store/SideMenu/useTraceConfigStore';
+import { usePlotLayoutStore } from '../../store/PlotTable/usePlotLayoutStore';
+import { useTraceConfigStore } from '../../store/PlotTable/useTraceConfigStore';
 import { useInkRatioStore } from '../../store/SideMenu/useInkRatioStore';
 import { useStyleSideMenuStore } from '../../store/SideMenu/useStyleSideMenuStore';
 import { useSubplotSideMenuStore } from '../../store/SideMenu/useSubplotSideMenuStore';

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { usePlotLayoutStore } from '../../../store/Workspace/usePlotLayoutStore';
+import { usePlotLayoutStore } from '../../../store/PlotTable/usePlotLayoutStore';
 import { useWorkspaceLocalStore } from '../../../store/Workspace/useWorkspaceLocalStore';
 
 const PointTip: React.FC = () => {

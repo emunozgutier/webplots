@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useTraceConfigStore } from '../../../store/SideMenu/useTraceConfigStore';
+import { useTraceConfigStore } from '../../../store/PlotTable/useTraceConfigStore';
 import { useAxisSideMenuStore } from '../../../store/SideMenu/useAxisSideMenuStore';
 import { useWorkspaceLocalStore } from '../../../store/Workspace/useWorkspaceLocalStore';
 import { COLOR_PALETTES } from '../../../utils/ColorPalettes';

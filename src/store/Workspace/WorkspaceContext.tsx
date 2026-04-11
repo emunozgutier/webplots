@@ -5,8 +5,8 @@ import { createStyleSideMenuStore, type StyleSideMenuState } from '../SideMenu/u
 import { createFilterSideMenuStore, type FilterState } from '../SideMenu/useFilterSideMenuStore';
 import { createGroupSideMenuStore, type GroupSideMenuState } from '../SideMenu/useGroupSideMenuStore';
 import { createInkRatioStore, type InkRatioState } from '../SideMenu/useInkRatioStore';
-import { createPlotLayoutStore, type PlotLayoutState } from './usePlotLayoutStore';
-import { createTraceConfigStore, type TraceConfigState } from '../SideMenu/useTraceConfigStore';
+import { createPlotLayoutStore, type PlotLayoutState } from '../PlotTable/usePlotLayoutStore';
+import { createTraceConfigStore, type TraceConfigState } from '../PlotTable/useTraceConfigStore';
 import { createWorkspaceLocalStore, type WorkspaceLocalState } from './useWorkspaceLocalStore';
 import { createSubplotSideMenuStore, type SubplotSideMenuState } from '../SideMenu/useSubplotSideMenuStore';
 
