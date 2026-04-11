@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useFilterSideMenuStore, type Filter } from '../../../store/SideMenu/useFilterSideMenuStore';
+import { useWorkspaceLocalStore } from '../../../store/Workspace/useWorkspaceLocalStore';
+import FilterElementSettings from './FilterElementSettings';
 
 interface FilterElementProps {
     filter: Filter;
@@ -14,42 +16,57 @@ interface FilterElementProps {
 
 const FilterElement: React.FC<FilterElementProps> = ({ filter, stats, getMinMax, getUniqueValues }) => {
     const { removeFilter, updateFilter } = useFilterSideMenuStore();
+    const { setPopupContent } = useWorkspaceLocalStore();
     const [isShrunk, setIsShrunk] = useState(false);
 
     const renderHeader = () => (
-        <div className="card-header bg-white d-flex justify-content-between align-items-center py-1 ps-2 pe-1">
-            <div className="d-flex align-items-center overflow-hidden flex-grow-1">
-                <button
-                    className="btn btn-sm btn-link p-0 me-2 text-secondary"
-                    onClick={() => setIsShrunk(!isShrunk)}
-                    style={{ textDecoration: 'none' }}
-                    title={isShrunk ? "Expand" : "Shrink"}
-                >
-                    <i className={`bi ${isShrunk ? 'bi-plus-square' : 'bi-dash-square'}`} style={{ fontSize: '0.8rem' }}></i>
-                </button>
-                <div className="d-flex flex-column overflow-hidden flex-grow-1">
-                    <span className="fw-bold text-truncate" style={{ maxWidth: '150px', fontSize: '0.85rem' }} title={filter.column}>
-                        {filter.column}
-                    </span>
+        <div className="card-header bg-white p-1 ps-2 pe-1">
+            <div className="d-flex justify-content-between align-items-center mb-0">
+                <div className="overflow-hidden">
                     {isShrunk ? (
                         <span className="text-primary fw-bold" style={{ fontSize: '0.65rem' }}>
                             {stats.percentRemaining}% Kept
                         </span>
                     ) : (
-                        <span className="text-muted mt-n1" style={{ fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        <span className="text-muted" style={{ fontSize: '0.6rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                             {filter.type}
                         </span>
                     )}
                 </div>
+                <div className="d-flex align-items-center flex-shrink-0">
+                    <button
+                        className="btn btn-sm btn-link p-0 me-2 text-secondary"
+                        onClick={(e) => { e.stopPropagation(); setIsShrunk(!isShrunk); }}
+                        style={{ textDecoration: 'none' }}
+                        title={isShrunk ? "Expand" : "Shrink"}
+                    >
+                        <i className={`bi ${isShrunk ? 'bi-plus-square' : 'bi-dash-square'}`} style={{ fontSize: '0.75rem' }}></i>
+                    </button>
+                    {filter.type === 'number' && (
+                        <button
+                            className="btn btn-sm btn-link p-0 me-2 text-primary"
+                            onClick={(e) => { e.stopPropagation(); setPopupContent(<FilterElementSettings filter={filter} />); }}
+                            style={{ textDecoration: 'none' }}
+                            title="Advanced Settings"
+                        >
+                            <i className="bi bi-gear-fill" style={{ fontSize: '0.8rem' }}></i>
+                        </button>
+                    )}
+                    <button
+                        className="btn btn-sm btn-link text-danger p-0 ms-1"
+                        style={{ textDecoration: 'none', fontSize: '1.1rem', lineHeight: '1' }}
+                        onClick={(e) => { e.stopPropagation(); removeFilter(filter.id); }}
+                        title="Remove Filter"
+                    >
+                        &times;
+                    </button>
+                </div>
             </div>
-            <button
-                className="btn btn-sm btn-link text-danger p-0 ms-2"
-                style={{ textDecoration: 'none', fontSize: '1.2rem', lineHeight: '1' }}
-                onClick={() => removeFilter(filter.id)}
-                title="Remove Filter"
-            >
-                &times;
-            </button>
+            <div className="mt-n1 overflow-hidden">
+                <span className="fw-bold text-truncate d-block" style={{ maxWidth: '100%', fontSize: '0.85rem' }} title={filter.column}>
+                    {filter.column}
+                </span>
+            </div>
         </div>
     );
 
