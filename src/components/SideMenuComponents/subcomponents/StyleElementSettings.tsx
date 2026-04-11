@@ -91,7 +91,7 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, mapping, upd
     };
 
     const mapLayout: any = {
-        margin: { t: 5, r: 40, l: 40, b: 20 },
+        margin: { t: 15, r: 40, l: 40, b: 20 },
         xaxis: { range: [min, max], fixedrange: true, showgrid: false, zeroline: false, showline: true, showticklabels: true },
         yaxis: { fixedrange: true, visible: false },
         paper_bgcolor: 'transparent',
@@ -168,7 +168,8 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, mapping, upd
                                 type: 'scatter',
                                 mode: 'markers',
                                 marker: { color: 'black', size: 14, line: { color: 'white', width: 2 } },
-                                hoverinfo: 'none'
+                                hoverinfo: 'none',
+                                cliponaxis: false
                             }
                         ]}
                         layout={mapLayout}
