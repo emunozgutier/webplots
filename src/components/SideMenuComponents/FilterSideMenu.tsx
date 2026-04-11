@@ -49,18 +49,22 @@ const FilterSideMenu: React.FC = () => {
             const inputCount = currentData.length;
 
             currentData = currentData.filter(row => {
-                const val = row[filter.column];
+                const rawVal = row[filter.column];
                 if (filter.type === 'number') {
                     const min = (filter.config as any).min;
                     const max = (filter.config as any).max;
-                    if (typeof val !== 'number') return false;
+                    
+                    if (rawVal == null || rawVal === '') return false;
+                    const val = Number(rawVal);
+                    if (isNaN(val)) return false;
+
                     if (min != null && val < min) return false;
                     if (max != null && val > max) return false;
                     return true;
                 } else {
                     const included = (filter.config as any).includedValues;
                     if (!included) return true; // Default include all
-                    return included.includes(String(val));
+                    return included.includes(String(rawVal));
                 }
             });
 

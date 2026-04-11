@@ -41,34 +41,29 @@ const FilterElementSettings: React.FC<FilterElementSettingsProps> = ({ filter })
     }, [columnData, activeMin, activeMax]);
 
     const handleRelayout = (event: any) => {
-        // Plotly relayOut events for shapes
+        // Handle dragging the edges of the grey-out rectangles
         let newMin = activeMin;
         let newMax = activeMax;
         let changed = false;
 
-        // Extract shape changes
         for (const key in event) {
-            if (key.startsWith('shapes[0]')) {
+            if (key.startsWith('shapes[0].x1')) {
                 newMin = event[key];
                 changed = true;
-            } else if (key.startsWith('shapes[1]')) {
+            } else if (key.startsWith('shapes[1].x0')) {
                 newMax = event[key];
                 changed = true;
             }
         }
 
         if (changed) {
-            // Constrain to bounds
             newMin = Math.max(bounds.min, Math.min(bounds.max, newMin));
             newMax = Math.max(bounds.min, Math.min(bounds.max, newMax));
-            
-            // Ensure min <= max
             if (newMin > newMax) {
                 const temp = newMin;
                 newMin = newMax;
                 newMax = temp;
             }
-
             updateFilter(filter.id, { min: newMin, max: newMax });
         }
     };
@@ -91,69 +86,172 @@ const FilterElementSettings: React.FC<FilterElementSettingsProps> = ({ filter })
                     <small className="text-muted">of total points kept with current range</small>
                 </div>
 
-                <div className="flex-grow-1 border rounded bg-white overflow-hidden" style={{ minHeight: '300px' }}>
+                <div className="flex-grow-1 border rounded bg-white overflow-hidden mb-3" style={{ minHeight: '300px' }}>
                     <Plot
                         data={[
                             {
                                 x: columnData,
                                 type: 'histogram',
                                 nbinsx: 30,
-                                marker: { color: 'rgba(13, 110, 253, 0.6)' },
+                                marker: { color: 'rgba(13, 110, 253, 0.7)' },
                                 hoverinfo: 'y',
                                 name: 'Distribution'
                             } as any
                         ]}
                         layout={{
                             autosize: true,
-                            margin: { l: 40, r: 20, t: 30, b: 40 },
-                            xaxis: { title: { text: 'Value' } as any, fixedrange: true },
-                            yaxis: { title: { text: 'Frequency' } as any, fixedrange: true },
-                            template: { layout: { } } as any,
+                            title: { text: null } as any,
+                            margin: { l: 40, r: 20, t: 10, b: 20 },
+                            xaxis: { 
+                                title: { text: null } as any, 
+                                fixedrange: true,
+                                range: [bounds.min, bounds.max]
+                            },
+                            yaxis: { 
+                                title: { text: null } as any, 
+                                fixedrange: true 
+                            },
+                            template: { layout: { margin: { t: 0, b: 0, l: 0, r: 0 } } } as any,
                             shapes: [
+                                // Left grey-out (draggable right edge)
                                 {
-                                    type: 'line',
+                                    type: 'rect',
                                     xref: 'x',
                                     yref: 'paper',
-                                    x0: activeMin,
+                                    x0: bounds.min,
                                     x1: activeMin,
                                     y0: 0,
                                     y1: 1,
-                                    line: { color: 'red', width: 3, dash: 'dash' },
-                                    name: 'Min Bound'
+                                    fillcolor: 'rgba(100, 100, 100, 0.4)',
+                                    line: { width: 0 },
+                                    layer: 'above'
                                 } as any,
+                                // Right grey-out (draggable left edge)
                                 {
-                                    type: 'line',
+                                    type: 'rect',
                                     xref: 'x',
                                     yref: 'paper',
                                     x0: activeMax,
-                                    x1: activeMax,
+                                    x1: bounds.max,
                                     y0: 0,
                                     y1: 1,
-                                    line: { color: 'red', width: 3, dash: 'dash' },
-                                    name: 'Max Bound'
+                                    fillcolor: 'rgba(100, 100, 100, 0.4)',
+                                    line: { width: 0 },
+                                    layer: 'above'
                                 } as any
                             ]
                         }}
                         config={{
                             displayModeBar: false,
                             responsive: true,
-                            editable: true,
+                            editable: false,
                             edits: {
-                                shapePosition: true
-                            }
+                                shapePosition: true,
+                                annotationPosition: false,
+                                annotationText: false,
+                                axisTitleText: false,
+                                titleText: false
+                            } as any
                         }}
                         onRelayout={handleRelayout}
                         style={{ width: '100%', height: '100%' }}
                     />
                 </div>
 
-                <div className="mt-3 d-flex justify-content-between gap-3">
+                {/* Double Slider UI */}
+                <div className="px-4 mb-4">
+                    <div className="position-relative" style={{ height: '30px' }}>
+                        {/* Track */}
+                        <div 
+                            className="position-absolute w-100 bg-secondary bg-opacity-25" 
+                            style={{ height: '6px', top: '12px', borderRadius: '3px' }}
+                        />
+                        {/* Active Area */}
+                        <div 
+                            className="position-absolute bg-primary" 
+                            style={{ 
+                                height: '6px', 
+                                top: '12px', 
+                                borderRadius: '3px',
+                                left: `${((activeMin - bounds.min) / (bounds.max - bounds.min)) * 100}%`,
+                                right: `${100 - ((activeMax - bounds.min) / (bounds.max - bounds.min)) * 100}%`
+                            }}
+                        />
+                        {/* Range Inputs */}
+                        <input
+                            type="range"
+                            min={bounds.min}
+                            max={bounds.max}
+                            step={(bounds.max - bounds.min) / 100}
+                            value={activeMin}
+                            onChange={(e) => {
+                                const val = Math.min(activeMax, Number(e.target.value));
+                                updateFilter(filter.id, { min: val, max: activeMax });
+                            }}
+                            className="position-absolute w-100"
+                            style={{ 
+                                top: '0', 
+                                height: '30px', 
+                                pointerEvents: 'none', 
+                                appearance: 'none', 
+                                background: 'transparent',
+                                zIndex: 10
+                            }}
+                        />
+                        <input
+                            type="range"
+                            min={bounds.min}
+                            max={bounds.max}
+                            step={(bounds.max - bounds.min) / 100}
+                            value={activeMax}
+                            onChange={(e) => {
+                                const val = Math.max(activeMin, Number(e.target.value));
+                                updateFilter(filter.id, { min: activeMin, max: val });
+                            }}
+                            className="position-absolute w-100"
+                            style={{ 
+                                top: '0', 
+                                height: '30px', 
+                                pointerEvents: 'none', 
+                                appearance: 'none', 
+                                background: 'transparent',
+                                zIndex: 11
+                            }}
+                        />
+                        {/* Custom Slider CSS would be needed here for better look, but this handles the logic */}
+                        <style>{`
+                            input[type=range]::-webkit-slider-thumb {
+                                pointer-events: auto;
+                                cursor: pointer;
+                                -webkit-appearance: none;
+                                height: 18px;
+                                width: 18px;
+                                border-radius: 50%;
+                                background: #0d6efd;
+                                border: 2px solid white;
+                                box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+                            }
+                            input[type=range]::-moz-range-thumb {
+                                pointer-events: auto;
+                                cursor: pointer;
+                                height: 18px;
+                                width: 18px;
+                                border-radius: 50%;
+                                background: #0d6efd;
+                                border: 2px solid white;
+                                box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+                            }
+                        `}</style>
+                    </div>
+                </div>
+
+                <div className="d-flex justify-content-between gap-3">
                     <div className="flex-grow-1">
                         <label className="small text-muted fw-bold mb-1">Min Limit</label>
                         <input 
                             type="number" 
                             className="form-control form-control-sm" 
-                            value={activeMin} 
+                            value={Math.round(activeMin * 100) / 100} 
                             onChange={(e) => updateFilter(filter.id, { min: Number(e.target.value) })}
                         />
                     </div>
@@ -162,7 +260,7 @@ const FilterElementSettings: React.FC<FilterElementSettingsProps> = ({ filter })
                         <input 
                             type="number" 
                             className="form-control form-control-sm" 
-                            value={activeMax} 
+                            value={Math.round(activeMax * 100) / 100} 
                             onChange={(e) => updateFilter(filter.id, { max: Number(e.target.value) })}
                         />
                     </div>
