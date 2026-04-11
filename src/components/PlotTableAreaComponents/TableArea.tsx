@@ -432,9 +432,9 @@ const TableArea: React.FC = () => {
                                             backgroundClip: 'padding-box'
                                         }}
                                     >
-                                        <div className="d-flex flex-column align-items-center">
+                                        <div className={summaryMode === 'none' ? "d-flex justify-content-between align-items-center" : "d-flex flex-column align-items-center"}>
                                             <div className="fw-bold small mb-1">row</div>
-                                            <div className="btn-group-vertical">
+                                            <div className={summaryMode === 'none' ? "btn-group ms-2" : "btn-group-vertical"}>
                                                 <button
                                                     className={`btn btn-sm py-0 px-1 ${sortConfig?.key === '__idx' && sortConfig?.direction === 'asc' ? 'btn-secondary' : 'btn-outline-secondary'}`}
                                                     title="Sort row Ascending"
