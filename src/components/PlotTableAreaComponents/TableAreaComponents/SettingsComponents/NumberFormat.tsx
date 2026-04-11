@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button, ButtonGroup, Form } from 'react-bootstrap';
 import { useTableStore } from '../../../../store/PlotTable/useTableStore';
+import { formatNumber } from '../../../../utils/TableMathLib';
 
 const NumberFormat: React.FC = () => {
     const { 
@@ -12,8 +13,10 @@ const NumberFormat: React.FC = () => {
         setAlignDecimal
     } = useTableStore();
 
+    const demoValues = [0, 0.000123456, 1234.56, -0.001234, 999.999, 1234567.89];
+
     return (
-        <div className="d-flex flex-column gap-4">
+        <div className="d-flex flex-column gap-4 h-100">
             {/* Notation Section */}
             <div>
                 <label className="fw-bold text-primary mb-2 text-uppercase small tracking-wide d-block">Notation Mode</label>
@@ -79,6 +82,37 @@ const NumberFormat: React.FC = () => {
                             Vertical Alignment
                         </label>
                     </div>
+                </div>
+            </div>
+
+            {/* Live Preview Section */}
+            <div className="flex-grow-1 overflow-hidden d-flex flex-column mt-2">
+                <label className="fw-bold text-primary mb-2 text-uppercase small tracking-wide d-block">Live Preview</label>
+                <div className="flex-grow-1 overflow-auto border rounded bg-white">
+                    <table className="table table-sm table-hover mb-0" style={{ fontSize: '0.85rem' }}>
+                        <thead className="table-light sticky-top">
+                            <tr>
+                                <th className="ps-2 py-2 text-muted small fw-bold text-uppercase border-bottom">Raw Value</th>
+                                <th className="ps-2 py-2 text-primary small fw-bold text-uppercase border-bottom">Formatted Display</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {demoValues.map((val, idx) => {
+                                const formatted = formatNumber(val, numberFormat, significantDigits, alignDecimal);
+                                return (
+                                    <tr key={idx}>
+                                        <td className="ps-2 py-1 text-muted border-end align-middle">{val.toString()}</td>
+                                        <td className="ps-2 py-1 fw-bold text-dark align-middle" style={{ 
+                                            fontFamily: "'Source Code Pro', monospace",
+                                            whiteSpace: 'pre'
+                                        }}>
+                                            {formatted}
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
