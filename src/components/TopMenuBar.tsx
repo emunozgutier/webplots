@@ -280,7 +280,7 @@ const TopMenuBar: React.FC = () => {
     };
 
     return (
-        <Navbar bg="dark" variant="dark" expand="lg" className="px-4 shadow-sm">
+        <Navbar bg="dark" variant="dark" expand="md" className="px-4 shadow-sm">
             <Container fluid className="p-0">
                 <Navbar.Brand href="#home" className="d-flex align-items-center p-0">
                     <img
