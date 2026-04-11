@@ -4,7 +4,7 @@ import { useCsvDataStore } from '../../../store/useCsvDataStore';
 import { useInkRatioStore } from '../../../store/SideMenu/useInkRatioStore';
 import { useGroupSideMenuStore } from '../../../store/SideMenu/useGroupSideMenuStore';
 import Plot from 'react-plotly.js';
-import { Modal, Button, Alert } from 'react-bootstrap';
+import { Modal, Button } from 'react-bootstrap';
 
 export interface StyleElementProps {
     title: string;
@@ -31,7 +31,7 @@ const StyleElement: React.FC<StyleElementProps> = ({ title, mapping, updateFn, t
     const isManual = mapping.source === 'manual';
     const isColumn = mapping.source === 'column';
     const isSizeBlock = title === 'Node Size';
-    const showSizeOverrideWarning = isSizeBlock && !isManual && absorptionMode === 'size';
+    const isManagedByInkRatio = isSizeBlock && absorptionMode === 'size';
 
     let isManagedByGroup = false;
     if (groupAxis) {
@@ -40,14 +40,17 @@ const StyleElement: React.FC<StyleElementProps> = ({ title, mapping, updateFn, t
         if (title === 'Marker Shape' && mode === 'symbol') isManagedByGroup = true;
     }
 
+    const isExternallyManaged = isManagedByGroup || isManagedByInkRatio;
+
     return (
         <div className="card shadow-sm border-0 w-100 mb-3 p-2">
-            <div className={`card-header bg-white p-2 ${!isEnabled || isManagedByGroup ? 'border-bottom-0 rounded' : ''}`}>
+            <div className={`card-header bg-white p-2 ${!isEnabled || isExternallyManaged ? 'border-bottom-0 rounded' : ''}`}>
                 <div className="d-flex justify-content-between align-items-center">
-                    <span className={`fw-bold text-truncate ${!isEnabled && !isManagedByGroup ? 'text-muted' : ''}`} style={{ fontSize: '0.85rem' }}>
+                    <span className={`fw-bold text-truncate ${!isEnabled && !isExternallyManaged ? 'text-muted' : ''}`} style={{ fontSize: '0.85rem' }}>
                         {title} {isManagedByGroup && <span className="ms-1 fw-normal text-muted fst-italic">(set by Group)</span>}
+                        {isManagedByInkRatio && <span className="ms-1 fw-normal text-muted fst-italic">(set by InkRatio)</span>}
                     </span>
-                    {!isManagedByGroup && (
+                    {!isExternallyManaged && (
                         <div className="form-check form-switch m-0 d-flex align-items-center">
                             <input
                                 className="form-check-input"
@@ -61,7 +64,7 @@ const StyleElement: React.FC<StyleElementProps> = ({ title, mapping, updateFn, t
                 </div>
             </div>
 
-            {isEnabled && !isManagedByGroup && (
+            {isEnabled && !isExternallyManaged && (
                 <div className="card-body p-2">
                 <div className="mb-2">
                     <label className="form-label text-muted small mb-1" style={{ fontSize: '0.75rem' }}>Source Mode</label>
@@ -192,12 +195,6 @@ const StyleElement: React.FC<StyleElementProps> = ({ title, mapping, updateFn, t
                     </div>
                 )}
 
-                {showSizeOverrideWarning && (
-                    <Alert variant="warning" className="mt-2 mb-0 p-2" style={{ fontSize: '0.75rem' }}>
-                        <i className="bi bi-exclamation-triangle-fill me-2"></i>
-                        Overlapped by <strong>Grow</strong> animation in Ink Ratio settings. Size map will be ignored!
-                    </Alert>
-                )}
                 </div>
             )}
         </div>
