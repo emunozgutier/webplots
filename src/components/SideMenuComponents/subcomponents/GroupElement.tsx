@@ -39,14 +39,9 @@ const GroupElement: React.FC<GroupElementProps> = ({ column }) => {
     };
 
     return (
-        <div className="card shadow-sm border-0 w-100">
+        <div className="card shadow-sm border-0 w-100 p-2">
             <div className="card-header bg-white p-1 ps-2 pe-1">
-                <div className="d-flex justify-content-between align-items-center mb-0">
-                    <div className="overflow-hidden">
-                        <span className="text-muted" style={{ fontSize: '0.6rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                            GROUP
-                        </span>
-                    </div>
+                <div className="d-flex justify-content-end align-items-center mb-0">
                     <div className="d-flex align-items-center flex-shrink-0">
                         <button
                             className="btn btn-sm btn-link p-0 me-2 text-primary"
