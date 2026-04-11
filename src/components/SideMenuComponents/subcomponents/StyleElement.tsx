@@ -45,7 +45,7 @@ const StyleElement: React.FC<StyleElementProps> = ({ title, mapping, updateFn, t
             <div className={`card-header bg-white p-2 ${!isEnabled || isManagedByGroup ? 'border-bottom-0 rounded' : ''}`}>
                 <div className="d-flex justify-content-between align-items-center">
                     <span className={`fw-bold text-truncate ${!isEnabled && !isManagedByGroup ? 'text-muted' : ''}`} style={{ fontSize: '0.85rem' }}>
-                        {title} {isManagedByGroup && <span className="ms-1 fw-normal text-muted fst-italic">(by Group)</span>}
+                        {title} {isManagedByGroup && <span className="ms-1 fw-normal text-muted fst-italic">(set by Group)</span>}
                     </span>
                     {!isManagedByGroup && (
                         <div className="form-check form-switch m-0 d-flex align-items-center">
