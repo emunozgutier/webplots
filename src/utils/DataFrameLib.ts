@@ -161,9 +161,10 @@ export const Step_3_ink_ratio_filter = (
         useCustomRadius: boolean;
         customRadius: number;
         enableLogAxis: boolean;
+        globalBounds?: { xMin: number, xMax: number, yMin: number, yMax: number };
     }
 ): TraceData[] => {
-    const { inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius, enableLogAxis } = config;
+    const { inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius, enableLogAxis, globalBounds } = config;
 
     return traces.map(trace => {
         const { xData, yData } = trace;
@@ -196,16 +197,22 @@ export const Step_3_ink_ratio_filter = (
             return NaN;
         };
 
-        let xMin = Infinity, xMax = -Infinity, yMin = Infinity, yMax = -Infinity;
         const numsX = new Float64Array(xData.length);
         const numsY = new Float64Array(xData.length);
         
+        let xMin = globalBounds?.xMin ?? Infinity;
+        let xMax = globalBounds?.xMax ?? -Infinity;
+        let yMin = globalBounds?.yMin ?? Infinity;
+        let yMax = globalBounds?.yMax ?? -Infinity;
+
+        const needsLocalBounds = !globalBounds;
+
         for (let i = 0; i < xData.length; i++) {
             const vx = toNum(xData[i]);
             const vy = toNum(yData[i]);
             numsX[i] = vx;
             numsY[i] = vy;
-            if (!isNaN(vx) && !isNaN(vy)) {
+            if (needsLocalBounds && !isNaN(vx) && !isNaN(vy)) {
                 if (vx < xMin) xMin = vx;
                 if (vx > xMax) xMax = vx;
                 if (vy < yMin) yMin = vy;
@@ -254,6 +261,10 @@ export const Step_3_ink_ratio_filter = (
         const keptPoints: { px: number, py: number, absorbed: number }[] = [];
 
         const distSq = minPixelDist * minPixelDist;
+        
+        // Spatial hash grid to keep lookup O(1) per point
+        const cellSize = Math.max(minPixelDist, 1e-6); 
+        const grid = new Map<string, number[]>();
 
         for (let i = 0; i < xData.length; i++) {
             const px = xToPx(numsX[i]);
@@ -268,23 +279,41 @@ export const Step_3_ink_ratio_filter = (
             }
 
             let keptBy = -1;
-            // Check only the last 200 kept points for density to keep it O(N)
-            const checkLimit = Math.max(0, keptPoints.length - 200);
-            for (let j = keptPoints.length - 1; j >= checkLimit; j--) {
-                const dx = px - keptPoints[j].px;
-                const dy = py - keptPoints[j].py;
-                if ((dx * dx + dy * dy) < distSq) {
-                    keptBy = j;
-                    break;
+            
+            // Spatial lookup
+            const cx = Math.floor(px / cellSize);
+            const cy = Math.floor(py / cellSize);
+
+            // Check the current cell and 8 neighbors
+            outer: for (let dx = -1; dx <= 1; dx++) {
+                for (let dy = -1; dy <= 1; dy++) {
+                    const cellKey = `${cx + dx},${cy + dy}`;
+                    const indicesInCell = grid.get(cellKey);
+                    if (indicesInCell) {
+                        for (const j of indicesInCell) {
+                            const dpx = px - keptPoints[j].px;
+                            const dpy = py - keptPoints[j].py;
+                            if ((dpx * dpx + dpy * dpy) < distSq) {
+                                keptBy = j;
+                                break outer;
+                            }
+                        }
+                    }
                 }
             }
 
             if (keptBy === -1) {
-                originalToKept[i] = keptPoints.length;
+                const keptIdx = keptPoints.length;
+                originalToKept[i] = keptIdx;
                 keptPoints.push({ px, py, absorbed: 0 });
                 filteredX.push(xData[i]);
                 filteredY.push(yData[i]);
                 survivingIndices.push(i);
+
+                // Add to grid
+                const cellKey = `${cx},${cy}`;
+                if (!grid.has(cellKey)) grid.set(cellKey, []);
+                grid.get(cellKey)!.push(keptIdx);
             } else {
                 keptPoints[keptBy].absorbed += 1;
             }
@@ -299,7 +328,6 @@ export const Step_3_ink_ratio_filter = (
             } else if (state === -2) {
                 finalAbsorbedCounts[kIdx++] = 0;
             }
-            // else state === -1 (absorbed point), we don't increment kIdx
         }
 
         return {
@@ -338,8 +366,40 @@ export const runDataPipeline = (
     // Step 2: Grouping into traces
     const traces = Step_2_grouping(filtered, axisConfig, groupConfig);
     
+    // Calculate global bounds for consistent projection in density filter
+    let xMin = Infinity, xMax = -Infinity, yMin = Infinity, yMax = -Infinity;
+    
+    const toNum = (v: any): number => {
+        if (typeof v === 'number') return v;
+        const n = parseFloat(v);
+        if (!isNaN(n) && isFinite(n)) return n;
+        const d = Date.parse(v);
+        if (!isNaN(d)) return d;
+        return NaN;
+    };
+
+    traces.forEach(trace => {
+        trace.xData.forEach(v => {
+            const n = toNum(v);
+            if (!isNaN(n)) {
+                if (n < xMin) xMin = n;
+                if (n > xMax) xMax = n;
+            }
+        });
+        trace.yData.forEach(v => {
+            const n = toNum(v);
+            if (!isNaN(n)) {
+                if (n < yMin) yMin = n;
+                if (n > yMax) yMax = n;
+            }
+        });
+    });
+
     // Step 3: Ink Ratio reduction
-    const processedTraces = Step_3_ink_ratio_filter(traces, inkRatioConfig);
+    const processedTraces = Step_3_ink_ratio_filter(traces, {
+        ...inkRatioConfig,
+        globalBounds: xMin === Infinity ? undefined : { xMin, xMax, yMin, yMax }
+    });
     
     return { filtered, processedTraces };
 };

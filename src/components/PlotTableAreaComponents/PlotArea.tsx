@@ -28,11 +28,30 @@ const PlotArea: React.FC = () => {
     const { groupSideMenuData } = useGroupSideMenuStore();
     const { plotLayout } = usePlotLayoutStore();
     const { traceConfig, setActiveTraces } = useTraceConfigStore();
-    const { inkRatio, absorptionMode, maxRadiusRatio, setFilteredStats, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius } = useInkRatioStore();
+    const { inkRatio, absorptionMode, maxRadiusRatio, setFilteredStats, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius, setChartDimensions } = useInkRatioStore();
     const { colorData } = useStyleSideMenuStore();
     const subplotData = useSubplotSideMenuStore();
 
     const { setPopupContent } = useWorkspaceLocalStore();
+    const containerRef = React.useRef<HTMLDivElement>(null);
+
+    // Synchronize dimensions
+    React.useEffect(() => {
+        if (!containerRef.current) return;
+
+        const observer = new ResizeObserver((entries) => {
+            const entry = entries[0];
+            if (entry) {
+                const { width, height } = entry.contentRect;
+                if (width > 0 && height > 0) {
+                    setChartDimensions(width, height);
+                }
+            }
+        });
+
+        observer.observe(containerRef.current);
+        return () => observer.disconnect();
+    }, [setChartDimensions]);
 
     const { plotData, layout, hasData, receipt, stats, generatedTraces } = useMemo(() => {
         const { processedTraces } = runDataPipeline(rawDataTable, filters, sideMenuData, groupSideMenuData, {
@@ -109,7 +128,7 @@ const PlotArea: React.FC = () => {
                 onOpenSettings={handleOpenSettings}
                 onOpenDebug={handleOpenDebug}
             />
-            <div className="flex-grow-1 position-relative">
+            <div ref={containerRef} className="flex-grow-1 position-relative">
                 <Plot
                     data={plotData}
                     layout={layout}
