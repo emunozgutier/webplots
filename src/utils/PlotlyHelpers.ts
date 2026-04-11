@@ -9,6 +9,44 @@ import type { TraceStats } from '../store/InkRatioStore';
 
 import type { TraceData } from './DataFrameLib';
 
+const ensurePlotlyCompatibleData = (data: any[]): { processedData: any[], isDate: boolean } => {
+    if (!data || data.length === 0) return { processedData: data, isDate: false };
+
+    let detectedDate = false;
+    const datePattern = /^\d{4}-\d{2}-\d{2}/;
+    const timePattern = /^\d{1,2}:\d{2}(:\d{2})?$/;
+
+    const processedData = data.map(v => {
+        if (typeof v !== 'string') return v;
+
+        const str = v.trim();
+        if (str === '') return v;
+
+        if (datePattern.test(str)) {
+            const d = Date.parse(str);
+            if (!isNaN(d)) {
+                detectedDate = true;
+                return d;
+            }
+        }
+
+        if (timePattern.test(str)) {
+            // Normalize time string (HH:MM or H:MM) into a full datetime string for parsing
+            const timePart = str.split(':').length === 2 ? `${str}:00` : str;
+            const fullStr = `1970-01-01T${timePart.padStart(8, '0')}`;
+            const d = Date.parse(fullStr);
+            if (!isNaN(d)) {
+                detectedDate = true;
+                return d;
+            }
+        }
+
+        return v;
+    });
+
+    return { processedData, isDate: detectedDate };
+};
+
 export const generatePlotConfig = (
     data: CsvDataStore[],
     processedTraces: TraceData[],
@@ -38,6 +76,9 @@ export const generatePlotConfig = (
             receipt: '// No data available to generate plot.'
         };
     }
+
+    let isXAxisDate = false;
+    let isYAxisDate = false;
 
     const stats: Record<string, TraceStats> = {};
 
@@ -181,13 +222,16 @@ export const generatePlotConfig = (
             marker.size = customization.size || computedSizes;
 
             if (plotType === 'histogram') {
-                let processedYData = yData;
+                const { processedData: compatibleYData, isDate: yIsDate } = ensurePlotlyCompatibleData(yData);
+                if (yIsDate) isXAxisDate = true; // For histograms, yData is on the X axis
+
+                let processedYData = compatibleYData;
                 const traceBins = customization.histogramBins;
                 if (traceBins) {
                     const { start, end, underflow, overflow } = traceBins;
                     const EPSILON = 1e-6; // Ensure values fall nicely into start/end bins
-                    processedYData = yData.map(v => {
-                        let num = parseFloat(String(v));
+                    processedYData = compatibleYData.map(v => {
+                        let num = typeof v === 'number' ? v : parseFloat(String(v));
                         if (isNaN(num)) return v;
                         if (underflow && num < start) num = start + EPSILON;
                         if (overflow && num > end) num = end - EPSILON;
@@ -223,8 +267,11 @@ export const generatePlotConfig = (
                 return [histTrace];
             }
 
-            const finalX = xData;
-            const finalY = yData;
+            const { processedData: finalX, isDate: xIsDate } = ensurePlotlyCompatibleData(xData);
+            const { processedData: finalY, isDate: yIsDate } = ensurePlotlyCompatibleData(yData);
+            if (xIsDate) isXAxisDate = true;
+            if (yIsDate) isYAxisDate = true;
+            
             const filteredCount = traceInfo.filteredCount || 0;
             const absorbedCounts = traceInfo.absorbedCounts || [];
             const survivingIndices = traceInfo.survivingIndices;
@@ -381,13 +428,13 @@ export const generatePlotConfig = (
         title: { text: plotTitle || (plotType === 'histogram' ? `Histogram: ${yAxis.join(', ')}` : `Plot: ${yAxis.join(', ')} vs ${xAxis || 'Row Number'}`) },
         xaxis: {
             title: { text: xAxisTitle || (plotType === 'histogram' ? 'Value' : (xAxis || 'Row Number')) },
-            type: enableLogAxis ? 'log' : 'linear',
+            type: enableLogAxis ? 'log' : (isXAxisDate ? 'date' : 'linear'),
             range: plotType === 'histogram' ? undefined : (xRange || undefined),
             autorange: plotType === 'histogram' ? true : !xRange
         },
         yaxis: {
             title: { text: yAxisTitle || (yAxis.length === 1 ? yAxis[0] : 'Values') },
-            type: enableLogAxis ? 'log' : 'linear',
+            type: enableLogAxis ? 'log' : (isYAxisDate ? 'date' : 'linear'),
             range: plotType === 'histogram' ? undefined : (yRange || undefined),
             autorange: plotType === 'histogram' ? true : !yRange
         },
@@ -406,13 +453,13 @@ export const generatePlotConfig = (
         // Construct standard axis configs
         const baseTargetXAxis = {
             title: { text: xAxisTitle || (plotType === 'histogram' ? 'Value' : (xAxis || 'Row Number')) },
-            type: enableLogAxis ? 'log' : 'linear',
+            type: enableLogAxis ? 'log' : (isXAxisDate ? 'date' : 'linear'),
             range: plotType === 'histogram' ? undefined : (xRange || undefined),
             autorange: plotType === 'histogram' ? true : !xRange
         };
         const baseTargetYAxis = {
             title: { text: yAxisTitle || (yAxis.length === 1 ? yAxis[0] : 'Values') },
-            type: enableLogAxis ? 'log' : 'linear',
+            type: enableLogAxis ? 'log' : (isYAxisDate ? 'date' : 'linear'),
             range: plotType === 'histogram' ? undefined : (yRange || undefined),
             autorange: plotType === 'histogram' ? true : !yRange
         };
@@ -543,12 +590,12 @@ export const generatePlotConfig = (
 
             receipt += `\n  ${xKey}: {
     title: { text: '${layout.xaxis?.title?.text}' },
-    type: '${enableLogAxis ? 'log' : 'linear'}',
+    type: '${enableLogAxis ? 'log' : (isXAxisDate ? 'date' : 'linear')}',
     ${xRange ? `range: [${xRange[0]}, ${xRange[1]}]` : '// autorange: true'}
   },`;
             receipt += `\n  ${yKey}: {
     title: { text: '${layout.yaxis?.title?.text}' },
-    type: '${enableLogAxis ? 'log' : 'linear'}',
+    type: '${enableLogAxis ? 'log' : (isYAxisDate ? 'date' : 'linear')}',
     ${yRange ? `range: [${yRange[0]}, ${yRange[1]}]` : '// autorange: true'}
   },`;
         }
@@ -557,12 +604,12 @@ export const generatePlotConfig = (
         receipt += `
   xaxis: {
     title: { text: '${layout.xaxis?.title?.text}' },
-    type: '${enableLogAxis ? 'log' : 'linear'}',
+    type: '${enableLogAxis ? 'log' : (isXAxisDate ? 'date' : 'linear')}',
     ${xRange ? `range: [${xRange[0]}, ${xRange[1]}]` : '// autorange: true'}
   },
   yaxis: {
     title: { text: '${layout.yaxis?.title?.text}' },
-    type: '${enableLogAxis ? 'log' : 'linear'}',
+    type: '${enableLogAxis ? 'log' : (isYAxisDate ? 'date' : 'linear')}',
     ${yRange ? `range: [${yRange[0]}, ${yRange[1]}]` : '// autorange: true'}
   },`;
     }
