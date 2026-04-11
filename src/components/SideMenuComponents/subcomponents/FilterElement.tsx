@@ -162,7 +162,7 @@ const FilterElement: React.FC<FilterElementProps> = ({ filter, stats, getMinMax,
     };
 
     return (
-        <div className="card mb-2 shadow-sm border-0">
+        <div className="card mb-2 p-2 shadow-sm border-0">
             {renderHeader()}
             {!isShrunk && (
                 <>
