@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { type AestheticMapping, type MappingSource } from '../../../store/SideMenu/useStyleSideMenuStore';
 import { useCsvDataStore } from '../../../store/useCsvDataStore';
 import { useInkRatioStore } from '../../../store/SideMenu/useInkRatioStore';
 import { useGroupSideMenuStore } from '../../../store/SideMenu/useGroupSideMenuStore';
-import Plot from 'react-plotly.js';
-import { Modal, Button } from 'react-bootstrap';
+import { useWorkspaceLocalStore } from '../../../store/Workspace/useWorkspaceLocalStore';
+import { Button } from 'react-bootstrap';
+import StyleElementSettings from './StyleElementSettings';
 
 export interface StyleElementProps {
     title: string;
@@ -21,11 +22,11 @@ const SHAPE_OPTIONS = [
 ];
 
 const StyleElement: React.FC<StyleElementProps> = ({ title, mapping, updateFn, type }) => {
-    const { columns, data } = useCsvDataStore();
+    const { columns } = useCsvDataStore();
     const { absorptionMode } = useInkRatioStore();
     const { groupSideMenuData } = useGroupSideMenuStore();
+    const { setPopupContent } = useWorkspaceLocalStore();
     const { groupAxis, groupSettings } = groupSideMenuData;
-    const [showModal, setShowModal] = useState(false);
 
     const isEnabled = mapping.enabled !== false;
     const isManual = mapping.source === 'manual';
@@ -123,73 +124,10 @@ const StyleElement: React.FC<StyleElementProps> = ({ title, mapping, updateFn, t
                         </select>
                         {type === 'number' && typeof mapping.value === 'string' && mapping.value !== '' && (
                             <div className="mt-2 text-end">
-                                <Button variant="outline-primary" size="sm" className="w-100" style={{ fontSize: '0.75rem' }} onClick={() => setShowModal(true)}>
+                                <Button variant="outline-primary" size="sm" className="w-100" style={{ fontSize: '0.75rem' }} onClick={() => setPopupContent(<StyleElementSettings title={title} mapping={mapping} updateFn={updateFn} type={type} />)}>
                                     <i className="bi bi-sliders me-1"></i>
                                     Adjust Mapped Range
                                 </Button>
-
-                                <Modal show={showModal} onHide={() => setShowModal(false)} centered>
-                                    <Modal.Header closeButton className="p-3">
-                                        <Modal.Title className="fs-6">Adjust Range for {title}</Modal.Title>
-                                    </Modal.Header>
-                                    <Modal.Body className="p-3">
-                                        <label className="form-label small text-muted mb-1 d-flex justify-content-between">
-                                            <span>Output Range (Min-Max)</span>
-                                        </label>
-                                        <div className="d-flex align-items-center gap-2 mb-3">
-                                            <input
-                                                type="number"
-                                                className="form-control form-control-sm"
-                                                value={mapping.range ? mapping.range[0] : (title === 'Node Size' ? 2 : 0)}
-                                                onChange={e => updateFn({ range: [Number(e.target.value), mapping.range ? mapping.range[1] : (title === 'Hue/Color' ? 360 : (title === 'Node Size' ? 20 : 100))] })}
-                                            />
-                                            <span className="text-muted small">to</span>
-                                            <input
-                                                type="number"
-                                                className="form-control form-control-sm"
-                                                value={mapping.range ? mapping.range[1] : (title === 'Hue/Color' ? 360 : (title === 'Node Size' ? 20 : 100))}
-                                                onChange={e => updateFn({ range: [mapping.range ? mapping.range[0] : (title === 'Node Size' ? 2 : 0), Number(e.target.value)] })}
-                                            />
-                                        </div>
-                                        <div className="border rounded bg-light p-1" style={{ height: '150px' }}>
-                                            <Plot
-                                                data={[
-                                                    {
-                                                        x: data.map(row => parseFloat(String(row[mapping.value]))).filter(v => !isNaN(v)),
-                                                        type: 'histogram',
-                                                        marker: { color: title === 'Hue/Color' ? 'hsl(200, 80%, 50%)' : '#6c757d' }
-                                                    }
-                                                ]}
-                                                layout={{
-                                                    margin: { t: 5, r: 5, l: 30, b: 20 },
-                                                    xaxis: { fixedrange: true },
-                                                    yaxis: { fixedrange: true },
-                                                    paper_bgcolor: 'transparent',
-                                                    plot_bgcolor: 'transparent'
-                                                }}
-                                                config={{ displayModeBar: false }}
-                                                style={{ width: '100%', height: '100%' }}
-                                                useResizeHandler={true}
-                                            />
-                                        </div>
-                                        {(() => {
-                                            const vals = data.map(row => parseFloat(String(row[mapping.value]))).filter(v => !isNaN(v));
-                                            const min = vals.length > 0 ? Math.min(...vals) : 0;
-                                            const max = vals.length > 0 ? Math.max(...vals) : 0;
-                                            return (
-                                                <div className="d-flex justify-content-between text-muted mt-2" style={{ fontSize: '0.8rem' }}>
-                                                    <span>Data Min: {min.toFixed(2)}</span>
-                                                    <span>Data Max: {max.toFixed(2)}</span>
-                                                </div>
-                                            );
-                                        })()}
-                                    </Modal.Body>
-                                    <Modal.Footer className="p-2">
-                                        <Button variant="secondary" size="sm" onClick={() => setShowModal(false)}>
-                                            Close
-                                        </Button>
-                                    </Modal.Footer>
-                                </Modal>
                             </div>
                         )}
                     </div>
