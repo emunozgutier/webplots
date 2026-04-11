@@ -393,9 +393,7 @@ const TableArea: React.FC = () => {
                 }
             `}</style>
             <div className="d-flex justify-content-between align-items-center mb-3">
-                <h5 className="mb-0 text-dark">Data Table
-                    <span className="ms-2 fs-6 fw-normal text-muted">({sortedData.length.toLocaleString()} rows)</span>
-                </h5>
+                <div></div>
                 <TableAreaControlButtons
                     summaryMode={summaryMode}
                     setSummaryMode={setSummaryMode}
