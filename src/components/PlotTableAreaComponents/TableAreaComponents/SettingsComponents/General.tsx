@@ -60,7 +60,7 @@ const General: React.FC = () => {
 
             {/* Color Coding Section */}
             <div>
-                <label className="fw-bold text-primary mb-2 text-uppercase small tracking-wide d-block">Heatmap Effect</label>
+                <label className="fw-bold text-primary mb-2 text-uppercase small tracking-wide d-block">Color Columns</label>
                 <ButtonGroup className="w-100" size="sm">
                     <ToggleButton
                         id="settings-color-on"
