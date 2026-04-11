@@ -421,7 +421,15 @@ const TableArea: React.FC = () => {
                                 <tr>
                                     <th 
                                         className="bg-light align-top p-1"
-                                        style={{ position: 'sticky', left: 0, zIndex: 13, minWidth: '45px' }}
+                                        style={{ 
+                                            position: 'sticky', 
+                                            left: 0, 
+                                            zIndex: 13, 
+                                            minWidth: '45px',
+                                            backgroundColor: '#f8f9fa',
+                                            boxShadow: 'inset -2px 0 0 0 #dee2e6',
+                                            backgroundClip: 'padding-box'
+                                        }}
                                     >
                                         <div className="d-flex flex-column align-items-center">
                                             <div className="fw-bold small mb-1">row</div>
@@ -501,7 +509,9 @@ const TableArea: React.FC = () => {
                                                         left: 0, 
                                                         zIndex: 5, 
                                                         backgroundColor: '#fff',
-                                                        fontFamily: "'Source Code Pro', monospace"
+                                                        fontFamily: "'Source Code Pro', monospace",
+                                                        boxShadow: 'inset -2px 0 0 0 #dee2e6',
+                                                        backgroundClip: 'padding-box'
                                                     }}
                                                 onClick={() => setSelectedCell({ row: rowIndex, col: 0 })}
                                                 tabIndex={-1}
