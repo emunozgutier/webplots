@@ -260,8 +260,8 @@ const TraceConfig: React.FC = () => {
     );
 
     return (
-        <>
-            <div className="card-body overflow-auto" style={{ maxHeight: '600px' }}>
+        <React.Fragment>
+            <div className="card-body">
                 {/* Global Palette Settings */}
                 {isGroupColorManaged ? (
                     <div className="mb-4 p-3 bg-light rounded border text-muted">
@@ -503,7 +503,7 @@ const TraceConfig: React.FC = () => {
             <div className="card-footer bg-light d-flex justify-content-end">
                 <button className="btn btn-sm btn-secondary me-2" onClick={closePopup}>Close</button>
             </div>
-        </>
+        </React.Fragment>
     );
 };
 
