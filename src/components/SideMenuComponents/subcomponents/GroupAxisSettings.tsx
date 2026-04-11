@@ -11,6 +11,7 @@ import { COLOR_PALETTES } from '../../../utils/ColorPalettes';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { HexColorPicker } from 'react-colorful';
 import { OverlayTrigger, Popover, Dropdown } from 'react-bootstrap';
+import { useStyleSideMenuStore } from '../../../store/SideMenu/useStyleSideMenuStore';
 
 const SYMBOLS = [
     { id: 'circle', label: 'Circle', icon: 'bi-circle-fill' },
@@ -31,6 +32,7 @@ const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
     const { closePopup } = useWorkspaceLocalStore();
     const { data } = useCsvDataStore();
     const { traceConfig, setColorPalette, setPaletteColorOrder, updatePaletteColor } = useTraceConfigStore();
+    const { colorData, setColorData } = useStyleSideMenuStore();
 
     const currentColors = traceConfig.currentPaletteColors || [];
     const activeTraceCount = traceConfig.activeTraces?.length || 0;
@@ -80,24 +82,50 @@ const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
     }, [data, column]);
 
     useEffect(() => {
-        if (groupSideMenuData.groupSettings && groupSideMenuData.groupSettings[column]) {
-            const saved = groupSideMenuData.groupSettings[column];
+        let initialMode: 'color' | 'symbol' | 'none' = 'color';
+        if (colorData.shape.source === 'group') {
+            initialMode = 'symbol';
+        } else if (colorData.hue.source === 'manual' && colorData.shape.source === 'manual') {
+            initialMode = 'none';
+        }
+
+        let saved = groupSideMenuData.groupSettings[column] 
+            ? JSON.parse(JSON.stringify(groupSideMenuData.groupSettings[column])) 
+            : null;
+
+        if (saved) {
+            saved.styleMode = initialMode;
+            
+            // Re-hydrate styles from colorData overrides
+            if (isNumeric) {
+                saved.bins.forEach((bin: any) => {
+                    bin.color = colorData.groupColorOverrides?.[bin.label] || '';
+                    bin.symbol = colorData.groupSymbolOverrides?.[bin.label] || '';
+                });
+            } else {
+                saved.categoryStyles = {};
+                sortedCats.forEach(cat => {
+                    const color = colorData.groupColorOverrides?.[cat] || '';
+                    const symbol = colorData.groupSymbolOverrides?.[cat] || '';
+                    if (color || symbol) {
+                        saved.categoryStyles[cat] = { color, symbol };
+                    }
+                });
+            }
+
             if (isNumeric && saved.bins.length === 0 && saved.mode !== 'auto') {
-                setLocalSettings({ mode: 'manual', bins: generateDefaultBins(dataMin, dataMax) });
+                setLocalSettings({ mode: 'manual', bins: generateDefaultBins(dataMin, dataMax), styleMode: initialMode });
             } else {
                 setLocalSettings(saved);
             }
         } else {
-            // Default based on type
-            if (isNumeric) {
-                setLocalSettings({ mode: 'manual', bins: generateDefaultBins(dataMin, dataMax) });
-            } else {
-                setLocalSettings({ mode: 'auto', bins: [] });
-            }
+            const defaultSettings: GroupSettings = isNumeric 
+                ? { mode: 'manual', bins: generateDefaultBins(dataMin, dataMax), styleMode: initialMode }
+                : { mode: 'auto', bins: [], styleMode: initialMode };
+            
+            setLocalSettings(defaultSettings);
         }
-    }, [column, groupSideMenuData.groupSettings, dataMin, dataMax, isNumeric]);
-
-
+    }, [column, groupSideMenuData.groupSettings, dataMin, dataMax, isNumeric, sortedCats, colorData.hue.source, colorData.shape.source, colorData.groupColorOverrides, colorData.groupSymbolOverrides]);
 
     const generateDefaultBins = (min: number, max: number): GroupSettings['bins'] => {
         const diff = max - min;
@@ -117,7 +145,62 @@ const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
     };
 
     const handleSave = () => {
-        setGroupSettings(column, localSettings);
+        const colorOverrides = { ...colorData.groupColorOverrides };
+        const symbolOverrides = { ...colorData.groupSymbolOverrides };
+
+        if (!isNumeric) {
+            Object.entries(localSettings.categoryStyles || {}).forEach(([cat, style]) => {
+                const key = cat;
+                if ((style as any).color) colorOverrides[key] = (style as any).color;
+                else delete colorOverrides[key];
+                if ((style as any).symbol) symbolOverrides[key] = (style as any).symbol;
+                else delete symbolOverrides[key];
+            });
+        } else {
+            localSettings.bins.forEach((bin: any) => {
+                const key = bin.label;
+                if (bin.color) colorOverrides[key] = bin.color;
+                else delete colorOverrides[key];
+                if (bin.symbol) symbolOverrides[key] = bin.symbol;
+                else delete symbolOverrides[key];
+            });
+        }
+
+        const styleMode = localSettings.styleMode || 'color';
+        let hueSource = colorData.hue.source;
+        let shapeSource = colorData.shape.source;
+
+        if (styleMode === 'color') {
+            hueSource = 'group';
+            shapeSource = 'manual';
+        } else if (styleMode === 'symbol') {
+            hueSource = 'manual';
+            shapeSource = 'group';
+        } else {
+            hueSource = 'manual';
+            shapeSource = 'manual';
+        }
+
+        setColorData({
+            groupColorOverrides: colorOverrides,
+            groupSymbolOverrides: symbolOverrides,
+            hue: { ...colorData.hue, source: hueSource },
+            shape: { ...colorData.shape, source: shapeSource }
+        });
+
+        // Strip color and symbol array before saving to GroupSideMenu since they are now in StyleSideMenu
+        const cleanSettings = JSON.parse(JSON.stringify(localSettings));
+        if (cleanSettings.bins) {
+            cleanSettings.bins.forEach((b: any) => { delete b.color; delete b.symbol; });
+        }
+        if (cleanSettings.categoryStyles) {
+            Object.keys(cleanSettings.categoryStyles).forEach(k => {
+                delete cleanSettings.categoryStyles[k].color;
+                delete cleanSettings.categoryStyles[k].symbol;
+            });
+        }
+
+        setGroupSettings(column, cleanSettings);
         closePopup();
     };
 

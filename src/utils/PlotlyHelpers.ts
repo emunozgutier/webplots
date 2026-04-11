@@ -196,8 +196,9 @@ export const generatePlotConfig = (
             const traceSymbolOverlay = customization.symbol;
             
             // Group level overrides
-            const groupColorOverlay = traceInfo.groupColor;
-            const groupSymbolOverlay = traceInfo.groupSymbol;
+            const rawGrp = traceInfo.rawGroupName || '';
+            const groupColorOverlay = colorSideMenuData.groupColorOverrides?.[rawGrp] || traceInfo.groupColor;
+            const groupSymbolOverlay = colorSideMenuData.groupSymbolOverrides?.[rawGrp] || traceInfo.groupSymbol;
 
             // Default mode is 'markers' unless specified
             let mode: 'lines' | 'markers' | 'lines+markers' = customization.mode || 'markers';

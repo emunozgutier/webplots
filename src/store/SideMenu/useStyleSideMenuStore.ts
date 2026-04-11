@@ -18,6 +18,8 @@ export interface StyleSideMenuData {
     lightness: AestheticMapping;
     shape: AestheticMapping;
     size: AestheticMapping;
+    groupColorOverrides: Record<string, string>;
+    groupSymbolOverrides: Record<string, string>;
 }
 
 export type StyleSideMenuState = {
@@ -39,7 +41,9 @@ export const createStyleSideMenuStore = () => createStore<StyleSideMenuState>()(
             saturation: { source: 'manual', value: 80, enabled: true },
             lightness: { source: 'manual', value: 50, enabled: true },
             shape: { source: 'manual', value: 'circle', enabled: true },
-            size: { source: 'manual', value: 8, enabled: true }
+            size: { source: 'manual', value: 8, enabled: true },
+            groupColorOverrides: {},
+            groupSymbolOverrides: {}
         },
 
         setColorData: (data) =>

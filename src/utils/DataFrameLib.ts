@@ -7,6 +7,7 @@ import type { GroupSideMenuData } from '../store/SideMenu/useGroupSideMenuStore'
 export interface TraceData {
     yCol: string;
     groupName: string;
+    rawGroupName?: string;
     fullTraceName: string;
     xData: any[];
     yData: any[];
@@ -106,6 +107,7 @@ export const Step_2_grouping = (
                     generatedTraces.push({
                         yCol,
                         groupName: bin.label,
+                        rawGroupName: bin.label,
                         fullTraceName: yAxis.length === 1 ? bin.label : `${yCol} (${bin.label})`,
                         xData: indices.map(i => xAxis ? data[i][xAxis] : i),
                         yData: indices.map(i => data[i][yCol]),
@@ -130,6 +132,7 @@ export const Step_2_grouping = (
                     generatedTraces.push({
                         yCol,
                         groupName: `${groupAxis}=${groupValStr}`,
+                        rawGroupName: groupValStr,
                         fullTraceName: yAxis.length === 1 ? `${groupAxis}=${groupValStr}` : `${yCol} (${groupAxis}=${groupValStr})`,
                         xData: indices.map(i => xAxis ? data[i][xAxis] : i),
                         yData: indices.map(i => data[i][yCol]),
