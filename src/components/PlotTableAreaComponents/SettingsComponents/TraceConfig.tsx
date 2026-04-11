@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTraceConfigStore } from '../../../store/PlotTable/useTraceConfigStore';
 import { useAxisSideMenuStore } from '../../../store/SideMenu/useAxisSideMenuStore';
+import { useGroupSideMenuStore } from '../../../store/SideMenu/useGroupSideMenuStore';
 import { useWorkspaceLocalStore } from '../../../store/Workspace/useWorkspaceLocalStore';
 import { COLOR_PALETTES } from '../../../utils/ColorPalettes';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
@@ -204,8 +205,11 @@ const HistogramBinSettings: React.FC<{ col: string; custom: any; data: any[]; se
 const TraceConfig: React.FC = () => {
     const { traceConfig, setTraceCustomization, setColorPalette, setPaletteColorOrder, updatePaletteColor } = useTraceConfigStore();
     const { sideMenuData } = useAxisSideMenuStore();
+    const { groupSideMenuData } = useGroupSideMenuStore();
     const { closePopup } = useWorkspaceLocalStore();
     const { data } = useCsvDataStore();
+
+    const isGroupColorManaged = groupSideMenuData.groupAxis && (!groupSideMenuData.groupSettings[groupSideMenuData.groupAxis]?.styleMode || groupSideMenuData.groupSettings[groupSideMenuData.groupAxis]?.styleMode === 'color');
 
     const activeTraces = traceConfig.activeTraces || [];
 
@@ -258,80 +262,93 @@ const TraceConfig: React.FC = () => {
         <>
             <div className="card-body overflow-auto" style={{ maxHeight: '600px' }}>
                 {/* Global Palette Settings */}
-                <div className="mb-4">
-                    <label className="form-label small fw-bold">Color Palette</label>
-                    <div className="d-flex mb-2">
-                        <Dropdown onSelect={(eventKey) => eventKey && setColorPalette(eventKey)} className="me-2 flex-grow-1">
-                            <Dropdown.Toggle variant="outline-secondary" size="sm" className="w-100 d-flex justify-content-between align-items-center">
-                                {traceConfig.colorPalette || 'Default'}
-                            </Dropdown.Toggle>
-                            <Dropdown.Menu className="w-100 shadow-sm" style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                                {Object.keys(COLOR_PALETTES).map(paletteName => (
-                                    <Dropdown.Item key={paletteName} eventKey={paletteName} active={traceConfig.colorPalette === paletteName}>
-                                        <div className="d-flex align-items-center justify-content-between">
-                                            <span>{paletteName}</span>
-                                            <div className="d-flex ms-2">
-                                                {COLOR_PALETTES[paletteName].slice(0, 5).map((c, i) => (
-                                                    <div key={i} style={{ width: '12px', height: '12px', backgroundColor: c, marginRight: '1px' }} />
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </Dropdown.Item>
-                                ))}
-                            </Dropdown.Menu>
-                        </Dropdown>
+                {isGroupColorManaged ? (
+                    <div className="mb-4 p-3 bg-light rounded border text-muted">
+                        <div className="d-flex align-items-center mb-2">
+                            <i className="bi bi-info-circle me-2 text-primary"></i>
+                            <strong>Colors Managed by Group Settings</strong>
+                        </div>
+                        <p className="small mb-0">
+                            Because you are currently grouping data by <strong>{groupSideMenuData.groupAxis}</strong>, the color palette and active marker overrides are being managed through the Group Element's settings under the left side menu.<br/><br/>
+                            To use the global trace palette again, either change the group separation mode to "Markers Only" or remove the active group.
+                        </p>
                     </div>
-
-                    {/* Palette Drag Strip */}
-                    <DragDropContext onDragEnd={onDragEnd}>
-                        <Droppable droppableId="palette-colors" direction="horizontal">
-                            {(provided, snapshot) => (
-                                <div
-                                    {...provided.droppableProps}
-                                    ref={provided.innerRef}
-                                    className={`d-flex align-items-center p-2 rounded border ${snapshot.isDraggingOver ? 'bg-light' : 'bg-white'}`}
-                                    style={{ minHeight: '60px', position: 'relative' }}
-                                >
-                                    <div
-                                        className="position-absolute border border-primary border-2 rounded"
-                                        style={{
-                                            left: '4px', top: '4px', bottom: '4px',
-                                            width: `${Math.min(activeTraceCount, currentColors.length) * 48}px`,
-                                            pointerEvents: 'none', zIndex: 0, backgroundColor: 'rgba(13, 110, 253, 0.05)'
-                                        }}
-                                    ></div>
-                                    {currentColors.map((color, index) => (
-                                        <Draggable key={`${index}-${color}`} draggableId={`${index}-${color}`} index={index}>
-                                            {(provided, snapshot) => (
-                                                <div
-                                                    ref={provided.innerRef}
-                                                    {...provided.draggableProps}
-                                                    {...provided.dragHandleProps}
-                                                    className="m-1 position-relative"
-                                                    style={{ ...provided.draggableProps.style, zIndex: snapshot.isDragging ? 1000 : 1 }}
-                                                >
-                                                    <OverlayTrigger trigger="click" placement="bottom" overlay={renderColorPicker(color, index)} rootClose>
-                                                        <div
-                                                            className="rounded-circle shadow-sm border"
-                                                            style={{ width: '40px', height: '40px', backgroundColor: color, cursor: 'grab' }}
-                                                            title={`Color ${index + 1}`}
-                                                        />
-                                                    </OverlayTrigger>
-                                                    {index < activeTraceCount && (
-                                                        <div className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary" style={{ fontSize: '0.6rem' }}>
-                                                            {index + 1}
-                                                        </div>
-                                                    )}
+                ) : (
+                    <div className="mb-4">
+                        <label className="form-label small fw-bold">Color Palette</label>
+                        <div className="d-flex mb-2">
+                            <Dropdown onSelect={(eventKey) => eventKey && setColorPalette(eventKey)} className="me-2 flex-grow-1">
+                                <Dropdown.Toggle variant="outline-secondary" size="sm" className="w-100 d-flex justify-content-between align-items-center">
+                                    {traceConfig.colorPalette || 'Default'}
+                                </Dropdown.Toggle>
+                                <Dropdown.Menu className="w-100 shadow-sm" style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                                    {Object.keys(COLOR_PALETTES).map(paletteName => (
+                                        <Dropdown.Item key={paletteName} eventKey={paletteName} active={traceConfig.colorPalette === paletteName}>
+                                            <div className="d-flex align-items-center justify-content-between">
+                                                <span>{paletteName}</span>
+                                                <div className="d-flex ms-2">
+                                                    {COLOR_PALETTES[paletteName].slice(0, 5).map((c, i) => (
+                                                        <div key={i} style={{ width: '12px', height: '12px', backgroundColor: c, marginRight: '1px' }} />
+                                                    ))}
                                                 </div>
-                                            )}
-                                        </Draggable>
+                                            </div>
+                                        </Dropdown.Item>
                                     ))}
-                                    {provided.placeholder}
-                                </div>
-                            )}
-                        </Droppable>
-                    </DragDropContext>
-                </div>
+                                </Dropdown.Menu>
+                            </Dropdown>
+                        </div>
+
+                        {/* Palette Drag Strip */}
+                        <DragDropContext onDragEnd={onDragEnd}>
+                            <Droppable droppableId="palette-colors" direction="horizontal">
+                                {(provided, snapshot) => (
+                                    <div
+                                        {...provided.droppableProps}
+                                        ref={provided.innerRef}
+                                        className={`d-flex align-items-center p-2 rounded border ${snapshot.isDraggingOver ? 'bg-light' : 'bg-white'}`}
+                                        style={{ minHeight: '60px', position: 'relative' }}
+                                    >
+                                        <div
+                                            className="position-absolute border border-primary border-2 rounded"
+                                            style={{
+                                                left: '4px', top: '4px', bottom: '4px',
+                                                width: `${Math.min(activeTraceCount, currentColors.length) * 48}px`,
+                                                pointerEvents: 'none', zIndex: 0, backgroundColor: 'rgba(13, 110, 253, 0.05)'
+                                            }}
+                                        ></div>
+                                        {currentColors.map((color, index) => (
+                                            <Draggable key={`${index}-${color}`} draggableId={`${index}-${color}`} index={index}>
+                                                {(provided, snapshot) => (
+                                                    <div
+                                                        ref={provided.innerRef}
+                                                        {...provided.draggableProps}
+                                                        {...provided.dragHandleProps}
+                                                        className="m-1 position-relative"
+                                                        style={{ ...provided.draggableProps.style, zIndex: snapshot.isDragging ? 1000 : 1 }}
+                                                    >
+                                                        <OverlayTrigger trigger="click" placement="bottom" overlay={renderColorPicker(color, index)} rootClose>
+                                                            <div
+                                                                className="rounded-circle shadow-sm border"
+                                                                style={{ width: '40px', height: '40px', backgroundColor: color, cursor: 'grab' }}
+                                                                title={`Color ${index + 1}`}
+                                                            />
+                                                        </OverlayTrigger>
+                                                        {index < activeTraceCount && (
+                                                            <div className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary" style={{ fontSize: '0.6rem' }}>
+                                                                {index + 1}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </Draggable>
+                                        ))}
+                                        {provided.placeholder}
+                                    </div>
+                                )}
+                            </Droppable>
+                        </DragDropContext>
+                    </div>
+                )}
 
                 <hr />
 

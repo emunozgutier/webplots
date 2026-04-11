@@ -194,14 +194,18 @@ export const generatePlotConfig = (
             // Trace level overrides (if a user explicitly forces a color/symbol from TraceConfig Menu, it kills dynamic behavior)
             const traceColorOverlay = customization.color;
             const traceSymbolOverlay = customization.symbol;
+            
+            // Group level overrides
+            const groupColorOverlay = traceInfo.groupColor;
+            const groupSymbolOverlay = traceInfo.groupSymbol;
 
             // Default mode is 'markers' unless specified
             let mode: 'lines' | 'markers' | 'lines+markers' = customization.mode || 'markers';
             const marker: any = {};
 
-            // Apply arrays or overlay
-            marker.color = traceColorOverlay || computedColors;
-            marker.symbol = traceSymbolOverlay || computedShapes;
+            // Apply arrays or overlay (Trace > Group > Computed arrays)
+            marker.color = traceColorOverlay || groupColorOverlay || computedColors;
+            marker.symbol = traceSymbolOverlay || groupSymbolOverlay || computedShapes;
             marker.size = customization.size || computedSizes;
 
             if (plotType === 'histogram') {
@@ -504,23 +508,25 @@ export const generatePlotConfig = (
             }
 
             const baseColor = getColor(index);
-            const finalColor = customization.color || baseColor;
+            const finalColor = customization.color || traceInfo.groupColor || baseColor;
             const finalSize = customization.size || 8;
 
             let mode = customization.mode || 'markers';
             let markerParams = '';
 
-            if (customization.symbol) {
+            const activeSymbol = customization.symbol || traceInfo.groupSymbol;
+
+            if (activeSymbol) {
                 if (mode === 'lines') mode = 'lines+markers';
-                markerParams = `, marker: { symbol: '${customization.symbol}', size: ${finalSize} }`;
+                markerParams = `, marker: { symbol: '${activeSymbol}', size: ${finalSize} }`;
             }
 
             if (customization.mode === 'markers') {
                 mode = 'markers';
-                if (!customization.symbol) {
+                if (!activeSymbol) {
                     markerParams = `, marker: { symbol: 'circle', size: ${finalSize} }`;
                 } else {
-                    markerParams = `, marker: { symbol: '${customization.symbol}', size: ${finalSize} }`;
+                    markerParams = `, marker: { symbol: '${activeSymbol}', size: ${finalSize} }`;
                 }
             }
 

@@ -3,6 +3,11 @@ import { useStore } from 'zustand';
 import { useContext } from 'react';
 import { WorkspaceContext } from '../Workspace/WorkspaceContext';
 
+export interface GroupStyleConfig {
+    color?: string;
+    symbol?: string;
+}
+
 export interface GroupSettings {
     mode: 'auto' | 'manual';
     bins: {
@@ -10,7 +15,11 @@ export interface GroupSettings {
         label: string;
         operator: '>' | '<' | '>=' | '<=' | '==' | '!=';
         value: number;
+        color?: string;
+        symbol?: string;
     }[];
+    categoryStyles?: Record<string, GroupStyleConfig>;
+    styleMode?: 'color' | 'symbol' | 'none';
 }
 
 export interface GroupSideMenuData {

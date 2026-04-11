@@ -14,6 +14,8 @@ export interface TraceData {
     filteredCount?: number;
     absorbedCounts?: number[];
     survivingIndices?: number[];
+    groupColor?: string;
+    groupSymbol?: string;
 }
 
 /**
@@ -107,7 +109,9 @@ export const Step_2_grouping = (
                         fullTraceName: yAxis.length === 1 ? bin.label : `${yCol} (${bin.label})`,
                         xData: indices.map(i => xAxis ? data[i][xAxis] : i),
                         yData: indices.map(i => data[i][yCol]),
-                        rowIndices: indices
+                        rowIndices: indices,
+                        groupColor: bin.color,
+                        groupSymbol: bin.symbol
                     });
                 });
             });
@@ -121,13 +125,17 @@ export const Step_2_grouping = (
                     const indices = data.map((row, idx) => row[groupAxis] == groupVal ? idx : -1).filter(idx => idx !== -1);
                     if (indices.length === 0) return;
 
+                    const catStyle = settings?.categoryStyles?.[groupValStr];
+
                     generatedTraces.push({
                         yCol,
                         groupName: `${groupAxis}=${groupValStr}`,
                         fullTraceName: yAxis.length === 1 ? `${groupAxis}=${groupValStr}` : `${yCol} (${groupAxis}=${groupValStr})`,
                         xData: indices.map(i => xAxis ? data[i][xAxis] : i),
                         yData: indices.map(i => data[i][yCol]),
-                        rowIndices: indices
+                        rowIndices: indices,
+                        groupColor: catStyle?.color,
+                        groupSymbol: catStyle?.symbol
                     });
                 });
             });
