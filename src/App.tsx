@@ -3,7 +3,7 @@ import SideMenu from './components/SideMenu';
 import PlotTableArea from './components/PlotTableArea';
 import TopMenuBar from './components/TopMenuBar';
 import WorkspaceTabs from './components/WorkspaceTabs';
-import { WorkspaceProvider } from './store/Workspace/WorkspaceContext';
+import { WorkspaceProvider } from './store/Workspace/WorkspaceProvider';
 import { useWorkspaceStore } from './store/Workspace/useWorkspaceStore';
 import PopupMenu from './components/PopupMenu';
 import './App.css';
