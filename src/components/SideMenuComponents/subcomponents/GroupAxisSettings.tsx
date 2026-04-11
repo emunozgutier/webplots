@@ -31,8 +31,8 @@ const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
     });
 
     // Extract numeric column data for preview and categoric data for counts
-    const { numericData, dataMin, dataMax, isNumeric, categoryCounts } = React.useMemo(() => {
-        if (!data || data.length === 0) return { numericData: [], dataMin: 0, dataMax: 100, isNumeric: false, categoryCounts: {} };
+    const { numericData, dataMin, dataMax, isNumeric, categoryCounts, sortedCats } = React.useMemo(() => {
+        if (!data || data.length === 0) return { numericData: [], dataMin: 0, dataMax: 100, isNumeric: false, categoryCounts: {}, sortedCats: [] };
         const nums: number[] = [];
         const counts: Record<string, number> = {};
         let min = Infinity, max = -Infinity;
@@ -164,7 +164,7 @@ const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
         const showClear = !!colorVal;
 
         return (
-            <div className={`d-flex align-items-center bg-light rounded px-1 ${mode !== 'none' ? 'border' : ''}`} style={{ height: '30px' }}>
+            <div className={`d-flex align-items-center bg-light rounded px-1 border`} style={{ height: '30px' }}>
                 {mode === 'color' && (
                     <>
                         <div className="d-flex align-items-center position-relative">
@@ -321,22 +321,28 @@ const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
                         <div className="d-flex flex-column gap-2" style={{ maxHeight: '300px', overflowY: 'auto' }}>
                             {Object.entries(categoryCounts)
                                 .sort((a, b) => b[1] - a[1]) // Sort by count descending
-                                .map(([cat, count]) => (
-                                    <div key={cat} className="d-flex justify-content-between align-items-center border-bottom pb-1 pt-1">
-                                        <div className="d-flex align-items-center text-truncate" style={{ maxWidth: '45%' }}>
-                                            <span className="badge bg-secondary rounded-pill me-2">{count}</span>
-                                            <span className="text-truncate" title={cat}>
-                                                {cat === '' || cat === 'undefined' || cat === 'null' ? <em className="text-muted">(Empty/Null)</em> : cat}
-                                            </span>
+                                .map(([cat, count]) => {
+                                    const alphabetIndex = sortedCats.indexOf(cat);
+                                    const defaultColor = currentColors[alphabetIndex % currentColors.length] || '#000000';
+                                    return (
+                                        <div key={cat} className="d-flex justify-content-between align-items-center border-bottom pb-1 pt-1">
+                                            <div className="d-flex align-items-center text-truncate" style={{ maxWidth: '45%' }}>
+                                                <span className="badge bg-secondary rounded-pill me-2">{count}</span>
+                                                <span className="text-truncate" title={cat}>
+                                                    {cat === '' || cat === 'undefined' || cat === 'null' ? <em className="text-muted">(Empty/Null)</em> : cat}
+                                                </span>
+                                            </div>
+                                            {renderStyleControls(
+                                                localSettings.categoryStyles?.[cat]?.color,
+                                                localSettings.categoryStyles?.[cat]?.symbol,
+                                                (val) => updateCategoryStyle(cat, 'color', val),
+                                                (val) => updateCategoryStyle(cat, 'symbol', val),
+                                                true,
+                                                defaultColor
+                                            )}
                                         </div>
-                                        {renderStyleControls(
-                                            localSettings.categoryStyles?.[cat]?.color,
-                                            localSettings.categoryStyles?.[cat]?.symbol,
-                                            (val) => updateCategoryStyle(cat, 'color', val),
-                                            (val) => updateCategoryStyle(cat, 'symbol', val)
-                                        )}
-                                    </div>
-                                ))}
+                                    );
+                                })}
                         </div>
                         <div className="form-text mt-2 text-muted small">
                             Groups will be automatically created for each unique category shown above.
