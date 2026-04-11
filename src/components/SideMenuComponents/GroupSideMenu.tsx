@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 
 import { useGroupSideMenuStore } from '../../store/SideMenu/useGroupSideMenuStore';
-import { useWorkspaceLocalStore } from '../../store/Workspace/useWorkspaceLocalStore';
+
 import { useCsvDataStore } from '../../store/useCsvDataStore';
-import GroupAxisSettings from './subcomponents/GroupAxisSettings';
+import GroupElement from './subcomponents/GroupElement';
 import SearchColumn from './subcomponents/SearchColumn';
 
 const GroupSideMenu: React.FC = () => {
     const { groupSideMenuData, setGroupAxis } = useGroupSideMenuStore();
-    const { setPopupContent } = useWorkspaceLocalStore();
     const { groupAxis } = groupSideMenuData;
     const { columns } = useCsvDataStore();
 
@@ -60,25 +59,14 @@ const GroupSideMenu: React.FC = () => {
                                     </span>
                                 </label>
                                 <div
-                                    className={`border rounded p-2 ${dragOverGroup ? 'bg-info bg-opacity-10 border-info' : 'bg-white'}`}
+                                    className={`rounded ${!groupAxis ? 'border p-2' : ''} ${dragOverGroup ? 'bg-info bg-opacity-10 border-info border p-2' : (!groupAxis ? 'bg-white' : '')}`}
                                     onDragOver={handleDragOver}
                                     onDragLeave={handleDragLeave}
                                     onDrop={handleDropGroup}
                                     style={{ minHeight: '35px', transition: 'all 0.2s' }}
                                 >
                                     {groupAxis ? (
-                                        <div className="d-flex justify-content-between align-items-center">
-                                            <span
-                                                className="badge bg-warning text-dark text-truncate mw-100 cursor-pointer user-select-none"
-                                                onClick={() => setPopupContent(<GroupAxisSettings column={groupAxis} />)}
-                                                style={{ cursor: 'pointer' }}
-                                                title="Click to configure grouping"
-                                            >
-                                                {groupAxis}
-                                                <small className="ms-1 opacity-50">⚙️</small>
-                                            </span>
-                                            <button className="btn btn-sm btn-link text-danger p-0 ms-1" onClick={() => setGroupAxis(null)}>&times;</button>
-                                        </div>
+                                        <GroupElement column={groupAxis} />
                                     ) : (
                                         <div className="text-muted small fst-italic text-center" style={{ fontSize: '0.8rem' }}>Drag column here</div>
                                     )}
