@@ -30,7 +30,8 @@ const TableArea: React.FC = () => {
         numberFormat,
         significantDigits,
         alignDecimal,
-        gaussianConfidenceThreshold
+        gaussianConfidenceThreshold,
+        gaussianMaxComponents
     } = useTableStore();
 
     const handleSortAsc = (key: string) => {
@@ -56,7 +57,7 @@ const TableArea: React.FC = () => {
             variance /= count;
             const stdDev = Math.sqrt(variance);
 
-            const { isGaussian, components } = calculateGaussianStats(numericValues, stdDev, count, gaussianConfidenceThreshold);
+            const { isGaussian, components } = calculateGaussianStats(numericValues, stdDev, count, gaussianConfidenceThreshold, gaussianMaxComponents);
 
             const min = Math.min(...numericValues);
             const max = Math.max(...numericValues);

@@ -5,7 +5,9 @@ import { useTableStore } from '../../../../store/PlotTable/useTableStore';
 const Gaussian: React.FC = () => {
     const { 
         gaussianConfidenceThreshold, 
-        setGaussianConfidenceThreshold 
+        setGaussianConfidenceThreshold,
+        gaussianMaxComponents,
+        setGaussianMaxComponents
     } = useTableStore();
 
     return (
@@ -27,6 +29,27 @@ const Gaussian: React.FC = () => {
                 <div className="text-muted" style={{ fontSize: '0.8rem' }}>
                     Control how strictly the algorithm classifies a distribution as Gaussian. 
                     A higher threshold requires a closer fit to the theoretical curve.
+                </div>
+            </div>
+
+            {/* Max Components Section */}
+            <div>
+                <label className="fw-bold text-primary mb-2 text-uppercase small tracking-wide d-block">Max Gaussian Peaks</label>
+                <div className="d-flex align-items-center gap-2">
+                    <Form.Control 
+                        type="number" 
+                        min={1} 
+                        max={10}
+                        value={gaussianMaxComponents}
+                        onChange={(e) => setGaussianMaxComponents(parseInt(e.target.value) || 1)}
+                        style={{ width: '80px' }}
+                        className="fw-bold text-center"
+                        size="sm"
+                    />
+                    <span className="text-muted small">peaks to detect per distribution</span>
+                </div>
+                <div className="text-muted mt-2" style={{ fontSize: '0.8rem' }}>
+                    Limiting the number of peaks can simplify complex distributions and prevent over-fitting.
                 </div>
             </div>
 

@@ -170,7 +170,8 @@ export const calculateGaussianStats = (
     numericValues: number[], 
     stdDev: number, 
     count: number, 
-    confidenceThreshold: number = 60
+    confidenceThreshold: number = 60,
+    maxComponents: number = 4
 ): GaussianStats => {
     let gaussianScore = 0;
     let isGaussian = false;
@@ -230,8 +231,8 @@ export const calculateGaussianStats = (
             peaks.sort((a, b) => b.value - a.value);
             const maxVal = peaks.length > 0 ? peaks[0].value : 0;
 
-            // Ignore peaks < 10% of max peak, and max 4 peaks
-            let validPeaks = peaks.filter(p => p.value >= maxVal * 0.1).slice(0, 4);
+            // Ignore peaks < 10% of max peak, and max maxComponents peaks
+            let validPeaks = peaks.filter(p => p.value >= maxVal * 0.1).slice(0, maxComponents);
 
             // 5. Estimate Parameters (Mean, Sigma, Weight)
             let rawComponents = [];
@@ -288,7 +289,7 @@ export const calculateGaussianStats = (
                 const confidence = Math.max(0, 100 - (errorSum * 150));
                 gaussianScore = Math.round(confidence);
 
-                isGaussian = gaussianScore >= confidenceThreshold && components.length > 0 && components.length <= 4;
+                isGaussian = gaussianScore >= confidenceThreshold && components.length > 0 && components.length <= maxComponents;
             }
         }
     }

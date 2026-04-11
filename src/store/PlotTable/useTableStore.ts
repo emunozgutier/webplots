@@ -12,6 +12,7 @@ export interface TableState {
     significantDigits: number;
     alignDecimal: boolean;
     gaussianConfidenceThreshold: number;
+    gaussianMaxComponents: number;
     
     // Actions
     setSummaryMode: (mode: SummaryMode) => void;
@@ -21,6 +22,7 @@ export interface TableState {
     setSignificantDigits: (digits: number) => void;
     setAlignDecimal: (align: boolean) => void;
     setGaussianConfidenceThreshold: (threshold: number) => void;
+    setGaussianMaxComponents: (count: number) => void;
 }
 
 export const createTableStore = () => {
@@ -33,6 +35,7 @@ export const createTableStore = () => {
             significantDigits: 4,
             alignDecimal: true,
             gaussianConfidenceThreshold: 60,
+            gaussianMaxComponents: 4,
 
             setSummaryMode: (summaryMode) => set({ summaryMode }),
             setDatasetMode: (datasetMode) => set({ datasetMode }),
@@ -40,7 +43,8 @@ export const createTableStore = () => {
             setNumberFormat: (numberFormat) => set({ numberFormat }),
             setSignificantDigits: (significantDigits) => set({ significantDigits }),
             setAlignDecimal: (alignDecimal) => set({ alignDecimal }),
-            setGaussianConfidenceThreshold: (gaussianConfidenceThreshold) => set({ gaussianConfidenceThreshold })
+            setGaussianConfidenceThreshold: (gaussianConfidenceThreshold) => set({ gaussianConfidenceThreshold }),
+            setGaussianMaxComponents: (gaussianMaxComponents) => set({ gaussianMaxComponents })
         })
     );
 };
