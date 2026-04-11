@@ -12,6 +12,7 @@ import { createPlotLayoutStore } from '../PlotTable/usePlotLayoutStore';
 import { createTraceConfigStore } from '../PlotTable/useTraceConfigStore';
 import { createWorkspaceLocalStore } from './useWorkspaceLocalStore';
 import { createSubplotSideMenuStore } from '../SideMenu/useSubplotSideMenuStore';
+import { createTableStore } from '../PlotTable/useTableStore';
 
 export const WorkspaceProvider: React.FC<{ workspaceId: string, children: React.ReactNode }> = ({ workspaceId, children }) => {
     const storesRef = useRef<WorkspaceStores | null>(null);
@@ -26,7 +27,8 @@ export const WorkspaceProvider: React.FC<{ workspaceId: string, children: React.
             plotLayoutStore: createPlotLayoutStore(),
             traceConfigStore: createTraceConfigStore(),
             workspaceLocalStore: createWorkspaceLocalStore(),
-            subplotSideMenuStore: createSubplotSideMenuStore()
+            subplotSideMenuStore: createSubplotSideMenuStore(),
+            tableStore: createTableStore()
         };
 
         const cloneData = cloneStoreStates.get(workspaceId);

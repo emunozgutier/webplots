@@ -8,6 +8,7 @@ import { useFilterSideMenuStore } from '../../store/SideMenu/useFilterSideMenuSt
 import { useStyleSideMenuStore } from '../../store/SideMenu/useStyleSideMenuStore';
 import HeaderSummary from './TableAreaComponents/HeaderSummary';
 import { useWorkspaceLocalStore } from '../../store/Workspace/useWorkspaceLocalStore';
+import { useTableStore } from '../../store/PlotTable/useTableStore';
 import Plot from 'react-plotly.js';
 import ControlButtons from './TableAreaComponents/ControlButtons';
 import BatchButtons from './TableAreaComponents/BatchButtons';
@@ -18,8 +19,8 @@ const TableArea: React.FC = () => {
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
     const [currentBatch, setCurrentBatch] = useState(0);
     const BATCH_SIZE = 100;
+    const { setPopupContent } = useWorkspaceLocalStore();
     const { 
-        setPopupContent, 
         summaryMode, 
         setSummaryMode, 
         datasetMode, 
@@ -28,8 +29,9 @@ const TableArea: React.FC = () => {
         setColorMode,
         numberFormat,
         significantDigits,
-        alignDecimal
-    } = useWorkspaceLocalStore();
+        alignDecimal,
+        gaussianConfidenceThreshold
+    } = useTableStore();
 
     const handleSortAsc = (key: string) => {
         if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') setSortConfig(null);
@@ -54,7 +56,7 @@ const TableArea: React.FC = () => {
             variance /= count;
             const stdDev = Math.sqrt(variance);
 
-            const { isGaussian, components } = calculateGaussianStats(numericValues, stdDev, count);
+            const { isGaussian, components } = calculateGaussianStats(numericValues, stdDev, count, gaussianConfidenceThreshold);
 
             const min = Math.min(...numericValues);
             const max = Math.max(...numericValues);

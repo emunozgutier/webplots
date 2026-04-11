@@ -166,7 +166,12 @@ export interface GaussianStats {
  * Calculates whether an array of numeric values follows a Gaussian Mixture distribution (up to 4 peaks).
  * Uses Kernel Density Estimation (KDE) approximation and peak finding.
  */
-export const calculateGaussianStats = (numericValues: number[], stdDev: number, count: number): GaussianStats => {
+export const calculateGaussianStats = (
+    numericValues: number[], 
+    stdDev: number, 
+    count: number, 
+    confidenceThreshold: number = 60
+): GaussianStats => {
     let gaussianScore = 0;
     let isGaussian = false;
     let hasGaussianTest = false;
@@ -219,7 +224,7 @@ export const calculateGaussianStats = (numericValues: number[], stdDev: number, 
 
             // Check edges
             if (smoothed[0] > smoothed[1]) peaks.push({ index: 0, value: smoothed[0] });
-            if (smoothed[numBins - 1] > smoothed[numBins - 2]) peaks.push({ index: numBins - 1, value: smoothed[numBins - 1] });
+            if (smoothed[numBins - 1] > smoothed[numBins - 2]) peaks.push({ index: numBins - 1, value: smoothed[numBins - 2] });
 
             // 4. Filter and Sort
             peaks.sort((a, b) => b.value - a.value);
@@ -283,7 +288,7 @@ export const calculateGaussianStats = (numericValues: number[], stdDev: number, 
                 const confidence = Math.max(0, 100 - (errorSum * 150));
                 gaussianScore = Math.round(confidence);
 
-                isGaussian = gaussianScore >= 60 && components.length > 0 && components.length <= 4;
+                isGaussian = gaussianScore >= confidenceThreshold && components.length > 0 && components.length <= 4;
             }
         }
     }
