@@ -65,7 +65,8 @@ const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
         const isNum = (validNumCount / totalRows) > 0.8 && uniqueCategoryCount > 15;
 
         if (min === Infinity) { min = 0; max = 100; }
-        return { numericData: nums, dataMin: min, dataMax: max, isNumeric: isNum, categoryCounts: counts };
+        const sortedCats = Object.keys(counts).sort();
+        return { numericData: nums, dataMin: min, dataMax: max, isNumeric: isNum, categoryCounts: counts, sortedCats };
     }, [data, column]);
 
     useEffect(() => {
@@ -155,31 +156,34 @@ const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
 
     const SHAPE_OPTS = ['circle', 'square', 'diamond', 'cross', 'x', 'triangle-up', 'pentagon', 'hexagram', 'star'];
 
-    const renderStyleControls = (colorVal: string | undefined, symbolVal: string | undefined, onColorChange: (val: string) => void, onSymbolChange: (val: string) => void) => {
-        const mode = localSettings.styleMode || 'color';
+    const renderStyleControls = (colorVal: string | undefined, symbolVal: string | undefined, onColorChange: (val: string) => void, onSymbolChange: (val: string) => void, isCategorical: boolean = false, defaultColor?: string) => {
+        const mode = isCategorical ? 'color' : (localSettings.styleMode || 'color');
         if (mode === 'none') return null;
 
+        const effectiveColor = colorVal || (isCategorical ? defaultColor : '#888888');
+        const showClear = !!colorVal;
+
         return (
-            <div className="d-flex align-items-center bg-light rounded px-1 border" style={{ height: '30px' }}>
+            <div className={`d-flex align-items-center bg-light rounded px-1 ${mode !== 'none' ? 'border' : ''}`} style={{ height: '30px' }}>
                 {mode === 'color' && (
                     <>
                         <div className="d-flex align-items-center position-relative">
                             <input 
                                 type="color" 
                                 className="form-control form-control-color form-control-sm p-0 border-0" 
-                                style={{ width: '22px', height: '22px', cursor: 'pointer', opacity: colorVal ? 1 : 0.4 }} 
-                                value={colorVal || '#888888'} 
+                                style={{ width: '22px', height: '22px', cursor: 'pointer', opacity: (colorVal || isCategorical) ? 1 : 0.4 }} 
+                                value={effectiveColor} 
                                 onChange={(e) => onColorChange(e.target.value)} 
-                                title={colorVal ? "Custom Color" : "Auto Color (Click to override)"}
+                                title={colorVal ? "Custom Color" : (isCategorical ? "Assigned Color" : "Auto Color (Click to override)")}
                             />
-                            {!colorVal && <div className="position-absolute top-50 start-50 translate-middle pe-none" style={{ fontSize: '12px', color: '#444'}}>?</div>}
+                            {!colorVal && !isCategorical && <div className="position-absolute top-50 start-50 translate-middle pe-none" style={{ fontSize: '12px', color: '#444'}}>?</div>}
                         </div>
-                        {colorVal && (
+                        {showClear && (
                             <button type="button" className="btn btn-link p-0 text-muted ms-1 text-decoration-none lh-1 me-1" style={{ fontSize: '1rem' }} onClick={() => onColorChange('')} title="Clear Color">&times;</button>
                         )}
                     </>
                 )}
-                {mode === 'symbol' && (
+                {mode === 'symbol' && !isCategorical && (
                     <select 
                         className="form-select form-select-sm border-0 bg-transparent text-secondary shadow-none" 
                         style={{ width: '100px', fontSize: '0.75rem', padding: '0.1rem 1rem 0.1rem 0.2rem', cursor: 'pointer' }}
@@ -218,19 +222,21 @@ const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
             </div>
 
             <div className="card-body overflow-auto">
-                <div className="mb-3 d-flex align-items-center justify-content-between p-2 bg-light rounded border">
-                    <label className="form-label mb-0 fw-bold small">Customize Individual Groups By:</label>
-                    <select 
-                        className="form-select form-select-sm" 
-                        style={{ width: '150px' }}
-                        value={localSettings.styleMode || 'color'}
-                        onChange={(e) => setLocalSettings(prev => ({ ...prev, styleMode: e.target.value as any }))}
-                    >
-                        <option value="color">Colors Only</option>
-                        <option value="symbol">Markers Only</option>
-                        <option value="none">None (Hide Options)</option>
-                    </select>
-                </div>
+                {isNumeric && (
+                    <div className="mb-3 d-flex align-items-center justify-content-between p-2 bg-light rounded border">
+                        <label className="form-label mb-0 fw-bold small">Customize Individual Groups By:</label>
+                        <select 
+                            className="form-select form-select-sm" 
+                            style={{ width: '150px' }}
+                            value={localSettings.styleMode || 'color'}
+                            onChange={(e) => setLocalSettings(prev => ({ ...prev, styleMode: e.target.value as any }))}
+                        >
+                            <option value="color">Colors Only</option>
+                            <option value="symbol">Markers Only</option>
+                            <option value="none">None (Hide Options)</option>
+                        </select>
+                    </div>
+                )}
 
                 {localSettings.styleMode !== 'none' && (!localSettings.styleMode || localSettings.styleMode === 'color') && (
                     <div className="mb-4 bg-light p-3 rounded border">
