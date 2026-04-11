@@ -4,7 +4,7 @@ import PlotTableArea from './components/PlotTableArea';
 import TopMenuBar from './components/TopMenuBar';
 import WorkspaceTabs from './components/WorkspaceTabs';
 import { WorkspaceProvider } from './store/WorkspaceContext';
-import { useWorkspaceStore } from './store/WorkspaceStore';
+import { useWorkspaceStore } from './store/useWorkspaceStore';
 import PopupMenu from './components/PopupMenu';
 import './App.css';
 

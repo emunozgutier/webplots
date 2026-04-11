@@ -1,14 +1,14 @@
 import React from 'react';
-import { usePlotLayoutStore } from '../../store/PlotLayoutStore';
-import { useTraceConfigStore } from '../../store/TraceConfigStore';
+import { usePlotLayoutStore } from '../../store/usePlotLayoutStore';
+import { useTraceConfigStore } from '../../store/SideMenu/useTraceConfigStore';
 import { generatePlotConfig } from '../../utils/PlotlyHelpers';
-import { useCsvDataStore } from '../../store/CsvDataStore';
-import { useAxisSideMenuStore } from '../../store/AxisSideMenuStore';
-import { useGroupSideMenuStore } from '../../store/GroupSideMenuStore';
-import { useStyleSideMenuStore } from '../../store/StyleSideMenuStore';
-import { useSubplotSideMenuStore } from '../../store/SubplotSideMenuStore';
-import { useInkRatioStore } from '../../store/InkRatioStore';
-import { useFilterSideMenuStore } from '../../store/FilterSideMenuStore';
+import { useCsvDataStore } from '../../store/useCsvDataStore';
+import { useAxisSideMenuStore } from '../../store/SideMenu/useAxisSideMenuStore';
+import { useGroupSideMenuStore } from '../../store/SideMenu/useGroupSideMenuStore';
+import { useStyleSideMenuStore } from '../../store/SideMenu/useStyleSideMenuStore';
+import { useSubplotSideMenuStore } from '../../store/SideMenu/useSubplotSideMenuStore';
+import { useInkRatioStore } from '../../store/SideMenu/useInkRatioStore';
+import { useFilterSideMenuStore } from '../../store/SideMenu/useFilterSideMenuStore';
 import { runDataPipeline } from '../../utils/DataFrameLib';
 
 interface PlotAreaControlButtonsProps {

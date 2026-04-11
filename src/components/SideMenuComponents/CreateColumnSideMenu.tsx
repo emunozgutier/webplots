@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useCsvDataStore } from '../../store/CsvDataStore';
+import { useCsvDataStore } from '../../store/useCsvDataStore';
 
 const CreateColumnSideMenu: React.FC = () => {
     const { data, columns, setPlotData, setColumns } = useCsvDataStore();

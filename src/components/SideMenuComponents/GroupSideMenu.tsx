@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 
-import { useGroupSideMenuStore } from '../../store/GroupSideMenuStore';
-import { useWorkspaceLocalStore } from '../../store/WorkspaceLocalStore';
-import { useCsvDataStore } from '../../store/CsvDataStore';
+import { useGroupSideMenuStore } from '../../store/SideMenu/useGroupSideMenuStore';
+import { useWorkspaceLocalStore } from '../../store/useWorkspaceLocalStore';
+import { useCsvDataStore } from '../../store/useCsvDataStore';
 import GroupAxisSettings from './subcomponents/GroupAxisSettings';
 import SearchColumn from './subcomponents/SearchColumn';
 

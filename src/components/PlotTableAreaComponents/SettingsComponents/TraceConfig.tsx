@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { useTraceConfigStore } from '../../../store/TraceConfigStore';
-import { useAxisSideMenuStore } from '../../../store/AxisSideMenuStore';
-import { useWorkspaceLocalStore } from '../../../store/WorkspaceLocalStore';
+import { useTraceConfigStore } from '../../../store/SideMenu/useTraceConfigStore';
+import { useAxisSideMenuStore } from '../../../store/SideMenu/useAxisSideMenuStore';
+import { useWorkspaceLocalStore } from '../../../store/useWorkspaceLocalStore';
 import { COLOR_PALETTES } from '../../../utils/ColorPalettes';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { HexColorPicker } from 'react-colorful';
 import { OverlayTrigger, Popover, Dropdown, Tabs, Tab, ButtonGroup, ToggleButton } from 'react-bootstrap';
-import { useCsvDataStore } from '../../../store/CsvDataStore';
+import { useCsvDataStore } from '../../../store/useCsvDataStore';
 import Plot from 'react-plotly.js';
 
 const SYMBOLS = [

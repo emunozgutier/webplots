@@ -1,20 +1,20 @@
 import React, { useMemo } from 'react';
-import { useWorkspaceLocalStore } from '../../store/WorkspaceLocalStore';
+import { useWorkspaceLocalStore } from '../../store/useWorkspaceLocalStore';
 import Settings from './Settings';
 import Debug from './Debug';
 import Plot from 'react-plotly.js';
 
-import { useAxisSideMenuStore } from '../../store/AxisSideMenuStore';
-import { useGroupSideMenuStore } from '../../store/GroupSideMenuStore';
-import { usePlotLayoutStore } from '../../store/PlotLayoutStore';
-import { useTraceConfigStore } from '../../store/TraceConfigStore';
-import { useInkRatioStore } from '../../store/InkRatioStore';
-import { useStyleSideMenuStore } from '../../store/StyleSideMenuStore';
-import { useSubplotSideMenuStore } from '../../store/SubplotSideMenuStore';
+import { useAxisSideMenuStore } from '../../store/SideMenu/useAxisSideMenuStore';
+import { useGroupSideMenuStore } from '../../store/SideMenu/useGroupSideMenuStore';
+import { usePlotLayoutStore } from '../../store/usePlotLayoutStore';
+import { useTraceConfigStore } from '../../store/SideMenu/useTraceConfigStore';
+import { useInkRatioStore } from '../../store/SideMenu/useInkRatioStore';
+import { useStyleSideMenuStore } from '../../store/SideMenu/useStyleSideMenuStore';
+import { useSubplotSideMenuStore } from '../../store/SideMenu/useSubplotSideMenuStore';
 import { generatePlotConfig } from '../../utils/PlotlyHelpers';
 import { Step_1_filter, runDataPipeline } from '../../utils/DataFrameLib';
-import { useCsvDataStore } from '../../store/CsvDataStore';
-import { useFilterSideMenuStore } from '../../store/FilterSideMenuStore';
+import { useCsvDataStore } from '../../store/useCsvDataStore';
+import { useFilterSideMenuStore } from '../../store/SideMenu/useFilterSideMenuStore';
 import PlotAreaControlButtons from './PlotAreaControlButtons';
 
 const PlotArea: React.FC = () => {

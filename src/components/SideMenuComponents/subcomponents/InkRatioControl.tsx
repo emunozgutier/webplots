@@ -1,7 +1,7 @@
 import React from 'react';
-import { useInkRatioStore } from '../../../store/InkRatioStore';
-import { useStyleSideMenuStore } from '../../../store/StyleSideMenuStore';
-import { useCsvDataStore } from '../../../store/CsvDataStore';
+import { useInkRatioStore } from '../../../store/SideMenu/useInkRatioStore';
+import { useStyleSideMenuStore } from '../../../store/SideMenu/useStyleSideMenuStore';
+import { useCsvDataStore } from '../../../store/useCsvDataStore';
 import { Alert } from 'react-bootstrap';
 
 const InkRatioControl: React.FC = () => {

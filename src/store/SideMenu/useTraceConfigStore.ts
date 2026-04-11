@@ -1,7 +1,7 @@
 import { createStore } from 'zustand/vanilla';
 import { useStore } from 'zustand';
 import { useContext } from 'react';
-import { WorkspaceContext } from './WorkspaceContext';
+import { WorkspaceContext } from '../WorkspaceContext';
 import { COLOR_PALETTES } from '../utils/ColorPalettes';
 
 export interface TraceConfig {

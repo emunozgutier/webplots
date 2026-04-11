@@ -1,9 +1,9 @@
 import React from 'react';
-import { useWorkspaceLocalStore } from '../store/WorkspaceLocalStore';
+import { useWorkspaceLocalStore } from '../store/useWorkspaceLocalStore';
 import { ViewToggleButtons } from './PlotTableAreaComponents/PlotTableTabs';
 import TableArea from './PlotTableAreaComponents/TableArea';
 import PlotArea from './PlotTableAreaComponents/PlotArea';
-import { useInkRatioStore } from '../store/InkRatioStore';
+import { useInkRatioStore } from '../store/SideMenu/useInkRatioStore';
 
 const PlotTableArea: React.FC = () => {
     const [viewMode, setViewMode] = React.useState<'plot' | 'table'>('table');

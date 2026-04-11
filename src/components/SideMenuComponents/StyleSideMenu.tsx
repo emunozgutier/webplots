@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useStyleSideMenuStore, type AestheticMapping, type MappingSource } from '../../store/StyleSideMenuStore';
-import { useCsvDataStore } from '../../store/CsvDataStore';
-import { useInkRatioStore } from '../../store/InkRatioStore';
+import { useStyleSideMenuStore, type AestheticMapping, type MappingSource } from '../../store/SideMenu/useStyleSideMenuStore';
+import { useCsvDataStore } from '../../store/useCsvDataStore';
+import { useInkRatioStore } from '../../store/SideMenu/useInkRatioStore';
 import Plot from 'react-plotly.js';
 import { Modal, Button, Alert } from 'react-bootstrap';
 

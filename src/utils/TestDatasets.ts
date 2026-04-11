@@ -1,5 +1,5 @@
 
-import type { CsvDataStore } from '../store/CsvDataStore';
+import type { CsvDataStore } from '../store/useCsvDataStore';
 
 export const getSmallDataset = (): CsvDataStore[] => {
     return [

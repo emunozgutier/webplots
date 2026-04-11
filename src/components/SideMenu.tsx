@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
-import { useCsvDataStore } from '../store/CsvDataStore';
-import { useAxisSideMenuStore, createAxisSideMenuConfig } from '../store/AxisSideMenuStore';
-import { useWorkspaceLocalStore } from '../store/WorkspaceLocalStore';
+import { useCsvDataStore } from '../store/useCsvDataStore';
+import { useAxisSideMenuStore, createAxisSideMenuConfig } from '../store/SideMenu/useAxisSideMenuStore';
+import { useWorkspaceLocalStore } from '../store/useWorkspaceLocalStore';
 import AxisSideMenu from './SideMenuComponents/AxisSideMenu';
 import FilterSideMenu from './SideMenuComponents/FilterSideMenu';
 import InkRationSideMenu from './SideMenuComponents/InkRationSideMenu';

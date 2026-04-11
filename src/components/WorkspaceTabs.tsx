@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useWorkspaceStore, workspaceRegistry, cloneStoreStates } from '../store/WorkspaceStore';
+import { useWorkspaceStore, workspaceRegistry, cloneStoreStates } from '../store/useWorkspaceStore';
 
 const WorkspaceTabs: React.FC = () => {
     const { workspaces, activeWorkspaceId, setActiveWorkspaceId, addWorkspace, removeWorkspace, updateWorkspaceName } = useWorkspaceStore();

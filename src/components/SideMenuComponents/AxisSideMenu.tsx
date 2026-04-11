@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { useAxisSideMenuStore } from '../../store/AxisSideMenuStore';
+import { useAxisSideMenuStore } from '../../store/SideMenu/useAxisSideMenuStore';
 // Removed useAppStateStore
 
 import SearchColumn from './subcomponents/SearchColumn';

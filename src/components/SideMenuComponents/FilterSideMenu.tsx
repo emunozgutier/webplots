@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { useCsvDataStore } from '../../store/CsvDataStore';
-import { useFilterSideMenuStore, type FilterType } from '../../store/FilterSideMenuStore';
+import { useCsvDataStore } from '../../store/useCsvDataStore';
+import { useFilterSideMenuStore, type FilterType } from '../../store/SideMenu/useFilterSideMenuStore';
 import SearchColumn from './subcomponents/SearchColumn'; // Reusing for drag source
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import FilterElement from './subcomponents/FilterElement';

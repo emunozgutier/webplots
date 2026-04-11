@@ -1,10 +1,10 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import { NavDropdown, Navbar, Nav, Container, Modal, Button } from 'react-bootstrap';
-import { useCsvDataStore } from '../store/CsvDataStore';
+import { useCsvDataStore } from '../store/useCsvDataStore';
 import Papa from 'papaparse';
-import type { CsvDataStore } from '../store/CsvDataStore';
-import { useWorkspaceStore, workspaceRegistry } from '../store/WorkspaceStore';
+import type { CsvDataStore } from '../store/useCsvDataStore';
+import { useWorkspaceStore, workspaceRegistry } from '../store/useWorkspaceStore';
 import { getSmallDataset, getLargeColumnDataset, getSimulationDataset, getBinningTestData } from '../utils/TestDatasets';
 import { generateTestGaussianData } from '../utils/TableMathLib';
 

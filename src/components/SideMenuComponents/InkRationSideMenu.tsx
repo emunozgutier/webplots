@@ -1,6 +1,6 @@
 import React from 'react';
-import { useInkRatioStore } from '../../store/InkRatioStore';
-import { useTraceConfigStore } from '../../store/TraceConfigStore';
+import { useInkRatioStore } from '../../store/SideMenu/useInkRatioStore';
+import { useTraceConfigStore } from '../../store/SideMenu/useTraceConfigStore';
 import InkRatioAnimation from './subcomponents/InkRatioAnimation';
 import InkRatioControl from './subcomponents/InkRatioControl';
 

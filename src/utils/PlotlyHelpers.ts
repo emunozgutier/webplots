@@ -1,11 +1,11 @@
 import type { Layout, Data } from 'plotly.js';
-import type { CsvDataStore } from '../store/CsvDataStore';
-import type { AxisSideMenuData } from '../store/AxisSideMenuStore';
-import type { PlotLayout } from '../store/PlotLayoutStore';
-import type { TraceConfig } from '../store/TraceConfigStore';
-import type { StyleSideMenuData } from '../store/StyleSideMenuStore';
-import type { SubplotSideMenuState } from '../store/SubplotSideMenuStore';
-import type { TraceStats } from '../store/InkRatioStore';
+import type { CsvDataStore } from '../store/useCsvDataStore';
+import type { AxisSideMenuData } from '../store/SideMenu/useAxisSideMenuStore';
+import type { PlotLayout } from '../store/usePlotLayoutStore';
+import type { TraceConfig } from '../store/SideMenu/useTraceConfigStore';
+import type { StyleSideMenuData } from '../store/SideMenu/useStyleSideMenuStore';
+import type { SubplotSideMenuState } from '../store/SideMenu/useSubplotSideMenuStore';
+import type { TraceStats } from '../store/SideMenu/useInkRatioStore';
 import { parseToNumeric } from './TableMathLib';
 import type { TraceData } from './DataFrameLib';
 

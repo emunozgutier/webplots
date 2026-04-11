@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useSubplotSideMenuStore } from '../../store/SubplotSideMenuStore';
-import { useTraceConfigStore } from '../../store/TraceConfigStore';
+import { useSubplotSideMenuStore } from '../../store/SideMenu/useSubplotSideMenuStore';
+import { useTraceConfigStore } from '../../store/SideMenu/useTraceConfigStore';
 
 const SubplotSideMenu: React.FC = () => {
     const { rows, cols, setGrid, traceToSubplots, assignTraceToSubplot } = useSubplotSideMenuStore();

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useInkRatioStore } from '../../../store/InkRatioStore';
+import { useInkRatioStore } from '../../../store/SideMenu/useInkRatioStore';
 
 const InkRatioAnimation: React.FC = () => {
     const { inkRatio, absorptionMode } = useInkRatioStore();

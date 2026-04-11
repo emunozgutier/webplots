@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useWorkspaceLocalStore } from '../../store/WorkspaceLocalStore';
+import { useWorkspaceLocalStore } from '../../store/useWorkspaceLocalStore';
 import PlotLayout from './SettingsComponents/PlotLayout';
 import TraceConfig from './SettingsComponents/TraceConfig';
 import PointTip from './SettingsComponents/PointTip';

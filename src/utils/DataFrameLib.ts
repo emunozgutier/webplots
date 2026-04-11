@@ -1,6 +1,6 @@
-import type { Filter } from '../store/FilterSideMenuStore';
-import type { AxisSideMenuData } from '../store/AxisSideMenuStore';
-import type { GroupSideMenuData } from '../store/GroupSideMenuStore';export interface DataRow {
+import type { Filter } from '../store/SideMenu/useFilterSideMenuStore';
+import type { AxisSideMenuData } from '../store/SideMenu/useAxisSideMenuStore';
+import type { GroupSideMenuData } from '../store/SideMenu/useGroupSideMenuStore';export interface DataRow {
     [key: string]: string | number | null | any;
 }
 

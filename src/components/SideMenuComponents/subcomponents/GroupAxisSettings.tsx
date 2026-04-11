@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useGroupSideMenuStore } from '../../../store/GroupSideMenuStore';
-import type { GroupSettings } from '../../../store/GroupSideMenuStore';
-import { useWorkspaceLocalStore } from '../../../store/WorkspaceLocalStore';
-import { useCsvDataStore } from '../../../store/CsvDataStore';
+import { useGroupSideMenuStore } from '../../../store/SideMenu/useGroupSideMenuStore';
+import type { GroupSettings } from '../../../store/SideMenu/useGroupSideMenuStore';
+import { useWorkspaceLocalStore } from '../../../store/useWorkspaceLocalStore';
+import { useCsvDataStore } from '../../../store/useCsvDataStore';
 import Plot from 'react-plotly.js';
 import { v4 as uuidv4 } from 'uuid';
 import { roundToSignificantDigits, toEngineeringString } from '../../../utils/TableMathLib';

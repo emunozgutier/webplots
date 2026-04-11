@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useCsvDataStore } from '../../../store/CsvDataStore';
+import { useCsvDataStore } from '../../../store/useCsvDataStore';
 import DragableColumn from './DragableColumn';
 
 const SearchColumn: React.FC = () => {
