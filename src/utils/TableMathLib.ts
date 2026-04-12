@@ -1,6 +1,3 @@
-import lodash from 'lodash';
-const { orderBy } = lodash;
-
 /**
  * Formats a number according to the specified format and significant digits.
  * Ensure that decimal points align vertically when using a monospaced font.
@@ -437,19 +434,38 @@ export const sortData = (displayData: any[], sortConfig: { key: string; directio
     // Determine if numeric column to avoid string evaluations in lodash
     const isNum = displayData.slice(0, 100).map((row: any) => row[key]).every(isNumeric);
 
-    // Two iteratees. The first pushes empty cells sequentially to the bottom. 
-    // The second strictly casts to number if applicable, so lodash orderBy is pure and fast.
-    const emptyIteratee = (row: any) => {
-        const v = row[key];
-        return v === null || v === undefined || v === '' ? 1 : 0;
-    };
+    // Shallow copy the array so we sort in-place quickly without mutating original
+    const dataToSort = [...displayData];
 
-    const valIteratee = (row: any) => {
-        const v = row[key];
-        return isNum ? Number(v) : v;
-    };
+    // Native sort is highly optimized in V8 for large arrays to avoid intermediate object allocations
+    dataToSort.sort((a, b) => {
+        const valA = a[key];
+        const valB = b[key];
 
-    return orderBy(displayData, [emptyIteratee, valIteratee], ['asc', direction]);
+        const isEmptyA = valA === null || valA === undefined || valA === '';
+        const isEmptyB = valB === null || valB === undefined || valB === '';
+
+        // Push empty values to the bottom regardless of direction
+        if (isEmptyA && !isEmptyB) return 1;
+        if (!isEmptyA && isEmptyB) return -1;
+        if (isEmptyA && isEmptyB) return 0;
+
+        // Numeric or default string comparison
+        if (isNum) {
+            const numA = Number(valA);
+            const numB = Number(valB);
+            return direction === 'asc' ? numA - numB : numB - numA;
+        }
+
+        // String locale comparison
+        const strA = String(valA);
+        const strB = String(valB);
+        if (strA < strB) return direction === 'asc' ? -1 : 1;
+        if (strA > strB) return direction === 'asc' ? 1 : -1;
+        return 0;
+    });
+
+    return dataToSort;
 };
 
 

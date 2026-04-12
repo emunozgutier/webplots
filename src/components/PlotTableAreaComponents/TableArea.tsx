@@ -466,7 +466,7 @@ const TableArea: React.FC = () => {
                                                 </div>
                                             </div>
                                             <HeaderSummary 
-                                                data={sortedData} 
+                                                data={displayData} 
                                                 column={col} 
                                                 mode={summaryMode} 
                                                 confidenceThreshold={gaussianConfidenceThreshold}
