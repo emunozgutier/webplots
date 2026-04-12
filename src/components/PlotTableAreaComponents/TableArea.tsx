@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from 'react';
 import { Table } from 'react-bootstrap';
-import { orderBy } from 'lodash';
 import { useCsvDataStore } from '../../store/useCsvDataStore';
 import { Step_1_filter } from '../../utils/DataFrameLib';
 import { useAxisSideMenuStore } from '../../store/SideMenu/useAxisSideMenuStore';
@@ -13,7 +12,7 @@ import { useTableStore } from '../../store/PlotTable/useTableStore';
 import Plot from 'react-plotly.js';
 import ControlButtons from './TableAreaComponents/ControlButtons';
 import BatchButtons from './TableAreaComponents/BatchButtons';
-import { calculateGaussianStats, formatNumber, parseToNumeric } from '../../utils/TableMathLib';
+import { calculateGaussianStats, formatNumber, parseToNumeric, sortData } from '../../utils/TableMathLib';
 
 const TableArea: React.FC = () => {
     const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
@@ -262,32 +261,7 @@ const TableArea: React.FC = () => {
     }, [displayData, displayColumns, colorMode]);
 
     const sortedData = useMemo(() => {
-        if (!sortConfig) return displayData;
-
-        const { key, direction } = sortConfig;
-
-        // Determine if numeric column to avoid string evaluations in lodash
-        let isNum = false;
-        for (let i = 0; i < Math.min(100, displayData.length); i++) {
-            const v = (displayData[i] as any)[key];
-            if (v !== null && v !== undefined && v !== '' && (typeof v === 'number' || !isNaN(Number(v)))) {
-                isNum = true; break;
-            }
-        }
-
-        // Two iteratees. The first pushes empty cells sequentially to the bottom. 
-        // The second strictly casts to number if applicable, so lodash orderBy is pure and fast.
-        const emptyIteratee = (row: any) => {
-            const v = row[key];
-            return v === null || v === undefined || v === '' ? 1 : 0;
-        };
-
-        const valIteratee = (row: any) => {
-            const v = row[key];
-            return isNum ? Number(v) : v;
-        };
-
-        return orderBy(displayData, [emptyIteratee, valIteratee], ['asc', direction]);
+        return sortData(displayData, sortConfig);
     }, [displayData, sortConfig]);
 
     const totalBatches = Math.max(1, Math.ceil(sortedData.length / BATCH_SIZE));

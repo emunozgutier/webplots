@@ -1,3 +1,5 @@
+import { orderBy } from 'lodash';
+
 /**
  * Formats a number according to the specified format and significant digits.
  * Ensure that decimal points align vertically when using a monospaced font.
@@ -414,4 +416,38 @@ export const parseToNumeric = (v: any): number | null => {
 
     return null;
 };
+
+/**
+ * Sorts array data based on a specific column key, handling mixed numeric/string types efficiently.
+ * Pushes empty/null values to the bottom.
+ */
+export const sortData = (displayData: any[], sortConfig: { key: string; direction: 'asc' | 'desc' } | null): any[] => {
+    if (!sortConfig) return displayData;
+
+    const { key, direction } = sortConfig;
+
+    // Determine if numeric column to avoid string evaluations in lodash
+    let isNum = false;
+    for (let i = 0; i < Math.min(100, displayData.length); i++) {
+        const v = (displayData[i] as any)[key];
+        if (v !== null && v !== undefined && v !== '' && (typeof v === 'number' || !isNaN(Number(v)))) {
+            isNum = true; break;
+        }
+    }
+
+    // Two iteratees. The first pushes empty cells sequentially to the bottom. 
+    // The second strictly casts to number if applicable, so lodash orderBy is pure and fast.
+    const emptyIteratee = (row: any) => {
+        const v = row[key];
+        return v === null || v === undefined || v === '' ? 1 : 0;
+    };
+
+    const valIteratee = (row: any) => {
+        const v = row[key];
+        return isNum ? Number(v) : v;
+    };
+
+    return orderBy(displayData, [emptyIteratee, valIteratee], ['asc', direction]);
+};
+
 
