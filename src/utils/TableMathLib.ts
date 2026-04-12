@@ -1,4 +1,5 @@
-import { orderBy } from 'lodash';
+import lodash from 'lodash';
+const { orderBy } = lodash;
 
 /**
  * Formats a number according to the specified format and significant digits.

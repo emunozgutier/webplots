@@ -1,0 +1,47 @@
+import { performance } from 'perf_hooks';
+
+const POINTS = 1_000_000;
+const CYCLES = 10;
+const ITERATIONS = 10;
+
+// Generate 1e6 points of 10 cycles of sine
+const generateData = (): number[] => {
+    const data = new Array(POINTS);
+    for (let i = 0; i < POINTS; i++) {
+        // x goes from 0 to 2 * PI * CYCLES
+        const x = (i / POINTS) * (2 * Math.PI * CYCLES);
+        data[i] = Math.sin(x);
+    }
+    return data;
+};
+
+const runBenchmark = () => {
+    console.log(`Generating ${POINTS.toLocaleString()} points of a sine wave...`);
+    const initialData = generateData();
+    console.log('Data generation complete.\n');
+
+    console.log(`Running benchmark: Sorting ${POINTS.toLocaleString()} numbers, ${ITERATIONS} times.\n`);
+
+    const times: number[] = [];
+
+    for (let i = 1; i <= ITERATIONS; i++) {
+        // Copy the data to ensure we sort from the initial state each time
+        const dataToSort = [...initialData];
+
+        const startTime = performance.now();
+        
+        // Sorting numbers
+        dataToSort.sort((a, b) => a - b);
+        
+        const endTime = performance.now();
+        const duration = endTime - startTime;
+        times.push(duration);
+        
+        console.log(`Iteration ${i}: ${duration.toFixed(2)} ms`);
+    }
+
+    const avg = times.reduce((a, b) => a + b, 0) / times.length;
+    console.log(`\nAverage time: ${avg.toFixed(2)} ms`);
+};
+
+runBenchmark();
