@@ -10,6 +10,8 @@ const InkRatioControl: React.FC = () => {
         setInkRatio,
         absorptionMode,
         setAbsorptionMode,
+        absorbedPoint,
+        setAbsorbedPoint,
         maxRadiusRatio,
         setMaxRadiusRatio
     } = useInkRatioStore();
@@ -39,7 +41,8 @@ const InkRatioControl: React.FC = () => {
 
     return (
         <div className="d-flex flex-column h-100" style={{ overflowY: 'auto', overflowX: 'hidden' }}>
-            <div className="mb-4 d-flex justify-content-center">
+            <div className="mb-3">
+                <label className="form-label small mb-1">Absorption Behavior</label>
                 <div className="btn-group w-100" role="group" aria-label="Absorption Behavior">
                     <button
                         type="button"
@@ -68,7 +71,32 @@ const InkRatioControl: React.FC = () => {
                 </div>
             </div>
 
-
+            <div className="mb-4">
+                <label className="form-label small mb-1">Survivor Point</label>
+                <div className="btn-group w-100" role="group" aria-label="Absorbed Point">
+                    <button
+                        type="button"
+                        className={`btn btn-sm ${absorbedPoint === 'left' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                        onClick={() => setAbsorbedPoint('left')}
+                    >
+                        Left
+                    </button>
+                    <button
+                        type="button"
+                        className={`btn btn-sm ${absorbedPoint === 'random' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                        onClick={() => setAbsorbedPoint('random')}
+                    >
+                        Random
+                    </button>
+                    <button
+                        type="button"
+                        className={`btn btn-sm ${absorbedPoint === 'right' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                        onClick={() => setAbsorbedPoint('right')}
+                    >
+                        Right
+                    </button>
+                </div>
+            </div>
 
             {isLargeDataset && (
                 <Alert variant="info" className="px-2 py-1 mb-3 border-0" style={{ fontSize: '0.72rem', backgroundColor: '#f0f7ff', color: '#055160' }}>

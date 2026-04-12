@@ -166,6 +166,7 @@ export const Step_3_ink_ratio_filter = (
     traces: TraceData[],
     config: {
         inkRatio: number;
+        absorbedPoint: 'left' | 'right' | 'random';
         chartWidth: number;
         chartHeight: number;
         pointRadius: number;
@@ -175,7 +176,7 @@ export const Step_3_ink_ratio_filter = (
         globalBounds?: { xMin: number, xMax: number, yMin: number, yMax: number };
     }
 ): TraceData[] => {
-    const { inkRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius, enableLogAxis, globalBounds } = config;
+    const { inkRatio, absorbedPoint, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius, enableLogAxis, globalBounds } = config;
 
     return traces.map(trace => {
         const { xData, yData } = trace;
@@ -263,6 +264,18 @@ export const Step_3_ink_ratio_filter = (
             return (1 - normalized) * safeH;
         };
 
+        const iterationOrder = Array.from({ length: xData.length }, (_, i) => i);
+        if (absorbedPoint === 'left') {
+            iterationOrder.sort((a, b) => numsX[a] - numsX[b]);
+        } else if (absorbedPoint === 'right') {
+            iterationOrder.sort((a, b) => numsX[b] - numsX[a]);
+        } else if (absorbedPoint === 'random') {
+            for (let i = iterationOrder.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [iterationOrder[i], iterationOrder[j]] = [iterationOrder[j], iterationOrder[i]];
+            }
+        }
+
         const filteredX: any[] = [];
         const filteredY: any[] = [];
         const survivingIndices: number[] = [];
@@ -277,15 +290,12 @@ export const Step_3_ink_ratio_filter = (
         const cellSize = Math.max(minPixelDist, 1e-6); 
         const grid = new Map<string, number[]>();
 
-        for (let i = 0; i < xData.length; i++) {
-            const px = xToPx(numsX[i]);
-            const py = yToPx(numsY[i]);
+        for (const idx of iterationOrder) {
+            const px = xToPx(numsX[idx]);
+            const py = yToPx(numsY[idx]);
 
             if (px === -9999 || py === -9999) {
-                originalToKept[i] = -2;
-                filteredX.push(xData[i]);
-                filteredY.push(yData[i]);
-                survivingIndices.push(i);
+                originalToKept[idx] = -2;
                 continue;
             }
 
@@ -315,11 +325,8 @@ export const Step_3_ink_ratio_filter = (
 
             if (keptBy === -1) {
                 const keptIdx = keptPoints.length;
-                originalToKept[i] = keptIdx;
+                originalToKept[idx] = keptIdx;
                 keptPoints.push({ px, py, absorbed: 0 });
-                filteredX.push(xData[i]);
-                filteredY.push(yData[i]);
-                survivingIndices.push(i);
 
                 // Add to grid
                 const cellKey = `${cx},${cy}`;
@@ -330,14 +337,19 @@ export const Step_3_ink_ratio_filter = (
             }
         }
 
-        const finalAbsorbedCounts = new Array(filteredX.length);
-        let kIdx = 0;
-        for (let i = 0; i < originalToKept.length; i++) {
+        const finalAbsorbedCounts: number[] = [];
+        for (let i = 0; i < xData.length; i++) {
             const state = originalToKept[i];
             if (state >= 0) {
-                finalAbsorbedCounts[kIdx++] = keptPoints[state].absorbed;
+                filteredX.push(xData[i]);
+                filteredY.push(yData[i]);
+                survivingIndices.push(i);
+                finalAbsorbedCounts.push(keptPoints[state].absorbed);
             } else if (state === -2) {
-                finalAbsorbedCounts[kIdx++] = 0;
+                filteredX.push(xData[i]);
+                filteredY.push(yData[i]);
+                survivingIndices.push(i);
+                finalAbsorbedCounts.push(0);
             }
         }
 
@@ -363,6 +375,7 @@ export const runDataPipeline = (
     groupConfig: GroupSideMenuData,
     inkRatioConfig: {
         inkRatio: number;
+        absorbedPoint: 'left' | 'right' | 'random';
         chartWidth: number;
         chartHeight: number;
         pointRadius: number;

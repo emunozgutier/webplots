@@ -28,7 +28,7 @@ const PlotArea: React.FC = () => {
     const { groupSideMenuData } = useGroupSideMenuStore();
     const { plotLayout } = usePlotLayoutStore();
     const { traceConfig, setActiveTraces } = useTraceConfigStore();
-    const { inkRatio, absorptionMode, maxRadiusRatio, setFilteredStats, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius, setChartDimensions } = useInkRatioStore();
+    const { inkRatio, absorptionMode, absorbedPoint, maxRadiusRatio, setFilteredStats, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius, setChartDimensions } = useInkRatioStore();
     const { colorData } = useStyleSideMenuStore();
     const subplotData = useSubplotSideMenuStore();
 
@@ -56,6 +56,7 @@ const PlotArea: React.FC = () => {
     const { plotData, layout, hasData, receipt, stats, generatedTraces } = useMemo(() => {
         const { processedTraces } = runDataPipeline(rawDataTable, filters, sideMenuData, groupSideMenuData, {
             inkRatio,
+            absorbedPoint,
             chartWidth,
             chartHeight,
             pointRadius,
@@ -79,7 +80,7 @@ const PlotArea: React.FC = () => {
         );
     }, [
         data, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData,
-        subplotData, absorptionMode, maxRadiusRatio, inkRatio, chartWidth,
+        subplotData, absorptionMode, absorbedPoint, maxRadiusRatio, inkRatio, chartWidth,
         chartHeight, pointRadius, useCustomRadius, customRadius
     ]);
 

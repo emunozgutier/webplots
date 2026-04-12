@@ -23,6 +23,9 @@ export type InkRatioState = {
     absorptionMode: 'none' | 'size' | 'glow';
     setAbsorptionMode: (mode: 'none' | 'size' | 'glow') => void;
 
+    absorbedPoint: 'left' | 'right' | 'random';
+    setAbsorbedPoint: (point: 'left' | 'right' | 'random') => void;
+
     maxRadiusRatio: number; // 1 to 10
     setMaxRadiusRatio: (ratio: number) => void;
 
@@ -39,6 +42,7 @@ export const createInkRatioStore = () => createStore<InkRatioState>()(
     (set) => ({
         inkRatio: 0, // Default to 0% overlap (max filtering)
         absorptionMode: 'none',
+        absorbedPoint: 'left',
         filteredStats: {},
         chartWidth: 1280,
         chartHeight: 720,
@@ -48,6 +52,7 @@ export const createInkRatioStore = () => createStore<InkRatioState>()(
         maxRadiusRatio: 3, // Default ratio
         setInkRatio: (ratio) => set({ inkRatio: ratio }),
         setAbsorptionMode: (mode) => set({ absorptionMode: mode }),
+        setAbsorbedPoint: (point) => set({ absorbedPoint: point }),
         setMaxRadiusRatio: (ratio) => set({ maxRadiusRatio: ratio }),
         setUseCustomRadius: (use) => set({ useCustomRadius: use }),
         setCustomRadius: (radius) => set({ customRadius: radius }),
