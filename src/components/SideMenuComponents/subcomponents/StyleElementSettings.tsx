@@ -34,6 +34,8 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
         return null;
     }
 
+    const mappingType = currentMapping.mappingType || 'linear';
+
     const { 
         min, max, binCenters, bins, barColors, rangeMin, rangeMax 
     } = useMemo(() => {
@@ -70,7 +72,18 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
             } else {
                 constrainedVal = clamp(val, domainVal[1], domainVal[0]);
             }
-            return rMin + ((constrainedVal - domainVal[0]) / spanX) * (rMax - rMin);
+            
+            let x = spanX !== 0 ? (constrainedVal - domainVal[0]) / spanX : 0;
+            x = clamp(x, 0, 1);
+
+            let pct = x;
+            if (mappingType === 'log') {
+                pct = Math.log10(1 + 9 * x);
+            } else if (mappingType === 'exp') {
+                pct = (Math.pow(10, x) - 1) / 9;
+            }
+
+            return rMin + pct * (rMax - rMin);
         };
 
         const barColorsArray = binCentersArray.map(center => {
@@ -89,7 +102,7 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
         });
 
         return { min: dataMin, max: dataMax, binCenters: binCentersArray, bins: binsArray, barColors: barColorsArray, rangeMin: rMin, rangeMax: rMax };
-    }, [data, currentMapping.value, currentMapping.range, title, baseHue]);
+    }, [data, currentMapping.value, currentMapping.range, title, baseHue, mappingType]);
 
     // Define visual bounds strictly so the HTML SVG scales precisely to coordinate logic
     const limitMin = title === 'Node Size' ? 1 : 0;
@@ -211,6 +224,33 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
     const y1Percent = (limitMax - activeRangeMin) / dY * 100;
     const y2Percent = (limitMax - activeRangeMax) / dY * 100;
 
+    const segments = [];
+    const numPoints = 20;
+    for (let i = 0; i < numPoints; i++) {
+        const xA = i / numPoints;
+        const xB = (i + 1) / numPoints;
+
+        let pctA = xA;
+        if (mappingType === 'log') pctA = Math.log10(1 + 9 * xA);
+        else if (mappingType === 'exp') pctA = (Math.pow(10, xA) - 1) / 9;
+
+        let pctB = xB;
+        if (mappingType === 'log') pctB = Math.log10(1 + 9 * xB);
+        else if (mappingType === 'exp') pctB = (Math.pow(10, xB) - 1) / 9;
+
+        const yaPercent = y1Percent + pctA * (y2Percent - y1Percent);
+        const ybPercent = y1Percent + pctB * (y2Percent - y1Percent);
+
+        segments.push(
+            <line 
+                key={i}
+                x1={`${xA * 100}%`} y1={`${yaPercent}%`} 
+                x2={`${xB * 100}%`} y2={`${ybPercent}%`} 
+                stroke="black" strokeWidth="3" 
+            />
+        );
+    }
+
     return (
         <div className="card shadow w-100 h-100" style={{ display: 'flex', flexDirection: 'column' }}>
             <div className="card-header d-flex justify-content-between align-items-center">
@@ -248,7 +288,17 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
 
                 <div className="d-flex align-items-center justify-content-between mt-2 mb-1">
                     <label className="form-label small text-muted mb-0 fw-bold d-flex align-items-center">
-                        <span className="me-3">2. Mapped Range Assignment</span>
+                        <span className="me-2">2. Mapped Range Assignment</span>
+                        <select 
+                            className="form-select form-select-sm border-0 bg-transparent text-primary fw-bold me-2" 
+                            style={{ width: 'auto', padding: '0px 15px 0px 0px', fontSize: '0.75rem', cursor: 'pointer', boxShadow: 'none' }}
+                            value={mappingType}
+                            onChange={e => updateFn({ mappingType: e.target.value as any })}
+                        >
+                            <option value="linear">Line</option>
+                            <option value="log">Log</option>
+                            <option value="exp">Exp</option>
+                        </select>
                         {(title === 'Saturation' || title === 'Lightness') && (
                             <div className="d-flex align-items-center fw-normal border rounded px-1" style={{ background: '#f8f9fa' }}>
                                 <span className="small text-muted me-2" style={{ fontSize: '0.7rem' }}>Base Hue (°):</span>
@@ -282,11 +332,7 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                         onPointerUp={handlePointerUp}
                         onPointerLeave={handlePointerUp}
                     >
-                        <line 
-                            x1="0%" y1={`${y1Percent}%`} 
-                            x2="100%" y2={`${y2Percent}%`} 
-                            stroke="black" strokeWidth="3" 
-                        />
+                        {segments}
                         <circle 
                             cx="0%" cy={`${y1Percent}%`} r="8" 
                             fill="black" stroke="white" strokeWidth="2" style={{ cursor: 'pointer' }} 

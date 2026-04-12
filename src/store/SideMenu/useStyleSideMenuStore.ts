@@ -10,6 +10,7 @@ export interface AestheticMapping {
     value: string | number; // 'manual' value OR the selected column name
     range?: [number, number]; // [min, max] output range when mapped to a column
     domain?: [number, number]; // [x0, x1] data range corresponding to the output range bounds
+    mappingType?: 'linear' | 'log' | 'exp';
     enabled?: boolean;
 }
 
