@@ -136,7 +136,7 @@ const SideMenu: React.FC = () => {
                         {activeTab === 'filter' && 'Filters'}
                         {activeTab === 'group' && 'Group Settings'}
                         {activeTab === 'color' && 'Color & Style'}
-                        {activeTab === 'ink' && 'Ink Ratio'}
+                        {activeTab === 'ink' && 'Ink-Data Ratio'}
                         {activeTab === 'subplots' && 'Subplots Settings'}
                     </span>
 
