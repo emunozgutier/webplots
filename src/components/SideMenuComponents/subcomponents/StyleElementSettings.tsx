@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import Plot from 'react-plotly.js';
 import { useWorkspaceLocalStore } from '../../../store/Workspace/useWorkspaceLocalStore';
 import { useCsvDataStore } from '../../../store/useCsvDataStore';
@@ -22,6 +22,8 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
     const currentMapping = useStyleSideMenuStore(state => state.colorData[storeKey]);
 
     const [dragRange, setDragRange] = useState<[number, number] | null>(null);
+    const [draggingAnchor, setDraggingAnchor] = useState<0 | 1 | null>(null);
+    const svgRef = useRef<SVGSVGElement>(null);
 
     if (type !== 'number' || !currentMapping || typeof currentMapping.value !== 'string') {
         return null;
@@ -81,30 +83,25 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
     const activeRangeMin = dragRange ? dragRange[0] : rangeMin;
     const activeRangeMax = dragRange ? dragRange[1] : rangeMax;
 
-    const handleRelayouting = (e: any) => {
-        let newYR = dragRange ? [...dragRange] : [rangeMin, rangeMax];
-        let changed = false;
+    // Define visual bounds strictly so the HTML SVG scales precisely to coordinate logic
+    const limitMin = Math.min(title === 'Node Size' ? 1 : 0, rangeMin, rangeMax);
+    const limitMax = Math.max(title === 'Hue/Color' ? 360 : 100, rangeMin, rangeMax);
 
-        if (e['shapes[0].y0'] !== undefined) { newYR[0] = Number(e['shapes[0].y0']); changed = true; }
-        if (e['shapes[0].y1'] !== undefined) { newYR[1] = Number(e['shapes[0].y1']); changed = true; }
-
-        if (changed) {
-            setDragRange([newYR[0], newYR[1]]);
-        }
+    const handlePointerMove = (e: React.PointerEvent) => {
+        if (draggingAnchor === null || !svgRef.current) return;
+        const rect = svgRef.current.getBoundingClientRect();
+        const yOffset = clamp(e.clientY - rect.top, 0, rect.height);
+        const percent = yOffset / rect.height;
+        const val = limitMax - percent * (limitMax - limitMin);
+        
+        if (draggingAnchor === 0) setDragRange([val, activeRangeMax]);
+        else setDragRange([activeRangeMin, val]);
     };
 
-    const handleRelayout = (e: any) => {
-        let newYR = dragRange ? [...dragRange] : [rangeMin, rangeMax];
-        let changed = false;
-
-        if (e['shapes[0].y0'] !== undefined) { newYR[0] = Number(e['shapes[0].y0']); changed = true; }
-        if (e['shapes[0].y1'] !== undefined) { newYR[1] = Number(e['shapes[0].y1']); changed = true; }
-
-        if (changed) {
-            setDragRange(null);
-            updateFn({ range: [newYR[0], newYR[1]] });
-        } else {
-            setDragRange(null); 
+    const handlePointerUp = () => {
+        if (draggingAnchor !== null) {
+            setDraggingAnchor(null);
+            updateFn({ range: [activeRangeMin, activeRangeMax] });
         }
     };
 
@@ -126,6 +123,7 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
         bargap: 0.05
     }), [min, max]);
 
+    // Plotly is absolutely purged of ALL drag state overlay logic. True visual data only.
     const mapData: any = useMemo(() => ([
         ...(title === 'Hue/Color' ? [{
             x: max > min ? [min, max] : [min - 1, min + 1],
@@ -137,47 +135,24 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
             hoverinfo: 'none' as const,
             opacity: 0.4,
             zsmooth: 'best' as const
-        }] : []),
-        {
-            x: [min, max],
-            y: [activeRangeMin, Math.max(activeRangeMin, activeRangeMax)], 
-            type: 'scatter',
-            mode: 'none', 
-            hoverinfo: 'none'
-        },
-        {
-            x: [mapDomain[0], mapDomain[1]],
-            y: [activeRangeMin, activeRangeMax],
-            type: 'scatter',
-            mode: 'markers',
-            marker: { color: 'black', size: 14, line: { color: 'white', width: 2 } },
-            hoverinfo: 'none',
-            cliponaxis: false
-        }
-    ]), [title, min, max, activeRangeMin, activeRangeMax, mapDomain]);
+        }] : [])
+    ]), [title, min, max]);
 
     const mapLayout: any = useMemo(() => ({
         margin: { t: 15, r: 40, l: 40, b: 20 },
+        // Fixed y-axis bounds ensures the custom 100% SVG line accurately overlaps physical data coordinate systems
         xaxis: { range: [min, max], fixedrange: true, showgrid: false, zeroline: false, showline: true, showticklabels: true },
-        yaxis: { fixedrange: true, visible: false },
+        yaxis: { fixedrange: true, visible: false, range: [limitMin, limitMax] },
         paper_bgcolor: 'transparent',
         plot_bgcolor: 'transparent',
         showlegend: false,
-        shapes: [
-            {
-                type: 'line',
-                x0: mapDomain[0],
-                y0: activeRangeMin,
-                x1: mapDomain[1],
-                y1: activeRangeMax,
-                line: { color: 'black', width: 3 },
-                editable: true,
-                layer: 'above'
-            }
-        ],
-        dragmode: false,
-        uirevision: 'mapping-plot'
-    }), [min, max, mapDomain, activeRangeMin, activeRangeMax]);
+        dragmode: false
+    }), [min, max, limitMin, limitMax]);
+
+    // Fast mapping calculations for absolute position anchoring
+    const dY = (limitMax - limitMin) || 1;
+    const y1Percent = (limitMax - activeRangeMin) / dY * 100;
+    const y2Percent = (limitMax - activeRangeMax) / dY * 100;
 
     return (
         <div className="card shadow w-100 h-100" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -202,17 +177,39 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                     <span>2. Mapped Range Assignment</span>
                     <span className="badge bg-info text-dark" style={{ fontSize: '0.65rem' }}>Drag the endpoints of the line!</span>
                 </label>
-                <div className="border rounded bg-light p-1 border-top-0 rounded-top-0 flex-grow-1" style={{ minHeight: '160px' }}>
+                <div className="border rounded bg-light p-1 border-top-0 rounded-top-0 flex-grow-1" style={{ minHeight: '160px', position: 'relative' }}>
                     <Plot
                         data={mapData}
                         layout={mapLayout}
-                        onRelayout={handleRelayout}
-                        // @ts-ignore
-                        onRelayouting={handleRelayouting}
-                        config={{ displayModeBar: false, edits: { shapePosition: true } }}
+                        config={{ displayModeBar: false }}
                         style={{ width: '100%', height: '100%' }}
                         useResizeHandler={true}
                     />
+                    
+                    {/* SVG Interactive Overlay Engine */}
+                    <svg
+                        ref={svgRef}
+                        style={{ position: 'absolute', top: 15, bottom: 20, left: 40, right: 40, width: 'calc(100% - 80px)', height: 'calc(100% - 35px)', overflow: 'visible', zIndex: 10, touchAction: 'none' }}
+                        onPointerMove={handlePointerMove}
+                        onPointerUp={handlePointerUp}
+                        onPointerLeave={handlePointerUp}
+                    >
+                        <line 
+                            x1="0%" y1={`${y1Percent}%`} 
+                            x2="100%" y2={`${y2Percent}%`} 
+                            stroke="black" strokeWidth="3" 
+                        />
+                        <circle 
+                            cx="0%" cy={`${y1Percent}%`} r="8" 
+                            fill="black" stroke="white" strokeWidth="2" style={{ cursor: 'pointer' }} 
+                            onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); setDraggingAnchor(0); }} 
+                        />
+                        <circle 
+                            cx="100%" cy={`${y2Percent}%`} r="8" 
+                            fill="black" stroke="white" strokeWidth="2" style={{ cursor: 'pointer' }} 
+                            onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); setDraggingAnchor(1); }} 
+                        />
+                    </svg>
                 </div>
 
             </div>
