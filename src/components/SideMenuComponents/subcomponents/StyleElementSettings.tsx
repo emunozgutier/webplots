@@ -290,8 +290,8 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                     <label className="form-label small text-muted mb-0 fw-bold d-flex align-items-center">
                         <span className="me-2">2. Mapped Range Assignment</span>
                         <select 
-                            className="form-select form-select-sm border-0 bg-transparent text-primary fw-bold me-2" 
-                            style={{ width: 'auto', padding: '0px 15px 0px 0px', fontSize: '0.75rem', cursor: 'pointer', boxShadow: 'none' }}
+                            className="form-select form-select-sm ms-auto me-2" 
+                            style={{ width: 'auto', fontSize: '0.75rem', cursor: 'pointer' }}
                             value={mappingType}
                             onChange={e => updateFn({ mappingType: e.target.value as any })}
                         >
