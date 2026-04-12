@@ -418,6 +418,13 @@ export const parseToNumeric = (v: any): number | null => {
 };
 
 /**
+ * Checks if a value is numeric.
+ */
+export const isNumeric = (v: any): boolean => {
+    return v !== null && v !== undefined && v !== '' && (typeof v === 'number' || !isNaN(Number(v)));
+};
+
+/**
  * Sorts array data based on a specific column key, handling mixed numeric/string types efficiently.
  * Pushes empty/null values to the bottom.
  */
@@ -427,13 +434,7 @@ export const sortData = (displayData: any[], sortConfig: { key: string; directio
     const { key, direction } = sortConfig;
 
     // Determine if numeric column to avoid string evaluations in lodash
-    let isNum = false;
-    for (let i = 0; i < Math.min(100, displayData.length); i++) {
-        const v = (displayData[i] as any)[key];
-        if (v !== null && v !== undefined && v !== '' && (typeof v === 'number' || !isNaN(Number(v)))) {
-            isNum = true; break;
-        }
-    }
+    const isNum = displayData.slice(0, 100).map((row: any) => row[key]).every(isNumeric);
 
     // Two iteratees. The first pushes empty cells sequentially to the bottom. 
     // The second strictly casts to number if applicable, so lodash orderBy is pure and fast.
