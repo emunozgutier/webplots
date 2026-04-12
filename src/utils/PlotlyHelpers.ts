@@ -96,10 +96,20 @@ export const generatePlotConfig = (
 
             // Auto-scaled helpers for "column" mappings
             const getColumnMapRule = (colName: string, outMin: number, outMax: number, mappingType?: string, midPoint?: [number, number]) => {
-                const vals = data.map(r => r[colName]);
-                const nums = vals.map(v => typeof v === 'number' ? v : parseFloat(String(v))).filter(n => !isNaN(n));
-                const min = nums.length > 0 ? Math.min(...nums) : 0;
-                const max = nums.length > 0 ? Math.max(...nums) : 1;
+                let min = Infinity;
+                let max = -Infinity;
+                for (let i = 0; i < data.length; i++) {
+                    const v = data[i][colName];
+                    const num = typeof v === 'number' ? v : parseFloat(String(v));
+                    if (!isNaN(num)) {
+                        if (num < min) min = num;
+                        if (num > max) max = num;
+                    }
+                }
+                if (min === Infinity) {
+                    min = 0;
+                    max = 1;
+                }
                 const range = (max - min) || 1;
 
                 return (val: any) => {
@@ -129,7 +139,11 @@ export const generatePlotConfig = (
             };
 
             const getColumnCategoryRule = (colName: string, categories: string[]) => {
-                const uniqueVals = Array.from(new Set(data.map(r => String(r[colName])))).sort();
+                const uniqueValsSet = new Set<string>();
+                for (let i = 0; i < data.length; i++) {
+                    uniqueValsSet.add(String(data[i][colName]));
+                }
+                const uniqueVals = Array.from(uniqueValsSet).sort();
                 return (val: any) => {
                     const idx = uniqueVals.indexOf(String(val));
                     return categories[Math.max(0, idx) % categories.length];
@@ -293,9 +307,14 @@ export const generatePlotConfig = (
             let totalAbsorbed = 0;
 
             if (absorbedCounts.length > 0) {
-                maxAbsorbed = Math.max(...absorbedCounts);
-                minAbsorbed = Math.min(...absorbedCounts);
-                totalAbsorbed = absorbedCounts.reduce((acc, val) => acc + val, 0);
+                maxAbsorbed = -Infinity;
+                minAbsorbed = Infinity;
+                for (let i = 0; i < absorbedCounts.length; i++) {
+                    const val = absorbedCounts[i];
+                    if (val > maxAbsorbed) maxAbsorbed = val;
+                    if (val < minAbsorbed) minAbsorbed = val;
+                    totalAbsorbed += val;
+                }
             }
 
             const avgAbsorbed = absorbedCounts.length > 0 ? (totalAbsorbed / absorbedCounts.length) : 0;
