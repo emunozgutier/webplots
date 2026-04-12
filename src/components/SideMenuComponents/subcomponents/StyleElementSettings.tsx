@@ -20,24 +20,28 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
     };
     const storeKey = keyMap[title];
     const currentMapping = useStyleSideMenuStore(state => state.colorData[storeKey]);
+    const hueGlobal = useStyleSideMenuStore(state => state.colorData.hue);
 
     const [dragRange, setDragRange] = useState<[number, number] | null>(null);
     const [draggingAnchor, setDraggingAnchor] = useState<0 | 1 | null>(null);
     const svgRef = useRef<SVGSVGElement>(null);
+
+    const defaultBaseHue = typeof hueGlobal.value === 'number' ? hueGlobal.value : 0;
+    const [baseHue, setBaseHue] = useState<number>(defaultBaseHue);
 
     if (type !== 'number' || !currentMapping || typeof currentMapping.value !== 'string') {
         return null;
     }
 
     const { 
-        min, max, binCenters, bins, barColors, rangeMin, rangeMax, mapDomain 
+        min, max, binCenters, bins, barColors, rangeMin, rangeMax 
     } = useMemo(() => {
         const vals = data.map((row: any) => parseFloat(String(row[currentMapping.value]))).filter((v: number) => !isNaN(v));
         const dataMin = vals.length > 0 ? Math.min(...vals) : 0;
         const dataMax = vals.length > 0 ? Math.max(...vals) : 0;
         
         const rMin = Number(currentMapping.range ? currentMapping.range[0] : (title === 'Node Size' ? 2 : 0));
-        const rMax = Number(currentMapping.range ? currentMapping.range[1] : (title === 'Hue/Color' ? 360 : (title === 'Node Size' ? 20 : 100)));
+        const rMax = Number(currentMapping.range ? currentMapping.range[1] : (title === 'Hue/Color' ? 360 : (title === 'Saturation' || title === 'Lightness' ? 1 : (title === 'Node Size' ? 20 : 100))));
 
         const domainVal = [dataMin, dataMax];
         const spanX = domainVal[1] - domainVal[0] || 1;
@@ -69,23 +73,29 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
         };
 
         const barColorsArray = binCentersArray.map(center => {
+            const mappedVal = mapToRange(center);
             if (title === 'Hue/Color') {
-                const hue = mapToRange(center);
-                const wrappedHue = ((hue % 360) + 360) % 360; 
+                const wrappedHue = ((mappedVal % 360) + 360) % 360; 
                 return `hsl(${wrappedHue}, 80%, 50%)`;
+            } else if (title === 'Saturation') {
+                const cVal = clamp(mappedVal, 0, 1) * 100;
+                return `hsl(${baseHue}, ${cVal}%, 50%)`;
+            } else if (title === 'Lightness') {
+                const cVal = clamp(mappedVal, 0, 1) * 100;
+                return `hsl(${baseHue}, 80%, ${cVal}%)`;
             }
             return '#6c757d';
         });
 
-        return { min: dataMin, max: dataMax, binCenters: binCentersArray, bins: binsArray, barColors: barColorsArray, rangeMin: rMin, rangeMax: rMax, mapDomain: domainVal };
-    }, [data, currentMapping.value, currentMapping.range, title]);
-
-    const activeRangeMin = dragRange ? dragRange[0] : rangeMin;
-    const activeRangeMax = dragRange ? dragRange[1] : rangeMax;
+        return { min: dataMin, max: dataMax, binCenters: binCentersArray, bins: binsArray, barColors: barColorsArray, rangeMin: rMin, rangeMax: rMax };
+    }, [data, currentMapping.value, currentMapping.range, title, baseHue]);
 
     // Define visual bounds strictly so the HTML SVG scales precisely to coordinate logic
-    const limitMin = Math.min(title === 'Node Size' ? 1 : 0, rangeMin, rangeMax);
-    const limitMax = Math.max(title === 'Hue/Color' ? 360 : 100, rangeMin, rangeMax);
+    const limitMin = title === 'Node Size' ? 1 : 0;
+    const limitMax = title === 'Hue/Color' ? 360 : (title === 'Saturation' || title === 'Lightness' ? 1 : 100);
+
+    const activeRangeMin = clamp(dragRange ? dragRange[0] : rangeMin, limitMin, limitMax);
+    const activeRangeMax = clamp(dragRange ? dragRange[1] : rangeMax, limitMin, limitMax);
 
     const handlePointerMove = (e: React.PointerEvent) => {
         if (draggingAnchor === null || !svgRef.current) return;
@@ -125,18 +135,27 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
 
     // Plotly is absolutely purged of ALL drag state overlay logic. True visual data only.
     const mapData: any = useMemo(() => ([
-        ...(title === 'Hue/Color' ? [{
+        ...(title === 'Hue/Color' || title === 'Saturation' || title === 'Lightness' ? [{
             x: max > min ? [min, max] : [min - 1, min + 1],
-            y: Array.from({ length: 73 }, (_, i) => i * 5),
-            z: Array.from({ length: 73 }, (_, i) => [i * 5, i * 5]),
+            y: Array.from({ length: 73 }, (_, i) => title === 'Hue/Color' ? i * 5 : i / 72),
+            z: Array.from({ length: 73 }, (_, i) => [title === 'Hue/Color' ? i * 5 : i / 72, title === 'Hue/Color' ? i * 5 : i / 72]),
             type: 'heatmap' as const,
-            colorscale: Array.from({ length: 37 }, (_, i) => [i / 36, `hsl(${i * 10}, 80%, 50%)`] as [number, string]),
+            colorscale: Array.from({ length: 37 }, (_, i) => {
+                const fraction = i / 36;
+                if (title === 'Hue/Color') {
+                    return [fraction, `hsl(${fraction * 360}, 80%, 50%)`];
+                } else if (title === 'Saturation') {
+                    return [fraction, `hsl(${baseHue}, ${fraction * 100}%, 50%)`];
+                } else {
+                    return [fraction, `hsl(${baseHue}, 80%, ${fraction * 100}%)`];
+                }
+            }) as [number, string][],
             showscale: false,
             hoverinfo: 'none' as const,
             opacity: 0.4,
             zsmooth: 'best' as const
         }] : [])
-    ]), [title, min, max]);
+    ]), [title, min, max, baseHue]);
 
     const mapLayout: any = useMemo(() => ({
         margin: { t: 15, r: 40, l: 40, b: 20 },
@@ -173,10 +192,25 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                     />
                 </div>
 
-                <label className="form-label small text-muted mb-1 mt-2 fw-bold d-flex align-items-center justify-content-between">
-                    <span>2. Mapped Range Assignment</span>
+                <div className="d-flex align-items-center justify-content-between mt-2 mb-1">
+                    <label className="form-label small text-muted mb-0 fw-bold d-flex align-items-center">
+                        <span className="me-3">2. Mapped Range Assignment</span>
+                        {(title === 'Saturation' || title === 'Lightness') && (
+                            <div className="d-flex align-items-center fw-normal border rounded px-1" style={{ background: '#f8f9fa' }}>
+                                <span className="small text-muted me-2" style={{ fontSize: '0.7rem' }}>Base Hue (°):</span>
+                                <input 
+                                    type="number" 
+                                    className="form-control form-control-sm border-0 bg-transparent text-primary fw-bold" 
+                                    style={{ width: '50px', height: '22px', fontSize: '0.75rem', padding: '0px' }} 
+                                    value={baseHue} 
+                                    onChange={e => setBaseHue(Number(e.target.value))} 
+                                />
+                            </div>
+                        )}
+                    </label>
                     <span className="badge bg-info text-dark" style={{ fontSize: '0.65rem' }}>Drag the endpoints of the line!</span>
-                </label>
+                </div>
+                
                 <div className="border rounded bg-light p-1 border-top-0 rounded-top-0 flex-grow-1" style={{ minHeight: '160px', position: 'relative' }}>
                     <Plot
                         data={mapData}
@@ -214,29 +248,9 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
 
             </div>
             <div className="card-footer text-end p-2 flex-shrink-0 bg-white">
-                <div className="d-flex align-items-center justify-content-between">
-                    <div className="d-flex align-items-center gap-2">
-                        <span className="small text-muted me-1">Output Min:</span>
-                        <input
-                            type="number"
-                            className="form-control form-control-sm"
-                            style={{ width: '70px' }}
-                            value={Math.round(activeRangeMin)}
-                            onChange={e => updateFn({ range: [Number(e.target.value), rangeMax] })}
-                        />
-                        <span className="small text-muted ms-2 me-1">Output Max:</span>
-                        <input
-                            type="number"
-                            className="form-control form-control-sm"
-                            style={{ width: '70px' }}
-                            value={Math.round(activeRangeMax)}
-                            onChange={e => updateFn({ range: [rangeMin, Number(e.target.value)] })}
-                        />
-                    </div>
-                    <button className="btn btn-secondary btn-sm ms-3" onClick={closePopup}>
-                        Close
-                    </button>
-                </div>
+                <button className="btn btn-secondary btn-sm" onClick={closePopup}>
+                    Close
+                </button>
             </div>
         </div>
     );
