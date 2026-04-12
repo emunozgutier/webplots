@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useGroupSideMenuStore } from '../../../store/SideMenu/useGroupSideMenuStore';
 import { useWorkspaceLocalStore } from '../../../store/Workspace/useWorkspaceLocalStore';
-import GroupAxisSettings from './GroupAxisSettings';
+import GroupElementSettings from './GroupElementSettings';
 
 interface GroupElementProps {
     column: string;
@@ -50,7 +50,7 @@ const GroupElement: React.FC<GroupElementProps> = ({ column }) => {
                     <div className="d-flex align-items-center flex-shrink-0">
                         <button
                             className="btn btn-sm btn-link p-0 me-2 text-primary"
-                            onClick={(e) => { e.stopPropagation(); setPopupContent(<GroupAxisSettings column={column} />); }}
+                            onClick={(e) => { e.stopPropagation(); setPopupContent(<GroupElementSettings column={column} />); }}
                             style={{ textDecoration: 'none' }}
                             title="Advanced Settings"
                         >

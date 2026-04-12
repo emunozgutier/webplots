@@ -23,11 +23,11 @@ const SYMBOLS = [
     { id: 'star', label: 'Star', icon: 'bi-star-fill' }
 ];
 
-interface GroupAxisSettingsProps {
+interface GroupElementSettingsProps {
     column: string;
 }
 
-const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
+const GroupElementSettings: React.FC<GroupElementSettingsProps> = ({ column }) => {
     const { groupSideMenuData, setGroupSettings } = useGroupSideMenuStore();
     const { closePopup } = useWorkspaceLocalStore();
     const { data } = useCsvDataStore();
@@ -568,4 +568,4 @@ const GroupAxisSettings: React.FC<GroupAxisSettingsProps> = ({ column }) => {
     );
 };
 
-export default GroupAxisSettings;
+export default GroupElementSettings;
