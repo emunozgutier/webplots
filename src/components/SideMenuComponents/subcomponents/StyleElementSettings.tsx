@@ -154,19 +154,51 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
             hoverinfo: 'none' as const,
             opacity: 0.4,
             zsmooth: 'best' as const
-        }] : [])
-    ]), [title, min, max, baseHue]);
+        }] : []),
+        ...(title === 'Node Size' ? [0.15, 0.5, 0.85].map(xFrac => {
+            const effectiveMin = max > min ? min : min - 1;
+            const effectiveMax = max > min ? max : min + 1;
+            const numDemos = 5;
+            return {
+                x: Array.from({ length: numDemos }, () => effectiveMin + (effectiveMax - effectiveMin) * xFrac),
+                y: Array.from({ length: numDemos }, (_, i) => limitMin + i * (limitMax - limitMin) / (numDemos - 1)),
+                mode: 'markers' as const,
+                type: 'scatter' as const,
+                marker: {
+                    size: Array.from({ length: numDemos }, (_, i) => limitMin + i * (limitMax - limitMin) / (numDemos - 1)),
+                    sizemode: 'diameter' as const,
+                    color: 'rgba(108, 117, 125, 0.15)',
+                    line: {
+                        color: 'rgba(108, 117, 125, 0.4)',
+                        width: 1
+                    }
+                },
+                hoverinfo: 'none' as const,
+                showlegend: false
+            };
+        }) : [])
+    ]), [title, min, max, baseHue, limitMin, limitMax]);
 
     const mapLayout: any = useMemo(() => ({
         margin: { t: 15, r: 40, l: 40, b: 20 },
         // Fixed y-axis bounds ensures the custom 100% SVG line accurately overlaps physical data coordinate systems
         xaxis: { range: [min, max], fixedrange: true, showgrid: false, zeroline: false, showline: true, showticklabels: true },
-        yaxis: { fixedrange: true, visible: false, range: [limitMin, limitMax] },
+        yaxis: { 
+            fixedrange: true, 
+            visible: true, 
+            range: [limitMin, limitMax],
+            showgrid: title === 'Node Size',
+            gridcolor: 'rgba(0,0,0,0.05)',
+            zeroline: false,
+            showticklabels: title === 'Node Size',
+            showline: title === 'Node Size',
+            tickfont: { size: 10 }
+        },
         paper_bgcolor: 'transparent',
         plot_bgcolor: 'transparent',
         showlegend: false,
         dragmode: false
-    }), [min, max, limitMin, limitMax]);
+    }), [min, max, limitMin, limitMax, title]);
 
     // Fast mapping calculations for absolute position anchoring
     const dY = (limitMax - limitMin) || 1;
