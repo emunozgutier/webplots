@@ -1,5 +1,5 @@
 {
-    "commit_title": "Use React.Fragment and drop overflow style",
-    "commit_message": "Replace shorthand fragment (<>...</>) with explicit React.Fragment for consistency. Remove the 'overflow-auto' class and the inline maxHeight style from the .card-body wrapper, reverting to normal flow (likely to avoid nested scrollbars and let outer layout handle scrolling).",
+    "commit_title": "Simplify select styling in StyleElementSettings",
+    "commit_message": "Replace verbose classes and custom inline padding/boxShadow on the mapped-range <select> with minimal Bootstrap utilities (ms-auto, me-2) and a streamlined inline style (width, fontSize, cursor). Cleans up markup and relies on Bootstrap for alignment and spacing in src/components/SideMenuComponents/subcomponents/StyleElementSettings.tsx.",
     "version_string": "2026.15.6"
 }

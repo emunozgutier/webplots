@@ -95,7 +95,7 @@ export const generatePlotConfig = (
             const { hue, saturation, lightness, shape, size } = colorSideMenuData;
 
             // Auto-scaled helpers for "column" mappings
-            const getColumnMapRule = (colName: string, outMin: number, outMax: number, mappingType?: 'linear' | 'log' | 'exp') => {
+            const getColumnMapRule = (colName: string, outMin: number, outMax: number, mappingType?: string, midPoint?: [number, number]) => {
                 const vals = data.map(r => r[colName]);
                 const nums = vals.map(v => typeof v === 'number' ? v : parseFloat(String(v))).filter(n => !isNaN(n));
                 const min = nums.length > 0 ? Math.min(...nums) : 0;
@@ -110,10 +110,11 @@ export const generatePlotConfig = (
                     x = Math.max(0, Math.min(1, x)); // clip to 0-1 range
 
                     let pct = x;
-                    if (mappingType === 'log') {
-                        pct = Math.log10(1 + 9 * x);
-                    } else if (mappingType === 'exp') {
-                        pct = (Math.pow(10, x) - 1) / 9;
+                    if (mappingType === 'curve' && midPoint) {
+                        const cx = Math.max(0.001, Math.min(0.999, midPoint[0]));
+                        const cy = Math.max(0.001, Math.min(0.999, midPoint[1]));
+                        const k = Math.log(cy) / Math.log(cx);
+                        pct = Math.pow(x, k);
                     }
 
                     let result = outMin + pct * (outMax - outMin);
@@ -136,10 +137,10 @@ export const generatePlotConfig = (
             };
 
             // Pre-compute lookup functions for column mappings
-            const hueColMap = hue.source === 'column' ? getColumnMapRule(String(hue.value), hue.range ? hue.range[0] : 0, hue.range ? hue.range[1] : 360, hue.mappingType) : null;
-            const satColMap = saturation.source === 'column' ? getColumnMapRule(String(saturation.value), saturation.range ? saturation.range[0] : 0, saturation.range ? saturation.range[1] : 100, saturation.mappingType) : null;
-            const litColMap = lightness.source === 'column' ? getColumnMapRule(String(lightness.value), lightness.range ? lightness.range[0] : 0, lightness.range ? lightness.range[1] : 100, lightness.mappingType) : null;
-            const sizeColMap = size.source === 'column' ? getColumnMapRule(String(size.value), size.range ? size.range[0] : 2, size.range ? size.range[1] : 20, size.mappingType) : null;
+            const hueColMap = hue.source === 'column' ? getColumnMapRule(String(hue.value), hue.range ? hue.range[0] : 0, hue.range ? hue.range[1] : 360, hue.mappingType, hue.midPoint) : null;
+            const satColMap = saturation.source === 'column' ? getColumnMapRule(String(saturation.value), saturation.range ? saturation.range[0] : 0, saturation.range ? saturation.range[1] : 100, saturation.mappingType, saturation.midPoint) : null;
+            const litColMap = lightness.source === 'column' ? getColumnMapRule(String(lightness.value), lightness.range ? lightness.range[0] : 0, lightness.range ? lightness.range[1] : 100, lightness.mappingType, lightness.midPoint) : null;
+            const sizeColMap = size.source === 'column' ? getColumnMapRule(String(size.value), size.range ? size.range[0] : 2, size.range ? size.range[1] : 20, size.mappingType, size.midPoint) : null;
 
             const SHAPE_OPTS = ['circle', 'square', 'diamond', 'cross', 'x', 'triangle-up', 'pentagon', 'hexagram', 'star'];
             const shapeColMap = shape.source === 'column' ? getColumnCategoryRule(String(shape.value), SHAPE_OPTS) : null;

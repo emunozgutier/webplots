@@ -23,23 +23,31 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
     const hueGlobal = useStyleSideMenuStore(state => state.colorData.hue);
 
     const [dragRange, setDragRange] = useState<[number, number] | null>(null);
-    const [draggingAnchor, setDraggingAnchor] = useState<0 | 1 | null>(null);
+    const [draggingAnchor, setDraggingAnchor] = useState<0 | 1 | 2 | null>(null);
+    const [dragMidPoint, setDragMidPoint] = useState<[number, number] | null>(null);
     const svgRef = useRef<SVGSVGElement>(null);
 
     const defaultBaseHue = typeof hueGlobal.value === 'number' ? hueGlobal.value : 0;
     const [baseHue, setBaseHue] = useState<number>(defaultBaseHue);
     const [useLogScale, setUseLogScale] = useState<boolean>(false);
 
-    if (type !== 'number' || !currentMapping || typeof currentMapping.value !== 'string') {
+    if (type !== 'number' || !currentMapping || typeof (currentMapping as any).value !== 'string') {
         return null;
     }
 
-    const mappingType = currentMapping.mappingType || 'linear';
+    const mapping = currentMapping as import('../../../store/SideMenu/useStyleSideMenuStore').AestheticMapping;
+    const mappingType = mapping.mappingType || 'linear';
+    let defaultMidPoint: [number, number] = [0.5, 0.5];
+    if (mappingType === 'curve') defaultMidPoint = [0.1, 0.9];
+    
+    const midPoint: [number, number] = mapping.midPoint || defaultMidPoint;
+    const activeMidPoint: [number, number] = dragMidPoint || midPoint;
+    const [activeCx, activeCy]: [number, number] = activeMidPoint;
 
     const { 
         min, max, binCenters, bins, barColors, rangeMin, rangeMax 
     } = useMemo(() => {
-        const vals = data.map((row: any) => parseFloat(String(row[currentMapping.value]))).filter((v: number) => !isNaN(v));
+        const vals = data.map((row: any) => parseFloat(String(row[mapping.value]))).filter((v: number) => !isNaN(v));
         const dataMin = vals.length > 0 ? Math.min(...vals) : 0;
         const dataMax = vals.length > 0 ? Math.max(...vals) : 0;
         
@@ -77,10 +85,11 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
             x = clamp(x, 0, 1);
 
             let pct = x;
-            if (mappingType === 'log') {
-                pct = Math.log10(1 + 9 * x);
-            } else if (mappingType === 'exp') {
-                pct = (Math.pow(10, x) - 1) / 9;
+            if (mappingType === 'curve') {
+                const cx = Math.max(0.001, Math.min(0.999, activeCx));
+                const cy = Math.max(0.001, Math.min(0.999, activeCy));
+                const k = Math.log(cy) / Math.log(cx);
+                pct = Math.pow(x, k);
             }
 
             return rMin + pct * (rMax - rMin);
@@ -102,7 +111,7 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
         });
 
         return { min: dataMin, max: dataMax, binCenters: binCentersArray, bins: binsArray, barColors: barColorsArray, rangeMin: rMin, rangeMax: rMax };
-    }, [data, currentMapping.value, currentMapping.range, title, baseHue, mappingType]);
+    }, [data, mapping.value, mapping.range, title, baseHue, mappingType, activeCx, activeCy]);
 
     // Define visual bounds strictly so the HTML SVG scales precisely to coordinate logic
     const limitMin = title === 'Node Size' ? 1 : 0;
@@ -119,13 +128,30 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
         const val = limitMax - percent * (limitMax - limitMin);
         
         if (draggingAnchor === 0) setDragRange([val, activeRangeMax]);
-        else setDragRange([activeRangeMin, val]);
+        else if (draggingAnchor === 1) setDragRange([activeRangeMin, val]);
+        else if (draggingAnchor === 2) {
+            const xOffset = clamp(e.clientX - rect.left, 0, rect.width);
+            const newCx = xOffset / rect.width;
+            
+            const currentYPercent = (yOffset / rect.height) * 100;
+            const diff = y2Percent - y1Percent;
+            let newCy = diff !== 0 ? (currentYPercent - y1Percent) / diff : 0.5;
+            newCy = clamp(newCy, 0, 1);
+            
+            setDragMidPoint([newCx, newCy]);
+        }
     };
 
     const handlePointerUp = () => {
         if (draggingAnchor !== null) {
+            const oldAnchor = draggingAnchor;
             setDraggingAnchor(null);
-            updateFn({ range: [activeRangeMin, activeRangeMax] });
+            if (oldAnchor === 0 || oldAnchor === 1) {
+                updateFn({ range: [activeRangeMin, activeRangeMax] });
+            } else if (oldAnchor === 2) {
+                updateFn({ midPoint: activeMidPoint });
+                setDragMidPoint(null);
+            }
         }
     };
 
@@ -231,12 +257,20 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
         const xB = (i + 1) / numPoints;
 
         let pctA = xA;
-        if (mappingType === 'log') pctA = Math.log10(1 + 9 * xA);
-        else if (mappingType === 'exp') pctA = (Math.pow(10, xA) - 1) / 9;
+        if (mappingType === 'curve') {
+            const cx = Math.max(0.001, Math.min(0.999, activeCx));
+            const cy = Math.max(0.001, Math.min(0.999, activeCy));
+            const k = Math.log(cy) / Math.log(cx);
+            pctA = Math.pow(xA, k);
+        }
 
         let pctB = xB;
-        if (mappingType === 'log') pctB = Math.log10(1 + 9 * xB);
-        else if (mappingType === 'exp') pctB = (Math.pow(10, xB) - 1) / 9;
+        if (mappingType === 'curve') {
+            const cx = Math.max(0.001, Math.min(0.999, activeCx));
+            const cy = Math.max(0.001, Math.min(0.999, activeCy));
+            const k = Math.log(cy) / Math.log(cx);
+            pctB = Math.pow(xB, k);
+        }
 
         const yaPercent = y1Percent + pctA * (y2Percent - y1Percent);
         const ybPercent = y1Percent + pctB * (y2Percent - y1Percent);
@@ -293,11 +327,15 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                             className="form-select form-select-sm ms-auto me-2" 
                             style={{ width: 'auto', fontSize: '0.75rem', cursor: 'pointer' }}
                             value={mappingType}
-                            onChange={e => updateFn({ mappingType: e.target.value as any })}
+                            onChange={e => {
+                                const newType = e.target.value as any;
+                                let newMid = midPoint;
+                                if (newType === 'curve' && mappingType !== 'curve') newMid = [0.5, 0.5];
+                                updateFn({ mappingType: newType, midPoint: newMid });
+                            }}
                         >
                             <option value="linear">Line</option>
-                            <option value="log">Log</option>
-                            <option value="exp">Exp</option>
+                            <option value="curve">Exp/Log Curve</option>
                         </select>
                         {(title === 'Saturation' || title === 'Lightness') && (
                             <div className="d-flex align-items-center fw-normal border rounded px-1" style={{ background: '#f8f9fa' }}>
@@ -343,7 +381,26 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                             fill="black" stroke="white" strokeWidth="2" style={{ cursor: 'pointer' }} 
                             onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); setDraggingAnchor(1); }} 
                         />
+                        {mappingType === 'curve' && (
+                            <circle 
+                                cx={`${activeCx * 100}%`} cy={`${y1Percent + activeCy * (y2Percent - y1Percent)}%`} r="6" 
+                                fill="white" stroke="black" strokeWidth="2" style={{ cursor: 'move' }} 
+                                onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); setDraggingAnchor(2); }} 
+                            />
+                        )}
                     </svg>
+                </div>
+                <div className="flex-shrink-0 bg-white" style={{ position: 'relative', zIndex: 10 }}>
+                    <table className="table table-sm table-bordered mt-2 text-center text-muted mb-0" style={{ fontSize: '0.7rem' }}>
+                        <thead className="table-light">
+                            <tr><th>Anchor</th><th>Data (X)</th><th>Vis Parameter (Y)</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Start Point</td><td>0%</td><td>{activeRangeMin.toFixed(1)}</td></tr>
+                            {mappingType === 'curve' && <tr><td>Curve Midpoint</td><td>{(activeCx * 100).toFixed(1)}%</td><td>{(activeRangeMin + activeCy * (activeRangeMax - activeRangeMin)).toFixed(1)}</td></tr>}
+                            <tr><td>End Point</td><td>100%</td><td>{activeRangeMax.toFixed(1)}</td></tr>
+                        </tbody>
+                    </table>
                 </div>
 
             </div>

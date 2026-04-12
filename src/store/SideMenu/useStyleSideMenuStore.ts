@@ -10,7 +10,8 @@ export interface AestheticMapping {
     value: string | number; // 'manual' value OR the selected column name
     range?: [number, number]; // [min, max] output range when mapped to a column
     domain?: [number, number]; // [x0, x1] data range corresponding to the output range bounds
-    mappingType?: 'linear' | 'log' | 'exp';
+    mappingType?: 'linear' | 'curve';
+    midPoint?: [number, number]; // [cx, cy] for 3-point power curve (0 to 1)
     enabled?: boolean;
 }
 
