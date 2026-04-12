@@ -1,5 +1,5 @@
 {
-    "commit_title": "Simplify select styling in StyleElementSettings",
-    "commit_message": "Replace verbose classes and custom inline padding/boxShadow on the mapped-range <select> with minimal Bootstrap utilities (ms-auto, me-2) and a streamlined inline style (width, fontSize, cursor). Cleans up markup and relies on Bootstrap for alignment and spacing in src/components/SideMenuComponents/subcomponents/StyleElementSettings.tsx.",
-    "version_string": "2026.15.6"
+    "commit_title": "Add absorbedPoint selection to ink ratio flow",
+    "commit_message": "Introduce an absorbedPoint option that controls which point survives during ink-ratio filtering and thread it through the UI, store, and data pipeline. Changes include: add absorbedPoint and setAbsorbedPoint to useInkRatioStore; add Survivor Point buttons to InkRatioControl; propagate absorbedPoint from PlotArea into runDataPipeline; and update Step_3_ink_ratio_filter to honor absorbedPoint by ordering iteration (left, right, or random) and correctly map original indices to kept points while computing final absorbed counts. This enables deterministic or randomized absorption behavior when resolving overlapping points.",
+    "version_string": "2026.15.7"
 }
