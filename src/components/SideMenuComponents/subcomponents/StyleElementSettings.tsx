@@ -1,30 +1,43 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import Plot from 'react-plotly.js';
 import { useWorkspaceLocalStore } from '../../../store/Workspace/useWorkspaceLocalStore';
 import { useCsvDataStore } from '../../../store/useCsvDataStore';
+import { useStyleSideMenuStore, type StyleSideMenuData } from '../../../store/SideMenu/useStyleSideMenuStore';
 import type { StyleElementProps } from './StyleElement';
 
 const clamp = (val: number, min: number, max: number) => Math.max(min, Math.min(max, val));
 
-const StyleElementSettings: React.FC<StyleElementProps> = ({ title, mapping, updateFn, type }) => {
+const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, type }) => {
     const { closePopup } = useWorkspaceLocalStore();
     const { data } = useCsvDataStore();
 
-    if (type !== 'number' || typeof mapping.value !== 'string') {
+    const keyMap: Record<string, keyof StyleSideMenuData> = {
+        'Hue/Color': 'hue',
+        'Saturation': 'saturation',
+        'Lightness': 'lightness',
+        'Shape': 'shape',
+        'Node Size': 'size'
+    };
+    const storeKey = keyMap[title];
+    const currentMapping = useStyleSideMenuStore(state => state.colorData[storeKey]);
+
+    const [dragRange, setDragRange] = useState<[number, number] | null>(null);
+
+    if (type !== 'number' || !currentMapping || typeof currentMapping.value !== 'string') {
         return null;
     }
 
     const { 
         min, max, binCenters, bins, barColors, rangeMin, rangeMax, mapDomain 
     } = useMemo(() => {
-        const vals = data.map((row: any) => parseFloat(String(row[mapping.value]))).filter((v: number) => !isNaN(v));
+        const vals = data.map((row: any) => parseFloat(String(row[currentMapping.value]))).filter((v: number) => !isNaN(v));
         const dataMin = vals.length > 0 ? Math.min(...vals) : 0;
         const dataMax = vals.length > 0 ? Math.max(...vals) : 0;
         
-        const rMin = mapping.range ? mapping.range[0] : (title === 'Node Size' ? 2 : 0);
-        const rMax = mapping.range ? mapping.range[1] : (title === 'Hue/Color' ? 360 : (title === 'Node Size' ? 20 : 100));
+        const rMin = Number(currentMapping.range ? currentMapping.range[0] : (title === 'Node Size' ? 2 : 0));
+        const rMax = Number(currentMapping.range ? currentMapping.range[1] : (title === 'Hue/Color' ? 360 : (title === 'Node Size' ? 20 : 100)));
 
-        const domainVal = mapping.domain || [dataMin, dataMax];
+        const domainVal = [dataMin, dataMax];
         const spanX = domainVal[1] - domainVal[0] || 1;
 
         const binCount = 40;
@@ -63,24 +76,47 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, mapping, upd
         });
 
         return { min: dataMin, max: dataMax, binCenters: binCentersArray, bins: binsArray, barColors: barColorsArray, rangeMin: rMin, rangeMax: rMax, mapDomain: domainVal };
-    }, [data, mapping.value, mapping.range, mapping.domain, title]);
+    }, [data, currentMapping.value, currentMapping.range, title]);
 
-    const handleRelayout = (e: any) => {
-        let newXR = [...mapDomain];
-        let newYR = [rangeMin, rangeMax];
+    const activeRangeMin = dragRange ? dragRange[0] : rangeMin;
+    const activeRangeMax = dragRange ? dragRange[1] : rangeMax;
+
+    const handleRelayouting = (e: any) => {
+        let newYR = dragRange ? [...dragRange] : [rangeMin, rangeMax];
         let changed = false;
 
-        if (e['shapes[0].x0'] !== undefined) { newXR[0] = Number(e['shapes[0].x0']); changed = true; }
         if (e['shapes[0].y0'] !== undefined) { newYR[0] = Number(e['shapes[0].y0']); changed = true; }
-        if (e['shapes[0].x1'] !== undefined) { newXR[1] = Number(e['shapes[0].x1']); changed = true; }
         if (e['shapes[0].y1'] !== undefined) { newYR[1] = Number(e['shapes[0].y1']); changed = true; }
 
         if (changed) {
-            updateFn({ range: [newYR[0], newYR[1]], domain: [newXR[0], newXR[1]] });
+            setDragRange([newYR[0], newYR[1]]);
         }
     };
 
-    const histLayout: any = {
+    const handleRelayout = (e: any) => {
+        let newYR = dragRange ? [...dragRange] : [rangeMin, rangeMax];
+        let changed = false;
+
+        if (e['shapes[0].y0'] !== undefined) { newYR[0] = Number(e['shapes[0].y0']); changed = true; }
+        if (e['shapes[0].y1'] !== undefined) { newYR[1] = Number(e['shapes[0].y1']); changed = true; }
+
+        if (changed) {
+            setDragRange(null);
+            updateFn({ range: [newYR[0], newYR[1]] });
+        } else {
+            setDragRange(null); 
+        }
+    };
+
+    const histData: any = useMemo(() => [{
+        x: binCenters,
+        y: bins,
+        type: 'bar',
+        marker: { color: barColors },
+        hoverinfo: 'x+y'
+    }], [binCenters, bins, barColors]);
+
+    const histLayout: any = useMemo(() => ({
         margin: { t: 10, r: 40, l: 40, b: 20 },
         xaxis: { range: [min, max], fixedrange: true, showgrid: false },
         yaxis: { fixedrange: true, title: { text: 'Count', font: { size: 10 } }, showgrid: false },
@@ -88,9 +124,39 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, mapping, upd
         plot_bgcolor: 'transparent',
         showlegend: false,
         bargap: 0.05
-    };
+    }), [min, max]);
 
-    const mapLayout: any = {
+    const mapData: any = useMemo(() => ([
+        ...(title === 'Hue/Color' ? [{
+            x: max > min ? [min, max] : [min - 1, min + 1],
+            y: Array.from({ length: 73 }, (_, i) => i * 5),
+            z: Array.from({ length: 73 }, (_, i) => [i * 5, i * 5]),
+            type: 'heatmap' as const,
+            colorscale: Array.from({ length: 37 }, (_, i) => [i / 36, `hsl(${i * 10}, 80%, 50%)`] as [number, string]),
+            showscale: false,
+            hoverinfo: 'none' as const,
+            opacity: 0.4,
+            zsmooth: 'best' as const
+        }] : []),
+        {
+            x: [min, max],
+            y: [activeRangeMin, Math.max(activeRangeMin, activeRangeMax)], 
+            type: 'scatter',
+            mode: 'none', 
+            hoverinfo: 'none'
+        },
+        {
+            x: [mapDomain[0], mapDomain[1]],
+            y: [activeRangeMin, activeRangeMax],
+            type: 'scatter',
+            mode: 'markers',
+            marker: { color: 'black', size: 14, line: { color: 'white', width: 2 } },
+            hoverinfo: 'none',
+            cliponaxis: false
+        }
+    ]), [title, min, max, activeRangeMin, activeRangeMax, mapDomain]);
+
+    const mapLayout: any = useMemo(() => ({
         margin: { t: 15, r: 40, l: 40, b: 20 },
         xaxis: { range: [min, max], fixedrange: true, showgrid: false, zeroline: false, showline: true, showticklabels: true },
         yaxis: { fixedrange: true, visible: false },
@@ -101,16 +167,17 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, mapping, upd
             {
                 type: 'line',
                 x0: mapDomain[0],
-                y0: rangeMin,
+                y0: activeRangeMin,
                 x1: mapDomain[1],
-                y1: rangeMax,
+                y1: activeRangeMax,
                 line: { color: 'black', width: 3 },
                 editable: true,
                 layer: 'above'
             }
         ],
-        dragmode: false
-    };
+        dragmode: false,
+        uirevision: 'mapping-plot'
+    }), [min, max, mapDomain, activeRangeMin, activeRangeMax]);
 
     return (
         <div className="card shadow w-100 h-100" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -123,13 +190,7 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, mapping, upd
                 <label className="form-label small text-muted mb-1 fw-bold">1. Histogram Frequency</label>
                 <div className="border rounded bg-light p-1 border-bottom-0 rounded-bottom-0" style={{ flexShrink: 0, height: '140px' }}>
                     <Plot
-                        data={[{
-                            x: binCenters,
-                            y: bins,
-                            type: 'bar',
-                            marker: { color: barColors },
-                            hoverinfo: 'x+y'
-                        }]}
+                        data={histData}
                         layout={histLayout}
                         config={{ displayModeBar: false }}
                         style={{ width: '100%', height: '100%' }}
@@ -143,37 +204,11 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, mapping, upd
                 </label>
                 <div className="border rounded bg-light p-1 border-top-0 rounded-top-0 flex-grow-1" style={{ minHeight: '160px' }}>
                     <Plot
-                        data={[
-                            ...(title === 'Hue/Color' ? [{
-                                x: max > min ? [min, max] : [min - 1, min + 1],
-                                y: Array.from({ length: 73 }, (_, i) => i * 5), // 0 to 360 in increments of 5
-                                z: Array.from({ length: 73 }, (_, i) => [i * 5, i * 5]), // 2xN grid
-                                type: 'heatmap' as const,
-                                colorscale: Array.from({ length: 37 }, (_, i) => [i / 36, `hsl(${i * 10}, 80%, 50%)`] as [number, string]),
-                                showscale: false,
-                                hoverinfo: 'none' as const,
-                                opacity: 0.4,
-                                zsmooth: 'best' as const
-                            }] : []),
-                            {
-                                x: [min, max],
-                                y: [rangeMin, Math.max(rangeMin, rangeMax)], 
-                                type: 'scatter',
-                                mode: 'none', 
-                                hoverinfo: 'none'
-                            },
-                            {
-                                x: [mapDomain[0], mapDomain[1]],
-                                y: [rangeMin, rangeMax],
-                                type: 'scatter',
-                                mode: 'markers',
-                                marker: { color: 'black', size: 14, line: { color: 'white', width: 2 } },
-                                hoverinfo: 'none',
-                                cliponaxis: false
-                            }
-                        ]}
+                        data={mapData}
                         layout={mapLayout}
                         onRelayout={handleRelayout}
+                        // @ts-ignore
+                        onRelayouting={handleRelayouting}
                         config={{ displayModeBar: false, edits: { shapePosition: true } }}
                         style={{ width: '100%', height: '100%' }}
                         useResizeHandler={true}
@@ -189,7 +224,7 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, mapping, upd
                             type="number"
                             className="form-control form-control-sm"
                             style={{ width: '70px' }}
-                            value={Math.round(rangeMin)}
+                            value={Math.round(activeRangeMin)}
                             onChange={e => updateFn({ range: [Number(e.target.value), rangeMax] })}
                         />
                         <span className="small text-muted ms-2 me-1">Output Max:</span>
@@ -197,7 +232,7 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, mapping, upd
                             type="number"
                             className="form-control form-control-sm"
                             style={{ width: '70px' }}
-                            value={Math.round(rangeMax)}
+                            value={Math.round(activeRangeMax)}
                             onChange={e => updateFn({ range: [rangeMin, Number(e.target.value)] })}
                         />
                     </div>
