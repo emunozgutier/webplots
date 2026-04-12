@@ -47,9 +47,23 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
     const { 
         min, max, binCenters, bins, barColors, rangeMin, rangeMax 
     } = useMemo(() => {
-        const vals = data.map((row: any) => parseFloat(String(row[mapping.value]))).filter((v: number) => !isNaN(v));
-        const dataMin = vals.length > 0 ? Math.min(...vals) : 0;
-        const dataMax = vals.length > 0 ? Math.max(...vals) : 0;
+        let dataMin = Infinity;
+        let dataMax = -Infinity;
+        const vals: number[] = [];
+        
+        for (let i = 0; i < data.length; i++) {
+            const v = parseFloat(String(data[i][mapping.value]));
+            if (!isNaN(v)) {
+                vals.push(v);
+                if (v < dataMin) dataMin = v;
+                if (v > dataMax) dataMax = v;
+            }
+        }
+
+        if (dataMin === Infinity) {
+            dataMin = 0;
+            dataMax = 0;
+        }
         
         const rMin = Number(currentMapping.range ? currentMapping.range[0] : (title === 'Node Size' ? 2 : 0));
         const rMax = Number(currentMapping.range ? currentMapping.range[1] : (title === 'Hue/Color' ? 360 : (title === 'Saturation' || title === 'Lightness' ? 1 : (title === 'Node Size' ? 20 : 100))));
