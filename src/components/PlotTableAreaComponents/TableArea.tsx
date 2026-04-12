@@ -16,7 +16,6 @@ import { calculateGaussianStats, formatNumber, parseToNumeric, sortData } from '
 
 const TableArea: React.FC = () => {
     const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
-    const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
     const [currentBatch, setCurrentBatch] = useState(0);
     const BATCH_SIZE = 100;
     const { setPopupContent } = useWorkspaceLocalStore();
@@ -31,7 +30,9 @@ const TableArea: React.FC = () => {
         significantDigits,
         alignDecimal,
         gaussianConfidenceThreshold,
-        gaussianMaxComponents
+        gaussianMaxComponents,
+        sortConfig,
+        setSortConfig
     } = useTableStore();
 
     const handleSortAsc = (key: string) => {
