@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Table } from 'react-bootstrap';
+import { orderBy } from 'lodash';
 import { useCsvDataStore } from '../../store/useCsvDataStore';
 import { Step_1_filter } from '../../utils/DataFrameLib';
 import { useAxisSideMenuStore } from '../../store/SideMenu/useAxisSideMenuStore';
@@ -263,26 +264,30 @@ const TableArea: React.FC = () => {
     const sortedData = useMemo(() => {
         if (!sortConfig) return displayData;
 
-        const sorted = [...displayData];
-        sorted.sort((a, b) => {
-            let aVal = (a as any)[sortConfig.key];
-            let bVal = (b as any)[sortConfig.key];
+        const { key, direction } = sortConfig;
 
-            // Handle nulls
-            if (aVal === null || aVal === undefined) aVal = '';
-            if (bVal === null || bVal === undefined) bVal = '';
-
-            // Handle numbers
-            if (!isNaN(Number(aVal)) && !isNaN(Number(bVal)) && aVal !== '' && bVal !== '') {
-                aVal = Number(aVal);
-                bVal = Number(bVal);
+        // Determine if numeric column to avoid string evaluations in lodash
+        let isNum = false;
+        for (let i = 0; i < Math.min(100, displayData.length); i++) {
+            const v = (displayData[i] as any)[key];
+            if (v !== null && v !== undefined && v !== '' && (typeof v === 'number' || !isNaN(Number(v)))) {
+                isNum = true; break;
             }
+        }
 
-            if (aVal < bVal) return sortConfig!.direction === 'asc' ? -1 : 1;
-            if (aVal > bVal) return sortConfig!.direction === 'asc' ? 1 : -1;
-            return 0;
-        });
-        return sorted;
+        // Two iteratees. The first pushes empty cells sequentially to the bottom. 
+        // The second strictly casts to number if applicable, so lodash orderBy is pure and fast.
+        const emptyIteratee = (row: any) => {
+            const v = row[key];
+            return v === null || v === undefined || v === '' ? 1 : 0;
+        };
+
+        const valIteratee = (row: any) => {
+            const v = row[key];
+            return isNum ? Number(v) : v;
+        };
+
+        return orderBy(displayData, [emptyIteratee, valIteratee], ['asc', direction]);
     }, [displayData, sortConfig]);
 
     const totalBatches = Math.max(1, Math.ceil(sortedData.length / BATCH_SIZE));
