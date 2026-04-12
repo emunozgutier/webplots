@@ -150,7 +150,10 @@ export const generatePlotConfig = (
             const computedShapes: string[] = [];
             const computedSizes: number[] = [];
 
-            rowIndices.forEach(dataIndex => {
+            const safeSurvivingIndices = traceInfo.survivingIndices || rowIndices.map((_, i) => i);
+
+            safeSurvivingIndices.forEach(survivingIdx => {
+                const dataIndex = rowIndices[survivingIdx];
                 const row = data[dataIndex];
 
                 // HUE
@@ -284,9 +287,6 @@ export const generatePlotConfig = (
             
             const filteredCount = traceInfo.filteredCount || 0;
             const absorbedCounts = traceInfo.absorbedCounts || [];
-            const survivingIndices = traceInfo.survivingIndices;
-
-
             // Calculate max absorbed in this trace
             let maxAbsorbed = 0;
             let minAbsorbed = 0;
@@ -311,17 +311,6 @@ export const generatePlotConfig = (
             let finalMarkerSymbol = marker.symbol;
             let finalMarkerSize = marker.size;
             let finalMarkerLine = marker.line;
-
-            if (filteredCount > 0 && Array.isArray(marker.color) && survivingIndices) {
-                // Retain only surviving indices to keep gradient intact
-                finalMarkerColor = survivingIndices.map((idx: number) => computedColors[idx]);
-            }
-            if (filteredCount > 0 && Array.isArray(marker.symbol) && survivingIndices) {
-                finalMarkerSymbol = survivingIndices.map((idx: number) => computedShapes[idx]);
-            }
-            if (filteredCount > 0 && Array.isArray(marker.size) && survivingIndices) {
-                finalMarkerSize = survivingIndices.map((idx: number) => computedSizes[idx]);
-            }
 
             // Apply visual tweaks based on absorptionMode!
             /*
