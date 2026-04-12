@@ -28,6 +28,7 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
 
     const defaultBaseHue = typeof hueGlobal.value === 'number' ? hueGlobal.value : 0;
     const [baseHue, setBaseHue] = useState<number>(defaultBaseHue);
+    const [useLogScale, setUseLogScale] = useState<boolean>(false);
 
     if (type !== 'number' || !currentMapping || typeof currentMapping.value !== 'string') {
         return null;
@@ -126,12 +127,17 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
     const histLayout: any = useMemo(() => ({
         margin: { t: 10, r: 40, l: 40, b: 20 },
         xaxis: { range: [min, max], fixedrange: true, showgrid: false },
-        yaxis: { fixedrange: true, title: { text: 'Count', font: { size: 10 } }, showgrid: false },
+        yaxis: { 
+            fixedrange: true, 
+            title: { text: 'Count', font: { size: 10 } }, 
+            showgrid: false,
+            type: useLogScale ? 'log' : 'linear'
+        },
         paper_bgcolor: 'transparent',
         plot_bgcolor: 'transparent',
         showlegend: false,
         bargap: 0.05
-    }), [min, max]);
+    }), [min, max, useLogScale]);
 
     // Plotly is absolutely purged of ALL drag state overlay logic. True visual data only.
     const mapData: any = useMemo(() => ([
@@ -213,7 +219,23 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
             </div>
             <div className="card-body p-3 overflow-auto" style={{ display: 'flex', flexDirection: 'column' }}>
                 
-                <label className="form-label small text-muted mb-1 fw-bold">1. Histogram Frequency</label>
+                <div className="d-flex align-items-center justify-content-between mb-1">
+                    <label className="form-label small text-muted mb-0 fw-bold">1. Histogram Frequency</label>
+                    <div className="form-check form-switch small mb-0 d-flex align-items-center">
+                        <input 
+                            className="form-check-input mt-0 me-2" 
+                            type="checkbox" 
+                            role="switch" 
+                            id="logScaleSwitch" 
+                            style={{ cursor: 'pointer', transform: 'scale(0.8)' }}
+                            checked={useLogScale} 
+                            onChange={(e) => setUseLogScale(e.target.checked)} 
+                        />
+                        <label className="form-check-label small text-muted mb-0" htmlFor="logScaleSwitch" style={{ fontSize: '0.75rem', cursor: 'pointer' }}>
+                            Log Scale
+                        </label>
+                    </div>
+                </div>
                 <div className="border rounded bg-light p-1 border-bottom-0 rounded-bottom-0" style={{ flexShrink: 0, height: '140px' }}>
                     <Plot
                         data={histData}
