@@ -212,15 +212,15 @@ const HeaderSummary: React.FC<HeaderSummaryProps> = ({ data, column, mode, confi
         const type = determineType(rawValues);
 
         if (type === 'number' || type === 'date') {
-            // Convert to numbers for math
-            const numericValues = rawValues.map(v => {
+            // Convert to numbers for math, keeping original order for scatter plot
+            const unsortedNumeric = rawValues.map(v => {
                 if (type === 'date') return new Date(v).getTime();
                 return Number(v);
             }).filter(v => !isNaN(v));
 
-            if (numericValues.length === 0) return { type: 'category', values: rawValues }; // fallback
+            if (unsortedNumeric.length === 0) return { type: 'category', values: rawValues }; // fallback
 
-            numericValues.sort((a, b) => a - b);
+            const numericValues = [...unsortedNumeric].sort((a, b) => a - b);
             const count = numericValues.length;
             const min = numericValues[0];
             const max = numericValues[count - 1];
@@ -270,7 +270,7 @@ const HeaderSummary: React.FC<HeaderSummaryProps> = ({ data, column, mode, confi
                 avg: formatVal(avg),
                 median: formatVal(median),
                 stdDev: formatDuration(stdDev),
-                rawNumeric: numericValues, // For sparkline
+                rawNumeric: unsortedNumeric, // For sparkline, keeping table order
                 hasGaussianTest,
                 gaussianScore,
                 isGaussian,
