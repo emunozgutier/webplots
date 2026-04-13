@@ -366,14 +366,21 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                         </label>
                     </div>
                 </div>
-                <div className="border rounded bg-light p-1 border-bottom-0 rounded-bottom-0" style={{ flexShrink: 0, height: '140px' }}>
-                    <Plot
-                        data={histData}
-                        layout={histLayout}
-                        config={{ displayModeBar: false }}
-                        style={{ width: '100%', height: '100%' }}
-                        useResizeHandler={true}
-                    />
+                <div className="d-flex flex-row border rounded bg-light border-bottom-0 rounded-bottom-0" style={{ flexShrink: 0, height: '140px' }}>
+                    {title === 'Hue/Color' && (
+                        <div className="border-end border-bottom-0" style={{ width: '45px', minWidth: '45px' }}>
+                            {/* Invisible spacer to explicitly align the Plotly layout with the offset map underneath */}
+                        </div>
+                    )}
+                    <div className="flex-grow-1 p-1" style={{ overflow: 'hidden' }}>
+                        <Plot
+                            data={histData}
+                            layout={histLayout}
+                            config={{ displayModeBar: false }}
+                            style={{ width: '100%', height: '100%' }}
+                            useResizeHandler={true}
+                        />
+                    </div>
                 </div>
 
                 <div className="mt-2 mb-1">
@@ -436,7 +443,7 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                 
                 <div className="d-flex flex-row flex-grow-1 border rounded bg-light border-top-0 rounded-top-0" style={{ minHeight: '160px' }}>
                     {title === 'Hue/Color' && (
-                        <div className="d-flex flex-column align-items-center justify-content-center px-2 border-end bg-white">
+                        <div className="d-flex flex-column align-items-center justify-content-center border-end bg-white" style={{ width: '45px', minWidth: '45px' }}>
                             <span className="small text-muted mb-2" style={{ fontSize: '0.65rem', fontWeight: 'bold' }}>Offset</span>
                             <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '25px', position: 'relative' }}>
                                 <input 
