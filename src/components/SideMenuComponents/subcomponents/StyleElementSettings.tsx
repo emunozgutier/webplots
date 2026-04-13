@@ -67,7 +67,7 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
         }
         
         const rMin = Number(currentMapping.range ? currentMapping.range[0] : (title === 'Node Size' ? 2 : 0));
-        const rMax = Number(currentMapping.range ? currentMapping.range[1] : (title === 'Hue/Color' ? 360 : (title === 'Saturation' || title === 'Lightness' ? 1 : (title === 'Node Size' ? 20 : 100))));
+        const rMax = Number(currentMapping.range ? currentMapping.range[1] : (title === 'Hue/Color' ? 360 : (title === 'Saturation' || title === 'Lightness' ? 100 : (title === 'Node Size' ? 20 : 100))));
 
         const domainVal = [dataMin, dataMax];
         const spanX = domainVal[1] - domainVal[0] || 1;
@@ -123,10 +123,10 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                 const wrappedHue = ((mappedVal % 360) + 360) % 360; 
                 return `hsl(${wrappedHue}, 80%, 50%)`;
             } else if (title === 'Saturation') {
-                const cVal = clamp(mappedVal, 0, 1) * 100;
+                const cVal = clamp(mappedVal, 0, 100);
                 return `hsl(${baseHue}, ${cVal}%, 50%)`;
             } else if (title === 'Lightness') {
-                const cVal = clamp(mappedVal, 0, 1) * 100;
+                const cVal = clamp(mappedVal, 0, 100);
                 return `hsl(${baseHue}, 80%, ${cVal}%)`;
             }
             return '#6c757d';
@@ -137,7 +137,7 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
 
     // Define visual bounds strictly so the HTML SVG scales precisely to coordinate logic
     const limitMin = title === 'Node Size' ? 1 : 0;
-    const limitMax = title === 'Hue/Color' ? 360 : (title === 'Saturation' || title === 'Lightness' ? 1 : 100);
+    const limitMax = title === 'Hue/Color' ? 360 : 100;
 
     const activeRangeMin = clamp(dragRange ? dragRange[0] : rangeMin, limitMin, limitMax);
     const activeRangeMax = clamp(dragRange ? dragRange[1] : rangeMax, limitMin, limitMax);
@@ -204,8 +204,8 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
     const mapData: any = useMemo(() => ([
         ...(title === 'Hue/Color' || title === 'Saturation' || title === 'Lightness' ? [{
             x: max > min ? [min, max] : [min - 1, min + 1],
-            y: Array.from({ length: 73 }, (_, i) => title === 'Hue/Color' ? i * 5 : i / 72),
-            z: Array.from({ length: 73 }, (_, i) => [title === 'Hue/Color' ? i * 5 : i / 72, title === 'Hue/Color' ? i * 5 : i / 72]),
+            y: Array.from({ length: 73 }, (_, i) => title === 'Hue/Color' ? i * 5 : (i / 72) * 100),
+            z: Array.from({ length: 73 }, (_, i) => [title === 'Hue/Color' ? i * 5 : (i / 72) * 100, title === 'Hue/Color' ? i * 5 : (i / 72) * 100]),
             type: 'heatmap' as const,
             colorscale: Array.from({ length: 37 }, (_, i) => {
                 const fraction = i / 36;
@@ -369,7 +369,7 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                             <span className="small text-muted me-2" style={{ fontSize: '0.75rem' }}>Mapping Type:</span>
                             <select 
                                 className="form-select form-select-sm border-0 bg-transparent text-primary fw-bold" 
-                                style={{ width: 'auto', height: '22px', fontSize: '0.75rem', padding: '0px 15px 0px 5px', cursor: 'pointer' }}
+                                style={{ width: 'auto', height: '22px', fontSize: '0.75rem', padding: '0px 35px 0px 5px', cursor: 'pointer' }}
                                 value={mappingType}
                                 onChange={e => {
                                     const newType = e.target.value as any;
@@ -379,7 +379,7 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                                 }}
                             >
                                 <option value="linear">Line</option>
-                                <option value="curve">Dynamic Curve (Exp/Log)</option>
+                                <option value="curve">Exp/Log</option>
                             </select>
 
                             {(title === 'Saturation' || title === 'Lightness') && (
@@ -387,7 +387,7 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                                     <span className="small text-muted me-2" style={{ fontSize: '0.75rem' }}>Target Base Hue:</span>
                                     <select 
                                         className="form-select form-select-sm border-0 bg-transparent text-primary fw-bold" 
-                                        style={{ width: 'auto', height: '22px', fontSize: '0.75rem', padding: '0px 15px 0px 5px', cursor: 'pointer' }} 
+                                        style={{ width: 'auto', height: '22px', fontSize: '0.75rem', padding: '0px 35px 0px 5px', cursor: 'pointer' }} 
                                         value={baseHue} 
                                         onChange={e => setBaseHue(Number(e.target.value))} 
                                     >
