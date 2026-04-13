@@ -185,7 +185,10 @@ export const generatePlotConfig = (
                 if (hue.enabled !== false) {
                     if (hue.source === 'manual') h = Number(hue.value);
                     else if (hue.source === 'group') h = (index * 137.5) % 360; // Golden angle spread
-                    else if (hue.source === 'column' && hueColMap) h = hueColMap(row[String(hue.value)]);
+                    else if (hue.source === 'column' && hueColMap) {
+                        const rawH = hueColMap(row[String(hue.value)]);
+                        h = ((rawH + (hue.offset || 0)) % 360 + 360) % 360;
+                    }
                 }
 
                 // SATURATION

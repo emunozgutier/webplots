@@ -12,6 +12,7 @@ export interface AestheticMapping {
     domain?: [number, number]; // [x0, x1] data range corresponding to the output range bounds
     mappingType?: 'linear' | 'curve' | 'exponential' | 'logarithmic';
     midPoint?: [number, number]; // [cx, cy] for 3-point power curve (0 to 1)
+    offset?: number; // Hue shift offset
     enabled?: boolean;
 }
 

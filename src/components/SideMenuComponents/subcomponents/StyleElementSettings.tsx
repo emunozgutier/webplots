@@ -122,7 +122,8 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
         const barColorsArray = binCentersArray.map(center => {
             const mappedVal = mapToRange(center);
             if (title === 'Hue/Color') {
-                const wrappedHue = ((mappedVal % 360) + 360) % 360; 
+                const offsetVal = mapping.offset || 0;
+                const wrappedHue = ((mappedVal + offsetVal) % 360 + 360) % 360; 
                 return `hsl(${wrappedHue}, 80%, 50%)`;
             } else if (title === 'Saturation') {
                 const cVal = clamp(mappedVal, 0, 100);
@@ -135,7 +136,8 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
         });
 
         return { min: dataMin, max: dataMax, binCenters: binCentersArray, bins: binsArray, barColors: barColorsArray, rangeMin: rMin, rangeMax: rMax };
-    }, [data, mapping.value, mapping.range, title, baseHue, mappingType, activeCx, activeCy]);
+    }, [data, mapping.value, mapping.range, mapping.offset, title, baseHue, mappingType, activeCx, activeCy]);
+
 
     // Define visual bounds strictly so the HTML SVG scales precisely to coordinate logic
     const limitMin = title === 'Node Size' ? 1 : 0;
@@ -212,7 +214,8 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
             colorscale: Array.from({ length: 37 }, (_, i) => {
                 const fraction = i / 36;
                 if (title === 'Hue/Color') {
-                    return [fraction, `hsl(${fraction * 360}, 80%, 50%)`];
+                    const offsetVal = mapping.offset || 0;
+                    return [fraction, `hsl(${((fraction * 360) + offsetVal) % 360}, 80%, 50%)`];
                 } else if (title === 'Saturation') {
                     return [fraction, `hsl(${baseHue}, ${fraction * 100}%, 50%)`];
                 } else {
@@ -246,7 +249,7 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                 showlegend: false
             };
         }) : [])
-    ]), [title, min, max, baseHue, limitMin, limitMax]);
+    ]), [title, min, max, baseHue, limitMin, limitMax, mapping.offset]);
 
     const mapLayout: any = useMemo(() => ({
         margin: { t: 15, r: 40, l: 40, b: 20 },
@@ -416,42 +419,67 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                     </div>
                 </div>
                 
-                <div className="border rounded bg-light p-1 border-top-0 rounded-top-0 flex-grow-1" style={{ minHeight: '160px', position: 'relative' }}>
-                    <Plot
-                        data={mapData}
-                        layout={mapLayout}
-                        config={{ displayModeBar: false }}
-                        style={{ width: '100%', height: '100%' }}
-                        useResizeHandler={true}
-                    />
-                    
-                    {/* SVG Interactive Overlay Engine */}
-                    <svg
-                        ref={svgRef}
-                        style={{ position: 'absolute', top: 15, bottom: 20, left: 40, right: 40, width: 'calc(100% - 80px)', height: 'calc(100% - 35px)', overflow: 'visible', zIndex: 10, touchAction: 'none' }}
-                        onPointerMove={handlePointerMove}
-                        onPointerUp={handlePointerUp}
-                        onPointerLeave={handlePointerUp}
-                    >
-                        {segments}
-                        <circle 
-                            cx="0%" cy={`${y1Percent}%`} r="8" 
-                            fill="black" stroke="white" strokeWidth="2" style={{ cursor: 'pointer' }} 
-                            onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); setDraggingAnchor(0); }} 
+                <div className="d-flex flex-row flex-grow-1 border rounded bg-light border-top-0 rounded-top-0" style={{ minHeight: '160px' }}>
+                    {title === 'Hue/Color' && (
+                        <div className="d-flex flex-column align-items-center justify-content-center px-2 border-end bg-white">
+                            <span className="small text-muted mb-2" style={{ fontSize: '0.65rem', fontWeight: 'bold' }}>Offset</span>
+                            <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '120px', width: '25px', position: 'relative' }}>
+                                <input 
+                                    type="range" 
+                                    min="0" 
+                                    max="360" 
+                                    value={mapping.offset || 0} 
+                                    onChange={(e) => updateFn({ offset: Number(e.target.value) })}
+                                    style={{ 
+                                        width: '100px',
+                                        height: '20px',
+                                        transform: 'rotate(-90deg)',
+                                        transformOrigin: 'center',
+                                        cursor: 'pointer',
+                                        position: 'absolute'
+                                    }}
+                                />
+                            </div>
+                            <span className="small mt-2" style={{ fontSize: '0.65rem', fontFamily: 'monospace' }}>{mapping.offset || 0}&deg;</span>
+                        </div>
+                    )}
+                    <div className="flex-grow-1 p-1" style={{ position: 'relative', overflow: 'hidden' }}>
+                        <Plot
+                            data={mapData}
+                            layout={mapLayout}
+                            config={{ displayModeBar: false }}
+                            style={{ width: '100%', height: '100%' }}
+                            useResizeHandler={true}
                         />
-                        <circle 
-                            cx="100%" cy={`${y2Percent}%`} r="8" 
-                            fill="black" stroke="white" strokeWidth="2" style={{ cursor: 'pointer' }} 
-                            onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); setDraggingAnchor(1); }} 
-                        />
-                        {(mappingType === 'curve' || mappingType === 'exponential' || mappingType === 'logarithmic') && (
+                        
+                        {/* SVG Interactive Overlay Engine */}
+                        <svg
+                            ref={svgRef}
+                            style={{ position: 'absolute', top: 15, bottom: 20, left: 40, right: 40, width: 'calc(100% - 80px)', height: 'calc(100% - 35px)', overflow: 'visible', zIndex: 10, touchAction: 'none' }}
+                            onPointerMove={handlePointerMove}
+                            onPointerUp={handlePointerUp}
+                            onPointerLeave={handlePointerUp}
+                        >
+                            {segments}
                             <circle 
-                                cx={`${activeCx * 100}%`} cy={`${y1Percent + activeCy * (y2Percent - y1Percent)}%`} r="6" 
-                                fill="white" stroke="black" strokeWidth="2" style={{ cursor: 'move' }} 
-                                onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); setDraggingAnchor(2); }} 
+                                cx="0%" cy={`${y1Percent}%`} r="8" 
+                                fill="black" stroke="white" strokeWidth="2" style={{ cursor: 'pointer' }} 
+                                onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); setDraggingAnchor(0); }} 
                             />
-                        )}
-                    </svg>
+                            <circle 
+                                cx="100%" cy={`${y2Percent}%`} r="8" 
+                                fill="black" stroke="white" strokeWidth="2" style={{ cursor: 'pointer' }} 
+                                onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); setDraggingAnchor(1); }} 
+                            />
+                            {(mappingType === 'curve' || mappingType === 'exponential' || mappingType === 'logarithmic') && (
+                                <circle 
+                                    cx={`${activeCx * 100}%`} cy={`${y1Percent + activeCy * (y2Percent - y1Percent)}%`} r="6" 
+                                    fill="white" stroke="black" strokeWidth="2" style={{ cursor: 'move' }} 
+                                    onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); setDraggingAnchor(2); }} 
+                                />
+                            )}
+                        </svg>
+                    </div>
                 </div>
                 <div className="flex-shrink-0 bg-white" style={{ position: 'relative', zIndex: 10 }}>
                     <div className="text-center mt-2 p-1 border rounded" style={{ fontSize: '0.75rem', fontFamily: 'monospace', backgroundColor: '#e9ecef', color: '#000' }}>
