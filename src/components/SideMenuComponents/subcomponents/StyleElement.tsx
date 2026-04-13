@@ -90,7 +90,7 @@ const StyleElement: React.FC<StyleElementProps> = ({ title, mapping, updateFn, t
                                 type="range"
                                 className="form-range"
                                 min={title === 'Node Size' ? 1 : 0}
-                                max={title === 'Hue/Color' ? 360 : (title === 'Node Size' ? 100 : 100)}
+                                max={title === 'Hue/Color' ? 360 : (title === 'Node Size' ? 20 : 100)}
                                 value={Number(mapping.value) || 0}
                                 onChange={e => updateFn({ value: Number(e.target.value) })}
                             />

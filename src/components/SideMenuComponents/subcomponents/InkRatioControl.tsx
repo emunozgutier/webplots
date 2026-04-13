@@ -2,7 +2,7 @@ import React from 'react';
 import { useInkRatioStore } from '../../../store/SideMenu/useInkRatioStore';
 import { useStyleSideMenuStore } from '../../../store/SideMenu/useStyleSideMenuStore';
 import { useCsvDataStore } from '../../../store/useCsvDataStore';
-import { Alert } from 'react-bootstrap';
+import { Alert, OverlayTrigger, Tooltip } from 'react-bootstrap';
 
 const InkRatioControl: React.FC = () => {
     const {
@@ -44,16 +44,29 @@ const InkRatioControl: React.FC = () => {
             <div className="mb-3">
                 <label className="form-label small mb-1">Absorption Behavior</label>
                 <div className="btn-group w-100" role="group" aria-label="Absorption Behavior">
-                    <button
-                        type="button"
-                        className={`btn btn-sm ${absorptionMode === 'size' ? 'btn-primary' : 'btn-outline-secondary'}`}
-                        onClick={() => { if (!isSizeActive) setAbsorptionMode('size'); }}
-                        disabled={!!isSizeActive}
-                        style={{ textDecoration: isSizeActive ? 'line-through' : 'none' }}
-                        title={isSizeActive ? "Disabled because Node Size is mapped in Style Settings" : ""}
-                    >
-                        Grow
-                    </button>
+                    {isSizeActive ? (
+                        <OverlayTrigger
+                            placement="top"
+                            overlay={<Tooltip id="grow-tooltip">Disabled because Node Size is mapped in Style Settings</Tooltip>}
+                        >
+                            <button
+                                type="button"
+                                className="btn btn-sm btn-outline-secondary"
+                                style={{ textDecoration: 'line-through', opacity: 0.65 }}
+                                onClick={(e) => e.preventDefault()}
+                            >
+                                Grow
+                            </button>
+                        </OverlayTrigger>
+                    ) : (
+                        <button
+                            type="button"
+                            className={`btn btn-sm ${absorptionMode === 'size' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                            onClick={() => setAbsorptionMode('size')}
+                        >
+                            Grow
+                        </button>
+                    )}
                     <button
                         type="button"
                         className={`btn btn-sm ${absorptionMode === 'glow' ? 'btn-primary' : 'btn-outline-secondary'}`}

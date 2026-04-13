@@ -137,7 +137,7 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
 
     // Define visual bounds strictly so the HTML SVG scales precisely to coordinate logic
     const limitMin = title === 'Node Size' ? 1 : 0;
-    const limitMax = title === 'Hue/Color' ? 360 : 100;
+    const limitMax = title === 'Hue/Color' ? 360 : (title === 'Node Size' ? 20 : 100);
 
     const activeRangeMin = clamp(dragRange ? dragRange[0] : rangeMin, limitMin, limitMax);
     const activeRangeMax = clamp(dragRange ? dragRange[1] : rangeMax, limitMin, limitMax);
