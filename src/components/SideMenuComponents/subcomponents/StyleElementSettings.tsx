@@ -29,6 +29,7 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
     const [draggingAnchor, setDraggingAnchor] = useState<0 | 1 | 2 | null>(null);
     const [dragMidPoint, setDragMidPoint] = useState<[number, number] | null>(null);
     const svgRef = useRef<SVGSVGElement>(null);
+    const [sliderHeight, setSliderHeight] = useState(125); // Target height of our horizontal rotated slider
 
     const defaultBaseHue = typeof hueGlobal.value === 'number' ? hueGlobal.value : 0;
     const [baseHue, setBaseHue] = useState<number>(defaultBaseHue);
@@ -37,6 +38,20 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
     if (type !== 'number' || !currentMapping || typeof (currentMapping as any).value !== 'string') {
         return null;
     }
+
+    // Resize observer to lock the offset slider width exactly to the SVG plot height
+    React.useEffect(() => {
+        if (!svgRef.current) return;
+        const observer = new ResizeObserver(entries => {
+            for (let entry of entries) {
+                if (entry.contentRect.height > 0) {
+                    setSliderHeight(entry.contentRect.height);
+                }
+            }
+        });
+        observer.observe(svgRef.current);
+        return () => observer.disconnect();
+    }, []);
 
     const mapping = currentMapping as import('../../../store/SideMenu/useStyleSideMenuStore').AestheticMapping;
     const mappingType = mapping.mappingType || 'linear';
@@ -423,7 +438,7 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                     {title === 'Hue/Color' && (
                         <div className="d-flex flex-column align-items-center justify-content-center px-2 border-end bg-white">
                             <span className="small text-muted mb-2" style={{ fontSize: '0.65rem', fontWeight: 'bold' }}>Offset</span>
-                            <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '120px', width: '25px', position: 'relative' }}>
+                            <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '25px', position: 'relative' }}>
                                 <input 
                                     type="range" 
                                     min="0" 
@@ -431,7 +446,7 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                                     value={mapping.offset || 0} 
                                     onChange={(e) => updateFn({ offset: Number(e.target.value) })}
                                     style={{ 
-                                        width: '100px',
+                                        width: `${sliderHeight}px`,
                                         height: '20px',
                                         transform: 'rotate(-90deg)',
                                         transformOrigin: 'center',
