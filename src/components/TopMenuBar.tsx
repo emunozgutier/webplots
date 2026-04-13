@@ -7,6 +7,7 @@ import type { CsvDataStore } from '../store/useCsvDataStore';
 import { useWorkspaceStore, workspaceRegistry } from '../store/Workspace/useWorkspaceStore';
 import { getSmallDataset, getLargeColumnDataset, getSimulationDataset, getBinningTestData } from '../utils/TestDatasets';
 import { generateTestGaussianData } from '../utils/TableMathLib';
+import BetaMode from './BetaMode';
 
 interface VersionData {
     commit_title: string;
@@ -21,6 +22,7 @@ const TopMenuBar: React.FC = () => {
     const projectInputRef = useRef<HTMLInputElement>(null);
 
     const [showVersionModal, setShowVersionModal] = useState(false);
+    const [showBetaModal, setShowBetaModal] = useState(false);
     const [versionData, setVersionData] = useState<VersionData | null>(null);
 
     useEffect(() => {
@@ -349,6 +351,10 @@ const TopMenuBar: React.FC = () => {
                             <NavDropdown.Item onClick={handleShowVersion}>
                                 Version
                             </NavDropdown.Item>
+                            <NavDropdown.Divider />
+                            <NavDropdown.Item onClick={() => setShowBetaModal(true)}>
+                                Beta Mode
+                            </NavDropdown.Item>
                         </NavDropdown>
                     </Nav>
                     <div className="d-flex align-items-center gap-3">
@@ -418,6 +424,9 @@ const TopMenuBar: React.FC = () => {
                     </Button>
                 </Modal.Footer>
             </Modal>
+
+            {/* Beta Mode Modal */}
+            <BetaMode show={showBetaModal} onHide={() => setShowBetaModal(false)} />
         </Navbar>
     );
 };

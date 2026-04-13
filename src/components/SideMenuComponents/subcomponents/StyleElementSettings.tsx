@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useRef } from 'react';
 import Plot from 'react-plotly.js';
 import { useWorkspaceLocalStore } from '../../../store/Workspace/useWorkspaceLocalStore';
+import { useWorkspaceStore } from '../../../store/Workspace/useWorkspaceStore';
 import { useCsvDataStore } from '../../../store/useCsvDataStore';
 import { useStyleSideMenuStore, type StyleSideMenuData } from '../../../store/SideMenu/useStyleSideMenuStore';
 import { calculateLogBase } from '../../../utils/TableMathLib';
@@ -10,6 +11,7 @@ const clamp = (val: number, min: number, max: number) => Math.max(min, Math.min(
 
 const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, type }) => {
     const { closePopup } = useWorkspaceLocalStore();
+    const { isDebugMode } = useWorkspaceStore();
     const { data } = useCsvDataStore();
 
     const keyMap: Record<string, keyof StyleSideMenuData> = {
@@ -461,16 +463,20 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                             : <span>X</span>
                         } <span className="text-muted" style={{fontSize: '0.65rem'}}>(X in 0..1)</span>
                     </div>
-                    <table className="table table-sm table-bordered mt-1 text-center text-muted mb-0" style={{ fontSize: '0.7rem' }}>
-                        <thead className="table-light">
-                            <tr><th>Anchor</th><th>Data (X)</th><th>Vis Parameter (Y)</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td>Start Point</td><td>0%</td><td>{activeRangeMin.toFixed(1)}</td></tr>
-                            {(mappingType === 'curve' || mappingType === 'exponential' || mappingType === 'logarithmic') && <tr><td>Curve Midpoint</td><td>{(activeCx * 100).toFixed(1)}%</td><td>{(activeRangeMin + ((activeCy > activeCx && mappingType !== 'exponential') ? Math.log(1 + (calculateLogBase(activeCx, activeCy) - 1) * 0.5) / Math.log(calculateLogBase(activeCx, activeCy)) : Math.pow(0.5, clamp(Math.log(Math.max(0.001, Math.min(0.999, activeCy))) / Math.log(Math.max(0.001, Math.min(0.999, activeCx))), 1, 30))) * (activeRangeMax - activeRangeMin)).toFixed(1)}</td></tr>}
-                            <tr><td>End Point</td><td>100%</td><td>{activeRangeMax.toFixed(1)}</td></tr>
-                        </tbody>
-                    </table>
+                    {isDebugMode && (
+                        <div title="Debug Feature: Real-time calculation coordinates for the bezier curve mapping engine.">
+                            <table className="table table-sm table-bordered mt-1 text-center text-muted mb-0" style={{ fontSize: '0.7rem' }}>
+                                <thead className="table-light">
+                                    <tr><th>Anchor</th><th>Data (X)</th><th>Vis Parameter (Y)</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>Start Point</td><td>0%</td><td>{activeRangeMin.toFixed(1)}</td></tr>
+                                    {(mappingType === 'curve' || mappingType === 'exponential' || mappingType === 'logarithmic') && <tr><td>Curve Midpoint</td><td>{(activeCx * 100).toFixed(1)}%</td><td>{(activeRangeMin + ((activeCy > activeCx && mappingType !== 'exponential') ? Math.log(1 + (calculateLogBase(activeCx, activeCy) - 1) * 0.5) / Math.log(calculateLogBase(activeCx, activeCy)) : Math.pow(0.5, clamp(Math.log(Math.max(0.001, Math.min(0.999, activeCy))) / Math.log(Math.max(0.001, Math.min(0.999, activeCx))), 1, 30))) * (activeRangeMax - activeRangeMin)).toFixed(1)}</td></tr>}
+                                    <tr><td>End Point</td><td>100%</td><td>{activeRangeMax.toFixed(1)}</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
                 </div>
 
             </div>

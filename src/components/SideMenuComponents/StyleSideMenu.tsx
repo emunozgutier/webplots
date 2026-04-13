@@ -1,10 +1,12 @@
 import React from 'react';
 import { useStyleSideMenuStore } from '../../store/SideMenu/useStyleSideMenuStore';
+import { useWorkspaceStore } from '../../store/Workspace/useWorkspaceStore';
 import StyleElement from './subcomponents/StyleElement';
 
 const StyleSideMenu: React.FC = () => {
 
     const { colorData, setHue, setSaturation, setLightness, setSize } = useStyleSideMenuStore();
+    const { isDebugMode } = useWorkspaceStore();
 
     return (
         <div className="p-3 w-100" style={{ height: '100%', overflowY: 'auto' }}>
@@ -14,7 +16,11 @@ const StyleSideMenu: React.FC = () => {
             </p>
 
             <StyleElement title="Hue/Color" mapping={colorData.hue} updateFn={setHue} type="number" />
-            <StyleElement title="Saturation" mapping={colorData.saturation} updateFn={setSaturation} type="number" />
+            {isDebugMode && (
+                <div title="Debug Feature: Adjusts saturation levels. Requires deeper understanding of HSL color space.">
+                    <StyleElement title="Saturation" mapping={colorData.saturation} updateFn={setSaturation} type="number" />
+                </div>
+            )}
             <StyleElement title="Lightness" mapping={colorData.lightness} updateFn={setLightness} type="number" />
             <StyleElement title="Node Size" mapping={colorData.size} updateFn={setSize} type="number" />
 
