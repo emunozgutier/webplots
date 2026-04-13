@@ -25,11 +25,12 @@ const PlotAreaControlButtons: React.FC<PlotAreaControlButtonsProps> = ({ onOpenS
     const { colorData } = useStyleSideMenuStore();
     const subplotData = useSubplotSideMenuStore();
     const { filters } = useFilterSideMenuStore();
-    const { inkRatio, absorptionMode, maxRadiusRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius } = useInkRatioStore();
+    const { inkRatio, absorptionMode, absorbedPoint, maxRadiusRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius } = useInkRatioStore();
 
     const handleSaveHTML = () => {
         const { processedTraces } = runDataPipeline(data, filters, sideMenuData, groupSideMenuData, {
             inkRatio,
+            absorbedPoint,
             chartWidth,
             chartHeight,
             pointRadius,

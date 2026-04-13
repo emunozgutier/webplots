@@ -99,11 +99,18 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
             x = clamp(x, 0, 1);
 
             let pct = x;
-            if (mappingType === 'curve') {
+            if (mappingType === 'curve' || mappingType === 'exponential') {
                 const cx = Math.max(0.001, Math.min(0.999, activeCx));
                 const cy = Math.max(0.001, Math.min(0.999, activeCy));
-                const k = Math.log(cy) / Math.log(cx);
+                const kRaw = Math.log(cy) / Math.log(cx);
+                const k = clamp(kRaw, 1, 20);
                 pct = Math.pow(x, k);
+            } else if (mappingType === 'logarithmic') {
+                const cx = Math.max(0.001, Math.min(0.999, activeCx));
+                const cy = Math.max(0.001, Math.min(0.999, activeCy));
+                const kRaw = Math.log(cy) / Math.log(cx);
+                const k = clamp(1 / kRaw, 1, 20);
+                pct = Math.pow(x, 1 / k);
             }
 
             return rMin + pct * (rMax - rMin);
@@ -271,19 +278,33 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
         const xB = (i + 1) / numPoints;
 
         let pctA = xA;
-        if (mappingType === 'curve') {
+        if (mappingType === 'curve' || mappingType === 'exponential') {
             const cx = Math.max(0.001, Math.min(0.999, activeCx));
             const cy = Math.max(0.001, Math.min(0.999, activeCy));
-            const k = Math.log(cy) / Math.log(cx);
+            const kRaw = Math.log(cy) / Math.log(cx);
+            const k = clamp(kRaw, 1, 20);
             pctA = Math.pow(xA, k);
+        } else if (mappingType === 'logarithmic') {
+            const cx = Math.max(0.001, Math.min(0.999, activeCx));
+            const cy = Math.max(0.001, Math.min(0.999, activeCy));
+            const kRaw = Math.log(cy) / Math.log(cx);
+            const k = clamp(1 / kRaw, 1, 20);
+            pctA = Math.pow(xA, 1 / k);
         }
 
         let pctB = xB;
-        if (mappingType === 'curve') {
+        if (mappingType === 'curve' || mappingType === 'exponential') {
             const cx = Math.max(0.001, Math.min(0.999, activeCx));
             const cy = Math.max(0.001, Math.min(0.999, activeCy));
-            const k = Math.log(cy) / Math.log(cx);
+            const kRaw = Math.log(cy) / Math.log(cx);
+            const k = clamp(kRaw, 1, 20);
             pctB = Math.pow(xB, k);
+        } else if (mappingType === 'logarithmic') {
+            const cx = Math.max(0.001, Math.min(0.999, activeCx));
+            const cy = Math.max(0.001, Math.min(0.999, activeCy));
+            const kRaw = Math.log(cy) / Math.log(cx);
+            const k = clamp(1 / kRaw, 1, 20);
+            pctB = Math.pow(xB, 1 / k);
         }
 
         const yaPercent = y1Percent + pctA * (y2Percent - y1Percent);
@@ -344,12 +365,14 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                             onChange={e => {
                                 const newType = e.target.value as any;
                                 let newMid = midPoint;
-                                if (newType === 'curve' && mappingType !== 'curve') newMid = [0.5, 0.5];
+                                if ((newType === 'curve' || newType === 'exponential' || newType === 'logarithmic') && mappingType !== 'curve' && mappingType !== 'exponential' && mappingType !== 'logarithmic') newMid = [0.5, 0.5];
                                 updateFn({ mappingType: newType, midPoint: newMid });
                             }}
                         >
                             <option value="linear">Line</option>
-                            <option value="curve">Exp/Log Curve</option>
+                            <option value="exponential">Exponential Curve</option>
+                            <option value="logarithmic">Logarithmic Curve</option>
+                            {mappingType === 'curve' && <option value="curve">Legacy Curve</option>}
                         </select>
                         {(title === 'Saturation' || title === 'Lightness') && (
                             <div className="d-flex align-items-center fw-normal border rounded px-1" style={{ background: '#f8f9fa' }}>
@@ -395,7 +418,7 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                             fill="black" stroke="white" strokeWidth="2" style={{ cursor: 'pointer' }} 
                             onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); setDraggingAnchor(1); }} 
                         />
-                        {mappingType === 'curve' && (
+                        {(mappingType === 'curve' || mappingType === 'exponential' || mappingType === 'logarithmic') && (
                             <circle 
                                 cx={`${activeCx * 100}%`} cy={`${y1Percent + activeCy * (y2Percent - y1Percent)}%`} r="6" 
                                 fill="white" stroke="black" strokeWidth="2" style={{ cursor: 'move' }} 
@@ -405,22 +428,22 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                     </svg>
                 </div>
                 <div className="flex-shrink-0 bg-white" style={{ position: 'relative', zIndex: 10 }}>
-                    <table className="table table-sm table-bordered mt-2 text-center text-muted mb-0" style={{ fontSize: '0.7rem' }}>
+                    <div className="text-center mt-2 p-1 border rounded" style={{ fontSize: '0.75rem', fontFamily: 'monospace', backgroundColor: '#e9ecef', color: '#000' }}>
+                        <strong>Eq:</strong> Y = {activeRangeMin.toFixed(1)} + {(activeRangeMax - activeRangeMin).toFixed(1)} &times; X{
+                            (mappingType === 'curve' || mappingType === 'exponential') ? <sup>{clamp(Math.log(Math.max(0.001, Math.min(0.999, activeCy))) / Math.log(Math.max(0.001, Math.min(0.999, activeCx))), 1, 20).toFixed(2)}</sup>
+                            : mappingType === 'logarithmic' ? <sup>1/{clamp(1 / (Math.log(Math.max(0.001, Math.min(0.999, activeCy))) / Math.log(Math.max(0.001, Math.min(0.999, activeCx)))), 1, 20).toFixed(2)}</sup>
+                            : ''
+                        } <span className="text-muted" style={{fontSize: '0.65rem'}}>(X in 0..1)</span>
+                    </div>
+                    <table className="table table-sm table-bordered mt-1 text-center text-muted mb-0" style={{ fontSize: '0.7rem' }}>
                         <thead className="table-light">
                             <tr><th>Anchor</th><th>Data (X)</th><th>Vis Parameter (Y)</th></tr>
                         </thead>
                         <tbody>
                             <tr><td>Start Point</td><td>0%</td><td>{activeRangeMin.toFixed(1)}</td></tr>
-                            {mappingType === 'curve' && <tr><td>Curve Midpoint</td><td>{(activeCx * 100).toFixed(1)}%</td><td>{(activeRangeMin + activeCy * (activeRangeMax - activeRangeMin)).toFixed(1)}</td></tr>}
+                            {(mappingType === 'curve' || mappingType === 'exponential' || mappingType === 'logarithmic') && <tr><td>Curve Midpoint</td><td>{(activeCx * 100).toFixed(1)}%</td><td>{(activeRangeMin + ((mappingType === 'logarithmic') ? Math.pow(0.5, 1 / clamp(1 / (Math.log(Math.max(0.001, Math.min(0.999, activeCy))) / Math.log(Math.max(0.001, Math.min(0.999, activeCx)))), 1, 20)) : Math.pow(0.5, clamp(Math.log(Math.max(0.001, Math.min(0.999, activeCy))) / Math.log(Math.max(0.001, Math.min(0.999, activeCx))), 1, 20))) * (activeRangeMax - activeRangeMin)).toFixed(1)}</td></tr>}
                             <tr><td>End Point</td><td>100%</td><td>{activeRangeMax.toFixed(1)}</td></tr>
                         </tbody>
-                        <tfoot>
-                            <tr>
-                                <td colSpan={3} className="text-center bg-light" style={{ fontSize: '0.65rem', fontFamily: 'monospace', padding: '4px' }}>
-                                    <strong>Eq:</strong> Y = {activeRangeMin.toFixed(1)} + {(activeRangeMax - activeRangeMin).toFixed(1)} &times; X{mappingType === 'curve' ? <sup>{(Math.log(Math.max(0.001, Math.min(0.999, activeCy))) / Math.log(Math.max(0.001, Math.min(0.999, activeCx)))).toFixed(2)}</sup> : ''} <span className="text-muted" style={{fontSize: '0.55rem'}}>(X in 0..1)</span>
-                                </td>
-                            </tr>
-                        </tfoot>
                     </table>
                 </div>
 

@@ -120,11 +120,18 @@ export const generatePlotConfig = (
                     x = Math.max(0, Math.min(1, x)); // clip to 0-1 range
 
                     let pct = x;
-                    if (mappingType === 'curve' && midPoint) {
+                    if ((mappingType === 'curve' || mappingType === 'exponential') && midPoint) {
                         const cx = Math.max(0.001, Math.min(0.999, midPoint[0]));
                         const cy = Math.max(0.001, Math.min(0.999, midPoint[1]));
-                        const k = Math.log(cy) / Math.log(cx);
+                        const kRaw = Math.log(cy) / Math.log(cx);
+                        const k = Math.max(1, Math.min(20, kRaw));
                         pct = Math.pow(x, k);
+                    } else if (mappingType === 'logarithmic' && midPoint) {
+                        const cx = Math.max(0.001, Math.min(0.999, midPoint[0]));
+                        const cy = Math.max(0.001, Math.min(0.999, midPoint[1]));
+                        const kRaw = Math.log(cy) / Math.log(cx);
+                        const k = Math.max(1, Math.min(20, 1 / kRaw));
+                        pct = Math.pow(x, 1 / k);
                     }
 
                     let result = outMin + pct * (outMax - outMin);
