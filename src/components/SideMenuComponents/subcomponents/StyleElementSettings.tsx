@@ -415,6 +415,11 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                             <tr><td>End Point</td><td>100%</td><td>{activeRangeMax.toFixed(1)}</td></tr>
                         </tbody>
                     </table>
+                    <div className="text-center mt-1 text-muted p-1 border rounded bg-light" style={{ fontSize: '0.65rem', fontFamily: 'monospace' }}>
+                        <strong>Equation:</strong> Y = {activeRangeMin.toFixed(1)} + {(activeRangeMax - activeRangeMin).toFixed(1)} &times; X{mappingType === 'curve' ? <sup>{(Math.log(Math.max(0.001, Math.min(0.999, activeCy))) / Math.log(Math.max(0.001, Math.min(0.999, activeCx)))).toFixed(2)}</sup> : ''}
+                        <br/>
+                        <span style={{ fontSize: '0.6rem' }}>(where X is normalized Data 0 to 1)</span>
+                    </div>
                 </div>
 
             </div>
