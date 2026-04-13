@@ -485,7 +485,10 @@ export const generatePlotConfig = (
         autosize: true,
         margin: { l: 50, r: 50, b: 50, t: 50 },
         showlegend: legendOrientation === 'hidden' ? false : (legendOrientation === 'auto' ? processedTraces.length > 1 : true),
-        legend: legendOrientation === 'bottom' ? { orientation: 'h', yanchor: 'bottom', y: -0.2, xanchor: 'center', x: 0.5 } : undefined,
+        legend: {
+            itemsizing: 'constant',
+            ...(legendOrientation === 'bottom' ? { orientation: 'h', yanchor: 'bottom', y: -0.2, xanchor: 'center', x: 0.5 } : {})
+        },
         barmode: plotType === 'histogram' ? (histogramBarmode || 'overlay') : undefined
     };
 
