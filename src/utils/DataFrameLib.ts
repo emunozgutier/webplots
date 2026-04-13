@@ -282,7 +282,7 @@ export const Step_3_ink_ratio_filter = (
         
         // originalToKept stores the index of the kept point, or -2 for non-numeric, or -1 for absorbed
         const originalToKept = new Int32Array(xData.length).fill(-1);
-        const keptPoints: { px: number, py: number, absorbed: number }[] = [];
+        const keptPoints: { px: number, py: number, absorbed: number, origIdx: number }[] = [];
 
         const distSq = minPixelDist * minPixelDist;
         
@@ -326,14 +326,61 @@ export const Step_3_ink_ratio_filter = (
             if (keptBy === -1) {
                 const keptIdx = keptPoints.length;
                 originalToKept[idx] = keptIdx;
-                keptPoints.push({ px, py, absorbed: 0 });
+                keptPoints.push({ px, py, absorbed: 0, origIdx: idx });
 
                 // Add to grid
                 const cellKey = `${cx},${cy}`;
                 if (!grid.has(cellKey)) grid.set(cellKey, []);
                 grid.get(cellKey)!.push(keptIdx);
             } else {
-                keptPoints[keptBy].absorbed += 1;
+                const kObj = keptPoints[keptBy];
+                const oldOrigIdx = kObj.origIdx;
+                
+                const sizeK = kObj.absorbed + 1;
+                const sizeP = 1;
+                let keepP = false;
+
+                if (sizeP > sizeK) {
+                    keepP = true;
+                } else if (sizeP === sizeK) {
+                    if (absorbedPoint === 'left') {
+                        if (numsX[idx] < numsX[oldOrigIdx]) keepP = true;
+                    } else if (absorbedPoint === 'right') {
+                        if (numsX[idx] > numsX[oldOrigIdx]) keepP = true;
+                    } else {
+                        if (Math.random() > 0.5) keepP = true;
+                    }
+                }
+
+                kObj.absorbed += 1;
+
+                if (keepP) {
+                    originalToKept[oldOrigIdx] = -1;
+                    originalToKept[idx] = keptBy;
+                    
+                    const oldCx = Math.floor(kObj.px / cellSize);
+                    const oldCy = Math.floor(kObj.py / cellSize);
+                    
+                    kObj.px = px;
+                    kObj.py = py;
+                    kObj.origIdx = idx;
+                    
+                    const newCx = Math.floor(kObj.px / cellSize);
+                    const newCy = Math.floor(kObj.py / cellSize);
+                    
+                    if (newCx !== oldCx || newCy !== oldCy) {
+                        const oldKey = `${oldCx},${oldCy}`;
+                        const newKey = `${newCx},${newCy}`;
+                        
+                        const cellArr = grid.get(oldKey);
+                        if (cellArr) {
+                            const indexInArr = cellArr.indexOf(keptBy);
+                            if (indexInArr > -1) cellArr.splice(indexInArr, 1);
+                        }
+                        if (!grid.has(newKey)) grid.set(newKey, []);
+                        grid.get(newKey)!.push(keptBy);
+                    }
+                }
             }
         }
 
