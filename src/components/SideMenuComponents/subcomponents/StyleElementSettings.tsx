@@ -414,12 +414,14 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                             {mappingType === 'curve' && <tr><td>Curve Midpoint</td><td>{(activeCx * 100).toFixed(1)}%</td><td>{(activeRangeMin + activeCy * (activeRangeMax - activeRangeMin)).toFixed(1)}</td></tr>}
                             <tr><td>End Point</td><td>100%</td><td>{activeRangeMax.toFixed(1)}</td></tr>
                         </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colSpan={3} className="text-center bg-light" style={{ fontSize: '0.65rem', fontFamily: 'monospace', padding: '4px' }}>
+                                    <strong>Eq:</strong> Y = {activeRangeMin.toFixed(1)} + {(activeRangeMax - activeRangeMin).toFixed(1)} &times; X{mappingType === 'curve' ? <sup>{(Math.log(Math.max(0.001, Math.min(0.999, activeCy))) / Math.log(Math.max(0.001, Math.min(0.999, activeCx)))).toFixed(2)}</sup> : ''} <span className="text-muted" style={{fontSize: '0.55rem'}}>(X in 0..1)</span>
+                                </td>
+                            </tr>
+                        </tfoot>
                     </table>
-                    <div className="text-center mt-1 text-muted p-1 border rounded bg-light" style={{ fontSize: '0.65rem', fontFamily: 'monospace' }}>
-                        <strong>Equation:</strong> Y = {activeRangeMin.toFixed(1)} + {(activeRangeMax - activeRangeMin).toFixed(1)} &times; X{mappingType === 'curve' ? <sup>{(Math.log(Math.max(0.001, Math.min(0.999, activeCy))) / Math.log(Math.max(0.001, Math.min(0.999, activeCx)))).toFixed(2)}</sup> : ''}
-                        <br/>
-                        <span style={{ fontSize: '0.6rem' }}>(where X is normalized Data 0 to 1)</span>
-                    </div>
                 </div>
 
             </div>

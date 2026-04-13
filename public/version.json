@@ -1,5 +1,5 @@
 {
-    "commit_title": "Add absorbedPoint selection to ink ratio flow",
-    "commit_message": "Introduce an absorbedPoint option that controls which point survives during ink-ratio filtering and thread it through the UI, store, and data pipeline. Changes include: add absorbedPoint and setAbsorbedPoint to useInkRatioStore; add Survivor Point buttons to InkRatioControl; propagate absorbedPoint from PlotArea into runDataPipeline; and update Step_3_ink_ratio_filter to honor absorbedPoint by ordering iteration (left, right, or random) and correctly map original indices to kept points while computing final absorbed counts. This enables deterministic or randomized absorption behavior when resolving overlapping points.",
+    "commit_title": "Display mapping equation in style settings",
+    "commit_message": "Add a small informational panel to StyleElementSettings that renders the mapping equation used for value interpolation (Y = min + (max-min) \u00d7 X). When mappingType is 'curve' the computed exponent (log-clamped to avoid domain errors) is shown as a superscript. The panel uses compact monospace styling and notes that X is normalized between 0 and 1 to help users understand how data values map to style outputs.",
     "version_string": "2026.15.7"
 }
