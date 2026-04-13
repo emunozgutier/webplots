@@ -60,6 +60,7 @@ const CreateColumnSideMenu: React.FC = () => {
                         case '-': result = num1 - num2; break;
                         case '*': result = num1 * num2; break;
                         case '/': result = num2 !== 0 ? num1 / num2 : null; break;
+                        case '%': result = num2 !== 0 ? num1 % num2 : null; break;
                         case '^': result = Math.pow(num1, num2); break;
                     }
                 }
@@ -93,6 +94,7 @@ const CreateColumnSideMenu: React.FC = () => {
                     <option value="-">- (Subtract)</option>
                     <option value="*">* (Multiply)</option>
                     <option value="/">/ (Divide)</option>
+                    <option value="%">% (Modulus)</option>
                     <option value="^">^ (Power)</option>
                     <option value="concat">concat (Merge strings)</option>
                     <option value="replace">replace (Replace substring)</option>
