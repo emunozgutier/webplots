@@ -63,7 +63,7 @@ const PlotArea: React.FC = () => {
             useCustomRadius,
             customRadius,
             enableLogAxis: plotLayout.enableLogAxis
-        });
+        }, colorData);
 
         // Step 4: Final Plotly Configuration
         return generatePlotConfig(

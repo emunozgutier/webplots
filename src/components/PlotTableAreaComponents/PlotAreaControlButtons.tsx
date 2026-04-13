@@ -37,7 +37,7 @@ const PlotAreaControlButtons: React.FC<PlotAreaControlButtonsProps> = ({ onOpenS
             useCustomRadius,
             customRadius,
             enableLogAxis: plotLayout.enableLogAxis
-        });
+        }, colorData);
 
         const { plotData, layout } = generatePlotConfig(
             data,

@@ -174,7 +174,9 @@ export const Step_3_ink_ratio_filter = (
         customRadius: number;
         enableLogAxis: boolean;
         globalBounds?: { xMin: number, xMax: number, yMin: number, yMax: number };
-    }
+    },
+    filteredData?: DataRow[],
+    activeStyleColumns?: string[]
 ): TraceData[] => {
     const { inkRatio, absorbedPoint, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius, enableLogAxis, globalBounds } = config;
 
@@ -286,6 +288,19 @@ export const Step_3_ink_ratio_filter = (
 
         const distSq = minPixelDist * minPixelDist;
         
+        // Compute style signatures if required columns are present
+        const signatures: string[] = [];
+        if (filteredData && activeStyleColumns && activeStyleColumns.length > 0) {
+            for (let i = 0; i < xData.length; i++) {
+                const dataRow = filteredData[trace.rowIndices[i]];
+                let sig = '';
+                for(let c=0; c<activeStyleColumns.length; c++) {
+                    sig += String(dataRow[activeStyleColumns[c]]) + '|';
+                }
+                signatures.push(sig);
+            }
+        }
+        
         // Spatial hash grid to keep lookup O(1) per point
         const cellSize = Math.max(minPixelDist, 1e-6); 
         const grid = new Map<string, number[]>();
@@ -315,6 +330,11 @@ export const Step_3_ink_ratio_filter = (
                             const dpx = px - keptPoints[j].px;
                             const dpy = py - keptPoints[j].py;
                             if ((dpx * dpx + dpy * dpy) < distSq) {
+                                if (signatures.length > 0) {
+                                    const mySig = signatures[idx];
+                                    const theirSig = signatures[keptPoints[j].origIdx];
+                                    if (mySig !== theirSig) continue;
+                                }
                                 keptBy = j;
                                 break outer;
                             }
@@ -429,7 +449,8 @@ export const runDataPipeline = (
         useCustomRadius: boolean;
         customRadius: number;
         enableLogAxis: boolean;
-    }
+    },
+    colorData?: any
 ) => {
     // Step 1: Logical filters
     const filtered = Step_1_filter(rawData, filters);
@@ -466,11 +487,21 @@ export const runDataPipeline = (
         });
     });
 
+    // Compute dynamic style columns for isolation during absorption
+    const activeStyleColumns: string[] = [];
+    if (colorData) {
+        if (colorData.hue?.source === 'column' && colorData.hue.enabled !== false) activeStyleColumns.push(String(colorData.hue.value));
+        if (colorData.saturation?.source === 'column' && colorData.saturation.enabled !== false) activeStyleColumns.push(String(colorData.saturation.value));
+        if (colorData.lightness?.source === 'column' && colorData.lightness.enabled !== false) activeStyleColumns.push(String(colorData.lightness.value));
+        if (colorData.shape?.source === 'column' && colorData.shape.enabled !== false) activeStyleColumns.push(String(colorData.shape.value));
+        if (colorData.size?.source === 'column' && colorData.size.enabled !== false) activeStyleColumns.push(String(colorData.size.value));
+    }
+
     // Step 3: Ink Ratio reduction
     const processedTraces = Step_3_ink_ratio_filter(traces, {
         ...inkRatioConfig,
         globalBounds: xMin === Infinity ? undefined : { xMin, xMax, yMin, yMax }
-    });
+    }, filtered, activeStyleColumns);
     
     return { filtered, processedTraces };
 };
