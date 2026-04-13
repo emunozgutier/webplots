@@ -44,10 +44,10 @@ const StyleElement: React.FC<StyleElementProps> = ({ title, mapping, updateFn, t
     const isExternallyManaged = isManagedByGroup || isManagedByInkRatio;
 
     return (
-        <div className="card shadow-sm border-0 w-100 mb-3 p-2">
-            <div className={`card-header bg-white p-2 ${!isEnabled || isExternallyManaged ? 'border-bottom-0 rounded' : ''}`}>
+        <div className={`card shadow-sm w-100 mb-3 p-2 ${isEnabled && !isExternallyManaged ? 'border-primary' : 'border'}`}>
+            <div className={`card-header bg-light p-2 ${!isEnabled || isExternallyManaged ? 'border-bottom-0' : ''}`}>
                 <div className="d-flex justify-content-between align-items-center">
-                    <span className={`fw-bold text-truncate ${!isEnabled && !isExternallyManaged ? 'text-muted' : ''}`} style={{ fontSize: '0.85rem' }}>
+                    <span className={`fw-bold text-truncate ${!isEnabled && !isExternallyManaged ? 'text-muted' : (isEnabled && !isExternallyManaged ? 'text-primary' : '')}`} style={{ fontSize: '0.85rem' }}>
                         {title} {isManagedByGroup && <span className="ms-1 fw-normal text-muted fst-italic">(set by Group)</span>}
                         {isManagedByInkRatio && <span className="ms-1 fw-normal text-muted fst-italic">(set by InkRatio)</span>}
                     </span>
