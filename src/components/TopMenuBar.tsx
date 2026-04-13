@@ -7,7 +7,7 @@ import type { CsvDataStore } from '../store/useCsvDataStore';
 import { useWorkspaceStore, workspaceRegistry } from '../store/Workspace/useWorkspaceStore';
 import { getSmallDataset, getLargeColumnDataset, getSimulationDataset, getBinningTestData } from '../utils/TestDatasets';
 import { generateTestGaussianData } from '../utils/TableMathLib';
-import BetaMode from './BetaMode';
+import BetaMode from './TopMenuBar/BetaMode';
 
 interface VersionData {
     commit_title: string;
