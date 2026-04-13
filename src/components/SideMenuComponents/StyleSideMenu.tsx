@@ -4,7 +4,7 @@ import StyleElement from './subcomponents/StyleElement';
 
 const StyleSideMenu: React.FC = () => {
 
-    const { colorData, setHue, setSaturation, setLightness, setShape, setSize } = useStyleSideMenuStore();
+    const { colorData, setHue, setSaturation, setLightness, setSize } = useStyleSideMenuStore();
 
     return (
         <div className="p-3 w-100" style={{ height: '100%', overflowY: 'auto' }}>
@@ -16,7 +16,6 @@ const StyleSideMenu: React.FC = () => {
             <StyleElement title="Hue/Color" mapping={colorData.hue} updateFn={setHue} type="number" />
             <StyleElement title="Saturation" mapping={colorData.saturation} updateFn={setSaturation} type="number" />
             <StyleElement title="Lightness" mapping={colorData.lightness} updateFn={setLightness} type="number" />
-            <StyleElement title="Marker Shape" mapping={colorData.shape} updateFn={setShape} type="shape" />
             <StyleElement title="Node Size" mapping={colorData.size} updateFn={setSize} type="number" />
 
         </div>
