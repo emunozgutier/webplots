@@ -1,5 +1,5 @@
 {
-    "commit_title": "Simplify select styling in StyleElementSettings",
-    "commit_message": "Replace verbose classes and custom inline padding/boxShadow on the mapped-range <select> with minimal Bootstrap utilities (ms-auto, me-2) and a streamlined inline style (width, fontSize, cursor). Cleans up markup and relies on Bootstrap for alignment and spacing in src/components/SideMenuComponents/subcomponents/StyleElementSettings.tsx.",
-    "version_string": "2026.15.6"
+    "commit_title": "Add exponential/logarithmic mapping and clamp exponent",
+    "commit_message": "Introduce new mapping types (exponential, logarithmic) across the style store, UI and plot helpers, and clamp computed exponent k to the 1..20 range. Updated useStyleSideMenuStore type to include the new mapping options. StyleElementSettings: add new select options (exponential, logarithmic, legacy curve), compute pct for exponential and logarithmic mappings (logarithmic uses the inverse exponent), show an equation/info box and update midpoint/anchor table rendering. PlotlyHelpers and internal mapping logic now handle the new types and clamp k to avoid extreme powers. Also propagate absorbedPoint from the ink ratio store into the data pipeline call in PlotAreaControlButtons.",
+    "version_string": "2026.15.7"
 }
