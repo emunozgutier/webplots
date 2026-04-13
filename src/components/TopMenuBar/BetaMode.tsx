@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
-import { useWorkspaceStore } from '../store/Workspace/useWorkspaceStore';
+import { useWorkspaceStore } from '../../store/Workspace/useWorkspaceStore';
 
 interface BetaModeProps {
     show: boolean;

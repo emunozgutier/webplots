@@ -1,5 +1,5 @@
 {
-    "commit_title": "Remove Marker Shape control from StyleSideMenu",
-    "commit_message": "Drop the marker shape setting from the style side menu. Removed setShape from the useStyleSideMenuStore destructuring and removed the 'Marker Shape' StyleElement. Other style controls (hue, saturation, lightness, size) remain intact.",
-    "version_string": "2026.15.7"
+    "commit_title": "Move BetaMode into TopMenuBar folder",
+    "commit_message": "Relocate BetaMode.tsx into src/components/TopMenuBar/ and update the import in TopMenuBar.tsx to './TopMenuBar/BetaMode'. This is a refactor-only change (file move and import path update) with no behavior or API changes.",
+    "version_string": "2026.16.1"
 }
