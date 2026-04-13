@@ -171,10 +171,12 @@ export const generatePlotConfig = (
             const computedColors: string[] = [];
             const computedShapes: string[] = [];
             const computedSizes: number[] = [];
+            const computedHoverTexts: string[] = [];
 
             const safeSurvivingIndices = traceInfo.survivingIndices || rowIndices.map((_, i) => i);
+            const absorbedCounts = traceInfo.absorbedCounts || [];
 
-            safeSurvivingIndices.forEach(survivingIdx => {
+            safeSurvivingIndices.forEach((survivingIdx, loopIdx) => {
                 const dataIndex = rowIndices[survivingIdx];
                 const row = data[dataIndex];
 
@@ -223,6 +225,25 @@ export const generatePlotConfig = (
                 }
 
                 computedSizes.push(si);
+
+                let hoverStr = '';
+                if (groupAxis && row[groupAxis] !== undefined) {
+                    hoverStr += `<br>${groupAxis}: ${row[groupAxis]}`;
+                } else if (groupName) {
+                    hoverStr += `<br>Group: ${groupName}`;
+                }
+
+                if (hue.enabled !== false && hue.source === 'column') hoverStr += `<br>${hue.value} (Hue): ${row[String(hue.value)]}`;
+                if (saturation.enabled !== false && saturation.source === 'column') hoverStr += `<br>${saturation.value} (Sat): ${row[String(saturation.value)]}`;
+                if (lightness.enabled !== false && lightness.source === 'column') hoverStr += `<br>${lightness.value} (Light): ${row[String(lightness.value)]}`;
+                if (shape.enabled !== false && shape.source === 'column') hoverStr += `<br>${shape.value} (Shape): ${row[String(shape.value)]}`;
+                if (size.enabled !== false && size.source === 'column') hoverStr += `<br>${size.value} (Size): ${row[String(size.value)]}`;
+                
+                if (absorptionMode !== 'none') {
+                    hoverStr += `<br>Absorbed: ${absorbedCounts[loopIdx] || 0}`;
+                }
+
+                computedHoverTexts.push(hoverStr);
             });
 
             // Resolve final display name
@@ -308,7 +329,7 @@ export const generatePlotConfig = (
             if (yIsDate) isYAxisDate = true;
             
             const filteredCount = traceInfo.filteredCount || 0;
-            const absorbedCounts = traceInfo.absorbedCounts || [];
+            // absorbedCounts already retrieved above
             // Calculate max absorbed in this trace
             let maxAbsorbed = 0;
             let minAbsorbed = 0;
@@ -402,22 +423,18 @@ export const generatePlotConfig = (
 
             switch (effectiveHoverMode) {
                 case 'xy':
-                    hoverTemplateToUse = '%{x}, %{y}<extra></extra>';
+                    hoverTemplateToUse = '%{x}, %{y}%{hovertext}<extra></extra>';
                     break;
                 case 'xy_absorbed':
-                    hoverTemplateToUse = '%{x}, %{y}<br>Absorbed: %{customdata}<extra></extra>';
+                    hoverTemplateToUse = '%{x}, %{y}%{hovertext}<extra></extra>';
                     break;
                 case 'xy_trace':
                     // Using Plotly's built-in extra trace name flag
-                    hoverTemplateToUse = '%{x}, %{y}';
+                    hoverTemplateToUse = '%{x}, %{y}%{hovertext}';
                     break;
                 case 'default':
                 default:
-                    if (absorptionMode !== 'none') {
-                        hoverTemplateToUse = '%{x}, %{y}<br>Absorbed: %{customdata}<extra></extra>';
-                    } else {
-                        hoverTemplateToUse = '%{x}, %{y}'; // normal plotly default with trace
-                    }
+                    hoverTemplateToUse = '%{x}, %{y}%{hovertext}<extra></extra>';
                     break;
             }
 
@@ -430,6 +447,7 @@ export const generatePlotConfig = (
                 type: finalX.length > 50000 ? 'scattergl' : 'scatter',
                 name: finalName,
                 legendgroup: finalName,
+                hovertext: computedHoverTexts,
                 customdata: absorbedCounts, // inject it into Plotly for the hover template
                 hovertemplate: hoverTemplateToUse === '%{x}, %{y}' ? undefined : hoverTemplateToUse,
                 line: {
