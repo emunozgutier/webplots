@@ -356,37 +356,57 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                     />
                 </div>
 
-                <div className="d-flex align-items-center justify-content-between mt-2 mb-1">
-                    <label className="form-label small text-muted mb-0 fw-bold d-flex align-items-center">
-                        <span className="me-2">2. Mapped Range Assignment</span>
-                        <select 
-                            className="form-select form-select-sm ms-auto me-2" 
-                            style={{ width: 'auto', fontSize: '0.75rem', cursor: 'pointer' }}
-                            value={mappingType}
-                            onChange={e => {
-                                const newType = e.target.value as any;
-                                let newMid = midPoint;
-                                if ((newType === 'curve' || newType === 'exponential' || newType === 'logarithmic') && mappingType !== 'curve' && mappingType !== 'exponential' && mappingType !== 'logarithmic') newMid = [0.5, 0.5];
-                                updateFn({ mappingType: newType, midPoint: newMid });
-                            }}
-                        >
-                            <option value="linear">Line</option>
-                            <option value="curve">Dynamic Curve (Exp/Log)</option>
-                        </select>
-                        {(title === 'Saturation' || title === 'Lightness') && (
-                            <div className="d-flex align-items-center fw-normal border rounded px-1" style={{ background: '#f8f9fa' }}>
-                                <span className="small text-muted me-2" style={{ fontSize: '0.7rem' }}>Base Hue (°):</span>
-                                <input 
-                                    type="number" 
-                                    className="form-control form-control-sm border-0 bg-transparent text-primary fw-bold" 
-                                    style={{ width: '50px', height: '22px', fontSize: '0.75rem', padding: '0px' }} 
+                <div className="mt-2 mb-1">
+                    <div className="d-flex align-items-center justify-content-between mb-1">
+                        <label className="form-label small text-muted mb-0 fw-bold d-flex align-items-center">
+                            <span className="me-2">2. Mapped Range Assignment</span>
+                            <select 
+                                className="form-select form-select-sm ms-auto me-2" 
+                                style={{ width: 'auto', fontSize: '0.75rem', cursor: 'pointer' }}
+                                value={mappingType}
+                                onChange={e => {
+                                    const newType = e.target.value as any;
+                                    let newMid = midPoint;
+                                    if ((newType === 'curve' || newType === 'exponential' || newType === 'logarithmic') && mappingType !== 'curve' && mappingType !== 'exponential' && mappingType !== 'logarithmic') newMid = [0.5, 0.5];
+                                    updateFn({ mappingType: newType, midPoint: newMid });
+                                }}
+                            >
+                                <option value="linear">Line</option>
+                                <option value="curve">Dynamic Curve (Exp/Log)</option>
+                            </select>
+                        </label>
+                        <span className="badge bg-info text-dark" style={{ fontSize: '0.65rem' }}>Drag the endpoints of the line!</span>
+                    </div>
+                    {(title === 'Saturation' || title === 'Lightness') && (
+                        <div className="d-flex align-items-center mt-1">
+                            <div className="d-flex align-items-center fw-normal border rounded px-2 py-1 w-100" style={{ background: '#f8f9fa' }}>
+                                <span className="small text-muted me-2" style={{ fontSize: '0.75rem' }}>Target Base Hue:</span>
+                                <select 
+                                    className="form-select form-select-sm border-0 bg-transparent text-primary fw-bold ms-auto" 
+                                    style={{ width: 'auto', height: '22px', fontSize: '0.75rem', padding: '0px 15px 0px 5px', cursor: 'pointer' }} 
                                     value={baseHue} 
                                     onChange={e => setBaseHue(Number(e.target.value))} 
-                                />
+                                >
+                                    {[
+                                        { name: "Red", hue: 0 },
+                                        { name: "Orange", hue: 30 },
+                                        { name: "Yellow", hue: 60 },
+                                        { name: "Yellow-Green", hue: 90 },
+                                        { name: "Green", hue: 120 },
+                                        { name: "Spring Green", hue: 150 },
+                                        { name: "Cyan", hue: 180 },
+                                        { name: "Azure", hue: 210 },
+                                        { name: "Blue", hue: 240 },
+                                        { name: "Violet", hue: 270 },
+                                        { name: "Magenta", hue: 300 },
+                                        { name: "Rose", hue: 330 },
+                                    ].map(color => (
+                                        <option key={color.hue} value={color.hue}>{color.name}</option>
+                                    ))}
+                                </select>
                             </div>
-                        )}
-                    </label>
-                    <span className="badge bg-info text-dark" style={{ fontSize: '0.65rem' }}>Drag the endpoints of the line!</span>
+                        </div>
+                    )}
                 </div>
                 
                 <div className="border rounded bg-light p-1 border-top-0 rounded-top-0 flex-grow-1" style={{ minHeight: '160px', position: 'relative' }}>
