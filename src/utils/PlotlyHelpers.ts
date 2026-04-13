@@ -6,7 +6,7 @@ import type { TraceConfig } from '../store/PlotTable/useTraceConfigStore';
 import type { StyleSideMenuData } from '../store/SideMenu/useStyleSideMenuStore';
 import type { SubplotSideMenuState } from '../store/SideMenu/useSubplotSideMenuStore';
 import type { TraceStats } from '../store/SideMenu/useInkRatioStore';
-import { parseToNumeric } from './TableMathLib';
+import { parseToNumeric, calculateLogBase } from './TableMathLib';
 import type { TraceData } from './DataFrameLib';
 
 const ensurePlotlyCompatibleData = (data: any[]): { processedData: any[], isDate: boolean } => {
@@ -120,18 +120,19 @@ export const generatePlotConfig = (
                     x = Math.max(0, Math.min(1, x)); // clip to 0-1 range
 
                     let pct = x;
-                    if ((mappingType === 'curve' || mappingType === 'exponential') && midPoint) {
+                    if ((mappingType === 'curve' || mappingType === 'exponential' || mappingType === 'logarithmic') && midPoint) {
                         const cx = Math.max(0.001, Math.min(0.999, midPoint[0]));
                         const cy = Math.max(0.001, Math.min(0.999, midPoint[1]));
-                        const kRaw = Math.log(cy) / Math.log(cx);
-                        const k = Math.max(1, Math.min(20, kRaw));
-                        pct = Math.pow(x, k);
-                    } else if (mappingType === 'logarithmic' && midPoint) {
-                        const cx = Math.max(0.001, Math.min(0.999, midPoint[0]));
-                        const cy = Math.max(0.001, Math.min(0.999, midPoint[1]));
-                        const kRaw = Math.log(cy) / Math.log(cx);
-                        const k = Math.max(1, Math.min(20, 1 / kRaw));
-                        pct = Math.pow(x, 1 / k);
+                        const isExp = cy <= cx || mappingType === 'exponential';
+                        
+                        if (isExp) {
+                            const kRaw = Math.log(cy) / Math.log(cx);
+                            const k = Math.max(1, Math.min(30, kRaw));
+                            pct = Math.pow(x, k);
+                        } else {
+                            const B = calculateLogBase(cx, cy);
+                            pct = Math.log(1 + (B - 1) * x) / Math.log(B);
+                        }
                     }
 
                     let result = outMin + pct * (outMax - outMin);

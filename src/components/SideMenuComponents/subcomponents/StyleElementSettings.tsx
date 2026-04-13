@@ -3,6 +3,7 @@ import Plot from 'react-plotly.js';
 import { useWorkspaceLocalStore } from '../../../store/Workspace/useWorkspaceLocalStore';
 import { useCsvDataStore } from '../../../store/useCsvDataStore';
 import { useStyleSideMenuStore, type StyleSideMenuData } from '../../../store/SideMenu/useStyleSideMenuStore';
+import { calculateLogBase } from '../../../utils/TableMathLib';
 import type { StyleElementProps } from './StyleElement';
 
 const clamp = (val: number, min: number, max: number) => Math.max(min, Math.min(max, val));
@@ -99,18 +100,18 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
             x = clamp(x, 0, 1);
 
             let pct = x;
-            if (mappingType === 'curve' || mappingType === 'exponential') {
+            if (mappingType === 'curve' || mappingType === 'exponential' || mappingType === 'logarithmic') {
                 const cx = Math.max(0.001, Math.min(0.999, activeCx));
                 const cy = Math.max(0.001, Math.min(0.999, activeCy));
-                const kRaw = Math.log(cy) / Math.log(cx);
-                const k = clamp(kRaw, 1, 20);
-                pct = Math.pow(x, k);
-            } else if (mappingType === 'logarithmic') {
-                const cx = Math.max(0.001, Math.min(0.999, activeCx));
-                const cy = Math.max(0.001, Math.min(0.999, activeCy));
-                const kRaw = Math.log(cy) / Math.log(cx);
-                const k = clamp(1 / kRaw, 1, 20);
-                pct = Math.pow(x, 1 / k);
+                const isExp = cy <= cx || mappingType === 'exponential';
+                if (isExp) {
+                    const kRaw = Math.log(cy) / Math.log(cx);
+                    const k = clamp(kRaw, 1, 30);
+                    pct = Math.pow(x, k);
+                } else {
+                    const B = calculateLogBase(cx, cy);
+                    pct = Math.log(1 + (B - 1) * x) / Math.log(B);
+                }
             }
 
             return rMin + pct * (rMax - rMin);
@@ -278,33 +279,33 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
         const xB = (i + 1) / numPoints;
 
         let pctA = xA;
-        if (mappingType === 'curve' || mappingType === 'exponential') {
+        if (mappingType === 'curve' || mappingType === 'exponential' || mappingType === 'logarithmic') {
             const cx = Math.max(0.001, Math.min(0.999, activeCx));
             const cy = Math.max(0.001, Math.min(0.999, activeCy));
-            const kRaw = Math.log(cy) / Math.log(cx);
-            const k = clamp(kRaw, 1, 20);
-            pctA = Math.pow(xA, k);
-        } else if (mappingType === 'logarithmic') {
-            const cx = Math.max(0.001, Math.min(0.999, activeCx));
-            const cy = Math.max(0.001, Math.min(0.999, activeCy));
-            const kRaw = Math.log(cy) / Math.log(cx);
-            const k = clamp(1 / kRaw, 1, 20);
-            pctA = Math.pow(xA, 1 / k);
+            const isExp = cy <= cx || mappingType === 'exponential';
+            if (isExp) {
+                const kRaw = Math.log(cy) / Math.log(cx);
+                const k = clamp(kRaw, 1, 30);
+                pctA = Math.pow(xA, k);
+            } else {
+                const B = calculateLogBase(cx, cy);
+                pctA = Math.log(1 + (B - 1) * xA) / Math.log(B);
+            }
         }
 
         let pctB = xB;
-        if (mappingType === 'curve' || mappingType === 'exponential') {
+        if (mappingType === 'curve' || mappingType === 'exponential' || mappingType === 'logarithmic') {
             const cx = Math.max(0.001, Math.min(0.999, activeCx));
             const cy = Math.max(0.001, Math.min(0.999, activeCy));
-            const kRaw = Math.log(cy) / Math.log(cx);
-            const k = clamp(kRaw, 1, 20);
-            pctB = Math.pow(xB, k);
-        } else if (mappingType === 'logarithmic') {
-            const cx = Math.max(0.001, Math.min(0.999, activeCx));
-            const cy = Math.max(0.001, Math.min(0.999, activeCy));
-            const kRaw = Math.log(cy) / Math.log(cx);
-            const k = clamp(1 / kRaw, 1, 20);
-            pctB = Math.pow(xB, 1 / k);
+            const isExp = cy <= cx || mappingType === 'exponential';
+            if (isExp) {
+                const kRaw = Math.log(cy) / Math.log(cx);
+                const k = clamp(kRaw, 1, 30);
+                pctB = Math.pow(xB, k);
+            } else {
+                const B = calculateLogBase(cx, cy);
+                pctB = Math.log(1 + (B - 1) * xB) / Math.log(B);
+            }
         }
 
         const yaPercent = y1Percent + pctA * (y2Percent - y1Percent);
@@ -370,9 +371,7 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                             }}
                         >
                             <option value="linear">Line</option>
-                            <option value="exponential">Exponential Curve</option>
-                            <option value="logarithmic">Logarithmic Curve</option>
-                            {mappingType === 'curve' && <option value="curve">Legacy Curve</option>}
+                            <option value="curve">Dynamic Curve (Exp/Log)</option>
                         </select>
                         {(title === 'Saturation' || title === 'Lightness') && (
                             <div className="d-flex align-items-center fw-normal border rounded px-1" style={{ background: '#f8f9fa' }}>
@@ -429,10 +428,12 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                 </div>
                 <div className="flex-shrink-0 bg-white" style={{ position: 'relative', zIndex: 10 }}>
                     <div className="text-center mt-2 p-1 border rounded" style={{ fontSize: '0.75rem', fontFamily: 'monospace', backgroundColor: '#e9ecef', color: '#000' }}>
-                        <strong>Eq:</strong> Y = {activeRangeMin.toFixed(1)} + {(activeRangeMax - activeRangeMin).toFixed(1)} &times; X{
-                            (mappingType === 'curve' || mappingType === 'exponential') ? <sup>{clamp(Math.log(Math.max(0.001, Math.min(0.999, activeCy))) / Math.log(Math.max(0.001, Math.min(0.999, activeCx))), 1, 20).toFixed(2)}</sup>
-                            : mappingType === 'logarithmic' ? <sup>1/{clamp(1 / (Math.log(Math.max(0.001, Math.min(0.999, activeCy))) / Math.log(Math.max(0.001, Math.min(0.999, activeCx)))), 1, 20).toFixed(2)}</sup>
-                            : ''
+                        <strong>Eq:</strong> Y = {activeRangeMin.toFixed(1)} + {(activeRangeMax - activeRangeMin).toFixed(1)} &times; {
+                            (mappingType === 'curve' || mappingType === 'exponential' || mappingType === 'logarithmic') ? (
+                                (activeCy <= activeCx || mappingType === 'exponential') ? <span>X<sup>{clamp(Math.log(Math.max(0.001, Math.min(0.999, activeCy))) / Math.log(Math.max(0.001, Math.min(0.999, activeCx))), 1, 30).toFixed(2)}</sup></span>
+                                : <span>log<sub>{calculateLogBase(activeCx, activeCy).toFixed(1)}</sub>(1 + {(calculateLogBase(activeCx, activeCy)-1).toFixed(1)} &times; X)</span>
+                            )
+                            : <span>X</span>
                         } <span className="text-muted" style={{fontSize: '0.65rem'}}>(X in 0..1)</span>
                     </div>
                     <table className="table table-sm table-bordered mt-1 text-center text-muted mb-0" style={{ fontSize: '0.7rem' }}>
@@ -441,7 +442,7 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                         </thead>
                         <tbody>
                             <tr><td>Start Point</td><td>0%</td><td>{activeRangeMin.toFixed(1)}</td></tr>
-                            {(mappingType === 'curve' || mappingType === 'exponential' || mappingType === 'logarithmic') && <tr><td>Curve Midpoint</td><td>{(activeCx * 100).toFixed(1)}%</td><td>{(activeRangeMin + ((mappingType === 'logarithmic') ? Math.pow(0.5, 1 / clamp(1 / (Math.log(Math.max(0.001, Math.min(0.999, activeCy))) / Math.log(Math.max(0.001, Math.min(0.999, activeCx)))), 1, 20)) : Math.pow(0.5, clamp(Math.log(Math.max(0.001, Math.min(0.999, activeCy))) / Math.log(Math.max(0.001, Math.min(0.999, activeCx))), 1, 20))) * (activeRangeMax - activeRangeMin)).toFixed(1)}</td></tr>}
+                            {(mappingType === 'curve' || mappingType === 'exponential' || mappingType === 'logarithmic') && <tr><td>Curve Midpoint</td><td>{(activeCx * 100).toFixed(1)}%</td><td>{(activeRangeMin + ((activeCy > activeCx && mappingType !== 'exponential') ? Math.log(1 + (calculateLogBase(activeCx, activeCy) - 1) * 0.5) / Math.log(calculateLogBase(activeCx, activeCy)) : Math.pow(0.5, clamp(Math.log(Math.max(0.001, Math.min(0.999, activeCy))) / Math.log(Math.max(0.001, Math.min(0.999, activeCx))), 1, 30))) * (activeRangeMax - activeRangeMin)).toFixed(1)}</td></tr>}
                             <tr><td>End Point</td><td>100%</td><td>{activeRangeMax.toFixed(1)}</td></tr>
                         </tbody>
                     </table>

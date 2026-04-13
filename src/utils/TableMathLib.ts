@@ -468,4 +468,35 @@ export const sortData = (displayData: any[], sortConfig: { key: string; directio
     return dataToSort;
 };
 
+/**
+ * Solves for the base B in the normalized logarithmic mapping function:
+ * y = ln(1 + (B-1)*x) / ln(B)
+ * given a midpoint (cx, cy) the user dragged to.
+ * Constrains B to a maximum of 20 for stable scaling.
+ */
+export const calculateLogBase = (cx: number, cy: number, maxBase: number = 30): number => {
+    // If user drags below or on the diagonal, just return slightly > 1 (nearly linear)
+    if (cy <= cx + 0.001) return 1.0001; 
+    
+    const safeCx = Math.max(0.001, Math.min(0.999, cx));
+    
+    // Quick check if cy is above the max curve
+    const maxCy = Math.log(1 + (maxBase - 1) * safeCx) / Math.log(maxBase);
+    if (cy >= maxCy) return maxBase;
 
+    let low = 1.0001;
+    let high = maxBase;
+
+    // Binary search for the base B
+    for (let i = 0; i < 15; i++) {
+        const mid = (low + high) / 2;
+        const p = Math.log(1 + (mid - 1) * safeCx) / Math.log(mid);
+        if (p < cy) {
+            low = mid;
+        } else {
+            high = mid;
+        }
+    }
+    
+    return (low + high) / 2;
+};
