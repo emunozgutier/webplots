@@ -38,7 +38,7 @@ export const generatePlotConfig = (
     traceConfig: TraceConfig,
     colorSideMenuData: StyleSideMenuData,
     subplotSideMenuData: SubplotSideMenuState,
-    absorptionMode: 'none' | 'size' | 'glow',
+    absorptionMode: 'none' | 'size' | 'glow' | 'glass',
     maxRadiusRatio: number = 3,
     groupAxis: string | null = null
 ) => {
@@ -362,6 +362,7 @@ export const generatePlotConfig = (
             let finalMarkerSymbol = marker.symbol;
             let finalMarkerSize = marker.size;
             let finalMarkerLine = marker.line;
+            let finalMarkerOpacity: any = 0.7; // default transparency to see overlaps
 
             // Apply visual tweaks based on absorptionMode!
             /*
@@ -413,6 +414,13 @@ export const generatePlotConfig = (
                             line: { width: 0 }
                         }
                     };
+                } else if (absorptionMode === 'glass') {
+                    const minOpacity = 0.15;
+                    finalMarkerOpacity = absorbedCounts.map((count) => {
+                        const ratio = count / maxAbsorbed;
+                        return minOpacity + (1 - minOpacity) * ratio;
+                    });
+                    finalMarkerLine = { ...finalMarkerLine, width: 0 };
                 }
             }
 
@@ -461,7 +469,8 @@ export const generatePlotConfig = (
                     color: finalMarkerColor,
                     symbol: finalMarkerSymbol,
                     size: finalMarkerSize,
-                    line: { color: finalMarkerColor, ...finalMarkerLine }
+                    line: { color: finalMarkerColor, ...finalMarkerLine },
+                    ...(finalMarkerOpacity !== undefined && { opacity: finalMarkerOpacity })
                 }
             };
 

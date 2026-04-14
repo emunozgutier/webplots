@@ -3,6 +3,7 @@ import { useInkRatioStore } from '../../../store/SideMenu/useInkRatioStore';
 import { useStyleSideMenuStore } from '../../../store/SideMenu/useStyleSideMenuStore';
 import { useCsvDataStore } from '../../../store/useCsvDataStore';
 import { Alert, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { useWorkspaceStore } from '../../../store/Workspace/useWorkspaceStore';
 
 const InkRatioControl: React.FC = () => {
     const {
@@ -18,6 +19,7 @@ const InkRatioControl: React.FC = () => {
 
     const { data } = useCsvDataStore();
     const { colorData } = useStyleSideMenuStore();
+    const { isDebugMode } = useWorkspaceStore();
 
     const totalRows = data.length;
     const isLargeDataset = totalRows > 100000;
@@ -74,6 +76,15 @@ const InkRatioControl: React.FC = () => {
                     >
                         Glow
                     </button>
+                    {isDebugMode && (
+                        <button
+                            type="button"
+                            className={`btn btn-sm ${absorptionMode === 'glass' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                            onClick={() => setAbsorptionMode('glass')}
+                        >
+                            Glass
+                        </button>
+                    )}
                     <button
                         type="button"
                         className={`btn btn-sm ${absorptionMode === 'none' ? 'btn-primary' : 'btn-outline-secondary'}`}

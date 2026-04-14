@@ -20,8 +20,8 @@ export type InkRatioState = {
     // Custom limit
     useCustomRadius: boolean;
     customRadius: number;
-    absorptionMode: 'none' | 'size' | 'glow';
-    setAbsorptionMode: (mode: 'none' | 'size' | 'glow') => void;
+    absorptionMode: 'none' | 'size' | 'glow' | 'glass';
+    setAbsorptionMode: (mode: 'none' | 'size' | 'glow' | 'glass') => void;
 
     absorbedPoint: 'left' | 'right' | 'random';
     setAbsorbedPoint: (point: 'left' | 'right' | 'random') => void;

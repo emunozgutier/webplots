@@ -41,6 +41,9 @@ const BetaMode: React.FC<BetaModeProps> = ({ show, onHide }) => {
                     <li>
                         <strong>Trajectory Calculator Coordinates:</strong> Real-time debugging table detailing the Bezier mapping anchors and their actual X/Y boundary evaluations within the Style Element popup.
                     </li>
+                    <li>
+                        <strong>Glass Absorption Mode:</strong> A transparent rendering effect where overlapped ink ratio dots accumulate localized opacity relative to maximum point density.
+                    </li>
                 </ul>
             </Modal.Body>
             <Modal.Footer>

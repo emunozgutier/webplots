@@ -40,6 +40,11 @@ const InkRatioAnimation: React.FC = () => {
                         50%  { filter: drop-shadow(0px 0px 20px rgba(220,53,69,1)) drop-shadow(0px 0px 40px rgba(220,53,69,0.8)); }
                         100% { filter: drop-shadow(0px 0px 8px rgba(220,53,69,0.3)); }
                     }
+                    @keyframes glassIntensity {
+                        0%   { opacity: 0.3; }
+                        50%  { opacity: 1; }
+                        100% { opacity: 0.3; }
+                    }
                 `}
             </style>
 
@@ -56,7 +61,8 @@ const InkRatioAnimation: React.FC = () => {
                                         fill="#dc3545" opacity="0.8"
                                         style={{
                                             animation: absorptionMode === 'size' ? 'pulseSize 3s infinite ease-in-out' :
-                                                absorptionMode === 'glow' ? 'glowIntensity 3s infinite ease-in-out' : 'none',
+                                                absorptionMode === 'glow' ? 'glowIntensity 3s infinite ease-in-out' :
+                                                absorptionMode === 'glass' ? 'glassIntensity 3s infinite ease-in-out' : 'none',
                                             filter: absorptionMode === 'glow' ? 'drop-shadow(0px 0px 8px rgba(220,53,69,0.3))' : 'none'
                                         }}
                                     />
