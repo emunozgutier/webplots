@@ -42,7 +42,7 @@ export const createInkRatioStore = () => createStore<InkRatioState>()(
     (set) => ({
         inkRatio: 0, // Default to 0% overlap (max filtering)
         absorptionMode: 'none',
-        absorbedPoint: 'left',
+        absorbedPoint: 'random',
         filteredStats: {},
         chartWidth: 1280,
         chartHeight: 720,
