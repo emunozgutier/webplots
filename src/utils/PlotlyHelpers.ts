@@ -534,14 +534,15 @@ export const generatePlotConfig = (
 
     // Generate Receipt
     let receipt = `// Generated Plotly Code\n\n`;
+    receipt += `var plt = {};\n\n`;
 
     // Config variables
     if (plotType !== 'histogram') {
-        receipt += `var xAxisName = '${xAxis || 'Row Number'}';\n`;
+        receipt += `plt.xAxisName = '${xAxis || 'Row Number'}';\n`;
     }
-    receipt += `var yAxisNames = [${yAxis.map((y: string) => `'${y}'`).join(', ')}];\n`;
+    receipt += `plt.yAxisNames = [${yAxis.map((y: string) => `'${y}'`).join(', ')}];\n`;
     if (groupAxis) {
-        receipt += `var groupAxisName = '${groupAxis}';\n`;
+        receipt += `plt.groupAxisName = '${groupAxis}';\n`;
     }
     receipt += `\n`;
 
@@ -560,7 +561,7 @@ export const generatePlotConfig = (
 
         assignedSubplots.forEach(subplotIndex => {
             receiptTraceCount++;
-            const traceVar = `plt${receiptTraceCount}`;
+            const traceVar = `plt.trace${receiptTraceCount}`;
             const xAxisBase = subplotIndex === 1 ? 'x' : `x${subplotIndex}`;
             const yAxisBase = subplotIndex === 1 ? 'y' : `y${subplotIndex}`;
 
@@ -598,7 +599,7 @@ export const generatePlotConfig = (
             }
 
             if (plotType === 'histogram') {
-                let histCode = `var ${traceVar} = {};
+                let histCode = `${traceVar} = {};
 // ${traceVar}.x = ... // Histogram data mapped from yAxis
 ${traceVar}.type = 'histogram';
 ${traceVar}.name = '${finalName}';
@@ -615,7 +616,7 @@ ${traceVar}.xbins = { start: ${traceBins.start}, end: ${traceBins.end}, size: ${
                 return;
             }
 
-            receiptTraces.push(`var ${traceVar} = {};
+            receiptTraces.push(`${traceVar} = {};
 // ${traceVar}.x = ... // Filtered data
 // ${traceVar}.y = ... // Filtered data
 ${traceVar}.mode = '${mode}';
@@ -629,10 +630,10 @@ ${traceVar}.line = { color: '${finalColor}' };${markerParamsCode}`);
 
     receipt += receiptTraces.join('\n\n') + '\n\n';
 
-    receipt += `var data = [ ${Array.from({ length: receiptTraceCount }, (_, i) => `plt${i + 1}`).join(', ')} ];\n\n`;
+    receipt += `plt.data = [ ${Array.from({ length: receiptTraceCount }, (_, i) => `plt.trace${i + 1}`).join(', ')} ];\n\n`;
 
     // Layout
-    receipt += `var layout = {
+    receipt += `plt.layout = {
   title: { text: '${layout.title?.text}' },
   autosize: true,`;
 
@@ -671,7 +672,17 @@ ${traceVar}.line = { color: '${finalColor}' };${markerParamsCode}`);
     receipt += `\n  showlegend: ${legendOrientation === 'hidden' ? 'false' : (legendOrientation === 'auto' ? processedTraces.length > 1 : 'true')}${legendOrientation === 'bottom' ? `,\n  legend: { orientation: 'h', yanchor: 'bottom', y: -0.2, xanchor: 'center', x: 0.5 }` : ''}
 };\n\n`;
 
-    receipt += `Plotly.newPlot('myDiv', data, layout);`;
+    receipt += `Plotly.newPlot('myDiv', plt.data, plt.layout);`;
+    receipt += `\nconsole.log(plt);`;
+
+    // Expose plt to the window so the user can easily inspect it in their console
+    (window as any).plt = {
+        xAxisName: plotType !== 'histogram' ? (xAxis || 'Row Number') : undefined,
+        yAxisNames: yAxis,
+        groupAxisName: groupAxis,
+        data: plotData,
+        layout: layout
+    };
 
     return {
         plotData,
