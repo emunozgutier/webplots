@@ -560,7 +560,7 @@ export const generatePlotConfig = (
 
         assignedSubplots.forEach(subplotIndex => {
             receiptTraceCount++;
-            const traceVar = `trace${receiptTraceCount}`;
+            const traceVar = `plt${receiptTraceCount}`;
             const xAxisBase = subplotIndex === 1 ? 'x' : `x${subplotIndex}`;
             const yAxisBase = subplotIndex === 1 ? 'y' : `y${subplotIndex}`;
 
@@ -579,59 +579,57 @@ export const generatePlotConfig = (
             const finalSize = customization.size || 8;
 
             let mode = customization.mode || 'markers';
-            let markerParams = '';
+            let markerParamsCode = '';
 
             const activeSymbol = customization.symbol || traceInfo.groupSymbol;
 
             if (activeSymbol) {
                 if (mode === 'lines') mode = 'lines+markers';
-                markerParams = `, marker: { symbol: '${activeSymbol}', size: ${finalSize} }`;
+                markerParamsCode = `\n${traceVar}.marker = { symbol: '${activeSymbol}', size: ${finalSize} };`;
             }
 
             if (customization.mode === 'markers') {
                 mode = 'markers';
                 if (!activeSymbol) {
-                    markerParams = `, marker: { symbol: 'circle', size: ${finalSize} }`;
+                    markerParamsCode = `\n${traceVar}.marker = { symbol: 'circle', size: ${finalSize} };`;
                 } else {
-                    markerParams = `, marker: { symbol: '${activeSymbol}', size: ${finalSize} }`;
+                    markerParamsCode = `\n${traceVar}.marker = { symbol: '${activeSymbol}', size: ${finalSize} };`;
                 }
             }
 
             if (plotType === 'histogram') {
-                let histCode = `var ${traceVar} = {
-  // x: ..., // Histogram data mapped from yAxis
-  type: 'histogram',
-  name: '${finalName}',
-  opacity: ${processedTraces.length > 1 ? 0.7 : 1},
-  marker: { color: '${finalColor}' },
-  xaxis: '${xAxisBase}',
-  yaxis: '${yAxisBase}'`;
+                let histCode = `var ${traceVar} = {};
+// ${traceVar}.x = ... // Histogram data mapped from yAxis
+${traceVar}.type = 'histogram';
+${traceVar}.name = '${finalName}';
+${traceVar}.opacity = ${processedTraces.length > 1 ? 0.7 : 1};
+${traceVar}.marker = { color: '${finalColor}' };
+${traceVar}.xaxis = '${xAxisBase}';
+${traceVar}.yaxis = '${yAxisBase}';`;
                 const traceBins = customization.histogramBins;
                 if (traceBins) {
-                    histCode += `,\n  autobinx: false,
-  xbins: { start: ${traceBins.start}, end: ${traceBins.end}, size: ${traceBins.size} }`;
+                    histCode += `\n${traceVar}.autobinx = false;
+${traceVar}.xbins = { start: ${traceBins.start}, end: ${traceBins.end}, size: ${traceBins.size} };`;
                 }
-                histCode += `\n};`;
                 receiptTraces.push(histCode);
                 return;
             }
 
-            receiptTraces.push(`var ${traceVar} = {
-  // x: ..., // Filtered data
-  // y: ..., // Filtered data
-  mode: '${mode}',
-  type: 'scatter',
-  name: '${finalName}',
-  xaxis: '${xAxisBase}',
-  yaxis: '${yAxisBase}',
-  line: { color: '${finalColor}' }${markerParams}
-};`);
+            receiptTraces.push(`var ${traceVar} = {};
+// ${traceVar}.x = ... // Filtered data
+// ${traceVar}.y = ... // Filtered data
+${traceVar}.mode = '${mode}';
+${traceVar}.type = 'scatter';
+${traceVar}.name = '${finalName}';
+${traceVar}.xaxis = '${xAxisBase}';
+${traceVar}.yaxis = '${yAxisBase}';
+${traceVar}.line = { color: '${finalColor}' };${markerParamsCode}`);
         });
     });
 
     receipt += receiptTraces.join('\n\n') + '\n\n';
 
-    receipt += `var data = [ ${Array.from({ length: receiptTraceCount }, (_, i) => `trace${i + 1}`).join(', ')} ];\n\n`;
+    receipt += `var data = [ ${Array.from({ length: receiptTraceCount }, (_, i) => `plt${i + 1}`).join(', ')} ];\n\n`;
 
     // Layout
     receipt += `var layout = {
