@@ -485,13 +485,13 @@ export const generatePlotConfig = (
         xaxis: {
             title: { text: xAxisTitle || (plotType === 'histogram' ? 'Value' : (xAxis || 'Row Number')) },
             type: enableLogXAxis ? 'log' : (isXAxisDate ? 'date' : 'linear'),
-            range: plotType === 'histogram' ? undefined : (xRange || undefined),
+            range: plotType === 'histogram' ? undefined : (xRange ? (enableLogXAxis ? [Math.log10(Math.max(xRange[0], 1e-15)), Math.log10(Math.max(xRange[1], 1e-15))] : xRange) : undefined),
             autorange: plotType === 'histogram' ? true : !xRange
         },
         yaxis: {
             title: { text: yAxisTitle || (yAxis.length === 1 ? yAxis[0] : 'Values') },
             type: enableLogYAxis ? 'log' : (isYAxisDate ? 'date' : 'linear'),
-            range: plotType === 'histogram' ? undefined : (yRange || undefined),
+            range: plotType === 'histogram' ? undefined : (yRange ? (enableLogYAxis ? [Math.log10(Math.max(yRange[0], 1e-15)), Math.log10(Math.max(yRange[1], 1e-15))] : yRange) : undefined),
             autorange: plotType === 'histogram' ? true : !yRange
         },
         autosize: true,
@@ -513,13 +513,13 @@ export const generatePlotConfig = (
         const baseTargetXAxis = {
             title: { text: xAxisTitle || (plotType === 'histogram' ? 'Value' : (xAxis || 'Row Number')) },
             type: enableLogXAxis ? 'log' : (isXAxisDate ? 'date' : 'linear'),
-            range: plotType === 'histogram' ? undefined : (xRange || undefined),
+            range: plotType === 'histogram' ? undefined : (xRange ? (enableLogXAxis ? [Math.log10(Math.max(xRange[0], 1e-15)), Math.log10(Math.max(xRange[1], 1e-15))] : xRange) : undefined),
             autorange: plotType === 'histogram' ? true : !xRange
         };
         const baseTargetYAxis = {
             title: { text: yAxisTitle || (yAxis.length === 1 ? yAxis[0] : 'Values') },
             type: enableLogYAxis ? 'log' : (isYAxisDate ? 'date' : 'linear'),
-            range: plotType === 'histogram' ? undefined : (yRange || undefined),
+            range: plotType === 'histogram' ? undefined : (yRange ? (enableLogYAxis ? [Math.log10(Math.max(yRange[0], 1e-15)), Math.log10(Math.max(yRange[1], 1e-15))] : yRange) : undefined),
             autorange: plotType === 'histogram' ? true : !yRange
         };
 
@@ -646,12 +646,12 @@ ${traceVar}.line = { color: '${finalColor}' };${markerParamsCode}`);
             receipt += `\n  ${xKey}: {
     title: { text: '${layout.xaxis?.title?.text}' },
     type: '${enableLogXAxis ? 'log' : (isXAxisDate ? 'date' : 'linear')}',
-    ${xRange ? `range: [${xRange[0]}, ${xRange[1]}]` : '// autorange: true'}
+    ${xRange ? `range: [${enableLogXAxis ? Math.log10(Math.max(xRange[0], 1e-15)) : xRange[0]}, ${enableLogXAxis ? Math.log10(Math.max(xRange[1], 1e-15)) : xRange[1]}]` : '// autorange: true'}
   },`;
             receipt += `\n  ${yKey}: {
     title: { text: '${layout.yaxis?.title?.text}' },
     type: '${enableLogYAxis ? 'log' : (isYAxisDate ? 'date' : 'linear')}',
-    ${yRange ? `range: [${yRange[0]}, ${yRange[1]}]` : '// autorange: true'}
+    ${yRange ? `range: [${enableLogYAxis ? Math.log10(Math.max(yRange[0], 1e-15)) : yRange[0]}, ${enableLogYAxis ? Math.log10(Math.max(yRange[1], 1e-15)) : yRange[1]}]` : '// autorange: true'}
   },`;
         }
         receipt += `\n  `;
@@ -660,12 +660,12 @@ ${traceVar}.line = { color: '${finalColor}' };${markerParamsCode}`);
   xaxis: {
     title: { text: '${layout.xaxis?.title?.text}' },
     type: '${enableLogXAxis ? 'log' : (isXAxisDate ? 'date' : 'linear')}',
-    ${xRange ? `range: [${xRange[0]}, ${xRange[1]}]` : '// autorange: true'}
+    ${xRange ? `range: [${enableLogXAxis ? Math.log10(Math.max(xRange[0], 1e-15)) : xRange[0]}, ${enableLogXAxis ? Math.log10(Math.max(xRange[1], 1e-15)) : xRange[1]}]` : '// autorange: true'}
   },
   yaxis: {
     title: { text: '${layout.yaxis?.title?.text}' },
     type: '${enableLogYAxis ? 'log' : (isYAxisDate ? 'date' : 'linear')}',
-    ${yRange ? `range: [${yRange[0]}, ${yRange[1]}]` : '// autorange: true'}
+    ${yRange ? `range: [${enableLogYAxis ? Math.log10(Math.max(yRange[0], 1e-15)) : yRange[0]}, ${enableLogYAxis ? Math.log10(Math.max(yRange[1], 1e-15)) : yRange[1]}]` : '// autorange: true'}
   },`;
     }
 
