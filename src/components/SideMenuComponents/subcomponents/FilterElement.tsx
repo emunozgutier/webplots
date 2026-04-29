@@ -21,6 +21,49 @@ const FilterElement: React.FC<FilterElementProps> = ({ filter, stats, getMinMax,
     const [isDeleting, setIsDeleting] = useState(false);
     const deleteTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
+    const configMin = (filter.config as any).min;
+    const configMax = (filter.config as any).max;
+    
+    const [localMin, setLocalMin] = useState<string | number>(configMin ?? '');
+    const [localMax, setLocalMax] = useState<string | number>(configMax ?? '');
+    const [localExact, setLocalExact] = useState<string | number>('');
+
+    React.useEffect(() => {
+        setLocalMin(configMin ?? '');
+        setLocalMax(configMax ?? '');
+        
+        if (configMin !== undefined && configMax !== undefined && configMin === configMax) {
+            setLocalExact(configMin);
+        } else {
+            setLocalExact('');
+        }
+    }, [configMin, configMax]);
+
+    React.useEffect(() => {
+        const timer = setTimeout(() => {
+            if (localMin !== (configMin ?? '')) {
+                updateFilter(filter.id, { min: localMin === '' ? undefined : Number(localMin) });
+            }
+        }, 400);
+        return () => clearTimeout(timer);
+    }, [localMin, configMin, filter.id, updateFilter]);
+
+    React.useEffect(() => {
+        const timer = setTimeout(() => {
+            if (localMax !== (configMax ?? '')) {
+                updateFilter(filter.id, { max: localMax === '' ? undefined : Number(localMax) });
+            }
+        }, 400);
+        return () => clearTimeout(timer);
+    }, [localMax, configMax, filter.id, updateFilter]);
+
+    const handleExactChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value;
+        setLocalExact(val);
+        setLocalMin(val);
+        setLocalMax(val);
+    };
+
     React.useEffect(() => {
         return () => {
             if (deleteTimerRef.current) {
@@ -119,21 +162,31 @@ const FilterElement: React.FC<FilterElementProps> = ({ filter, stats, getMinMax,
     );
 
     const renderNumberControls = () => {
-        const { min, max } = filter.config as any;
         const bounds = getMinMax(filter.column);
 
         return (
             <div className="card-body p-2">
                 <div className="d-flex flex-column gap-2">
                     <div className="d-flex align-items-center">
+                        <label className="form-label mb-0 text-muted me-2" style={{ fontSize: '0.75rem', minWidth: '35px' }}>Exact</label>
+                        <input
+                            type="number"
+                            className="form-control form-control-sm"
+                            style={{ fontSize: '0.8rem', padding: '0.2rem 0.4rem' }}
+                            value={localExact}
+                            placeholder="Exact Value"
+                            onChange={handleExactChange}
+                        />
+                    </div>
+                    <div className="d-flex align-items-center">
                         <label className="form-label mb-0 text-muted me-2" style={{ fontSize: '0.75rem', minWidth: '35px' }}>Min</label>
                         <input
                             type="number"
                             className="form-control form-control-sm"
                             style={{ fontSize: '0.8rem', padding: '0.2rem 0.4rem' }}
-                            value={min ?? ''}
+                            value={localMin}
                             placeholder={String(bounds.min)}
-                            onChange={(e) => updateFilter(filter.id, { min: e.target.value === '' ? undefined : Number(e.target.value) })}
+                            onChange={(e) => setLocalMin(e.target.value)}
                         />
                     </div>
                     <div className="d-flex align-items-center">
@@ -142,9 +195,9 @@ const FilterElement: React.FC<FilterElementProps> = ({ filter, stats, getMinMax,
                             type="number"
                             className="form-control form-control-sm"
                             style={{ fontSize: '0.8rem', padding: '0.2rem 0.4rem' }}
-                            value={max ?? ''}
+                            value={localMax}
                             placeholder={String(bounds.max)}
-                            onChange={(e) => updateFilter(filter.id, { max: e.target.value === '' ? undefined : Number(e.target.value) })}
+                            onChange={(e) => setLocalMax(e.target.value)}
                         />
                     </div>
                 </div>
