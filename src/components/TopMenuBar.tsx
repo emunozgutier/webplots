@@ -181,7 +181,7 @@ const TopMenuBar: React.FC = () => {
     const handleLoadWeatherData = async () => {
         try {
             const baseUrl = import.meta.env.BASE_URL || '/';
-            const response = await fetch(`${baseUrl}weather_data.json`);
+            const response = await fetch(`${baseUrl}data/weather_data.json`);
             if (response.ok) {
                 const rawData = await response.json();
                 const flattenedData: any[] = [];
