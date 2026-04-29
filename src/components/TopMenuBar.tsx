@@ -244,6 +244,58 @@ const TopMenuBar: React.FC = () => {
         }
     };
 
+    const handleLoadGapminderData = async () => {
+        try {
+            const baseUrl = import.meta.env.BASE_URL || '/';
+            const response = await fetch(`${baseUrl}data/gapminder.json`);
+            if (response.ok) {
+                const rawData = await response.json();
+                const flattenedData: any[] = [];
+
+                for (const country of rawData) {
+                    const { geo, name, gdp, life_expectancy, population } = country;
+                    
+                    const yearsSet = new Set<string>();
+                    if (gdp) Object.keys(gdp).forEach(y => yearsSet.add(y));
+                    if (life_expectancy) Object.keys(life_expectancy).forEach(y => yearsSet.add(y));
+                    if (population) Object.keys(population).forEach(y => yearsSet.add(y));
+                    
+                    const years = Array.from(yearsSet).sort((a, b) => parseInt(a) - parseInt(b));
+                    
+                    for (const yearStr of years) {
+                        flattenedData.push({
+                            geo: geo,
+                            country: name,
+                            year: parseInt(yearStr, 10),
+                            gdp: gdp?.[yearStr] ?? null,
+                            life_expectancy: life_expectancy?.[yearStr] ?? null,
+                            population: population?.[yearStr] ?? null
+                        });
+                    }
+                }
+
+                if (flattenedData.length > 0) {
+                    setPlotData(flattenedData);
+                    const cols = Object.keys(flattenedData[0]);
+                    setColumns(cols);
+                    const activeStores = workspaceRegistry.get(useWorkspaceStore.getState().activeWorkspaceId);
+                    if (activeStores) {
+                        activeStores.axisSideMenuStore.getState().setXAxis('gdp');
+                        activeStores.axisSideMenuStore.getState().addYAxisColumn('life_expectancy');
+                        activeStores.groupSideMenuStore.getState().setGroupAxis('country');
+                        activeStores.styleSideMenuStore.getState().setSize({ source: 'column', value: 'population', enabled: true });
+                    }
+                }
+            } else {
+                console.error("Failed to fetch gapminder data.");
+                alert("Could not load gapminder data.");
+            }
+        } catch (error) {
+            console.error("Error fetching gapminder json:", error);
+            alert("Error loading gapminder data.");
+        }
+    };
+
     const handleShowVersion = async () => {
         try {
             // Check if we are in production or dev environment using base url
@@ -322,6 +374,9 @@ const TopMenuBar: React.FC = () => {
                             <NavDropdown.Divider />
                             <NavDropdown.Item onClick={handleLoadWeatherData}>
                                 Sample Weather Data
+                            </NavDropdown.Item>
+                            <NavDropdown.Item onClick={handleLoadGapminderData}>
+                                World Life Expect vs GDP
                             </NavDropdown.Item>
                             <NavDropdown.Divider />
                             <NavDropdown.Item onClick={() => {
