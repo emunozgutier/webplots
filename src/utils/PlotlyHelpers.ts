@@ -43,7 +43,7 @@ export const generatePlotConfig = (
     groupAxis: string | null = null
 ) => {
     const { plotType, xAxis, yAxis } = sideMenuData;
-    const { enableLogAxis, plotTitle, xAxisTitle, yAxisTitle, xRange, yRange, histogramBarmode, legendOrientation, pointTip } = plotLayout;
+    const { enableLogXAxis, enableLogYAxis, plotTitle, xAxisTitle, yAxisTitle, xRange, yRange, histogramBarmode, legendOrientation, pointTip } = plotLayout;
 
     const { traceCustomizations, currentPaletteColors } = traceConfig;
     const getColor = (idx: number) => {
@@ -484,19 +484,19 @@ export const generatePlotConfig = (
         title: { text: plotTitle || (plotType === 'histogram' ? `Histogram: ${yAxis.join(', ')}` : `Plot: ${yAxis.join(', ')} vs ${xAxis || 'Row Number'}`) },
         xaxis: {
             title: { text: xAxisTitle || (plotType === 'histogram' ? 'Value' : (xAxis || 'Row Number')) },
-            type: enableLogAxis ? 'log' : (isXAxisDate ? 'date' : 'linear'),
+            type: enableLogXAxis ? 'log' : (isXAxisDate ? 'date' : 'linear'),
             range: plotType === 'histogram' ? undefined : (xRange || undefined),
             autorange: plotType === 'histogram' ? true : !xRange
         },
         yaxis: {
             title: { text: yAxisTitle || (yAxis.length === 1 ? yAxis[0] : 'Values') },
-            type: enableLogAxis ? 'log' : (isYAxisDate ? 'date' : 'linear'),
+            type: enableLogYAxis ? 'log' : (isYAxisDate ? 'date' : 'linear'),
             range: plotType === 'histogram' ? undefined : (yRange || undefined),
             autorange: plotType === 'histogram' ? true : !yRange
         },
         autosize: true,
         margin: { l: 50, r: 50, b: 50, t: 50 },
-        showlegend: legendOrientation === 'hidden' ? false : (legendOrientation === 'auto' ? processedTraces.length > 1 : true),
+        showlegend: processedTraces.length > 8 ? false : (legendOrientation === 'hidden' ? false : (legendOrientation === 'auto' ? processedTraces.length > 1 : true)),
         legend: {
             itemsizing: 'constant',
             ...(legendOrientation === 'bottom' ? { orientation: 'h', yanchor: 'bottom', y: -0.2, xanchor: 'center', x: 0.5 } : {})
@@ -512,13 +512,13 @@ export const generatePlotConfig = (
         // Construct standard axis configs
         const baseTargetXAxis = {
             title: { text: xAxisTitle || (plotType === 'histogram' ? 'Value' : (xAxis || 'Row Number')) },
-            type: enableLogAxis ? 'log' : (isXAxisDate ? 'date' : 'linear'),
+            type: enableLogXAxis ? 'log' : (isXAxisDate ? 'date' : 'linear'),
             range: plotType === 'histogram' ? undefined : (xRange || undefined),
             autorange: plotType === 'histogram' ? true : !xRange
         };
         const baseTargetYAxis = {
             title: { text: yAxisTitle || (yAxis.length === 1 ? yAxis[0] : 'Values') },
-            type: enableLogAxis ? 'log' : (isYAxisDate ? 'date' : 'linear'),
+            type: enableLogYAxis ? 'log' : (isYAxisDate ? 'date' : 'linear'),
             range: plotType === 'histogram' ? undefined : (yRange || undefined),
             autorange: plotType === 'histogram' ? true : !yRange
         };
@@ -645,12 +645,12 @@ ${traceVar}.line = { color: '${finalColor}' };${markerParamsCode}`);
 
             receipt += `\n  ${xKey}: {
     title: { text: '${layout.xaxis?.title?.text}' },
-    type: '${enableLogAxis ? 'log' : (isXAxisDate ? 'date' : 'linear')}',
+    type: '${enableLogXAxis ? 'log' : (isXAxisDate ? 'date' : 'linear')}',
     ${xRange ? `range: [${xRange[0]}, ${xRange[1]}]` : '// autorange: true'}
   },`;
             receipt += `\n  ${yKey}: {
     title: { text: '${layout.yaxis?.title?.text}' },
-    type: '${enableLogAxis ? 'log' : (isYAxisDate ? 'date' : 'linear')}',
+    type: '${enableLogYAxis ? 'log' : (isYAxisDate ? 'date' : 'linear')}',
     ${yRange ? `range: [${yRange[0]}, ${yRange[1]}]` : '// autorange: true'}
   },`;
         }
@@ -659,17 +659,17 @@ ${traceVar}.line = { color: '${finalColor}' };${markerParamsCode}`);
         receipt += `
   xaxis: {
     title: { text: '${layout.xaxis?.title?.text}' },
-    type: '${enableLogAxis ? 'log' : (isXAxisDate ? 'date' : 'linear')}',
+    type: '${enableLogXAxis ? 'log' : (isXAxisDate ? 'date' : 'linear')}',
     ${xRange ? `range: [${xRange[0]}, ${xRange[1]}]` : '// autorange: true'}
   },
   yaxis: {
     title: { text: '${layout.yaxis?.title?.text}' },
-    type: '${enableLogAxis ? 'log' : (isYAxisDate ? 'date' : 'linear')}',
+    type: '${enableLogYAxis ? 'log' : (isYAxisDate ? 'date' : 'linear')}',
     ${yRange ? `range: [${yRange[0]}, ${yRange[1]}]` : '// autorange: true'}
   },`;
     }
 
-    receipt += `\n  showlegend: ${legendOrientation === 'hidden' ? 'false' : (legendOrientation === 'auto' ? processedTraces.length > 1 : 'true')}${legendOrientation === 'bottom' ? `,\n  legend: { orientation: 'h', yanchor: 'bottom', y: -0.2, xanchor: 'center', x: 0.5 }` : ''}
+    receipt += `\n  showlegend: ${processedTraces.length > 8 ? 'false' : (legendOrientation === 'hidden' ? 'false' : (legendOrientation === 'auto' ? (processedTraces.length > 1 ? 'true' : 'false') : 'true'))}${legendOrientation === 'bottom' ? `,\n  legend: { orientation: 'h', yanchor: 'bottom', y: -0.2, xanchor: 'center', x: 0.5 }` : ''}
 };\n\n`;
 
     receipt += `Plotly.newPlot('myDiv', plt.data, plt.layout);`;

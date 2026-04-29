@@ -6,7 +6,7 @@ import { useAxisSideMenuStore } from '../../../store/SideMenu/useAxisSideMenuSto
 import { useWorkspaceLocalStore } from '../../../store/Workspace/useWorkspaceLocalStore';
 
 const PlotLayout: React.FC = () => {
-    const { plotLayout, setPlotTitle, setXAxisTitle, setYAxisTitle, setXRange, setYRange, setHistogramBarmode, setLegendOrientation } = usePlotLayoutStore();
+    const { plotLayout, setPlotTitle, setXAxisTitle, setYAxisTitle, setXRange, setYRange, setHistogramBarmode, setLegendOrientation, setEnableLogXAxis, setEnableLogYAxis } = usePlotLayoutStore();
     const { sideMenuData } = useAxisSideMenuStore();
     const { data } = useCsvDataStore();
     const { closePopup } = useWorkspaceLocalStore();
@@ -74,6 +74,8 @@ const PlotLayout: React.FC = () => {
 
     const [localHistogramBarmode, setLocalHistogramBarmode] = useState<'overlay' | 'stack' | 'group'>(plotLayout.histogramBarmode || 'overlay');
     const [localLegend, setLocalLegend] = useState<'auto' | 'right' | 'bottom' | 'hidden'>(plotLayout.legendOrientation || 'auto');
+    const [localEnableLogXAxis, setLocalEnableLogXAxis] = useState<boolean>(plotLayout.enableLogXAxis || false);
+    const [localEnableLogYAxis, setLocalEnableLogYAxis] = useState<boolean>(plotLayout.enableLogYAxis || false);
 
     // Update local state when visibility changes to ensure fresh defaults if data changed
     useEffect(() => {
@@ -91,7 +93,9 @@ const PlotLayout: React.FC = () => {
 
         setLocalHistogramBarmode(plotLayout.histogramBarmode || 'overlay');
         setLocalLegend(plotLayout.legendOrientation || 'auto');
-    }, [plotLayout.plotTitle, plotLayout.xAxisTitle, plotLayout.yAxisTitle, plotLayout.xRange, plotLayout.yRange, plotLayout.histogramBarmode, plotLayout.legendOrientation, sideMenuData, data]);
+        setLocalEnableLogXAxis(plotLayout.enableLogXAxis || false);
+        setLocalEnableLogYAxis(plotLayout.enableLogYAxis || false);
+    }, [plotLayout.plotTitle, plotLayout.xAxisTitle, plotLayout.yAxisTitle, plotLayout.xRange, plotLayout.yRange, plotLayout.histogramBarmode, plotLayout.legendOrientation, plotLayout.enableLogXAxis, plotLayout.enableLogYAxis, sideMenuData, data]);
 
     const handleSave = () => {
         setPlotTitle(localPlotTitle);
@@ -115,6 +119,8 @@ const PlotLayout: React.FC = () => {
         }
 
         setLegendOrientation(localLegend);
+        setEnableLogXAxis(localEnableLogXAxis);
+        setEnableLogYAxis(localEnableLogYAxis);
 
         closePopup();
     };
@@ -177,6 +183,40 @@ const PlotLayout: React.FC = () => {
                         <option value="bottom">Bottom</option>
                         <option value="hidden">Hidden / None</option>
                     </select>
+                </div>
+
+                <div className="row mb-3">
+                    <div className="col-6">
+                        <div className="form-check form-switch">
+                            <input 
+                                className="form-check-input" 
+                                type="checkbox" 
+                                id="enableLogXAxisToggle" 
+                                checked={localEnableLogXAxis} 
+                                onChange={e => setLocalEnableLogXAxis(e.target.checked)} 
+                            />
+                            <label className="form-check-label small fw-bold" htmlFor="enableLogXAxisToggle">
+                                Log X-Axis
+                            </label>
+                        </div>
+                    </div>
+                    <div className="col-6">
+                        <div className="form-check form-switch">
+                            <input 
+                                className="form-check-input" 
+                                type="checkbox" 
+                                id="enableLogYAxisToggle" 
+                                checked={localEnableLogYAxis} 
+                                onChange={e => setLocalEnableLogYAxis(e.target.checked)} 
+                            />
+                            <label className="form-check-label small fw-bold" htmlFor="enableLogYAxisToggle">
+                                Log Y-Axis
+                            </label>
+                        </div>
+                    </div>
+                    <div className="col-12 form-text text-muted mt-1" style={{ fontSize: '0.75rem' }}>
+                        When checked, axes with logarithmic scaling will be displayed in log base 10 format.
+                    </div>
                 </div>
 
                 <hr />

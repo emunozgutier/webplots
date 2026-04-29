@@ -4,7 +4,8 @@ import { useContext } from 'react';
 import { WorkspaceContext } from '../Workspace/WorkspaceContext';
 
 export interface PlotLayout {
-    enableLogAxis: boolean;
+    enableLogXAxis: boolean;
+    enableLogYAxis: boolean;
     plotTitle: string;
     xAxisTitle: string;
     yAxisTitle: string;
@@ -17,7 +18,8 @@ export interface PlotLayout {
 
 export type PlotLayoutState = {
     plotLayout: PlotLayout;
-    setEnableLogAxis: (enable: boolean) => void;
+    setEnableLogXAxis: (enable: boolean) => void;
+    setEnableLogYAxis: (enable: boolean) => void;
     setPlotTitle: (title: string) => void;
     setXAxisTitle: (title: string) => void;
     setYAxisTitle: (title: string) => void;
@@ -32,7 +34,8 @@ export type PlotLayoutState = {
 export const createPlotLayoutStore = () => createStore<PlotLayoutState>()(
     (set) => ({
         plotLayout: {
-            enableLogAxis: false,
+            enableLogXAxis: false,
+            enableLogYAxis: false,
             plotTitle: '',
             xAxisTitle: '',
             yAxisTitle: '',
@@ -42,8 +45,11 @@ export const createPlotLayoutStore = () => createStore<PlotLayoutState>()(
             legendOrientation: 'auto',
             pointTip: 'default'
         },
-        setEnableLogAxis: (enableLogAxis) => set((state) => ({
-            plotLayout: { ...state.plotLayout, enableLogAxis }
+        setEnableLogXAxis: (enableLogXAxis) => set((state) => ({
+            plotLayout: { ...state.plotLayout, enableLogXAxis }
+        })),
+        setEnableLogYAxis: (enableLogYAxis) => set((state) => ({
+            plotLayout: { ...state.plotLayout, enableLogYAxis }
         })),
         setPlotTitle: (plotTitle) => set((state) => ({
             plotLayout: { ...state.plotLayout, plotTitle }
