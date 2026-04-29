@@ -27,6 +27,9 @@ const FilterElement: React.FC<FilterElementProps> = ({ filter, stats, getMinMax,
     const [localMin, setLocalMin] = useState<string | number>(configMin ?? '');
     const [localMax, setLocalMax] = useState<string | number>(configMax ?? '');
     const [localExact, setLocalExact] = useState<string | number>('');
+    const [isExactMode, setIsExactMode] = useState<boolean>(
+        configMin !== undefined && configMax !== undefined && configMin === configMax
+    );
 
     React.useEffect(() => {
         setLocalMin(configMin ?? '');
@@ -166,40 +169,66 @@ const FilterElement: React.FC<FilterElementProps> = ({ filter, stats, getMinMax,
 
         return (
             <div className="card-body p-2">
+                <div className="d-flex justify-content-center mb-2">
+                    <div className="btn-group btn-group-sm w-100" role="group">
+                        <button 
+                            type="button" 
+                            className={`btn ${!isExactMode ? 'btn-primary' : 'btn-outline-primary'}`}
+                            onClick={() => setIsExactMode(false)}
+                            style={{ fontSize: '0.7rem' }}
+                        >
+                            Range
+                        </button>
+                        <button 
+                            type="button" 
+                            className={`btn ${isExactMode ? 'btn-primary' : 'btn-outline-primary'}`}
+                            onClick={() => setIsExactMode(true)}
+                            style={{ fontSize: '0.7rem' }}
+                        >
+                            Exact
+                        </button>
+                    </div>
+                </div>
+
                 <div className="d-flex flex-column gap-2">
-                    <div className="d-flex align-items-center">
-                        <label className="form-label mb-0 text-muted me-2" style={{ fontSize: '0.75rem', minWidth: '35px' }}>Exact</label>
-                        <input
-                            type="number"
-                            className="form-control form-control-sm"
-                            style={{ fontSize: '0.8rem', padding: '0.2rem 0.4rem' }}
-                            value={localExact}
-                            placeholder="Exact Value"
-                            onChange={handleExactChange}
-                        />
-                    </div>
-                    <div className="d-flex align-items-center">
-                        <label className="form-label mb-0 text-muted me-2" style={{ fontSize: '0.75rem', minWidth: '35px' }}>Min</label>
-                        <input
-                            type="number"
-                            className="form-control form-control-sm"
-                            style={{ fontSize: '0.8rem', padding: '0.2rem 0.4rem' }}
-                            value={localMin}
-                            placeholder={String(bounds.min)}
-                            onChange={(e) => setLocalMin(e.target.value)}
-                        />
-                    </div>
-                    <div className="d-flex align-items-center">
-                        <label className="form-label mb-0 text-muted me-2" style={{ fontSize: '0.75rem', minWidth: '35px' }}>Max</label>
-                        <input
-                            type="number"
-                            className="form-control form-control-sm"
-                            style={{ fontSize: '0.8rem', padding: '0.2rem 0.4rem' }}
-                            value={localMax}
-                            placeholder={String(bounds.max)}
-                            onChange={(e) => setLocalMax(e.target.value)}
-                        />
-                    </div>
+                    {isExactMode ? (
+                        <div className="d-flex align-items-center">
+                            <label className="form-label mb-0 text-muted me-2" style={{ fontSize: '0.75rem', minWidth: '35px' }}>Value</label>
+                            <input
+                                type="number"
+                                className="form-control form-control-sm"
+                                style={{ fontSize: '0.8rem', padding: '0.2rem 0.4rem' }}
+                                value={localExact}
+                                placeholder="Exact Value"
+                                onChange={handleExactChange}
+                            />
+                        </div>
+                    ) : (
+                        <>
+                            <div className="d-flex align-items-center">
+                                <label className="form-label mb-0 text-muted me-2" style={{ fontSize: '0.75rem', minWidth: '35px' }}>Min</label>
+                                <input
+                                    type="number"
+                                    className="form-control form-control-sm"
+                                    style={{ fontSize: '0.8rem', padding: '0.2rem 0.4rem' }}
+                                    value={localMin}
+                                    placeholder={String(bounds.min)}
+                                    onChange={(e) => setLocalMin(e.target.value)}
+                                />
+                            </div>
+                            <div className="d-flex align-items-center">
+                                <label className="form-label mb-0 text-muted me-2" style={{ fontSize: '0.75rem', minWidth: '35px' }}>Max</label>
+                                <input
+                                    type="number"
+                                    className="form-control form-control-sm"
+                                    style={{ fontSize: '0.8rem', padding: '0.2rem 0.4rem' }}
+                                    value={localMax}
+                                    placeholder={String(bounds.max)}
+                                    onChange={(e) => setLocalMax(e.target.value)}
+                                />
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
         );
