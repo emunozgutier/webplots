@@ -286,6 +286,17 @@ export const generatePlotConfig = (
             let mode: 'lines' | 'markers' | 'lines+markers' = customization.mode || 'markers';
             const marker: any = {};
 
+            let maxTraceSize = 20;
+            if (size.source === 'manual') {
+                maxTraceSize = Number(size.value) || 20;
+            } else if (size.source === 'column') {
+                maxTraceSize = size.range ? size.range[1] : 20;
+            } else if (size.source === 'group') {
+                maxTraceSize = 16;
+            }
+            const activeSizeMode = size.sizeMode || 'diameter';
+            const traceSizeref = activeSizeMode === 'area' ? (4 / Math.max(1, maxTraceSize)) : undefined;
+
             const baseColor = getColor(index);
             const finalColor = traceColorOverlay || groupColorOverlay || baseColor;
 
@@ -429,7 +440,8 @@ export const generatePlotConfig = (
                             color: finalMarkerColor,
                             symbol: finalMarkerSymbol,
                             size: glowMarkerSize,
-                            sizemode: size.sizeMode || 'diameter',
+                            sizemode: activeSizeMode,
+                            sizeref: traceSizeref,
                             line: { width: 0 }
                         }
                     };
@@ -504,7 +516,8 @@ export const generatePlotConfig = (
                     color: finalMarkerColor,
                     symbol: finalMarkerSymbol,
                     size: finalMarkerSize,
-                    sizemode: size.sizeMode || 'diameter',
+                    sizemode: activeSizeMode,
+                    sizeref: traceSizeref,
                     line: { color: finalMarkerColor, ...finalMarkerLine },
                     ...(finalMarkerOpacity !== undefined && { opacity: finalMarkerOpacity })
                 }
@@ -628,7 +641,16 @@ export const generatePlotConfig = (
 
             if (customization.mode === 'markers') {
                 mode = 'markers';
-                const sizeModeStr = size.sizeMode ? `, sizemode: '${size.sizeMode}'` : '';
+                let maxTraceSizeReceipt = 20;
+                if (size.source === 'manual') {
+                    maxTraceSizeReceipt = Number(size.value) || 20;
+                } else if (size.source === 'column') {
+                    maxTraceSizeReceipt = size.range ? size.range[1] : 20;
+                } else if (size.source === 'group') {
+                    maxTraceSizeReceipt = 16;
+                }
+                const activeSizeModeReceipt = size.sizeMode || 'diameter';
+                const sizeModeStr = activeSizeModeReceipt === 'area' ? `, sizemode: 'area', sizeref: ${4 / Math.max(1, maxTraceSizeReceipt)}` : '';
                 if (!activeSymbol) {
                     markerParamsCode = `\n${traceVar}.marker = { symbol: 'circle', size: ${finalSize}${sizeModeStr} };`;
                 } else {

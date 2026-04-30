@@ -254,6 +254,7 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                 marker: {
                     size: Array.from({ length: numDemos }, (_, i) => limitMin + i * (limitMax - limitMin) / (numDemos - 1)),
                     sizemode: (mapping.sizeMode || 'diameter') as 'diameter' | 'area',
+                    sizeref: mapping.sizeMode === 'area' ? 4 / limitMax : undefined,
                     color: 'rgba(108, 117, 125, 0.15)',
                     line: {
                         color: 'rgba(108, 117, 125, 0.4)',
