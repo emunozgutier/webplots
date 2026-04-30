@@ -10,6 +10,7 @@ import { useSubplotSideMenuStore } from '../../store/SideMenu/useSubplotSideMenu
 import { useInkRatioStore } from '../../store/SideMenu/useInkRatioStore';
 import { useFilterSideMenuStore } from '../../store/SideMenu/useFilterSideMenuStore';
 import { runDataPipeline } from '../../utils/DataFrameLib';
+import { useWorkspaceStore } from '../../store/Workspace/useWorkspaceStore';
 
 interface PlotAreaControlButtonsProps {
     onOpenSettings: () => void;
@@ -25,6 +26,7 @@ const PlotAreaControlButtons: React.FC<PlotAreaControlButtonsProps> = ({ onOpenS
     const { colorData } = useStyleSideMenuStore();
     const subplotData = useSubplotSideMenuStore();
     const { filters } = useFilterSideMenuStore();
+    const { isDebugMode } = useWorkspaceStore();
     const { inkRatio, absorptionMode, absorbedPoint, maxRadiusRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius } = useInkRatioStore();
 
     const handleSaveHTML = () => {
@@ -84,14 +86,16 @@ const PlotAreaControlButtons: React.FC<PlotAreaControlButtonsProps> = ({ onOpenS
     return (
         <div className="p-2 bg-light border-top d-flex justify-content-end align-items-center mt-auto shadow-sm" style={{ zIndex: 10 }}>
             <div className="btn-group btn-group-sm">
-                <button
-                    className="btn btn-outline-secondary"
-                    onClick={onOpenDebug}
-                    title="Toggle Code Receipt"
-                >
-                    <i className="bi bi-code-square me-1"></i>
-                    Debug Trace
-                </button>
+                {isDebugMode && (
+                    <button
+                        className="btn btn-outline-secondary"
+                        onClick={onOpenDebug}
+                        title="Toggle Code Receipt"
+                    >
+                        <i className="bi bi-code-square me-1"></i>
+                        Debug Trace
+                    </button>
+                )}
                 <button
                     className="btn btn-outline-secondary"
                     onClick={handleSaveHTML}
