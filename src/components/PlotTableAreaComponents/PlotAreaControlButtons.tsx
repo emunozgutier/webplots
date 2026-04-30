@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { usePlotLayoutStore } from '../../store/PlotTable/usePlotLayoutStore';
 import { useTraceConfigStore } from '../../store/PlotTable/useTraceConfigStore';
 import { generatePlotConfig } from '../../utils/PlotlyHelpers';
@@ -11,6 +11,8 @@ import { useInkRatioStore } from '../../store/SideMenu/useInkRatioStore';
 import { useFilterSideMenuStore } from '../../store/SideMenu/useFilterSideMenuStore';
 import { runDataPipeline } from '../../utils/DataFrameLib';
 import { useWorkspaceStore } from '../../store/Workspace/useWorkspaceStore';
+import { useAnimationSideMenuStore } from '../../store/SideMenu/useAnimationSideMenuStore';
+import { VideoExportModal } from './VideoExportModal';
 
 interface PlotAreaControlButtonsProps {
     onOpenSettings: () => void;
@@ -28,6 +30,25 @@ const PlotAreaControlButtons: React.FC<PlotAreaControlButtonsProps> = ({ onOpenS
     const { filters } = useFilterSideMenuStore();
     const { isDebugMode } = useWorkspaceStore();
     const { inkRatio, absorptionMode, absorbedPoint, maxRadiusRatio, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius } = useInkRatioStore();
+
+    const { animationData, setAnimationValue } = useAnimationSideMenuStore();
+    const { animationColumn } = animationData;
+    const [showExportModal, setShowExportModal] = useState(false);
+
+    const uniqueValues = useMemo(() => {
+        if (!animationColumn || data.length === 0) return [];
+        const values = new Set<string | number>();
+        for (let i = 0; i < data.length; i++) {
+            const val = data[i][animationColumn];
+            if (val !== undefined && val !== null && val !== '') {
+                values.add(val);
+            }
+        }
+        return Array.from(values).sort((a, b) => {
+            if (typeof a === 'number' && typeof b === 'number') return a - b;
+            return String(a).localeCompare(String(b));
+        });
+    }, [animationColumn, data]);
 
     const handleSaveHTML = () => {
         const { processedTraces } = runDataPipeline(data, filters, sideMenuData, groupSideMenuData, {
@@ -104,6 +125,16 @@ const PlotAreaControlButtons: React.FC<PlotAreaControlButtonsProps> = ({ onOpenS
                     <i className="bi bi-filetype-html me-1"></i>
                     Save as HTML
                 </button>
+                {animationColumn && uniqueValues.length > 0 && (
+                    <button
+                        className="btn btn-outline-secondary"
+                        onClick={() => setShowExportModal(true)}
+                        title="Save as Video"
+                    >
+                        <i className="bi bi-camera-reels-fill me-1"></i>
+                        Save as Video
+                    </button>
+                )}
                 <button
                     className="btn btn-outline-secondary"
                     onClick={onOpenSettings}
@@ -113,6 +144,14 @@ const PlotAreaControlButtons: React.FC<PlotAreaControlButtonsProps> = ({ onOpenS
                     Settings
                 </button>
             </div>
+            {showExportModal && (
+                <VideoExportModal 
+                    show={showExportModal} 
+                    onHide={() => setShowExportModal(false)}
+                    uniqueValues={uniqueValues}
+                    setAnimationValue={setAnimationValue}
+                />
+            )}
         </div>
     );
 };

@@ -1,6 +1,5 @@
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { useAnimationSideMenuStore } from '../../store/SideMenu/useAnimationSideMenuStore';
-import { VideoExportModal } from './VideoExportModal';
 
 interface AnimationControlsProps {
     data: any[];
@@ -10,7 +9,6 @@ const AnimationControls: React.FC<AnimationControlsProps> = ({ data }) => {
     const { animationData, setAnimationValue, setIsPlaying, setSpeedMultiplier } = useAnimationSideMenuStore();
 
     const { animationColumn, animationValue, isPlaying, speedMultiplier = 1 } = animationData;
-    const [showExportModal, setShowExportModal] = useState(false);
 
     // Extract unique values for the selected column, sorted
     const uniqueValues = useMemo(() => {
@@ -77,80 +75,58 @@ const AnimationControls: React.FC<AnimationControlsProps> = ({ data }) => {
     }
 
     return (
-        <>
-            <div className="w-100 bg-light border-top p-2 d-flex flex-column" style={{ zIndex: 10 }}>
-                <div className="d-flex align-items-center mb-1">
-                    <span className="fw-bold text-primary me-auto" style={{ fontSize: '0.85rem' }}>Timeline: {animationColumn}</span>
-                    <div className="badge bg-secondary">{String(uniqueValues[currentIndex])}</div>
-                </div>
-                <div className="d-flex align-items-center">
-                    <button 
-                        className={`btn btn-sm ${isPlaying ? 'btn-danger' : 'btn-primary'} me-2`} 
-                        onClick={() => {
-                            if (!isPlaying && currentIndex >= uniqueValues.length - 1) {
-                                setAnimationValue(uniqueValues[0]);
-                            }
-                            setIsPlaying(!isPlaying);
-                        }}
-                        style={{ borderRadius: '50%', width: '36px', height: '36px', padding: 0, flexShrink: 0 }}
-                        title={isPlaying ? 'Pause' : 'Play'}
-                    >
-                        <i className={`bi ${isPlaying ? 'bi-pause-fill' : 'bi-play-fill'} fs-5`}></i>
-                    </button>
+        <div className="w-100 bg-light border-top p-2 d-flex flex-column" style={{ zIndex: 10 }}>
+            <div className="d-flex align-items-center mb-1">
+                <span className="fw-bold text-primary me-auto" style={{ fontSize: '0.85rem' }}>Timeline: {animationColumn}</span>
+                <div className="badge bg-secondary">{String(uniqueValues[currentIndex])}</div>
+            </div>
+            <div className="d-flex align-items-center">
+                <button 
+                    className={`btn btn-sm ${isPlaying ? 'btn-danger' : 'btn-primary'} me-2`} 
+                    onClick={() => {
+                        if (!isPlaying && currentIndex >= uniqueValues.length - 1) {
+                            setAnimationValue(uniqueValues[0]);
+                        }
+                        setIsPlaying(!isPlaying);
+                    }}
+                    style={{ borderRadius: '50%', width: '36px', height: '36px', padding: 0, flexShrink: 0 }}
+                    title={isPlaying ? 'Pause' : 'Play'}
+                >
+                    <i className={`bi ${isPlaying ? 'bi-pause-fill' : 'bi-play-fill'} fs-5`}></i>
+                </button>
 
-                    <button 
-                        className="btn btn-sm btn-outline-secondary me-3" 
-                        style={{ width: '36px', height: '36px', padding: 0, flexShrink: 0 }}
-                        onClick={() => {
-                            setIsPlaying(false);
-                            setShowExportModal(true);
-                        }}
-                        title="Save as Video"
-                    >
-                        <i className="bi bi-camera-reels-fill fs-6"></i>
-                    </button>
-
-                    <select 
-                        className="form-select form-select-sm me-3" 
-                        style={{ width: 'auto', flexShrink: 0, fontSize: '0.8rem', padding: '0.25rem 1.5rem 0.25rem 0.5rem' }}
-                        value={speedMultiplier}
-                        onChange={(e) => setSpeedMultiplier(Number(e.target.value))}
-                        title="Animation Speed"
-                    >
-                        <option value="0.25">0.25x</option>
-                        <option value="0.5">0.5x</option>
-                        <option value="1">1x</option>
-                        <option value="2">2x</option>
-                        <option value="4">4x</option>
-                        <option value="10">10x</option>
-                    </select>
-                    
-                    <div className="flex-grow-1">
-                        <input
-                            type="range"
-                            className="form-range"
-                            min="0"
-                            max={uniqueValues.length - 1}
-                            step="1"
-                            value={currentIndex}
-                            onChange={handleSliderChange}
-                        />
-                        <div className="d-flex justify-content-between text-muted" style={{ fontSize: '0.75rem', marginTop: '-4px' }}>
-                            <span>{String(uniqueValues[0])}</span>
-                            <span>{String(uniqueValues[uniqueValues.length - 1])}</span>
-                        </div>
+                <select 
+                    className="form-select form-select-sm me-3" 
+                    style={{ width: 'auto', flexShrink: 0, fontSize: '0.8rem', padding: '0.25rem 1.5rem 0.25rem 0.5rem' }}
+                    value={speedMultiplier}
+                    onChange={(e) => setSpeedMultiplier(Number(e.target.value))}
+                    title="Animation Speed"
+                >
+                    <option value="0.25">0.25x</option>
+                    <option value="0.5">0.5x</option>
+                    <option value="1">1x</option>
+                    <option value="2">2x</option>
+                    <option value="4">4x</option>
+                    <option value="10">10x</option>
+                </select>
+                
+                <div className="flex-grow-1">
+                    <input
+                        type="range"
+                        className="form-range"
+                        min="0"
+                        max={uniqueValues.length - 1}
+                        step="1"
+                        value={currentIndex}
+                        onChange={handleSliderChange}
+                    />
+                    <div className="d-flex justify-content-between text-muted" style={{ fontSize: '0.75rem', marginTop: '-4px' }}>
+                        <span>{String(uniqueValues[0])}</span>
+                        <span>{String(uniqueValues[uniqueValues.length - 1])}</span>
                     </div>
                 </div>
             </div>
-            {showExportModal && (
-                <VideoExportModal 
-                    show={showExportModal} 
-                    onHide={() => setShowExportModal(false)}
-                    uniqueValues={uniqueValues}
-                    setAnimationValue={setAnimationValue}
-                />
-            )}
-        </>
+        </div>
     );
 };
 
