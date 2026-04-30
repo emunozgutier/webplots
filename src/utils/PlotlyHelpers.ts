@@ -43,7 +43,7 @@ export const generatePlotConfig = (
     groupAxis: string | null = null
 ) => {
     const { plotType, xAxis, yAxis } = sideMenuData;
-    const { enableLogXAxis, enableLogYAxis, plotTitle, xAxisTitle, yAxisTitle, xRange, yRange, histogramBarmode, legendOrientation, pointTip } = plotLayout;
+    const { enableLogXAxis, enableLogYAxis, plotTitle, xAxisTitle, yAxisTitle, xRange, yRange, histogramBarmode, legendOrientation, pointTip, customHoverConfig } = plotLayout;
 
     const { traceCustomizations, currentPaletteColors } = traceConfig;
     const getColor = (idx: number) => {
@@ -230,20 +230,38 @@ export const generatePlotConfig = (
                 computedSizes.push(si);
 
                 let hoverStr = '';
-                if (groupAxis && row[groupAxis] !== undefined) {
-                    hoverStr += `<br>${groupAxis}: ${row[groupAxis]}`;
-                } else if (groupName) {
-                    hoverStr += `<br>Group: ${groupName}`;
-                }
-
-                if (hue.enabled !== false && hue.source === 'column') hoverStr += `<br>${hue.value} (Hue): ${row[String(hue.value)]}`;
-                if (saturation.enabled !== false && saturation.source === 'column') hoverStr += `<br>${saturation.value} (Sat): ${row[String(saturation.value)]}`;
-                if (lightness.enabled !== false && lightness.source === 'column') hoverStr += `<br>${lightness.value} (Light): ${row[String(lightness.value)]}`;
-                if (shape.enabled !== false && shape.source === 'column') hoverStr += `<br>${shape.value} (Shape): ${row[String(shape.value)]}`;
-                if (size.enabled !== false && size.source === 'column') hoverStr += `<br>${size.value} (Size): ${row[String(size.value)]}`;
                 
-                if (absorptionMode !== 'none') {
-                    hoverStr += `<br>Absorbed: ${absorbedCounts[loopIdx] || 0}`;
+                if (pointTip === 'custom' && customHoverConfig) {
+                    const { showLabels, selectedColumns, showX, showY } = customHoverConfig;
+                    const lines: string[] = [];
+                    selectedColumns.forEach(col => {
+                        const val = row[col] !== undefined ? row[col] : 'N/A';
+                        if (showLabels) {
+                            lines.push(`${col}: ${val}`);
+                        } else {
+                            lines.push(`${val}`);
+                        }
+                    });
+                    if (lines.length > 0) {
+                        const hasXY = showX || showY;
+                        hoverStr = (hasXY ? '<br>' : '') + lines.join('<br>');
+                    }
+                } else {
+                    if (groupAxis && row[groupAxis] !== undefined) {
+                        hoverStr += `<br>${groupAxis}: ${row[groupAxis]}`;
+                    } else if (groupName) {
+                        hoverStr += `<br>Group: ${groupName}`;
+                    }
+
+                    if (hue.enabled !== false && hue.source === 'column') hoverStr += `<br>${hue.value} (Hue): ${row[String(hue.value)]}`;
+                    if (saturation.enabled !== false && saturation.source === 'column') hoverStr += `<br>${saturation.value} (Sat): ${row[String(saturation.value)]}`;
+                    if (lightness.enabled !== false && lightness.source === 'column') hoverStr += `<br>${lightness.value} (Light): ${row[String(lightness.value)]}`;
+                    if (shape.enabled !== false && shape.source === 'column') hoverStr += `<br>${shape.value} (Shape): ${row[String(shape.value)]}`;
+                    if (size.enabled !== false && size.source === 'column') hoverStr += `<br>${size.value} (Size): ${row[String(size.value)]}`;
+                    
+                    if (absorptionMode !== 'none') {
+                        hoverStr += `<br>Absorbed: ${absorbedCounts[loopIdx] || 0}`;
+                    }
                 }
 
                 computedHoverTexts.push(hoverStr);
@@ -433,15 +451,31 @@ export const generatePlotConfig = (
             }
 
             switch (effectiveHoverMode) {
+                case 'custom':
+                    if (customHoverConfig) {
+                        const { showX, showY, showLabels } = customHoverConfig;
+                        let customTemplate = '';
+                        if (showX && showY) {
+                            customTemplate = showLabels ? `X: %{x}<br>Y: %{y}` : `%{x}, %{y}`;
+                        } else if (showX) {
+                            customTemplate = showLabels ? `X: %{x}` : `%{x}`;
+                        } else if (showY) {
+                            customTemplate = showLabels ? `Y: %{y}` : `%{y}`;
+                        }
+                        hoverTemplateToUse = customTemplate ? `${customTemplate}%{hovertext}<extra></extra>` : `%{hovertext}<extra></extra>`;
+                    } else {
+                        hoverTemplateToUse = '%{x}, %{y}%{hovertext}<extra></extra>';
+                    }
+                    break;
                 case 'xy':
-                    hoverTemplateToUse = '%{x}, %{y}%{hovertext}<extra></extra>';
+                    hoverTemplateToUse = '%{x}, %{y}<extra></extra>';
                     break;
                 case 'xy_absorbed':
-                    hoverTemplateToUse = '%{x}, %{y}%{hovertext}<extra></extra>';
+                    hoverTemplateToUse = '%{x}, %{y}<br>Absorbed: %{customdata}<extra></extra>';
                     break;
                 case 'xy_trace':
                     // Using Plotly's built-in extra trace name flag
-                    hoverTemplateToUse = '%{x}, %{y}%{hovertext}';
+                    hoverTemplateToUse = '%{x}, %{y}';
                     break;
                 case 'default':
                 default:

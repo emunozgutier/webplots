@@ -13,7 +13,13 @@ export interface PlotLayout {
     yRange: [number, number] | null;
     histogramBarmode?: 'overlay' | 'stack' | 'group';
     legendOrientation?: 'auto' | 'right' | 'bottom' | 'hidden';
-    pointTip?: 'default' | 'xy' | 'xy_absorbed' | 'xy_trace';
+    pointTip?: 'default' | 'xy' | 'xy_absorbed' | 'xy_trace' | 'custom';
+    customHoverConfig?: {
+        showX: boolean;
+        showY: boolean;
+        showLabels: boolean;
+        selectedColumns: string[];
+    };
 }
 
 export type PlotLayoutState = {
@@ -27,7 +33,8 @@ export type PlotLayoutState = {
     setYRange: (range: [number, number] | null) => void;
     setHistogramBarmode: (barmode: 'overlay' | 'stack' | 'group') => void;
     setLegendOrientation: (orientation: 'auto' | 'right' | 'bottom' | 'hidden') => void;
-    setPointTip: (tip: 'default' | 'xy' | 'xy_absorbed' | 'xy_trace') => void;
+    setPointTip: (tip: 'default' | 'xy' | 'xy_absorbed' | 'xy_trace' | 'custom') => void;
+    setCustomHoverConfig: (config: PlotLayout['customHoverConfig']) => void;
     loadProject: (plotLayout: PlotLayout) => void;
 }
 
@@ -43,7 +50,13 @@ export const createPlotLayoutStore = () => createStore<PlotLayoutState>()(
             xRange: null,
             histogramBarmode: 'overlay',
             legendOrientation: 'auto',
-            pointTip: 'default'
+            pointTip: 'default',
+            customHoverConfig: {
+                showX: true,
+                showY: true,
+                showLabels: true,
+                selectedColumns: []
+            }
         },
         setEnableLogXAxis: (enableLogXAxis) => set((state) => ({
             plotLayout: { ...state.plotLayout, enableLogXAxis }
@@ -74,6 +87,9 @@ export const createPlotLayoutStore = () => createStore<PlotLayoutState>()(
         })),
         setPointTip: (pointTip) => set((state) => ({
             plotLayout: { ...state.plotLayout, pointTip }
+        })),
+        setCustomHoverConfig: (customHoverConfig) => set((state) => ({
+            plotLayout: { ...state.plotLayout, customHoverConfig }
         })),
         loadProject: (plotLayout) => set({ plotLayout })
     })
