@@ -128,7 +128,7 @@ export const VideoExportModal: React.FC<VideoExportModalProps> = ({ show, onHide
                         max={60} 
                         value={duration} 
                         onChange={(e) => setDuration(Number(e.target.value))} 
-                        disabled={isExporting || isPreRendering}
+                        disabled={isExporting}
                     />
                     <Form.Text className="text-muted" style={{ fontSize: '0.75rem' }}>
                         All {uniqueValues.length} frames will be spaced evenly to complete the animation exactly in this time.
@@ -142,7 +142,7 @@ export const VideoExportModal: React.FC<VideoExportModalProps> = ({ show, onHide
                             <Form.Select 
                                 value={format} 
                                 onChange={(e) => setFormat(e.target.value as 'webm' | 'mp4')}
-                                disabled={isExporting || isPreRendering}
+                                disabled={isExporting}
                             >
                                 <option value="webm">WebM (VP9, High Quality)</option>
                                 <option value="mp4">MP4 (H.264, Better Compatibility)</option>
@@ -155,7 +155,7 @@ export const VideoExportModal: React.FC<VideoExportModalProps> = ({ show, onHide
                             <Form.Select 
                                 value={aspectRatio} 
                                 onChange={(e) => setAspectRatio(e.target.value as 'original' | 'landscape' | 'portrait')}
-                                disabled={isExporting || isPreRendering}
+                                disabled={isExporting}
                             >
                                 <option value="original">Match Plot Size</option>
                                 <option value="landscape">Landscape (1920x1080)</option>
