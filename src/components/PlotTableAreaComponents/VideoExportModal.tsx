@@ -12,9 +12,11 @@ interface VideoExportModalProps {
 export const VideoExportModal: React.FC<VideoExportModalProps> = ({ show, onHide, uniqueValues, setAnimationValue }) => {
     const [duration, setDuration] = useState<number>(5);
     const [format, setFormat] = useState<'webm' | 'mp4'>('webm');
+    const [aspectRatio, setAspectRatio] = useState<'original' | 'landscape' | 'portrait'>('original');
     
     const [isPreRendering, setIsPreRendering] = useState(true);
     const [preRenderProgress, setPreRenderProgress] = useState(0);
+    const [latestPreRenderFrame, setLatestPreRenderFrame] = useState<string | null>(null);
     const [preRenderedData, setPreRenderedData] = useState<{frames: string[], width: number, height: number} | null>(null);
 
     const [isExporting, setIsExporting] = useState(false);
@@ -23,24 +25,41 @@ export const VideoExportModal: React.FC<VideoExportModalProps> = ({ show, onHide
 
     useEffect(() => {
         if (show) {
+            let isCancelled = false;
             setIsPreRendering(true);
             setPreRenderProgress(0);
+            setLatestPreRenderFrame(null);
             setError(null);
+
+            let targetWidth: number | undefined;
+            let targetHeight: number | undefined;
+            if (aspectRatio === 'landscape') { targetWidth = 1920; targetHeight = 1080; }
+            else if (aspectRatio === 'portrait') { targetWidth = 1080; targetHeight = 1920; }
 
             VideoExporter.preRenderFrames({
                 uniqueValues,
                 setAnimationValue,
-                onProgress: setPreRenderProgress
+                targetWidth,
+                targetHeight,
+                onProgress: (p, frame) => {
+                    if (isCancelled) return;
+                    setPreRenderProgress(p);
+                    if (frame) setLatestPreRenderFrame(frame);
+                }
             }).then(data => {
+                if (isCancelled) return;
                 setPreRenderedData(data);
                 setIsPreRendering(false);
             }).catch(err => {
+                if (isCancelled) return;
                 console.error("Pre-render error", err);
                 setError(err.message || 'Error occurred while pre-rendering frames.');
                 setIsPreRendering(false);
             });
+            
+            return () => { isCancelled = true; };
         }
-    }, [show, uniqueValues, setAnimationValue]);
+    }, [show, uniqueValues, setAnimationValue, aspectRatio]);
 
     const [previewFrameIndex, setPreviewFrameIndex] = useState(0);
 
@@ -116,20 +135,43 @@ export const VideoExportModal: React.FC<VideoExportModalProps> = ({ show, onHide
                     </Form.Text>
                 </Form.Group>
 
-                <Form.Group className="mb-3">
-                    <Form.Label className="fw-bold small mb-1">Format</Form.Label>
-                    <Form.Select 
-                        value={format} 
-                        onChange={(e) => setFormat(e.target.value as 'webm' | 'mp4')}
-                        disabled={isExporting || isPreRendering}
-                    >
-                        <option value="webm">WebM (VP9, High Quality)</option>
-                        <option value="mp4">MP4 (H.264, Better Compatibility)</option>
-                    </Form.Select>
-                </Form.Group>
+                <div className="row">
+                    <div className="col-md-6">
+                        <Form.Group className="mb-3">
+                            <Form.Label className="fw-bold small mb-1">Format</Form.Label>
+                            <Form.Select 
+                                value={format} 
+                                onChange={(e) => setFormat(e.target.value as 'webm' | 'mp4')}
+                                disabled={isExporting || isPreRendering}
+                            >
+                                <option value="webm">WebM (VP9, High Quality)</option>
+                                <option value="mp4">MP4 (H.264, Better Compatibility)</option>
+                            </Form.Select>
+                        </Form.Group>
+                    </div>
+                    <div className="col-md-6">
+                        <Form.Group className="mb-3">
+                            <Form.Label className="fw-bold small mb-1">Aspect Ratio</Form.Label>
+                            <Form.Select 
+                                value={aspectRatio} 
+                                onChange={(e) => setAspectRatio(e.target.value as 'original' | 'landscape' | 'portrait')}
+                                disabled={isExporting || isPreRendering}
+                            >
+                                <option value="original">Match Plot Size</option>
+                                <option value="landscape">Landscape (1920x1080)</option>
+                                <option value="portrait">Portrait (1080x1920)</option>
+                            </Form.Select>
+                        </Form.Group>
+                    </div>
+                </div>
                 
                 {isPreRendering ? (
-                    <div className="text-center p-4 border rounded bg-light">
+                    <div className="text-center p-3 border rounded bg-light">
+                        {latestPreRenderFrame && (
+                            <div className="mb-3 border rounded overflow-hidden shadow-sm" style={{ backgroundColor: '#fff' }}>
+                                <img src={latestPreRenderFrame} alt="Rendering frame" style={{ width: '100%', maxHeight: '200px', objectFit: 'contain' }} />
+                            </div>
+                        )}
                         <p className="fw-bold mb-2">Pre-rendering animation frames...</p>
                         <ProgressBar animated now={preRenderProgress} label={`${preRenderProgress}%`} />
                         <p className="text-muted mt-3 small mb-0">Please wait while we cache the frames. This ensures a fast, high-quality export.</p>

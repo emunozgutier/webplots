@@ -4,7 +4,9 @@ import * as MP4Muxer from 'mp4-muxer';
 export interface PreRenderOptions {
     uniqueValues: (string | number)[];
     setAnimationValue: (val: string | number) => void;
-    onProgress: (progress: number) => void;
+    onProgress: (progress: number, latestFrame?: string) => void;
+    targetWidth?: number;
+    targetHeight?: number;
 }
 
 export interface EncodeOptions {
@@ -18,7 +20,7 @@ export interface EncodeOptions {
 
 export class VideoExporter {
     static async preRenderFrames(options: PreRenderOptions): Promise<{ frames: string[], width: number, height: number }> {
-        const { uniqueValues, setAnimationValue, onProgress } = options;
+        const { uniqueValues, setAnimationValue, onProgress, targetWidth, targetHeight } = options;
 
         if (uniqueValues.length === 0) {
             throw new Error("No frames to export");
@@ -29,9 +31,13 @@ export class VideoExporter {
             throw new Error("Plotly element not found");
         }
 
+        // Use target dimensions or fallback to plot dimensions
+        let rawWidth = targetWidth || gd.clientWidth;
+        let rawHeight = targetHeight || gd.clientHeight;
+
         // Must be even numbers for h264 encoder
-        const width = gd.clientWidth % 2 === 0 ? gd.clientWidth : gd.clientWidth - 1;
-        const height = gd.clientHeight % 2 === 0 ? gd.clientHeight : gd.clientHeight - 1;
+        const width = rawWidth % 2 === 0 ? rawWidth : rawWidth - 1;
+        const height = rawHeight % 2 === 0 ? rawHeight : rawHeight - 1;
 
         const frames: string[] = [];
         const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
@@ -47,7 +53,7 @@ export class VideoExporter {
             const dataUrl = await Plotly.toImage(gd, { format: 'webp', width, height });
             frames.push(dataUrl);
 
-            onProgress(Math.round(((i + 1) / uniqueValues.length) * 100));
+            onProgress(Math.round(((i + 1) / uniqueValues.length) * 100), dataUrl);
         }
 
         return { frames, width, height };
