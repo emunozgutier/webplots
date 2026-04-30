@@ -46,7 +46,7 @@ const PlotArea: React.FC = () => {
     }, [animationData.animationColumn, rawDataTable]);
 
     const transitionDuration = uniqueAnimationValuesCount > 0 
-        ? Math.max(20, Math.floor(10000 / uniqueAnimationValuesCount))
+        ? Math.max(20, Math.floor((10000 / uniqueAnimationValuesCount) / (animationData.speedMultiplier || 1)))
         : 500;
 
     const { setPopupContent } = useWorkspaceLocalStore();

@@ -10,6 +10,7 @@ export interface AnimationSideMenuData {
     animationValue: string | number | null;
     displayMode: DisplayMode;
     isPlaying: boolean;
+    speedMultiplier: number;
 }
 
 export type AnimationSideMenuState = {
@@ -19,6 +20,7 @@ export type AnimationSideMenuState = {
     setAnimationValue: (value: string | number | null) => void;
     setDisplayMode: (mode: DisplayMode) => void;
     setIsPlaying: (isPlaying: boolean) => void;
+    setSpeedMultiplier: (speedMultiplier: number) => void;
 }
 
 export const createAnimationSideMenuStore = () => createStore<AnimationSideMenuState>()(
@@ -28,6 +30,7 @@ export const createAnimationSideMenuStore = () => createStore<AnimationSideMenuS
             animationValue: null,
             displayMode: 'subtitle',
             isPlaying: false,
+            speedMultiplier: 1,
         },
         setAnimationData: (data) =>
             set((state) => ({
@@ -48,6 +51,10 @@ export const createAnimationSideMenuStore = () => createStore<AnimationSideMenuS
         setIsPlaying: (isPlaying) =>
             set((state) => ({
                 animationData: { ...state.animationData, isPlaying }
+            })),
+        setSpeedMultiplier: (speedMultiplier) =>
+            set((state) => ({
+                animationData: { ...state.animationData, speedMultiplier }
             })),
     })
 );

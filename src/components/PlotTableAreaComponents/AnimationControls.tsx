@@ -4,9 +4,9 @@ import { useCsvDataStore } from '../../store/useCsvDataStore';
 
 const AnimationControls: React.FC = () => {
     const { data } = useCsvDataStore();
-    const { animationData, setAnimationValue, setIsPlaying } = useAnimationSideMenuStore();
+    const { animationData, setAnimationValue, setIsPlaying, setSpeedMultiplier } = useAnimationSideMenuStore();
 
-    const { animationColumn, animationValue, isPlaying } = animationData;
+    const { animationColumn, animationValue, isPlaying, speedMultiplier = 1 } = animationData;
 
     // Extract unique values for the selected column, sorted
     const uniqueValues = useMemo(() => {
@@ -52,8 +52,8 @@ const AnimationControls: React.FC = () => {
     useEffect(() => {
         let interval: NodeJS.Timeout;
         if (isPlaying && uniqueValues.length > 0) {
-            // Calculate interval to make the full animation take ~10 seconds
-            const intervalMs = Math.max(20, Math.floor(10000 / uniqueValues.length));
+            // Calculate interval to make the full animation take ~10 seconds adjusted by speed multiplier
+            const intervalMs = Math.max(20, Math.floor((10000 / uniqueValues.length) / speedMultiplier));
             interval = setInterval(() => {
                 const nextIndex = (currentIndex + 1) % uniqueValues.length;
                 setAnimationValue(uniqueValues[nextIndex]);
@@ -62,7 +62,7 @@ const AnimationControls: React.FC = () => {
         return () => {
             if (interval) clearInterval(interval);
         };
-    }, [isPlaying, currentIndex, uniqueValues, setAnimationValue]);
+    }, [isPlaying, currentIndex, uniqueValues, setAnimationValue, speedMultiplier]);
 
     if (!animationColumn || uniqueValues.length === 0) {
         return null;
@@ -76,13 +76,28 @@ const AnimationControls: React.FC = () => {
             </div>
             <div className="d-flex align-items-center">
                 <button 
-                    className={`btn btn-sm ${isPlaying ? 'btn-danger' : 'btn-primary'} me-3`} 
+                    className={`btn btn-sm ${isPlaying ? 'btn-danger' : 'btn-primary'} me-2`} 
                     onClick={() => setIsPlaying(!isPlaying)}
                     style={{ borderRadius: '50%', width: '36px', height: '36px', padding: 0, flexShrink: 0 }}
                     title={isPlaying ? 'Pause' : 'Play'}
                 >
                     <i className={`bi ${isPlaying ? 'bi-pause-fill' : 'bi-play-fill'} fs-5`}></i>
                 </button>
+
+                <select 
+                    className="form-select form-select-sm me-3" 
+                    style={{ width: 'auto', flexShrink: 0, fontSize: '0.8rem', padding: '0.25rem 1.5rem 0.25rem 0.5rem' }}
+                    value={speedMultiplier}
+                    onChange={(e) => setSpeedMultiplier(Number(e.target.value))}
+                    title="Animation Speed"
+                >
+                    <option value="0.25">0.25x</option>
+                    <option value="0.5">0.5x</option>
+                    <option value="1">1x</option>
+                    <option value="2">2x</option>
+                    <option value="4">4x</option>
+                    <option value="10">10x</option>
+                </select>
                 
                 <div className="flex-grow-1">
                     <input
