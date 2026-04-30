@@ -738,12 +738,12 @@ export const generatePlotConfig = (
                     let y1: any = hasY ? (anno.yMax !== '' && anno.yMax !== undefined ? Number(anno.yMax) : 1e9) : 1;
 
                     if (xref === 'x' && enableLogXAxis) {
-                        x0 = Math.log10(x0);
-                        x1 = Math.log10(x1);
+                        x0 = Math.log10(Math.max(x0, 1e-9));
+                        x1 = Math.log10(Math.max(x1, 1e-9));
                     }
                     if (yref === 'y' && enableLogYAxis) {
-                        y0 = Math.log10(y0);
-                        y1 = Math.log10(y1);
+                        y0 = Math.log10(Math.max(y0, 1e-9));
+                        y1 = Math.log10(Math.max(y1, 1e-9));
                     }
 
                     layout.shapes!.push({
