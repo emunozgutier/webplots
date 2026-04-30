@@ -675,6 +675,8 @@ export const generatePlotConfig = (
                 if (row) {
                     targetX = xAxis ? row[xAxis] : 0;
                     targetY = yAxis.length > 0 ? row[yAxis[0]] : 0;
+                    if (enableLogXAxis && targetX > 0) targetX = Math.log10(targetX);
+                    if (enableLogYAxis && targetY > 0) targetY = Math.log10(targetY);
                     found = true;
                 }
             }

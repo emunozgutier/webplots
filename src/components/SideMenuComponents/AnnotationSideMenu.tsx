@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useCsvDataStore } from '../../store/useCsvDataStore';
 import { useAnnotationSideMenuStore } from '../../store/SideMenu/useAnnotationSideMenuStore';
-import SearchColumn from './subcomponents/SearchColumn';
 import AnnotationElement from './subcomponents/AnnotationElement';
 
 const AnnotationSideMenu: React.FC = () => {
@@ -69,14 +68,6 @@ const AnnotationSideMenu: React.FC = () => {
 
     return (
         <div className="d-flex flex-column h-100 overflow-hidden">
-            <div className="p-2 border-bottom" style={{ flex: '1 1 0', minHeight: '150px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                <div className="d-flex flex-column h-100 overflow-hidden">
-                    <div className="p-2 h-100 overflow-hidden d-flex flex-column">
-                        <SearchColumn />
-                    </div>
-                </div>
-            </div>
-
             <div className="p-2 flex-grow-1" style={{ flex: '1 1 0', minHeight: '200px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                 <div className="d-flex flex-column h-100 overflow-hidden">
                     <div
