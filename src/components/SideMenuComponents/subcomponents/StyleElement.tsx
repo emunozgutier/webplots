@@ -126,7 +126,7 @@ const StyleElement: React.FC<StyleElementProps> = ({ title, mapping, updateFn, t
                                 <div className="mt-2 text-end">
                                     <Button variant="outline-primary" size="sm" className="w-100" style={{ fontSize: '0.75rem' }} onClick={() => setPopupContent(<StyleElementSettings title={title} mapping={mapping} updateFn={updateFn} type={type} />)}>
                                         <i className="bi bi-sliders me-1"></i>
-                                        Adjust Mapped Range
+                                        Configure Mapping
                                     </Button>
                                 </div>
                             )}

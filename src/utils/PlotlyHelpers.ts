@@ -277,7 +277,14 @@ export const generatePlotConfig = (
                     else if (lightness.source === 'column' && litColMap) l = litColMap(row[String(lightness.value)]);
                 }
 
-                computedColors.push(`hsl(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%)`);
+                let finalColorStr = `hsl(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%)`;
+                if (hue.enabled !== false && hue.source === 'column') {
+                    const colVal = String(row[String(hue.value)]);
+                    if (colorSideMenuData.groupColorOverrides && colorSideMenuData.groupColorOverrides[colVal]) {
+                        finalColorStr = colorSideMenuData.groupColorOverrides[colVal];
+                    }
+                }
+                computedColors.push(finalColorStr);
 
                 // SHAPE
                 let sh = 'circle'; // Default when disabled

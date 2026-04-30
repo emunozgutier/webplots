@@ -9,7 +9,7 @@ import type { StyleElementProps } from './StyleElement';
 
 const clamp = (val: number, min: number, max: number) => Math.max(min, Math.min(max, val));
 
-const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, type }) => {
+const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn }) => {
     const { closePopup } = useWorkspaceLocalStore();
     const { isDebugMode } = useWorkspaceStore();
     const { data } = useCsvDataStore();
@@ -24,6 +24,7 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
     const storeKey = keyMap[title];
     const currentMapping = useStyleSideMenuStore(state => state.colorData[storeKey]);
     const hueGlobal = useStyleSideMenuStore(state => state.colorData.hue);
+    const { colorData, setColorData } = useStyleSideMenuStore();
 
     const [dragRange, setDragRange] = useState<[number, number] | null>(null);
     const [draggingAnchor, setDraggingAnchor] = useState<0 | 1 | 2 | null>(null);
@@ -35,7 +36,7 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
     const [baseHue, setBaseHue] = useState<number>(defaultBaseHue);
     const [useLogScale, setUseLogScale] = useState<boolean>(false);
 
-    if (type !== 'number' || !currentMapping || typeof (currentMapping as any).value !== 'string') {
+    if (!currentMapping || typeof (currentMapping as any).value !== 'string') {
         return null;
     }
 
@@ -63,20 +64,33 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
     const [activeCx, activeCy]: [number, number] = activeMidPoint;
 
     const { 
-        min, max, binCenters, bins, barColors, rangeMin, rangeMax 
+        min, max, binCenters, bins, barColors, rangeMin, rangeMax, isNumeric, categoryCounts, sortedCats
     } = useMemo(() => {
         let dataMin = Infinity;
         let dataMax = -Infinity;
         const vals: number[] = [];
+        const counts: Record<string, number> = {};
+        let validNumCount = 0;
         
         for (let i = 0; i < data.length; i++) {
-            const v = parseFloat(String(data[i][mapping.value]));
-            if (!isNaN(v)) {
-                vals.push(v);
-                if (v < dataMin) dataMin = v;
-                if (v > dataMax) dataMax = v;
+            const rawVal = data[i][mapping.value];
+            const strVal = String(rawVal);
+            counts[strVal] = (counts[strVal] || 0) + 1;
+            
+            if (rawVal !== null && rawVal !== undefined && rawVal !== '') {
+                const v = parseFloat(strVal);
+                if (!isNaN(v)) {
+                    vals.push(v);
+                    validNumCount++;
+                    if (v < dataMin) dataMin = v;
+                    if (v > dataMax) dataMax = v;
+                }
             }
         }
+
+        const uniqueCategoryCount = Object.keys(counts).length;
+        const isNum = (validNumCount / data.length) > 0.8 && uniqueCategoryCount > 15;
+        const sortedCategories = Object.keys(counts).sort();
 
         if (dataMin === Infinity) {
             dataMin = 0;
@@ -151,7 +165,7 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
             return '#6c757d';
         });
 
-        return { min: dataMin, max: dataMax, binCenters: binCentersArray, bins: binsArray, barColors: barColorsArray, rangeMin: rMin, rangeMax: rMax };
+        return { min: dataMin, max: dataMax, binCenters: binCentersArray, bins: binsArray, barColors: barColorsArray, rangeMin: rMin, rangeMax: rMax, isNumeric: isNum, categoryCounts: counts, sortedCats: sortedCategories };
     }, [data, mapping.value, mapping.range, mapping.offset, title, baseHue, mappingType, activeCx, activeCy]);
 
 
@@ -352,222 +366,285 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
             </div>
             <div className="card-body p-3 overflow-auto" style={{ display: 'flex', flexDirection: 'column' }}>
                 
-                <div className="d-flex align-items-center justify-content-between mb-1">
-                    <label className="form-label small text-muted mb-0 fw-bold">1. Histogram Frequency</label>
-                    <div className="form-check form-switch small mb-0 d-flex align-items-center">
-                        <input 
-                            className="form-check-input mt-0 me-2" 
-                            type="checkbox" 
-                            role="switch" 
-                            id="logScaleSwitch" 
-                            style={{ cursor: 'pointer', transform: 'scale(0.8)' }}
-                            checked={useLogScale} 
-                            onChange={(e) => setUseLogScale(e.target.checked)} 
-                        />
-                        <label className="form-check-label small text-muted mb-0" htmlFor="logScaleSwitch" style={{ fontSize: '0.75rem', cursor: 'pointer' }}>
-                            Log Scale
-                        </label>
-                    </div>
-                </div>
-                <div className="d-flex flex-row border rounded bg-light border-bottom-0 rounded-bottom-0" style={{ flexShrink: 0, height: '140px' }}>
-                    {title === 'Hue/Color' && (
-                        <div className="border-end border-bottom-0" style={{ width: '45px', minWidth: '45px' }}>
-                            {/* Invisible spacer to explicitly align the Plotly layout with the offset map underneath */}
-                        </div>
-                    )}
-                    <div className="flex-grow-1 p-1" style={{ overflow: 'hidden' }}>
-                        <Plot
-                            data={histData}
-                            layout={histLayout}
-                            config={{ displayModeBar: false }}
-                            style={{ width: '100%', height: '100%' }}
-                            useResizeHandler={true}
-                        />
-                    </div>
-                </div>
-
-                <div className="mt-2 mb-1">
-                    <div className="d-flex align-items-center justify-content-between mb-1">
-                        <label className="form-label small text-muted mb-0 fw-bold d-flex align-items-center">
-                            <span className="me-2">2. Mapped Range Assignment</span>
-                        </label>
-                        <span className="badge bg-info text-dark" style={{ fontSize: '0.65rem' }}>Drag the endpoints of the line!</span>
-                    </div>
-                    
-                    <div className="d-flex align-items-center mt-1">
-                        <div className="d-flex align-items-center fw-normal border rounded px-2 py-1 w-100" style={{ background: '#f8f9fa' }}>
-                            <span className="small text-muted me-2" style={{ fontSize: '0.75rem' }}>Mapping Type:</span>
-                            <select 
-                                className="form-select form-select-sm border-0 bg-transparent text-primary fw-bold" 
-                                style={{ width: 'auto', height: '22px', fontSize: '0.75rem', padding: '0px 35px 0px 5px', cursor: 'pointer' }}
-                                value={mappingType}
-                                onChange={e => {
-                                    const newType = e.target.value as any;
-                                    let newMid = midPoint;
-                                    if ((newType === 'curve' || newType === 'exponential' || newType === 'logarithmic') && mappingType !== 'curve' && mappingType !== 'exponential' && mappingType !== 'logarithmic') newMid = [0.5, 0.5];
-                                    updateFn({ mappingType: newType, midPoint: newMid });
-                                }}
-                            >
-                                <option value="linear">Line</option>
-                                <option value="curve">Exp/Log</option>
-                            </select>
-
-                            {(title === 'Saturation' || title === 'Lightness') && (
-                                <div className="d-flex align-items-center ms-auto border-start ps-2">
-                                    <span className="small text-muted me-2" style={{ fontSize: '0.75rem' }}>Target Base Hue:</span>
-                                    <select 
-                                        className="form-select form-select-sm border-0 bg-transparent text-primary fw-bold" 
-                                        style={{ width: 'auto', height: '22px', fontSize: '0.75rem', padding: '0px 35px 0px 5px', cursor: 'pointer' }} 
-                                        value={baseHue} 
-                                        onChange={e => setBaseHue(Number(e.target.value))} 
-                                    >
-                                        {[
-                                            { name: "Red", hue: 0 },
-                                            { name: "Orange", hue: 30 },
-                                            { name: "Yellow", hue: 60 },
-                                            { name: "Yellow-Green", hue: 90 },
-                                            { name: "Green", hue: 120 },
-                                            { name: "Spring Green", hue: 150 },
-                                            { name: "Cyan", hue: 180 },
-                                            { name: "Azure", hue: 210 },
-                                            { name: "Blue", hue: 240 },
-                                            { name: "Violet", hue: 270 },
-                                            { name: "Magenta", hue: 300 },
-                                            { name: "Rose", hue: 330 },
-                                        ].map(color => (
-                                            <option key={color.hue} value={color.hue}>{color.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            )}
-                            {title === 'Node Size' && (
-                                <div className="d-flex align-items-center ms-auto border-start ps-2">
-                                    <span className="small text-muted me-2" style={{ fontSize: '0.75rem' }}>Scaling Mode:</span>
-                                    <div className="btn-group btn-group-sm" role="group">
-                                        <button 
-                                            type="button" 
-                                            className={`btn ${mapping.sizeMode === 'diameter' || !mapping.sizeMode ? 'btn-primary' : 'btn-outline-secondary'}`}
-                                            onClick={() => {
-                                                if (mapping.sizeMode === 'area') {
-                                                    const r0 = mapping.range ? Math.max(1, Math.sqrt(mapping.range[0] / Math.PI)) : 1;
-                                                    const r1 = mapping.range ? Math.max(1, Math.sqrt(mapping.range[1] / Math.PI)) : 20;
-                                                    let val = typeof mapping.value === 'number' ? Math.max(1, Math.sqrt(mapping.value / Math.PI)) : mapping.value;
-                                                    updateFn({ sizeMode: 'diameter', range: [r0, r1], value: val });
-                                                }
-                                            }}
-                                            style={{ fontSize: '0.7rem', padding: '0.15rem 0.4rem', zIndex: 0 }}
-                                        >
-                                            Radius
-                                        </button>
-                                        <button 
-                                            type="button" 
-                                            className={`btn ${mapping.sizeMode === 'area' ? 'btn-primary' : 'btn-outline-secondary'}`}
-                                            onClick={() => {
-                                                if (mapping.sizeMode !== 'area') {
-                                                    const a0 = mapping.range ? Math.PI * Math.pow(mapping.range[0], 2) : Math.PI;
-                                                    const a1 = mapping.range ? Math.PI * Math.pow(mapping.range[1], 2) : Math.PI * 400;
-                                                    let val = typeof mapping.value === 'number' ? Math.PI * Math.pow(mapping.value, 2) : mapping.value;
-                                                    updateFn({ sizeMode: 'area', range: [a0, a1], value: val });
-                                                }
-                                            }}
-                                            style={{ fontSize: '0.7rem', padding: '0.15rem 0.4rem', zIndex: 0 }}
-                                        >
-                                            Area
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-                
-                <div className="d-flex flex-row flex-grow-1 border rounded bg-light border-top-0 rounded-top-0" style={{ minHeight: '160px' }}>
-                    {title === 'Hue/Color' && (
-                        <div className="d-flex flex-column align-items-center justify-content-center border-end bg-white" style={{ width: '45px', minWidth: '45px' }}>
-                            <span className="small text-muted mb-2" style={{ fontSize: '0.65rem', fontWeight: 'bold' }}>Offset</span>
-                            <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '25px', position: 'relative' }}>
+                {isNumeric ? (
+                    <>
+                        <div className="d-flex align-items-center justify-content-between mb-1">
+                            <label className="form-label small text-muted mb-0 fw-bold">1. Histogram Frequency</label>
+                            <div className="form-check form-switch small mb-0 d-flex align-items-center">
                                 <input 
-                                    type="range" 
-                                    min="0" 
-                                    max="360" 
-                                    value={mapping.offset || 0} 
-                                    onChange={(e) => updateFn({ offset: Number(e.target.value) })}
-                                    style={{ 
-                                        width: `${sliderHeight}px`,
-                                        height: '20px',
-                                        transform: 'rotate(-90deg)',
-                                        transformOrigin: 'center',
-                                        cursor: 'pointer',
-                                        position: 'absolute'
-                                    }}
+                                    className="form-check-input mt-0 me-2" 
+                                    type="checkbox" 
+                                    role="switch" 
+                                    id="logScaleSwitch" 
+                                    style={{ cursor: 'pointer', transform: 'scale(0.8)' }}
+                                    checked={useLogScale} 
+                                    onChange={(e) => setUseLogScale(e.target.checked)} 
+                                />
+                                <label className="form-check-label small text-muted mb-0" htmlFor="logScaleSwitch" style={{ fontSize: '0.75rem', cursor: 'pointer' }}>
+                                    Log Scale
+                                </label>
+                            </div>
+                        </div>
+                        <div className="d-flex flex-row border rounded bg-light border-bottom-0 rounded-bottom-0" style={{ flexShrink: 0, height: '140px' }}>
+                            {title === 'Hue/Color' && (
+                                <div className="border-end border-bottom-0" style={{ width: '45px', minWidth: '45px' }}>
+                                    {/* Invisible spacer to explicitly align the Plotly layout with the offset map underneath */}
+                                </div>
+                            )}
+                            <div className="flex-grow-1 p-1" style={{ overflow: 'hidden' }}>
+                                <Plot
+                                    data={histData}
+                                    layout={histLayout}
+                                    config={{ displayModeBar: false }}
+                                    style={{ width: '100%', height: '100%' }}
+                                    useResizeHandler={true}
                                 />
                             </div>
-                            <span className="small mt-2" style={{ fontSize: '0.65rem', fontFamily: 'monospace' }}>{mapping.offset || 0}&deg;</span>
                         </div>
-                    )}
-                    <div className="flex-grow-1 p-1" style={{ position: 'relative', overflow: 'hidden' }}>
-                        <Plot
-                            data={mapData}
-                            layout={mapLayout}
-                            config={{ displayModeBar: false }}
-                            style={{ width: '100%', height: '100%' }}
-                            useResizeHandler={true}
-                        />
-                        
-                        {/* SVG Interactive Overlay Engine */}
-                        <svg
-                            ref={svgRef}
-                            style={{ position: 'absolute', top: 15, bottom: 20, left: 40, right: 40, width: 'calc(100% - 80px)', height: 'calc(100% - 35px)', overflow: 'visible', zIndex: 10, touchAction: 'none' }}
-                            onPointerMove={handlePointerMove}
-                            onPointerUp={handlePointerUp}
-                            onPointerLeave={handlePointerUp}
-                        >
-                            {segments}
-                            <circle 
-                                cx="0%" cy={`${y1Percent}%`} r="8" 
-                                fill="black" stroke="white" strokeWidth="2" style={{ cursor: 'pointer' }} 
-                                onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); setDraggingAnchor(0); }} 
-                            />
-                            <circle 
-                                cx="100%" cy={`${y2Percent}%`} r="8" 
-                                fill="black" stroke="white" strokeWidth="2" style={{ cursor: 'pointer' }} 
-                                onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); setDraggingAnchor(1); }} 
-                            />
-                            {(mappingType === 'curve' || mappingType === 'exponential' || mappingType === 'logarithmic') && (
-                                <circle 
-                                    cx={`${activeCx * 100}%`} cy={`${y1Percent + activeCy * (y2Percent - y1Percent)}%`} r="6" 
-                                    fill="white" stroke="black" strokeWidth="2" style={{ cursor: 'move' }} 
-                                    onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); setDraggingAnchor(2); }} 
-                                />
+
+                        <div className="mt-2 mb-1">
+                            <div className="d-flex align-items-center justify-content-between mb-1">
+                                <label className="form-label small text-muted mb-0 fw-bold d-flex align-items-center">
+                                    <span className="me-2">2. Mapped Range Assignment</span>
+                                </label>
+                                <span className="badge bg-info text-dark" style={{ fontSize: '0.65rem' }}>Drag the endpoints of the line!</span>
+                            </div>
+                            
+                            <div className="d-flex align-items-center mt-1">
+                                <div className="d-flex align-items-center fw-normal border rounded px-2 py-1 w-100" style={{ background: '#f8f9fa' }}>
+                                    <span className="small text-muted me-2" style={{ fontSize: '0.75rem' }}>Mapping Type:</span>
+                                    <select 
+                                        className="form-select form-select-sm border-0 bg-transparent text-primary fw-bold" 
+                                        style={{ width: 'auto', height: '22px', fontSize: '0.75rem', padding: '0px 35px 0px 5px', cursor: 'pointer' }}
+                                        value={mappingType}
+                                        onChange={e => {
+                                            const newType = e.target.value as any;
+                                            let newMid = midPoint;
+                                            if ((newType === 'curve' || newType === 'exponential' || newType === 'logarithmic') && mappingType !== 'curve' && mappingType !== 'exponential' && mappingType !== 'logarithmic') newMid = [0.5, 0.5];
+                                            updateFn({ mappingType: newType, midPoint: newMid });
+                                        }}
+                                    >
+                                        <option value="linear">Line</option>
+                                        <option value="curve">Exp/Log</option>
+                                    </select>
+
+                                    {(title === 'Saturation' || title === 'Lightness') && (
+                                        <div className="d-flex align-items-center ms-auto border-start ps-2">
+                                            <span className="small text-muted me-2" style={{ fontSize: '0.75rem' }}>Target Base Hue:</span>
+                                            <select 
+                                                className="form-select form-select-sm border-0 bg-transparent text-primary fw-bold" 
+                                                style={{ width: 'auto', height: '22px', fontSize: '0.75rem', padding: '0px 35px 0px 5px', cursor: 'pointer' }} 
+                                                value={baseHue} 
+                                                onChange={e => setBaseHue(Number(e.target.value))} 
+                                            >
+                                                {[
+                                                    { name: "Red", hue: 0 },
+                                                    { name: "Orange", hue: 30 },
+                                                    { name: "Yellow", hue: 60 },
+                                                    { name: "Yellow-Green", hue: 90 },
+                                                    { name: "Green", hue: 120 },
+                                                    { name: "Spring Green", hue: 150 },
+                                                    { name: "Cyan", hue: 180 },
+                                                    { name: "Azure", hue: 210 },
+                                                    { name: "Blue", hue: 240 },
+                                                    { name: "Violet", hue: 270 },
+                                                    { name: "Magenta", hue: 300 },
+                                                    { name: "Rose", hue: 330 },
+                                                ].map(color => (
+                                                    <option key={color.hue} value={color.hue}>{color.name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
+                                    {title === 'Node Size' && (
+                                        <div className="d-flex align-items-center ms-auto border-start ps-2">
+                                            <span className="small text-muted me-2" style={{ fontSize: '0.75rem' }}>Scaling Mode:</span>
+                                            <div className="btn-group btn-group-sm" role="group">
+                                                <button 
+                                                    type="button" 
+                                                    className={`btn ${mapping.sizeMode === 'diameter' || !mapping.sizeMode ? 'btn-primary' : 'btn-outline-secondary'}`}
+                                                    onClick={() => {
+                                                        if (mapping.sizeMode === 'area') {
+                                                            const r0 = mapping.range ? Math.max(1, Math.sqrt(mapping.range[0] / Math.PI)) : 1;
+                                                            const r1 = mapping.range ? Math.max(1, Math.sqrt(mapping.range[1] / Math.PI)) : 20;
+                                                            let val = typeof mapping.value === 'number' ? Math.max(1, Math.sqrt(mapping.value / Math.PI)) : mapping.value;
+                                                            updateFn({ sizeMode: 'diameter', range: [r0, r1], value: val });
+                                                        }
+                                                    }}
+                                                    style={{ fontSize: '0.7rem', padding: '0.15rem 0.4rem', zIndex: 0 }}
+                                                >
+                                                    Radius
+                                                </button>
+                                                <button 
+                                                    type="button" 
+                                                    className={`btn ${mapping.sizeMode === 'area' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                                                    onClick={() => {
+                                                        if (mapping.sizeMode !== 'area') {
+                                                            const a0 = mapping.range ? Math.PI * Math.pow(mapping.range[0], 2) : Math.PI;
+                                                            const a1 = mapping.range ? Math.PI * Math.pow(mapping.range[1], 2) : Math.PI * 400;
+                                                            let val = typeof mapping.value === 'number' ? Math.PI * Math.pow(mapping.value, 2) : mapping.value;
+                                                            updateFn({ sizeMode: 'area', range: [a0, a1], value: val });
+                                                        }
+                                                    }}
+                                                    style={{ fontSize: '0.7rem', padding: '0.15rem 0.4rem', zIndex: 0 }}
+                                                >
+                                                    Area
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            
+                            <div className="d-flex flex-row mt-2 flex-grow-1 border rounded bg-light border-top-0 rounded-top-0" style={{ minHeight: '160px' }}>
+                                {title === 'Hue/Color' && (
+                                    <div className="d-flex flex-column align-items-center justify-content-center border-end bg-white" style={{ width: '45px', minWidth: '45px' }}>
+                                        <span className="small text-muted mb-2" style={{ fontSize: '0.65rem', fontWeight: 'bold' }}>Offset</span>
+                                        <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '25px', position: 'relative' }}>
+                                            <input 
+                                                type="range" 
+                                                min="0" 
+                                                max="360" 
+                                                value={mapping.offset || 0} 
+                                                onChange={(e) => updateFn({ offset: Number(e.target.value) })}
+                                                style={{ 
+                                                    width: `${sliderHeight}px`,
+                                                    height: '20px',
+                                                    transform: 'rotate(-90deg)',
+                                                    transformOrigin: 'center',
+                                                    cursor: 'pointer',
+                                                    position: 'absolute'
+                                                }}
+                                            />
+                                        </div>
+                                        <span className="small mt-2" style={{ fontSize: '0.65rem', fontFamily: 'monospace' }}>{mapping.offset || 0}&deg;</span>
+                                    </div>
+                                )}
+                                <div className="flex-grow-1 p-1" style={{ position: 'relative', overflow: 'hidden' }}>
+                                    <Plot
+                                        data={mapData}
+                                        layout={mapLayout}
+                                        config={{ displayModeBar: false }}
+                                        style={{ width: '100%', height: '100%' }}
+                                        useResizeHandler={true}
+                                    />
+                                    
+                                    {/* SVG Interactive Overlay Engine */}
+                                    <svg
+                                        ref={svgRef}
+                                        style={{ position: 'absolute', top: 15, bottom: 20, left: 40, right: 40, width: 'calc(100% - 80px)', height: 'calc(100% - 35px)', overflow: 'visible', zIndex: 10, touchAction: 'none' }}
+                                        onPointerMove={handlePointerMove}
+                                        onPointerUp={handlePointerUp}
+                                        onPointerLeave={handlePointerUp}
+                                    >
+                                        {segments}
+                                        <circle 
+                                            cx="0%" cy={`${y1Percent}%`} r="8" 
+                                            fill="black" stroke="white" strokeWidth="2" style={{ cursor: 'pointer' }} 
+                                            onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); setDraggingAnchor(0); }} 
+                                        />
+                                        <circle 
+                                            cx="100%" cy={`${y2Percent}%`} r="8" 
+                                            fill="black" stroke="white" strokeWidth="2" style={{ cursor: 'pointer' }} 
+                                            onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); setDraggingAnchor(1); }} 
+                                        />
+                                        {(mappingType === 'curve' || mappingType === 'exponential' || mappingType === 'logarithmic') && (
+                                            <circle 
+                                                cx={`${activeCx * 100}%`} cy={`${y1Percent + activeCy * (y2Percent - y1Percent)}%`} r="6" 
+                                                fill="white" stroke="black" strokeWidth="2" style={{ cursor: 'move' }} 
+                                                onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); setDraggingAnchor(2); }} 
+                                            />
+                                        )}
+                                    </svg>
+                                </div>
+                            </div>
+                            <div className="flex-shrink-0 bg-white" style={{ position: 'relative', zIndex: 10 }}>
+                                <div className="text-center mt-2 p-1 border rounded" style={{ fontSize: '0.75rem', fontFamily: 'monospace', backgroundColor: '#e9ecef', color: '#000' }}>
+                                    <strong>Eq:</strong> Y = {activeRangeMin.toFixed(1)} + {(activeRangeMax - activeRangeMin).toFixed(1)} &times; {
+                                        (mappingType === 'curve' || mappingType === 'exponential' || mappingType === 'logarithmic') ? (
+                                            (activeCy <= activeCx || mappingType === 'exponential') ? <span>X<sup>{clamp(Math.log(Math.max(0.001, Math.min(0.999, activeCy))) / Math.log(Math.max(0.001, Math.min(0.999, activeCx))), 1, 30).toFixed(2)}</sup></span>
+                                            : <span>log<sub>{calculateLogBase(activeCx, activeCy).toFixed(1)}</sub>(1 + {(calculateLogBase(activeCx, activeCy)-1).toFixed(1)} &times; X)</span>
+                                        )
+                                        : <span>X</span>
+                                    } <span className="text-muted" style={{fontSize: '0.65rem'}}>(X in 0..1)</span>
+                                </div>
+                                {isDebugMode && (
+                                    <div title="Debug Feature: Real-time calculation coordinates for the bezier curve mapping engine.">
+                                        <table className="table table-sm table-bordered mt-1 text-center text-muted mb-0" style={{ fontSize: '0.7rem' }}>
+                                            <thead className="table-light">
+                                                <tr><th>Anchor</th><th>Data (X)</th><th>Vis Parameter (Y)</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr><td>Start Point</td><td>0%</td><td>{activeRangeMin.toFixed(1)}</td></tr>
+                                                {(mappingType === 'curve' || mappingType === 'exponential' || mappingType === 'logarithmic') && <tr><td>Curve Midpoint</td><td>{(activeCx * 100).toFixed(1)}%</td><td>{(activeRangeMin + ((activeCy > activeCx && mappingType !== 'exponential') ? Math.log(1 + (calculateLogBase(activeCx, activeCy) - 1) * 0.5) / Math.log(calculateLogBase(activeCx, activeCy)) : Math.pow(0.5, clamp(Math.log(Math.max(0.001, Math.min(0.999, activeCy))) / Math.log(Math.max(0.001, Math.min(0.999, activeCx))), 1, 30))) * (activeRangeMax - activeRangeMin)).toFixed(1)}</td></tr>}
+                                                <tr><td>End Point</td><td>100%</td><td>{activeRangeMax.toFixed(1)}</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </>
+                ) : (
+                    <div className="d-flex flex-column h-100">
+                        <div className="mb-3 border rounded p-3 bg-white h-100 d-flex flex-column">
+                            {title === 'Hue/Color' ? (
+                                <>
+                                    <h6 className="fw-bold mb-3">Categorical Colors</h6>
+                                    <div className="text-muted small mb-3">Assign a specific color for each text category. These colors will be used when mapping the "Hue/Color" to the "{mapping.value}" column.</div>
+                                    <div className="d-flex flex-column gap-2 flex-grow-1" style={{ overflowY: 'auto' }}>
+                                        {sortedCats.map(cat => {
+                                            const overrideColor = colorData.groupColorOverrides?.[cat];
+                                            const defaultColor = '#888888';
+                                            const effectiveColor = overrideColor || defaultColor;
+                                            const count = categoryCounts[cat] || 0;
+                                            return (
+                                                <div key={cat} className="d-flex justify-content-between align-items-center border-bottom pb-1 pt-1">
+                                                    <div className="d-flex align-items-center text-truncate" style={{ maxWidth: '60%' }}>
+                                                        <span className="badge bg-secondary rounded-pill me-2">{count}</span>
+                                                        <span className="text-truncate" title={cat}>
+                                                            {cat === '' || cat === 'undefined' || cat === 'null' ? <em className="text-muted">(Empty/Null)</em> : cat}
+                                                        </span>
+                                                    </div>
+                                                    <div className="d-flex align-items-center bg-light rounded px-1 border" style={{ height: '30px' }}>
+                                                        <div className="d-flex align-items-center position-relative">
+                                                            <input 
+                                                                type="color" 
+                                                                className="form-control form-control-color form-control-sm p-0 border-0" 
+                                                                style={{ width: '22px', height: '22px', cursor: 'pointer', opacity: overrideColor ? 1 : 0.4 }} 
+                                                                value={effectiveColor} 
+                                                                onChange={(e) => {
+                                                                    const newOverrides = { ...colorData.groupColorOverrides };
+                                                                    newOverrides[cat] = e.target.value;
+                                                                    setColorData({ groupColorOverrides: newOverrides });
+                                                                }} 
+                                                                title={overrideColor ? "Custom Color" : "Auto Color (Click to override)"}
+                                                            />
+                                                            {!overrideColor && <div className="position-absolute top-50 start-50 translate-middle pe-none" style={{ fontSize: '12px', color: '#444'}}>?</div>}
+                                                        </div>
+                                                        {overrideColor && (
+                                                            <button type="button" className="btn btn-link p-0 text-muted ms-1 text-decoration-none lh-1 me-1" style={{ fontSize: '1rem' }} onClick={() => {
+                                                                const newOverrides = { ...colorData.groupColorOverrides };
+                                                                delete newOverrides[cat];
+                                                                setColorData({ groupColorOverrides: newOverrides });
+                                                            }} title="Clear Color">&times;</button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="text-center p-4">
+                                    <i className="bi bi-info-circle text-muted fs-1 mb-3 d-block"></i>
+                                    <h6 className="fw-bold">Categorical Values</h6>
+                                    <p className="text-muted small mb-0">Mapping categorical text values is currently only supported for <strong>Hue/Color</strong> assignments. Continuous numeric mappings like Size, Saturation, or Lightness require numeric data columns.</p>
+                                </div>
                             )}
-                        </svg>
-                    </div>
-                </div>
-                <div className="flex-shrink-0 bg-white" style={{ position: 'relative', zIndex: 10 }}>
-                    <div className="text-center mt-2 p-1 border rounded" style={{ fontSize: '0.75rem', fontFamily: 'monospace', backgroundColor: '#e9ecef', color: '#000' }}>
-                        <strong>Eq:</strong> Y = {activeRangeMin.toFixed(1)} + {(activeRangeMax - activeRangeMin).toFixed(1)} &times; {
-                            (mappingType === 'curve' || mappingType === 'exponential' || mappingType === 'logarithmic') ? (
-                                (activeCy <= activeCx || mappingType === 'exponential') ? <span>X<sup>{clamp(Math.log(Math.max(0.001, Math.min(0.999, activeCy))) / Math.log(Math.max(0.001, Math.min(0.999, activeCx))), 1, 30).toFixed(2)}</sup></span>
-                                : <span>log<sub>{calculateLogBase(activeCx, activeCy).toFixed(1)}</sub>(1 + {(calculateLogBase(activeCx, activeCy)-1).toFixed(1)} &times; X)</span>
-                            )
-                            : <span>X</span>
-                        } <span className="text-muted" style={{fontSize: '0.65rem'}}>(X in 0..1)</span>
-                    </div>
-                    {isDebugMode && (
-                        <div title="Debug Feature: Real-time calculation coordinates for the bezier curve mapping engine.">
-                            <table className="table table-sm table-bordered mt-1 text-center text-muted mb-0" style={{ fontSize: '0.7rem' }}>
-                                <thead className="table-light">
-                                    <tr><th>Anchor</th><th>Data (X)</th><th>Vis Parameter (Y)</th></tr>
-                                </thead>
-                                <tbody>
-                                    <tr><td>Start Point</td><td>0%</td><td>{activeRangeMin.toFixed(1)}</td></tr>
-                                    {(mappingType === 'curve' || mappingType === 'exponential' || mappingType === 'logarithmic') && <tr><td>Curve Midpoint</td><td>{(activeCx * 100).toFixed(1)}%</td><td>{(activeRangeMin + ((activeCy > activeCx && mappingType !== 'exponential') ? Math.log(1 + (calculateLogBase(activeCx, activeCy) - 1) * 0.5) / Math.log(calculateLogBase(activeCx, activeCy)) : Math.pow(0.5, clamp(Math.log(Math.max(0.001, Math.min(0.999, activeCy))) / Math.log(Math.max(0.001, Math.min(0.999, activeCx))), 1, 30))) * (activeRangeMax - activeRangeMin)).toFixed(1)}</td></tr>}
-                                    <tr><td>End Point</td><td>100%</td><td>{activeRangeMax.toFixed(1)}</td></tr>
-                                </tbody>
-                            </table>
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
 
             </div>
             <div className="card-footer text-end p-2 flex-shrink-0 bg-white">
