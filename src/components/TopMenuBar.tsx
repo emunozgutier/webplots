@@ -288,7 +288,11 @@ const TopMenuBar: React.FC = () => {
                         activeStores.axisSideMenuStore.getState().setXAxis('gdp');
                         activeStores.axisSideMenuStore.getState().addYAxisColumn('life_expectancy');
                         activeStores.groupSideMenuStore.getState().setGroupAxis('country');
-                        activeStores.styleSideMenuStore.getState().setSize({ source: 'column', value: 'population', enabled: true });
+                        activeStores.styleSideMenuStore.getState().setSize({ source: 'column', value: 'population', enabled: true, sizeMode: 'area' });
+                        activeStores.styleSideMenuStore.getState().setHue({ source: 'column', value: 'region', enabled: true });
+                        activeStores.plotLayoutStore.getState().setEnableLogXAxis(true);
+                        activeStores.animationSideMenuStore.getState().setAnimationColumn('year');
+                        activeStores.animationSideMenuStore.getState().setDisplayMode('background');
                     }
                 }
             } else {
