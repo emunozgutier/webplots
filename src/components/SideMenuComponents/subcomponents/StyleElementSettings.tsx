@@ -6,6 +6,8 @@ import { useCsvDataStore } from '../../../store/useCsvDataStore';
 import { useStyleSideMenuStore, type StyleSideMenuData } from '../../../store/SideMenu/useStyleSideMenuStore';
 import { calculateLogBase } from '../../../utils/TableMathLib';
 import type { StyleElementProps } from './StyleElement';
+import { OverlayTrigger, Popover } from 'react-bootstrap';
+import { HslStringColorPicker } from 'react-colorful';
 
 const clamp = (val: number, min: number, max: number) => Math.max(min, Math.min(max, val));
 
@@ -608,18 +610,41 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn }) 
                                                     </div>
                                                     <div className="d-flex align-items-center bg-light rounded px-1 border" style={{ height: '30px' }}>
                                                         <div className="d-flex align-items-center position-relative">
-                                                            <input 
-                                                                type="color" 
-                                                                className="form-control form-control-color form-control-sm p-0 border-0" 
-                                                                style={{ width: '22px', height: '22px', cursor: 'pointer', opacity: overrideColor ? 1 : 0.4 }} 
-                                                                value={effectiveColor} 
-                                                                onChange={(e) => {
-                                                                    const newOverrides = { ...colorData.groupColorOverrides };
-                                                                    newOverrides[cat] = e.target.value;
-                                                                    setColorData({ groupColorOverrides: newOverrides });
-                                                                }} 
-                                                                title={overrideColor ? "Custom Color" : "Auto Color (Click to override)"}
-                                                            />
+                                                            <OverlayTrigger
+                                                                trigger="click"
+                                                                placement="right"
+                                                                rootClose
+                                                                overlay={
+                                                                    <Popover>
+                                                                        <Popover.Body className="p-2">
+                                                                            <HslStringColorPicker 
+                                                                                color={effectiveColor.startsWith('hsl') ? effectiveColor : `hsl(0, 80%, 50%)`}
+                                                                                onChange={(newColor) => {
+                                                                                    const match = newColor.match(/hsl\((\d+)/);
+                                                                                    const h = match ? match[1] : 0;
+                                                                                    const forcedColor = `hsl(${h}, 80%, 50%)`;
+                                                                                    const newOverrides = { ...colorData.groupColorOverrides };
+                                                                                    newOverrides[cat] = forcedColor;
+                                                                                    setColorData({ groupColorOverrides: newOverrides });
+                                                                                }} 
+                                                                            />
+                                                                            <div className="text-center mt-2 small text-muted" style={{ fontSize: '0.7rem' }}>Saturation & Lightness Locked</div>
+                                                                        </Popover.Body>
+                                                                    </Popover>
+                                                                }
+                                                            >
+                                                                <div 
+                                                                    className="rounded border" 
+                                                                    style={{ 
+                                                                        width: '22px', 
+                                                                        height: '22px', 
+                                                                        cursor: 'pointer', 
+                                                                        backgroundColor: effectiveColor,
+                                                                        opacity: overrideColor ? 1 : 0.4
+                                                                    }} 
+                                                                    title={overrideColor ? "Custom Color" : "Auto Color (Click to override)"}
+                                                                />
+                                                            </OverlayTrigger>
                                                             {!overrideColor && <div className="position-absolute top-50 start-50 translate-middle pe-none" style={{ fontSize: '12px', color: '#444'}}>?</div>}
                                                         </div>
                                                         {overrideColor && (
