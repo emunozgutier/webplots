@@ -17,6 +17,7 @@ import { Step_1_filter, runDataPipeline } from '../../utils/DataFrameLib';
 import { useCsvDataStore } from '../../store/useCsvDataStore';
 import { useFilterSideMenuStore } from '../../store/SideMenu/useFilterSideMenuStore';
 import PlotAreaControlButtons from './PlotAreaControlButtons';
+import AnimationControls from './AnimationControls';
 
 const PlotArea: React.FC = () => {
     const { data: rawDataTable } = useCsvDataStore();
@@ -137,14 +138,21 @@ const PlotArea: React.FC = () => {
                 onOpenSettings={handleOpenSettings}
                 onOpenDebug={handleOpenDebug}
             />
-            <div ref={containerRef} className="flex-grow-1 position-relative">
-                <Plot
-                    data={plotData}
-                    layout={layout}
-                    useResizeHandler={true}
-                    style={{ width: '100%', height: '100%' }}
-                    className="w-100 h-100"
-                />
+            <div ref={containerRef} className="flex-grow-1 position-relative d-flex flex-column">
+                <div className="flex-grow-1" style={{ minHeight: 0 }}>
+                    <Plot
+                        data={plotData}
+                        layout={layout}
+                        useResizeHandler={true}
+                        style={{ width: '100%', height: '100%' }}
+                        className="w-100 h-100"
+                    />
+                </div>
+                {animationData.animationColumn && (
+                    <div style={{ flexShrink: 0 }}>
+                        <AnimationControls />
+                    </div>
+                )}
             </div>
         </div>
     );
