@@ -13,7 +13,7 @@ const AnnotationElement: React.FC<AnnotationElementProps> = ({ annotation, getUn
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     return (
-        <div className="card shadow-sm border-0 mb-2">
+        <div className="card shadow-sm border-0 mb-2 p-1">
             <div className="card-body p-2 position-relative d-flex flex-column" style={{ minHeight: '60px' }}>
                 {/* Header row: Settings icon, Label, Close button */}
                 <div className="d-flex align-items-center mb-1">
@@ -34,8 +34,8 @@ const AnnotationElement: React.FC<AnnotationElementProps> = ({ annotation, getUn
 
                 {/* Subtext: tracking info */}
                 <div className="text-muted small text-truncate ps-4" style={{ fontSize: '0.75rem' }}>
-                    {annotation.trackColumn && annotation.trackValue 
-                        ? `Tracks ${annotation.trackColumn} = ${annotation.trackValue}` 
+                    {annotation.trackColumn && annotation.trackValue
+                        ? `Tracks ${annotation.trackColumn} = ${annotation.trackValue}`
                         : 'Fixed position (no tracking)'}
                 </div>
             </div>

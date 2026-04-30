@@ -671,7 +671,15 @@ export const generatePlotConfig = (
 
             if (anno.trackColumn && anno.trackValue) {
                 // Find the point in the CURRENT frame's data
-                const row = data.find(r => String(r[anno.trackColumn]) === String(anno.trackValue));
+                const row = data.find(r => {
+                    const matchesTrack = String(r[anno.trackColumn]) === String(anno.trackValue);
+                    if (!matchesTrack) return false;
+                    
+                    if (animationData && animationData.animationColumn && animationData.animationValue !== null) {
+                        return String(r[animationData.animationColumn]) === String(animationData.animationValue);
+                    }
+                    return true;
+                });
                 if (row) {
                     targetX = xAxis ? row[xAxis] : 0;
                     targetY = yAxis.length > 0 ? row[yAxis[0]] : 0;
