@@ -4,6 +4,7 @@ import { useAxisSideMenuStore } from '../../store/SideMenu/useAxisSideMenuStore'
 // Removed useAppStateStore
 
 import SearchColumn from './subcomponents/SearchColumn';
+import CloseButton from './subcomponents/CloseButton';
 
 interface AxisSideMenuProps {
     hasColumns: boolean;
@@ -79,13 +80,12 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
                                                 {yAxis.map(col => (
                                                     <div key={col} className="d-flex align-items-center badge bg-success text-truncate mw-100 mb-1">
                                                         <span className="text-truncate">{col}</span>
-                                                        <button
-                                                            className="btn btn-sm btn-link text-white p-0 ms-1 opacity-75 hover-opacity-100"
-                                                            onClick={() => removeYAxisColumn(col)}
-                                                            style={{ textDecoration: 'none', lineHeight: 1 }}
-                                                        >
-                                                            &times;
-                                                        </button>
+                                                        <CloseButton 
+                                                            onClose={() => removeYAxisColumn(col)} 
+                                                            title="Hold 2s to Remove"
+                                                            colorClass="white"
+                                                            className="opacity-75"
+                                                        />
                                                     </div>
                                                 ))}
                                             </div>
@@ -108,7 +108,11 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
                                             {xAxis ? (
                                                 <div className="d-flex justify-content-between align-items-center">
                                                     <span className="badge bg-primary text-truncate mw-100">{xAxis}</span>
-                                                    <button className="btn btn-sm btn-link text-danger p-0 ms-1" onClick={() => setXAxis('')}>&times;</button>
+                                                    <CloseButton 
+                                                        onClose={() => setXAxis('')} 
+                                                        title="Hold 2s to Remove"
+                                                        colorClass="danger"
+                                                    />
                                                 </div>
                                             ) : (
                                                 <div className="text-muted small fst-italic text-center d-flex flex-column" style={{ fontSize: '0.8rem' }}>
