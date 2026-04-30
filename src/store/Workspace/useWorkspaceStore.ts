@@ -30,7 +30,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         workspaces: [{ id: 'default', name: 'Workspace 1' }],
         activeWorkspaceId: 'default',
         isTopMenuBarOpen: true,
-        isDebugMode: false,
+        isDebugMode: typeof window !== 'undefined' && (window.location.pathname.endsWith('/beta') || window.location.hash.includes('/beta') || window.location.search.includes('beta')),
 
         addWorkspace: (workspace) => set((state) => ({
             workspaces: [...state.workspaces, workspace],
