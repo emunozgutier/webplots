@@ -21,9 +21,14 @@ import PlotAreaControlButtons from './PlotAreaControlButtons';
 const PlotArea: React.FC = () => {
     const { data: rawDataTable } = useCsvDataStore();
     const { filters } = useFilterSideMenuStore();
+    const { animationData } = useAnimationSideMenuStore();
     const data = useMemo(() => {
-        return Step_1_filter(rawDataTable, filters);
-    }, [rawDataTable, filters]);
+        let filtered = Step_1_filter(rawDataTable, filters);
+        if (animationData.animationColumn && animationData.animationValue !== null) {
+            filtered = filtered.filter(row => row[animationData.animationColumn] === animationData.animationValue);
+        }
+        return filtered;
+    }, [rawDataTable, filters, animationData.animationColumn, animationData.animationValue]);
 
     const { sideMenuData } = useAxisSideMenuStore();
     const { groupSideMenuData } = useGroupSideMenuStore();
@@ -32,7 +37,6 @@ const PlotArea: React.FC = () => {
     const { inkRatio, absorptionMode, absorbedPoint, maxRadiusRatio, setFilteredStats, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius, setChartDimensions } = useInkRatioStore();
     const { colorData } = useStyleSideMenuStore();
     const subplotData = useSubplotSideMenuStore();
-    const { animationData } = useAnimationSideMenuStore();
 
     const { setPopupContent } = useWorkspaceLocalStore();
     const containerRef = React.useRef<HTMLDivElement>(null);

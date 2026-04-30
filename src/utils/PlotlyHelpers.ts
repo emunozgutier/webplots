@@ -570,7 +570,7 @@ export const generatePlotConfig = (
                 xanchor: 'center',
                 yanchor: 'middle',
                 textangle: -30
-            }
+            } as any
         ];
     }
 
