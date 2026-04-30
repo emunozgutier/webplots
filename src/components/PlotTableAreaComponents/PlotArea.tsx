@@ -33,6 +33,22 @@ const PlotArea: React.FC = () => {
     const { colorData } = useStyleSideMenuStore();
     const subplotData = useSubplotSideMenuStore();
 
+    const uniqueAnimationValuesCount = useMemo(() => {
+        if (!animationData.animationColumn || rawDataTable.length === 0) return 0;
+        const values = new Set<string | number>();
+        for (let i = 0; i < rawDataTable.length; i++) {
+            const val = rawDataTable[i][animationData.animationColumn];
+            if (val !== undefined && val !== null && val !== '') {
+                values.add(val);
+            }
+        }
+        return values.size;
+    }, [animationData.animationColumn, rawDataTable]);
+
+    const transitionDuration = uniqueAnimationValuesCount > 0 
+        ? Math.max(20, Math.floor(10000 / uniqueAnimationValuesCount))
+        : 500;
+
     const { setPopupContent } = useWorkspaceLocalStore();
     const containerRef = React.useRef<HTMLDivElement>(null);
 
@@ -136,7 +152,13 @@ const PlotArea: React.FC = () => {
                 <div className="flex-grow-1" style={{ minHeight: 0 }}>
                     <Plot
                         data={plotData}
-                        layout={layout}
+                        layout={{
+                            ...layout,
+                            transition: {
+                                duration: transitionDuration,
+                                easing: 'cubic-in-out'
+                            }
+                        }}
                         useResizeHandler={true}
                         style={{ width: '100%', height: '100%' }}
                         className="w-100 h-100"
