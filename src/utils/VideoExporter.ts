@@ -7,6 +7,7 @@ export interface PreRenderOptions {
     onProgress: (progress: number, latestFrame?: string) => void;
     targetWidth?: number;
     targetHeight?: number;
+    portraitMode?: 'fit' | 'stretch';
 }
 
 export interface EncodeOptions {
@@ -20,7 +21,7 @@ export interface EncodeOptions {
 
 export class VideoExporter {
     static async preRenderFrames(options: PreRenderOptions): Promise<{ frames: string[], width: number, height: number }> {
-        const { uniqueValues, setAnimationValue, onProgress, targetWidth, targetHeight } = options;
+        const { uniqueValues, setAnimationValue, onProgress, targetWidth, targetHeight, portraitMode } = options;
 
         if (uniqueValues.length === 0) {
             throw new Error("No frames to export");
@@ -31,29 +32,53 @@ export class VideoExporter {
             throw new Error("Plotly element not found");
         }
 
-        // Use target dimensions or fallback to plot dimensions
         let rawWidth = targetWidth || gd.clientWidth;
         let rawHeight = targetHeight || gd.clientHeight;
 
-        // Must be even numbers for h264 encoder
         const width = rawWidth % 2 === 0 ? rawWidth : rawWidth - 1;
         const height = rawHeight % 2 === 0 ? rawHeight : rawHeight - 1;
+
+        let renderWidth = width;
+        let renderHeight = height;
+
+        if (portraitMode === 'fit' && width === 1080 && height === 1920) {
+            renderHeight = Math.round(1080 * (gd.clientHeight / gd.clientWidth));
+            renderHeight = renderHeight % 2 === 0 ? renderHeight : renderHeight - 1;
+        }
 
         const frames: string[] = [];
         const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
 
         for (let i = 0; i < uniqueValues.length; i++) {
             setAnimationValue(uniqueValues[i]);
-            // Wait for React to update the state and Plotly to finish its transition
             await delay(300);
 
             const Plotly = (window as any).Plotly;
             if (!Plotly) throw new Error("Plotly not found on window");
 
-            const dataUrl = await Plotly.toImage(gd, { format: 'webp', width, height });
-            frames.push(dataUrl);
+            const dataUrl = await Plotly.toImage(gd, { format: 'webp', width: renderWidth, height: renderHeight });
 
-            onProgress(Math.round(((i + 1) / uniqueValues.length) * 100), dataUrl);
+            let finalDataUrl = dataUrl;
+
+            if (portraitMode === 'fit' && width === 1080 && height === 1920) {
+                const img = new Image();
+                img.src = dataUrl;
+                await new Promise(r => { img.onload = r; img.onerror = r; });
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, width, height);
+                    const y = (height - renderHeight) / 2;
+                    ctx.drawImage(img, 0, y, renderWidth, renderHeight);
+                    finalDataUrl = canvas.toDataURL('image/webp');
+                }
+            }
+
+            frames.push(finalDataUrl);
+            onProgress(Math.round(((i + 1) / uniqueValues.length) * 100), finalDataUrl);
         }
 
         return { frames, width, height };

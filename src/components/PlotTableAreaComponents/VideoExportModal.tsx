@@ -13,6 +13,7 @@ export const VideoExportModal: React.FC<VideoExportModalProps> = ({ show, onHide
     const [duration, setDuration] = useState<number>(5);
     const [format, setFormat] = useState<'webm' | 'mp4'>('webm');
     const [aspectRatio, setAspectRatio] = useState<'original' | 'landscape' | 'portrait'>('original');
+    const [portraitMode, setPortraitMode] = useState<'fit' | 'stretch'>('fit');
     
     const [isPreRendering, setIsPreRendering] = useState(true);
     const [preRenderProgress, setPreRenderProgress] = useState(0);
@@ -41,6 +42,7 @@ export const VideoExportModal: React.FC<VideoExportModalProps> = ({ show, onHide
                 setAnimationValue,
                 targetWidth,
                 targetHeight,
+                portraitMode,
                 onProgress: (p, frame) => {
                     if (isCancelled) return;
                     setPreRenderProgress(p);
@@ -59,7 +61,7 @@ export const VideoExportModal: React.FC<VideoExportModalProps> = ({ show, onHide
             
             return () => { isCancelled = true; };
         }
-    }, [show, uniqueValues, setAnimationValue, aspectRatio]);
+    }, [show, uniqueValues, setAnimationValue, aspectRatio, portraitMode]);
 
     const [previewFrameIndex, setPreviewFrameIndex] = useState(0);
 
@@ -162,6 +164,16 @@ export const VideoExportModal: React.FC<VideoExportModalProps> = ({ show, onHide
                                 <option value="portrait">Portrait (1080x1920)</option>
                             </Form.Select>
                         </Form.Group>
+                        {aspectRatio === 'portrait' && (
+                            <Form.Check 
+                                type="switch"
+                                id="portrait-stretch-switch"
+                                label={<span className="small text-muted">Stretch axes to fill (No letterbox)</span>}
+                                checked={portraitMode === 'stretch'}
+                                onChange={(e) => setPortraitMode(e.target.checked ? 'stretch' : 'fit')}
+                                disabled={isExporting}
+                            />
+                        )}
                     </div>
                 </div>
                 
