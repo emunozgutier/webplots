@@ -43,28 +43,38 @@ const FilterElement: React.FC<FilterElementProps> = ({ filter, stats, getMinMax,
     }, [configMin, configMax]);
 
     React.useEffect(() => {
+        if (isExactMode) return;
         const timer = setTimeout(() => {
             if (localMin !== (configMin ?? '')) {
                 updateFilter(filter.id, { min: localMin === '' ? undefined : Number(localMin) });
             }
         }, 400);
         return () => clearTimeout(timer);
-    }, [localMin, configMin, filter.id, updateFilter]);
+    }, [localMin, configMin, isExactMode, filter.id, updateFilter]);
 
     React.useEffect(() => {
+        if (isExactMode) return;
         const timer = setTimeout(() => {
             if (localMax !== (configMax ?? '')) {
                 updateFilter(filter.id, { max: localMax === '' ? undefined : Number(localMax) });
             }
         }, 400);
         return () => clearTimeout(timer);
-    }, [localMax, configMax, filter.id, updateFilter]);
+    }, [localMax, configMax, isExactMode, filter.id, updateFilter]);
+
+    React.useEffect(() => {
+        if (!isExactMode) return;
+        const timer = setTimeout(() => {
+            if (localExact !== (configMin ?? '')) {
+                const val = localExact === '' ? undefined : Number(localExact);
+                updateFilter(filter.id, { min: val, max: val });
+            }
+        }, 400);
+        return () => clearTimeout(timer);
+    }, [localExact, configMin, isExactMode, filter.id, updateFilter]);
 
     const handleExactChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const val = e.target.value;
-        setLocalExact(val);
-        setLocalMin(val);
-        setLocalMax(val);
+        setLocalExact(e.target.value);
     };
 
     React.useEffect(() => {
