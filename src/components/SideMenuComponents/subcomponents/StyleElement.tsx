@@ -72,7 +72,7 @@ const StyleElement: React.FC<StyleElementProps> = ({ title, mapping, updateFn, t
                         <select
                             className="form-select form-select-sm"
                             value={mapping.source}
-                            onChange={e => updateFn({ source: e.target.value as MappingSource, value: type === 'number' ? 50 : 'circle' })}
+                            onChange={e => updateFn({ source: e.target.value as MappingSource, value: type === 'number' ? (title === 'Node Size' ? 8 : 50) : 'circle' })}
                         >
                             <option value="manual">Fixed Value</option>
                             <option value="column">Column Value</option>
@@ -90,7 +90,7 @@ const StyleElement: React.FC<StyleElementProps> = ({ title, mapping, updateFn, t
                                 type="range"
                                 className="form-range"
                                 min={title === 'Node Size' ? 1 : 0}
-                                max={title === 'Hue/Color' ? 360 : (title === 'Node Size' ? 20 : 100)}
+                                max={title === 'Hue/Color' ? 360 : 100}
                                 value={Number(mapping.value) || 0}
                                 onChange={e => updateFn({ value: Number(e.target.value) })}
                             />
