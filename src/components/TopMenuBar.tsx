@@ -253,7 +253,7 @@ const TopMenuBar: React.FC = () => {
                 const flattenedData: any[] = [];
 
                 for (const country of rawData) {
-                    const { geo, name, gdp, life_expectancy, population } = country;
+                    const { geo, name, gdp, life_expectancy, population, region } = country;
                     
                     const yearsSet = new Set<string>();
                     if (gdp) Object.keys(gdp).forEach(y => yearsSet.add(y));
@@ -266,6 +266,7 @@ const TopMenuBar: React.FC = () => {
                         flattenedData.push({
                             geo: geo,
                             country: name,
+                            region: region ?? "unknown",
                             year: parseInt(yearStr, 10),
                             gdp: gdp?.[yearStr] ?? null,
                             life_expectancy: life_expectancy?.[yearStr] ?? null,
