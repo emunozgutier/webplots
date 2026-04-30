@@ -13,7 +13,7 @@ import { useStyleSideMenuStore } from '../../store/SideMenu/useStyleSideMenuStor
 import { useSubplotSideMenuStore } from '../../store/SideMenu/useSubplotSideMenuStore';
 import { useAnimationSideMenuStore } from '../../store/SideMenu/useAnimationSideMenuStore';
 import { generatePlotConfig } from '../../utils/PlotlyHelpers';
-import { Step_1_filter, runDataPipeline } from '../../utils/DataFrameLib';
+import { runDataPipeline } from '../../utils/DataFrameLib';
 import { useCsvDataStore } from '../../store/useCsvDataStore';
 import { useFilterSideMenuStore } from '../../store/SideMenu/useFilterSideMenuStore';
 import PlotAreaControlButtons from './PlotAreaControlButtons';
@@ -23,13 +23,7 @@ const PlotArea: React.FC = () => {
     const { data: rawDataTable } = useCsvDataStore();
     const { filters } = useFilterSideMenuStore();
     const { animationData } = useAnimationSideMenuStore();
-    const data = useMemo(() => {
-        let filtered = Step_1_filter(rawDataTable, filters);
-        if (animationData.animationColumn && animationData.animationValue !== null) {
-            filtered = filtered.filter(row => row[animationData.animationColumn] === animationData.animationValue);
-        }
-        return filtered;
-    }, [rawDataTable, filters, animationData.animationColumn, animationData.animationValue]);
+
 
     const { sideMenuData } = useAxisSideMenuStore();
     const { groupSideMenuData } = useGroupSideMenuStore();
@@ -61,7 +55,7 @@ const PlotArea: React.FC = () => {
     }, [setChartDimensions]);
 
     const { plotData, layout, hasData, receipt, stats, generatedTraces } = useMemo(() => {
-        const { processedTraces } = runDataPipeline(rawDataTable, filters, sideMenuData, groupSideMenuData, {
+        const { processedTraces, filtered: pipelineFiltered } = runDataPipeline(rawDataTable, filters, sideMenuData, groupSideMenuData, {
             inkRatio,
             absorbedPoint,
             chartWidth,
@@ -75,7 +69,7 @@ const PlotArea: React.FC = () => {
 
         // Step 4: Final Plotly Configuration
         return generatePlotConfig(
-            data,
+            pipelineFiltered,
             processedTraces,
             sideMenuData,
             plotLayout,
@@ -88,7 +82,7 @@ const PlotArea: React.FC = () => {
             animationData
         );
     }, [
-        data, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData,
+        rawDataTable, filters, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData,
         subplotData, absorptionMode, absorbedPoint, maxRadiusRatio, inkRatio, chartWidth,
         chartHeight, pointRadius, useCustomRadius, customRadius, animationData
     ]);

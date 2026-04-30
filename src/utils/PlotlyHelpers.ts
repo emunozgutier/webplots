@@ -72,7 +72,42 @@ export const generatePlotConfig = (
     const stats: Record<string, TraceStats> = {};
 
     // Create Plotly traces
-    const plotData: Data[] = processedTraces.flatMap((traceInfo, index) => {
+    const plotData: Data[] = processedTraces.flatMap((origTraceInfo, index) => {
+        let traceInfo = origTraceInfo;
+
+        if (animationData && animationData.animationColumn && animationData.animationValue !== null) {
+            const animCol = animationData.animationColumn;
+            const animVal = animationData.animationValue;
+
+            const baseSurviving = origTraceInfo.survivingIndices || origTraceInfo.rowIndices.map((_, i) => i);
+            const baseAbsorbed = origTraceInfo.absorbedCounts || [];
+
+            const newX: any[] = [];
+            const newY: any[] = [];
+            const newSurviving: number[] = [];
+            const newAbsorbed: number[] = [];
+
+            for (let i = 0; i < baseSurviving.length; i++) {
+                const survivingIdx = baseSurviving[i];
+                const dataIndex = origTraceInfo.rowIndices[survivingIdx];
+                const row = data[dataIndex];
+                if (row && row[animCol] === animVal) {
+                    newSurviving.push(survivingIdx);
+                    newX.push(origTraceInfo.xData[i]);
+                    newY.push(origTraceInfo.yData[i]);
+                    if (baseAbsorbed.length > i) newAbsorbed.push(baseAbsorbed[i]);
+                }
+            }
+
+            traceInfo = {
+                ...origTraceInfo,
+                xData: newX,
+                yData: newY,
+                survivingIndices: newSurviving,
+                absorbedCounts: newAbsorbed
+            };
+        }
+
         const { fullTraceName, yCol, groupName, xData, yData, rowIndices } = traceInfo;
 
         const isSinglePlot = (rows * cols) <= 1;
