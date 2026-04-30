@@ -131,7 +131,6 @@ const StyleElement: React.FC<StyleElementProps> = ({ title, mapping, updateFn, t
                             )}
                         </div>
                     )}
-
                 </div>
             )}
         </div>

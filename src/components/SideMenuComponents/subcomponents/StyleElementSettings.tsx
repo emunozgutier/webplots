@@ -253,7 +253,7 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                 type: 'scatter' as const,
                 marker: {
                     size: Array.from({ length: numDemos }, (_, i) => limitMin + i * (limitMax - limitMin) / (numDemos - 1)),
-                    sizemode: 'diameter' as const,
+                    sizemode: (mapping.sizeMode || 'diameter') as 'diameter' | 'area',
                     color: 'rgba(108, 117, 125, 0.15)',
                     line: {
                         color: 'rgba(108, 117, 125, 0.4)',
@@ -435,6 +435,29 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                                             <option key={color.hue} value={color.hue}>{color.name}</option>
                                         ))}
                                     </select>
+                                </div>
+                            )}
+                            {title === 'Node Size' && (
+                                <div className="d-flex align-items-center ms-auto border-start ps-2">
+                                    <span className="small text-muted me-2" style={{ fontSize: '0.75rem' }}>Scaling Mode:</span>
+                                    <div className="btn-group btn-group-sm" role="group">
+                                        <button 
+                                            type="button" 
+                                            className={`btn ${mapping.sizeMode === 'diameter' || !mapping.sizeMode ? 'btn-primary' : 'btn-outline-secondary'}`}
+                                            onClick={() => updateFn({ sizeMode: 'diameter' })}
+                                            style={{ fontSize: '0.7rem', padding: '0.15rem 0.4rem', zIndex: 0 }}
+                                        >
+                                            Radius
+                                        </button>
+                                        <button 
+                                            type="button" 
+                                            className={`btn ${mapping.sizeMode === 'area' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                                            onClick={() => updateFn({ sizeMode: 'area' })}
+                                            style={{ fontSize: '0.7rem', padding: '0.15rem 0.4rem', zIndex: 0 }}
+                                        >
+                                            Area
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                         </div>

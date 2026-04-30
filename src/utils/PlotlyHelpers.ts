@@ -429,6 +429,7 @@ export const generatePlotConfig = (
                             color: finalMarkerColor,
                             symbol: finalMarkerSymbol,
                             size: glowMarkerSize,
+                            sizemode: size.sizeMode || 'diameter',
                             line: { width: 0 }
                         }
                     };
@@ -503,6 +504,7 @@ export const generatePlotConfig = (
                     color: finalMarkerColor,
                     symbol: finalMarkerSymbol,
                     size: finalMarkerSize,
+                    sizemode: size.sizeMode || 'diameter',
                     line: { color: finalMarkerColor, ...finalMarkerLine },
                     ...(finalMarkerOpacity !== undefined && { opacity: finalMarkerOpacity })
                 }
@@ -603,6 +605,7 @@ export const generatePlotConfig = (
             const exactCustomization = traceCustomizations?.[fullTraceName] || {};
             const customization = { ...colCustomization, ...exactCustomization };
             customization.color = exactCustomization.color || undefined;
+            const { size } = colorSideMenuData;
 
             let finalName = exactCustomization.displayName || fullTraceName;
             if (!exactCustomization.displayName && colCustomization.displayName && groupName) {
@@ -625,10 +628,11 @@ export const generatePlotConfig = (
 
             if (customization.mode === 'markers') {
                 mode = 'markers';
+                const sizeModeStr = size.sizeMode ? `, sizemode: '${size.sizeMode}'` : '';
                 if (!activeSymbol) {
-                    markerParamsCode = `\n${traceVar}.marker = { symbol: 'circle', size: ${finalSize} };`;
+                    markerParamsCode = `\n${traceVar}.marker = { symbol: 'circle', size: ${finalSize}${sizeModeStr} };`;
                 } else {
-                    markerParamsCode = `\n${traceVar}.marker = { symbol: '${activeSymbol}', size: ${finalSize} };`;
+                    markerParamsCode = `\n${traceVar}.marker = { symbol: '${activeSymbol}', size: ${finalSize}${sizeModeStr} };`;
                 }
             }
 
