@@ -115,8 +115,8 @@ export const VideoExportModal: React.FC<VideoExportModalProps> = ({ show, onHide
     };
 
     return (
-        <Modal show={show} onHide={(isExporting || isPreRendering) ? undefined : onHide} centered>
-            <Modal.Header closeButton={!(isExporting || isPreRendering)}>
+        <Modal show={show} onHide={isExporting ? undefined : onHide} centered>
+            <Modal.Header closeButton={!isExporting}>
                 <Modal.Title>Save as Video</Modal.Title>
             </Modal.Header>
             <Modal.Body>
@@ -221,7 +221,7 @@ export const VideoExportModal: React.FC<VideoExportModalProps> = ({ show, onHide
                 )}
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="secondary" onClick={onHide} disabled={isExporting || isPreRendering}>
+                <Button variant="secondary" onClick={onHide} disabled={isExporting}>
                     Cancel
                 </Button>
                 <Button variant="primary" onClick={handleExport} disabled={isExporting || isPreRendering || !preRenderedData}>

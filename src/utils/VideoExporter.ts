@@ -4,7 +4,7 @@ import * as MP4Muxer from 'mp4-muxer';
 export interface PreRenderOptions {
     uniqueValues: (string | number)[];
     setAnimationValue: (val: string | number) => void;
-    onProgress: (progress: number, latestFrame?: string) => void;
+    onProgress: (progress: number, latestFrame?: string) => boolean | void;
     targetWidth?: number;
     targetHeight?: number;
     portraitMode?: 'fit' | 'stretch';
@@ -78,7 +78,10 @@ export class VideoExporter {
             }
 
             frames.push(finalDataUrl);
-            onProgress(Math.round(((i + 1) / uniqueValues.length) * 100), finalDataUrl);
+            const shouldContinue = onProgress(Math.round(((i + 1) / uniqueValues.length) * 100), finalDataUrl);
+            if (shouldContinue === false) {
+                throw new Error("Pre-rendering cancelled by user");
+            }
         }
 
         return { frames, width, height };
