@@ -11,6 +11,7 @@ import type { TraceConfigState } from '../PlotTable/useTraceConfigStore';
 import type { WorkspaceLocalState } from './useWorkspaceLocalStore';
 import type { SubplotSideMenuState } from '../SideMenu/useSubplotSideMenuStore';
 import type { TableState } from '../PlotTable/useTableStore';
+import type { AnimationSideMenuState } from '../SideMenu/useAnimationSideMenuStore';
 
 type StoreApi<T> = import('zustand/vanilla').StoreApi<T>;
 
@@ -25,6 +26,7 @@ export interface WorkspaceStores {
     workspaceLocalStore: StoreApi<WorkspaceLocalState>;
     subplotSideMenuStore: StoreApi<SubplotSideMenuState>;
     tableStore: StoreApi<TableState>;
+    animationSideMenuStore: StoreApi<AnimationSideMenuState>;
 }
 
 export const WorkspaceContext = createContext<WorkspaceStores | null>(null);

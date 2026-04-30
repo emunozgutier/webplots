@@ -11,6 +11,7 @@ import { useTraceConfigStore } from '../../store/PlotTable/useTraceConfigStore';
 import { useInkRatioStore } from '../../store/SideMenu/useInkRatioStore';
 import { useStyleSideMenuStore } from '../../store/SideMenu/useStyleSideMenuStore';
 import { useSubplotSideMenuStore } from '../../store/SideMenu/useSubplotSideMenuStore';
+import { useAnimationSideMenuStore } from '../../store/SideMenu/useAnimationSideMenuStore';
 import { generatePlotConfig } from '../../utils/PlotlyHelpers';
 import { Step_1_filter, runDataPipeline } from '../../utils/DataFrameLib';
 import { useCsvDataStore } from '../../store/useCsvDataStore';
@@ -31,6 +32,7 @@ const PlotArea: React.FC = () => {
     const { inkRatio, absorptionMode, absorbedPoint, maxRadiusRatio, setFilteredStats, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius, setChartDimensions } = useInkRatioStore();
     const { colorData } = useStyleSideMenuStore();
     const subplotData = useSubplotSideMenuStore();
+    const { animationData } = useAnimationSideMenuStore();
 
     const { setPopupContent } = useWorkspaceLocalStore();
     const containerRef = React.useRef<HTMLDivElement>(null);
@@ -77,12 +79,13 @@ const PlotArea: React.FC = () => {
             subplotData,
             absorptionMode,
             maxRadiusRatio,
-            groupSideMenuData.groupAxis
+            groupSideMenuData.groupAxis,
+            animationData
         );
     }, [
         data, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData,
         subplotData, absorptionMode, absorbedPoint, maxRadiusRatio, inkRatio, chartWidth,
-        chartHeight, pointRadius, useCustomRadius, customRadius
+        chartHeight, pointRadius, useCustomRadius, customRadius, animationData
     ]);
 
 

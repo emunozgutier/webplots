@@ -6,6 +6,7 @@ import type { TraceConfig } from '../store/PlotTable/useTraceConfigStore';
 import type { StyleSideMenuData } from '../store/SideMenu/useStyleSideMenuStore';
 import type { SubplotSideMenuState } from '../store/SideMenu/useSubplotSideMenuStore';
 import type { TraceStats } from '../store/SideMenu/useInkRatioStore';
+import type { AnimationSideMenuData } from '../store/SideMenu/useAnimationSideMenuStore';
 import { parseToNumeric, calculateLogBase } from './TableMathLib';
 import type { TraceData } from './DataFrameLib';
 
@@ -40,7 +41,8 @@ export const generatePlotConfig = (
     subplotSideMenuData: SubplotSideMenuState,
     absorptionMode: 'none' | 'size' | 'glow' | 'glass',
     maxRadiusRatio: number = 3,
-    groupAxis: string | null = null
+    groupAxis: string | null = null,
+    animationData?: AnimationSideMenuData
 ) => {
     const { plotType, xAxis, yAxis } = sideMenuData;
     const { enableLogXAxis, enableLogYAxis, plotTitle, xAxisTitle, yAxisTitle, xRange, yRange, histogramBarmode, legendOrientation, pointTip, customHoverConfig } = plotLayout;
@@ -519,10 +521,16 @@ export const generatePlotConfig = (
         });
     });
 
+    let finalPlotTitle = plotTitle || (plotType === 'histogram' ? `Histogram: ${yAxis.join(', ')}` : `Plot: ${yAxis.join(', ')} vs ${xAxis || 'Row Number'}`);
+    
+    if (animationData && animationData.displayMode === 'subtitle' && animationData.animationValue !== null) {
+        finalPlotTitle += `<br><sub>${animationData.animationColumn}: ${animationData.animationValue}</sub>`;
+    }
+
     const layout: Partial<Layout> = {
         width: undefined,
         height: undefined,
-        title: { text: plotTitle || (plotType === 'histogram' ? `Histogram: ${yAxis.join(', ')}` : `Plot: ${yAxis.join(', ')} vs ${xAxis || 'Row Number'}`) },
+        title: { text: finalPlotTitle },
         xaxis: {
             title: { text: xAxisTitle || (plotType === 'histogram' ? 'Value' : (xAxis || 'Row Number')) },
             type: enableLogXAxis ? 'log' : (isXAxisDate ? 'date' : 'linear'),
@@ -544,6 +552,27 @@ export const generatePlotConfig = (
         },
         barmode: plotType === 'histogram' ? (histogramBarmode || 'overlay') : undefined
     };
+
+    if (animationData && animationData.displayMode === 'background' && animationData.animationValue !== null) {
+        layout.annotations = [
+            {
+                text: String(animationData.animationValue),
+                font: {
+                    size: 150,
+                    color: 'rgba(200, 200, 200, 0.2)',
+                    family: 'Arial, sans-serif',
+                },
+                xref: 'paper',
+                yref: 'paper',
+                x: 0.5,
+                y: 0.5,
+                showarrow: false,
+                xanchor: 'center',
+                yanchor: 'middle',
+                textangle: -30
+            }
+        ];
+    }
 
     // Subplots integration: if rows * cols > 1, inject grid configuration
     const totalSubplots = rows * cols;

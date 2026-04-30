@@ -1,0 +1,59 @@
+import { createStore } from 'zustand/vanilla';
+import { useStore } from 'zustand';
+import { useContext } from 'react';
+import { WorkspaceContext } from '../Workspace/WorkspaceContext';
+
+export type DisplayMode = 'none' | 'subtitle' | 'background';
+
+export interface AnimationSideMenuData {
+    animationColumn: string;
+    animationValue: string | number | null;
+    displayMode: DisplayMode;
+    isPlaying: boolean;
+}
+
+export type AnimationSideMenuState = {
+    animationData: AnimationSideMenuData;
+    setAnimationData: (data: Partial<AnimationSideMenuData>) => void;
+    setAnimationColumn: (column: string) => void;
+    setAnimationValue: (value: string | number | null) => void;
+    setDisplayMode: (mode: DisplayMode) => void;
+    setIsPlaying: (isPlaying: boolean) => void;
+}
+
+export const createAnimationSideMenuStore = () => createStore<AnimationSideMenuState>()(
+    (set) => ({
+        animationData: {
+            animationColumn: '',
+            animationValue: null,
+            displayMode: 'subtitle',
+            isPlaying: false,
+        },
+        setAnimationData: (data) =>
+            set((state) => ({
+                animationData: { ...state.animationData, ...data }
+            })),
+        setAnimationColumn: (column) =>
+            set((state) => ({
+                animationData: { ...state.animationData, animationColumn: column }
+            })),
+        setAnimationValue: (value) =>
+            set((state) => ({
+                animationData: { ...state.animationData, animationValue: value }
+            })),
+        setDisplayMode: (mode) =>
+            set((state) => ({
+                animationData: { ...state.animationData, displayMode: mode }
+            })),
+        setIsPlaying: (isPlaying) =>
+            set((state) => ({
+                animationData: { ...state.animationData, isPlaying }
+            })),
+    })
+);
+
+export const useAnimationSideMenuStore = <T = AnimationSideMenuState>(selector: (state: AnimationSideMenuState) => T = (state) => state as unknown as T): T => {
+    const context = useContext(WorkspaceContext);
+    if (!context) throw new Error('useAnimationSideMenuStore must be used within WorkspaceProvider');
+    return useStore(context.animationSideMenuStore, selector);
+};
