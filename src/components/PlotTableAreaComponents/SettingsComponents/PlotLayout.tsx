@@ -267,6 +267,11 @@ const PlotLayout: React.FC = () => {
                             <input type="number" className="form-control" value={localYMax} onChange={e => setLocalYMax(e.target.value)} placeholder="Auto" />
                         </div>
                     )}
+                    
+                    <div className="form-text text-muted mt-2" style={{ fontSize: '0.7rem' }}>
+                        <i className="bi bi-info-circle me-1"></i>
+                        Note: X and Y axis ranges are automatically locked to their global minimum and maximum values when animation is active.
+                    </div>
                 </div>
             </div>
             <div className="card-footer bg-light d-flex justify-content-end">

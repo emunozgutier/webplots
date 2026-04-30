@@ -32,6 +32,7 @@ const AnimationControls: React.FC = () => {
         return index !== -1 ? index : 0;
     }, [uniqueValues, animationValue]);
 
+
     // Update animationValue if column changes and current value is not in uniqueValues
     useEffect(() => {
         if (uniqueValues.length > 0 && (animationValue === null || !uniqueValues.includes(animationValue))) {
@@ -47,14 +48,16 @@ const AnimationControls: React.FC = () => {
         }
     };
 
-    // Very basic play/pause logic just for the slider movement
+    // Play/pause logic for the slider movement
     useEffect(() => {
         let interval: NodeJS.Timeout;
         if (isPlaying && uniqueValues.length > 0) {
+            // Calculate interval to make the full animation take ~10 seconds
+            const intervalMs = Math.max(20, Math.floor(10000 / uniqueValues.length));
             interval = setInterval(() => {
                 const nextIndex = (currentIndex + 1) % uniqueValues.length;
                 setAnimationValue(uniqueValues[nextIndex]);
-            }, 1000); // 1 second per frame for now
+            }, intervalMs);
         }
         return () => {
             if (interval) clearInterval(interval);

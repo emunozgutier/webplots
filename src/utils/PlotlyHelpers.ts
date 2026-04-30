@@ -71,6 +71,39 @@ export const generatePlotConfig = (
 
     const stats: Record<string, TraceStats> = {};
 
+    let globalXMin = Infinity, globalXMax = -Infinity;
+    let globalYMin = Infinity, globalYMax = -Infinity;
+
+    if (animationData && animationData.animationColumn) {
+        processedTraces.forEach(t => {
+            t.xData.forEach(v => {
+                const num = parseToNumeric(v);
+                if (num !== null && !isNaN(num)) {
+                    if (num < globalXMin) globalXMin = num;
+                    if (num > globalXMax) globalXMax = num;
+                }
+            });
+            t.yData.forEach(v => {
+                const num = parseToNumeric(v);
+                if (num !== null && !isNaN(num)) {
+                    if (num < globalYMin) globalYMin = num;
+                    if (num > globalYMax) globalYMax = num;
+                }
+            });
+        });
+
+        if (globalXMin !== Infinity) {
+            const span = globalXMax - globalXMin || Math.abs(globalXMax) * 0.1 || 1;
+            globalXMin -= span * 0.05;
+            globalXMax += span * 0.05;
+        }
+        if (globalYMin !== Infinity) {
+            const span = globalYMax - globalYMin || Math.abs(globalYMax) * 0.1 || 1;
+            globalYMin -= span * 0.05;
+            globalYMax += span * 0.05;
+        }
+    }
+
     // Create Plotly traces
     const plotData: Data[] = processedTraces.flatMap((origTraceInfo, index) => {
         let traceInfo = origTraceInfo;
@@ -569,14 +602,24 @@ export const generatePlotConfig = (
         xaxis: {
             title: { text: xAxisTitle || (plotType === 'histogram' ? 'Value' : (xAxis || 'Row Number')) },
             type: enableLogXAxis ? 'log' : (isXAxisDate ? 'date' : 'linear'),
-            range: plotType === 'histogram' ? undefined : (xRange ? (enableLogXAxis ? [Math.log10(Math.max(xRange[0], 1e-15)), Math.log10(Math.max(xRange[1], 1e-15))] : xRange) : undefined),
-            autorange: plotType === 'histogram' ? true : !xRange
+            range: plotType === 'histogram' ? undefined : (
+                xRange ? (enableLogXAxis ? [Math.log10(Math.max(xRange[0], 1e-15)), Math.log10(Math.max(xRange[1], 1e-15))] : xRange) :
+                (animationData && animationData.animationColumn && globalXMin !== Infinity ? 
+                    (enableLogXAxis ? [Math.log10(Math.max(globalXMin, 1e-15)), Math.log10(Math.max(globalXMax, 1e-15))] : [globalXMin, globalXMax]) 
+                : undefined)
+            ),
+            autorange: plotType === 'histogram' ? true : (!xRange && !(animationData && animationData.animationColumn && globalXMin !== Infinity))
         },
         yaxis: {
             title: { text: yAxisTitle || (yAxis.length === 1 ? yAxis[0] : 'Values') },
             type: enableLogYAxis ? 'log' : (isYAxisDate ? 'date' : 'linear'),
-            range: plotType === 'histogram' ? undefined : (yRange ? (enableLogYAxis ? [Math.log10(Math.max(yRange[0], 1e-15)), Math.log10(Math.max(yRange[1], 1e-15))] : yRange) : undefined),
-            autorange: plotType === 'histogram' ? true : !yRange
+            range: plotType === 'histogram' ? undefined : (
+                yRange ? (enableLogYAxis ? [Math.log10(Math.max(yRange[0], 1e-15)), Math.log10(Math.max(yRange[1], 1e-15))] : yRange) :
+                (animationData && animationData.animationColumn && globalYMin !== Infinity ? 
+                    (enableLogYAxis ? [Math.log10(Math.max(globalYMin, 1e-15)), Math.log10(Math.max(globalYMax, 1e-15))] : [globalYMin, globalYMax]) 
+                : undefined)
+            ),
+            autorange: plotType === 'histogram' ? true : (!yRange && !(animationData && animationData.animationColumn && globalYMin !== Infinity))
         },
         autosize: true,
         margin: { l: 50, r: 50, b: 50, t: 50 },
@@ -618,14 +661,24 @@ export const generatePlotConfig = (
         const baseTargetXAxis = {
             title: { text: xAxisTitle || (plotType === 'histogram' ? 'Value' : (xAxis || 'Row Number')) },
             type: enableLogXAxis ? 'log' : (isXAxisDate ? 'date' : 'linear'),
-            range: plotType === 'histogram' ? undefined : (xRange ? (enableLogXAxis ? [Math.log10(Math.max(xRange[0], 1e-15)), Math.log10(Math.max(xRange[1], 1e-15))] : xRange) : undefined),
-            autorange: plotType === 'histogram' ? true : !xRange
+            range: plotType === 'histogram' ? undefined : (
+                xRange ? (enableLogXAxis ? [Math.log10(Math.max(xRange[0], 1e-15)), Math.log10(Math.max(xRange[1], 1e-15))] : xRange) :
+                (animationData && animationData.animationColumn && globalXMin !== Infinity ? 
+                    (enableLogXAxis ? [Math.log10(Math.max(globalXMin, 1e-15)), Math.log10(Math.max(globalXMax, 1e-15))] : [globalXMin, globalXMax]) 
+                : undefined)
+            ),
+            autorange: plotType === 'histogram' ? true : (!xRange && !(animationData && animationData.animationColumn && globalXMin !== Infinity))
         };
         const baseTargetYAxis = {
             title: { text: yAxisTitle || (yAxis.length === 1 ? yAxis[0] : 'Values') },
             type: enableLogYAxis ? 'log' : (isYAxisDate ? 'date' : 'linear'),
-            range: plotType === 'histogram' ? undefined : (yRange ? (enableLogYAxis ? [Math.log10(Math.max(yRange[0], 1e-15)), Math.log10(Math.max(yRange[1], 1e-15))] : yRange) : undefined),
-            autorange: plotType === 'histogram' ? true : !yRange
+            range: plotType === 'histogram' ? undefined : (
+                yRange ? (enableLogYAxis ? [Math.log10(Math.max(yRange[0], 1e-15)), Math.log10(Math.max(yRange[1], 1e-15))] : yRange) :
+                (animationData && animationData.animationColumn && globalYMin !== Infinity ? 
+                    (enableLogYAxis ? [Math.log10(Math.max(globalYMin, 1e-15)), Math.log10(Math.max(globalYMax, 1e-15))] : [globalYMin, globalYMax]) 
+                : undefined)
+            ),
+            autorange: plotType === 'histogram' ? true : (!yRange && !(animationData && animationData.animationColumn && globalYMin !== Infinity))
         };
 
         // Assign axes dynamically to Layout
