@@ -33,22 +33,6 @@ const PlotArea: React.FC = () => {
     const { colorData } = useStyleSideMenuStore();
     const subplotData = useSubplotSideMenuStore();
 
-    const uniqueAnimationValuesCount = useMemo(() => {
-        if (!animationData.animationColumn || rawDataTable.length === 0) return 0;
-        const values = new Set<string | number>();
-        for (let i = 0; i < rawDataTable.length; i++) {
-            const val = rawDataTable[i][animationData.animationColumn];
-            if (val !== undefined && val !== null && val !== '') {
-                values.add(val);
-            }
-        }
-        return values.size;
-    }, [animationData.animationColumn, rawDataTable]);
-
-    const transitionDuration = uniqueAnimationValuesCount > 0 
-        ? Math.max(20, Math.floor((10000 / uniqueAnimationValuesCount) / (animationData.speedMultiplier || 1)))
-        : 500;
-
     const { setPopupContent } = useWorkspaceLocalStore();
     const containerRef = React.useRef<HTMLDivElement>(null);
 
@@ -70,7 +54,7 @@ const PlotArea: React.FC = () => {
         return () => observer.disconnect();
     }, [setChartDimensions]);
 
-    const { plotData, layout, hasData, receipt, stats, generatedTraces } = useMemo(() => {
+    const { plotData, layout, hasData, receipt, stats, generatedTraces, pipelineFiltered } = useMemo(() => {
         const { processedTraces, filtered: pipelineFiltered } = runDataPipeline(rawDataTable, filters, sideMenuData, groupSideMenuData, {
             inkRatio,
             absorbedPoint,
@@ -84,7 +68,7 @@ const PlotArea: React.FC = () => {
         }, colorData);
 
         // Step 4: Final Plotly Configuration
-        return generatePlotConfig(
+        const plotConfig = generatePlotConfig(
             pipelineFiltered,
             processedTraces,
             sideMenuData,
@@ -97,11 +81,28 @@ const PlotArea: React.FC = () => {
             groupSideMenuData.groupAxis,
             animationData
         );
+        return { ...plotConfig, pipelineFiltered };
     }, [
         rawDataTable, filters, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData,
         subplotData, absorptionMode, absorbedPoint, maxRadiusRatio, inkRatio, chartWidth,
         chartHeight, pointRadius, useCustomRadius, customRadius, animationData
     ]);
+
+    const uniqueAnimationValuesCount = useMemo(() => {
+        if (!animationData.animationColumn || !pipelineFiltered || pipelineFiltered.length === 0) return 0;
+        const values = new Set<string | number>();
+        for (let i = 0; i < pipelineFiltered.length; i++) {
+            const val = pipelineFiltered[i][animationData.animationColumn];
+            if (val !== undefined && val !== null && val !== '') {
+                values.add(val);
+            }
+        }
+        return values.size;
+    }, [animationData.animationColumn, pipelineFiltered]);
+
+    const transitionDuration = uniqueAnimationValuesCount > 0 
+        ? Math.max(20, Math.floor((10000 / uniqueAnimationValuesCount) / (animationData.speedMultiplier || 1)))
+        : 500;
 
 
     // Update stats in store
@@ -166,7 +167,7 @@ const PlotArea: React.FC = () => {
                 </div>
                 {animationData.animationColumn && (
                     <div style={{ flexShrink: 0 }}>
-                        <AnimationControls />
+                        <AnimationControls data={pipelineFiltered} />
                     </div>
                 )}
             </div>

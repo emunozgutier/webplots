@@ -1,9 +1,11 @@
 import React, { useMemo, useEffect } from 'react';
 import { useAnimationSideMenuStore } from '../../store/SideMenu/useAnimationSideMenuStore';
-import { useCsvDataStore } from '../../store/useCsvDataStore';
 
-const AnimationControls: React.FC = () => {
-    const { data } = useCsvDataStore();
+interface AnimationControlsProps {
+    data: any[];
+}
+
+const AnimationControls: React.FC<AnimationControlsProps> = ({ data }) => {
     const { animationData, setAnimationValue, setIsPlaying, setSpeedMultiplier } = useAnimationSideMenuStore();
 
     const { animationColumn, animationValue, isPlaying, speedMultiplier = 1 } = animationData;
