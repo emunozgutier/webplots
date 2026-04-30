@@ -55,14 +55,18 @@ const AnimationControls: React.FC = () => {
             // Calculate interval to make the full animation take ~10 seconds adjusted by speed multiplier
             const intervalMs = Math.max(20, Math.floor((10000 / uniqueValues.length) / speedMultiplier));
             interval = setInterval(() => {
-                const nextIndex = (currentIndex + 1) % uniqueValues.length;
-                setAnimationValue(uniqueValues[nextIndex]);
+                const nextIndex = currentIndex + 1;
+                if (nextIndex >= uniqueValues.length) {
+                    setIsPlaying(false);
+                } else {
+                    setAnimationValue(uniqueValues[nextIndex]);
+                }
             }, intervalMs);
         }
         return () => {
             if (interval) clearInterval(interval);
         };
-    }, [isPlaying, currentIndex, uniqueValues, setAnimationValue, speedMultiplier]);
+    }, [isPlaying, currentIndex, uniqueValues, setAnimationValue, speedMultiplier, setIsPlaying]);
 
     if (!animationColumn || uniqueValues.length === 0) {
         return null;
@@ -77,7 +81,12 @@ const AnimationControls: React.FC = () => {
             <div className="d-flex align-items-center">
                 <button 
                     className={`btn btn-sm ${isPlaying ? 'btn-danger' : 'btn-primary'} me-2`} 
-                    onClick={() => setIsPlaying(!isPlaying)}
+                    onClick={() => {
+                        if (!isPlaying && currentIndex >= uniqueValues.length - 1) {
+                            setAnimationValue(uniqueValues[0]);
+                        }
+                        setIsPlaying(!isPlaying);
+                    }}
                     style={{ borderRadius: '50%', width: '36px', height: '36px', padding: 0, flexShrink: 0 }}
                     title={isPlaying ? 'Pause' : 'Play'}
                 >
