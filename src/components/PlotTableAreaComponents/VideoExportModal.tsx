@@ -42,6 +42,18 @@ export const VideoExportModal: React.FC<VideoExportModalProps> = ({ show, onHide
         }
     }, [show, uniqueValues, setAnimationValue]);
 
+    const [previewFrameIndex, setPreviewFrameIndex] = useState(0);
+
+    useEffect(() => {
+        if (!isPreRendering && preRenderedData && preRenderedData.frames.length > 0) {
+            const intervalMs = (duration * 1000) / preRenderedData.frames.length;
+            const timer = setInterval(() => {
+                setPreviewFrameIndex(prev => (prev + 1) % preRenderedData.frames.length);
+            }, intervalMs);
+            return () => clearInterval(timer);
+        }
+    }, [isPreRendering, preRenderedData, duration]);
+
     const handleExport = async () => {
         if (!preRenderedData) return;
         setIsExporting(true);
@@ -88,12 +100,39 @@ export const VideoExportModal: React.FC<VideoExportModalProps> = ({ show, onHide
             </Modal.Header>
             <Modal.Body>
                 {error && <div className="alert alert-danger p-2 mb-3 small">{error}</div>}
+
+                <Form.Group className="mb-3">
+                    <Form.Label className="fw-bold small mb-1">Target Duration (seconds)</Form.Label>
+                    <Form.Control 
+                        type="number" 
+                        min={1} 
+                        max={60} 
+                        value={duration} 
+                        onChange={(e) => setDuration(Number(e.target.value))} 
+                        disabled={isExporting || isPreRendering}
+                    />
+                    <Form.Text className="text-muted" style={{ fontSize: '0.75rem' }}>
+                        All {uniqueValues.length} frames will be spaced evenly to complete the animation exactly in this time.
+                    </Form.Text>
+                </Form.Group>
+
+                <Form.Group className="mb-3">
+                    <Form.Label className="fw-bold small mb-1">Format</Form.Label>
+                    <Form.Select 
+                        value={format} 
+                        onChange={(e) => setFormat(e.target.value as 'webm' | 'mp4')}
+                        disabled={isExporting || isPreRendering}
+                    >
+                        <option value="webm">WebM (VP9, High Quality)</option>
+                        <option value="mp4">MP4 (H.264, Better Compatibility)</option>
+                    </Form.Select>
+                </Form.Group>
                 
                 {isPreRendering ? (
-                    <div className="text-center p-4">
+                    <div className="text-center p-4 border rounded bg-light">
                         <p className="fw-bold mb-2">Pre-rendering animation frames...</p>
                         <ProgressBar animated now={preRenderProgress} label={`${preRenderProgress}%`} />
-                        <p className="text-muted mt-3 small">Please wait while we cache the frames. This ensures a fast, high-quality export.</p>
+                        <p className="text-muted mt-3 small mb-0">Please wait while we cache the frames. This ensures a fast, high-quality export.</p>
                     </div>
                 ) : (
                     <>
@@ -105,32 +144,18 @@ export const VideoExportModal: React.FC<VideoExportModalProps> = ({ show, onHide
                             </div>
                         </div>
 
-                        <Form.Group className="mb-3">
-                            <Form.Label className="fw-bold small mb-1">Target Duration (seconds)</Form.Label>
-                            <Form.Control 
-                                type="number" 
-                                min={1} 
-                                max={60} 
-                                value={duration} 
-                                onChange={(e) => setDuration(Number(e.target.value))} 
-                                disabled={isExporting}
-                            />
-                            <Form.Text className="text-muted" style={{ fontSize: '0.75rem' }}>
-                                All {uniqueValues.length} frames will be spaced evenly to complete the animation exactly in this time.
-                            </Form.Text>
-                        </Form.Group>
-
-                        <Form.Group className="mb-3">
-                            <Form.Label className="fw-bold small mb-1">Format</Form.Label>
-                            <Form.Select 
-                                value={format} 
-                                onChange={(e) => setFormat(e.target.value as 'webm' | 'mp4')}
-                                disabled={isExporting}
-                            >
-                                <option value="webm">WebM (VP9, High Quality)</option>
-                                <option value="mp4">MP4 (H.264, Better Compatibility)</option>
-                            </Form.Select>
-                        </Form.Group>
+                        {preRenderedData && preRenderedData.frames.length > 0 && (
+                            <div className="border rounded overflow-hidden mb-3 text-center bg-dark" style={{ position: 'relative', width: '100%', paddingTop: `${(preRenderedData.height / preRenderedData.width) * 100}%` }}>
+                                <img 
+                                    src={preRenderedData.frames[previewFrameIndex]} 
+                                    alt="Preview" 
+                                    style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'contain' }}
+                                />
+                                <div className="position-absolute top-0 start-0 p-1 m-2 bg-dark bg-opacity-75 text-white rounded small" style={{ fontSize: '0.7rem' }}>
+                                    Preview ({duration}s Target)
+                                </div>
+                            </div>
+                        )}
 
                         {isExporting && (
                             <div className="mt-4 text-center">
