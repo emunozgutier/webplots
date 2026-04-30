@@ -74,7 +74,24 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         })),
         setActiveWorkspaceId: (id) => set({ activeWorkspaceId: id }),
         toggleTopMenuBar: () => set((state) => ({ isTopMenuBarOpen: !state.isTopMenuBarOpen })),
-        toggleDebugMode: () => set((state) => ({ isDebugMode: !state.isDebugMode })),
+        toggleDebugMode: () => set((state) => {
+            const newDebugMode = !state.isDebugMode;
+            if (typeof window !== 'undefined') {
+                const url = new URL(window.location.href);
+                if (newDebugMode) {
+                    if (!url.pathname.endsWith('/beta')) {
+                        const newPath = url.pathname === '/' ? '/beta' : url.pathname.replace(/\/$/, '') + '/beta';
+                        window.history.pushState({}, '', newPath + url.search + url.hash);
+                    }
+                } else {
+                    if (url.pathname.endsWith('/beta')) {
+                        const newPath = url.pathname.replace(/\/beta$/, '') || '/';
+                        window.history.pushState({}, '', newPath + url.search + url.hash);
+                    }
+                }
+            }
+            return { isDebugMode: newDebugMode };
+        }),
         setTopMenuBarOpen: (isOpen) => set({ isTopMenuBarOpen: isOpen }),
     })
 );
