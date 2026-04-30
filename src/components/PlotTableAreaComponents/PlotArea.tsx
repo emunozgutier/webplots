@@ -12,6 +12,7 @@ import { useInkRatioStore } from '../../store/SideMenu/useInkRatioStore';
 import { useStyleSideMenuStore } from '../../store/SideMenu/useStyleSideMenuStore';
 import { useSubplotSideMenuStore } from '../../store/SideMenu/useSubplotSideMenuStore';
 import { useAnimationSideMenuStore } from '../../store/SideMenu/useAnimationSideMenuStore';
+import { useAnnotationSideMenuStore } from '../../store/SideMenu/useAnnotationSideMenuStore';
 import { generatePlotConfig } from '../../utils/PlotlyHelpers';
 import { runDataPipeline } from '../../utils/DataFrameLib';
 import { useCsvDataStore } from '../../store/useCsvDataStore';
@@ -23,7 +24,7 @@ const PlotArea: React.FC = () => {
     const { data: rawDataTable } = useCsvDataStore();
     const { filters } = useFilterSideMenuStore();
     const { animationData } = useAnimationSideMenuStore();
-
+    const { annotations: annotationData } = useAnnotationSideMenuStore();
 
     const { sideMenuData } = useAxisSideMenuStore();
     const { groupSideMenuData } = useGroupSideMenuStore();
@@ -79,13 +80,14 @@ const PlotArea: React.FC = () => {
             absorptionMode,
             maxRadiusRatio,
             groupSideMenuData.groupAxis,
-            animationData
+            animationData,
+            annotationData
         );
         return { ...plotConfig, pipelineFiltered };
     }, [
         rawDataTable, filters, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData,
         subplotData, absorptionMode, absorbedPoint, maxRadiusRatio, inkRatio, chartWidth,
-        chartHeight, pointRadius, useCustomRadius, customRadius, animationData
+        chartHeight, pointRadius, useCustomRadius, customRadius, animationData, annotationData
     ]);
 
     const uniqueAnimationValuesCount = useMemo(() => {

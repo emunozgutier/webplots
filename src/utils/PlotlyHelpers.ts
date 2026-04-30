@@ -7,6 +7,7 @@ import type { StyleSideMenuData } from '../store/SideMenu/useStyleSideMenuStore'
 import type { SubplotSideMenuState } from '../store/SideMenu/useSubplotSideMenuStore';
 import type { TraceStats } from '../store/SideMenu/useInkRatioStore';
 import type { AnimationSideMenuData } from '../store/SideMenu/useAnimationSideMenuStore';
+import type { AnnotationConfig } from '../store/SideMenu/useAnnotationSideMenuStore';
 import { parseToNumeric, calculateLogBase } from './TableMathLib';
 import type { TraceData } from './DataFrameLib';
 
@@ -42,7 +43,8 @@ export const generatePlotConfig = (
     absorptionMode: 'none' | 'size' | 'glow' | 'glass',
     maxRadiusRatio: number = 3,
     groupAxis: string | null = null,
-    animationData?: AnimationSideMenuData
+    animationData?: AnimationSideMenuData,
+    annotationData?: AnnotationConfig[]
 ) => {
     const { plotType, xAxis, yAxis } = sideMenuData;
     const { enableLogXAxis, enableLogYAxis, plotTitle, xAxisTitle, yAxisTitle, xRange, yRange, histogramBarmode, legendOrientation, pointTip, customHoverConfig } = plotLayout;
@@ -639,24 +641,82 @@ export const generatePlotConfig = (
     };
 
     if (animationData && animationData.displayMode === 'background' && animationData.animationValue !== null) {
-        layout.annotations = [
-            {
-                text: String(animationData.animationValue),
-                font: {
-                    size: 150,
-                    color: 'rgba(200, 200, 200, 0.2)',
-                    family: 'Arial, sans-serif',
-                },
-                xref: 'paper',
-                yref: 'paper',
-                x: 0.5,
-                y: 0.5,
-                showarrow: false,
-                xanchor: 'center',
-                yanchor: 'middle',
-                textangle: 0
-            } as any
-        ];
+        if (!layout.annotations) layout.annotations = [];
+        layout.annotations.push({
+            text: String(animationData.animationValue),
+            font: {
+                size: 150,
+                color: 'rgba(200, 200, 200, 0.2)',
+                family: 'Arial, sans-serif',
+            },
+            xref: 'paper',
+            yref: 'paper',
+            x: 0.5,
+            y: 0.5,
+            showarrow: false,
+            xanchor: 'center',
+            yanchor: 'middle',
+            textangle: 0
+        } as any);
+    }
+
+    if (annotationData && annotationData.length > 0) {
+        if (!layout.annotations) layout.annotations = [];
+        if (!layout.shapes) layout.shapes = [];
+
+        annotationData.forEach(anno => {
+            let targetX: any = 0;
+            let targetY: any = 0;
+            let found = false;
+
+            if (anno.trackColumn && anno.trackValue) {
+                // Find the point in the CURRENT frame's data
+                const row = data.find(r => String(r[anno.trackColumn]) === String(anno.trackValue));
+                if (row) {
+                    targetX = xAxis ? row[xAxis] : 0;
+                    targetY = yAxis.length > 0 ? row[yAxis[0]] : 0;
+                    found = true;
+                }
+            }
+
+            // Only draw if we found the tracking point OR it's a fixed annotation (no tracking)
+            if (found || !anno.trackColumn) {
+                if (anno.type === 'text') {
+                    layout.annotations!.push({
+                        text: anno.text,
+                        x: found ? targetX : 0.5,
+                        y: found ? targetY : 0.5,
+                        xref: found ? 'x' : 'paper',
+                        yref: found ? 'y' : 'paper',
+                        showarrow: false,
+                        xshift: anno.offsetX,
+                        yshift: -anno.offsetY,
+                        font: {
+                            size: anno.fontSize,
+                            color: anno.fontColor
+                        }
+                    } as any);
+                } else if (anno.type === 'highlight') {
+                    layout.shapes!.push({
+                        type: 'rect',
+                        xref: found ? 'x' : 'paper',
+                        yref: found ? 'y' : 'paper',
+                        x0: -anno.highlightSize / 2 + anno.offsetX,
+                        y0: -anno.highlightSize / 2 - anno.offsetY,
+                        x1: anno.highlightSize / 2 + anno.offsetX,
+                        y1: anno.highlightSize / 2 - anno.offsetY,
+                        xsizemode: 'pixel',
+                        ysizemode: 'pixel',
+                        xanchor: found ? targetX : 0.5,
+                        yanchor: found ? targetY : 0.5,
+                        line: {
+                            color: anno.highlightColor,
+                            width: 2
+                        }
+                    } as any);
+                }
+            }
+        });
     }
 
     // Subplots integration: if rows * cols > 1, inject grid configuration
