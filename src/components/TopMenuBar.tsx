@@ -262,12 +262,16 @@ const TopMenuBar: React.FC = () => {
                     
                     const years = Array.from(yearsSet).sort((a, b) => parseInt(a) - parseInt(b));
                     
+                    const currentYear = new Date().getFullYear();
                     for (const yearStr of years) {
+                        const yearNum = parseInt(yearStr, 10);
+                        if (yearNum > currentYear) continue;
+                        
                         flattenedData.push({
                             geo: geo,
                             country: name,
                             region: region ?? "unknown",
-                            year: parseInt(yearStr, 10),
+                            year: yearNum,
                             gdp: gdp?.[yearStr] ?? null,
                             life_expectancy: life_expectancy?.[yearStr] ?? null,
                             population: population?.[yearStr] ?? null
