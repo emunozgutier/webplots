@@ -286,16 +286,8 @@ export const generatePlotConfig = (
             let mode: 'lines' | 'markers' | 'lines+markers' = customization.mode || 'markers';
             const marker: any = {};
 
-            let maxTraceSize = 20;
-            if (size.source === 'manual') {
-                maxTraceSize = Number(size.value) || 20;
-            } else if (size.source === 'column') {
-                maxTraceSize = size.range ? size.range[1] : 20;
-            } else if (size.source === 'group') {
-                maxTraceSize = 16;
-            }
             const activeSizeMode = size.sizeMode || 'diameter';
-            const traceSizeref = activeSizeMode === 'area' ? (4 / Math.max(1, maxTraceSize)) : undefined;
+            const traceSizeref = activeSizeMode === 'area' ? Math.PI : 0.5;
 
             const baseColor = getColor(index);
             const finalColor = traceColorOverlay || groupColorOverlay || baseColor;
@@ -641,16 +633,8 @@ export const generatePlotConfig = (
 
             if (customization.mode === 'markers') {
                 mode = 'markers';
-                let maxTraceSizeReceipt = 20;
-                if (size.source === 'manual') {
-                    maxTraceSizeReceipt = Number(size.value) || 20;
-                } else if (size.source === 'column') {
-                    maxTraceSizeReceipt = size.range ? size.range[1] : 20;
-                } else if (size.source === 'group') {
-                    maxTraceSizeReceipt = 16;
-                }
                 const activeSizeModeReceipt = size.sizeMode || 'diameter';
-                const sizeModeStr = activeSizeModeReceipt === 'area' ? `, sizemode: 'area', sizeref: ${4 / Math.max(1, maxTraceSizeReceipt)}` : '';
+                const sizeModeStr = activeSizeModeReceipt === 'area' ? `, sizemode: 'area', sizeref: Math.PI` : `, sizemode: 'diameter', sizeref: 0.5`;
                 if (!activeSymbol) {
                     markerParamsCode = `\n${traceVar}.marker = { symbol: 'circle', size: ${finalSize}${sizeModeStr} };`;
                 } else {

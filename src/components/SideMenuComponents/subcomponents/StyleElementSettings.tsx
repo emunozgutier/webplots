@@ -83,8 +83,9 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
             dataMax = 0;
         }
         
-        const rMin = Number(currentMapping.range ? currentMapping.range[0] : (title === 'Node Size' ? 1 : 0));
-        const rMax = Number(currentMapping.range ? currentMapping.range[1] : (title === 'Hue/Color' ? 360 : (title === 'Saturation' || title === 'Lightness' ? 100 : (title === 'Node Size' ? 20 : 100))));
+        const isAreaModeUi = title === 'Node Size' && mapping.sizeMode === 'area';
+        const rMin = Number(currentMapping.range ? currentMapping.range[0] : (title === 'Node Size' ? (isAreaModeUi ? Math.PI : 1) : 0));
+        const rMax = Number(currentMapping.range ? currentMapping.range[1] : (title === 'Hue/Color' ? 360 : (title === 'Saturation' || title === 'Lightness' ? 100 : (title === 'Node Size' ? (isAreaModeUi ? Math.PI * 400 : 20) : 100))));
 
         const domainVal = [dataMin, dataMax];
         const spanX = domainVal[1] - domainVal[0] || 1;
@@ -155,8 +156,9 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
 
 
     // Define visual bounds strictly so the HTML SVG scales precisely to coordinate logic
-    const limitMin = title === 'Node Size' ? 1 : 0;
-    const limitMax = title === 'Hue/Color' ? 360 : 100;
+    const isAreaModeSvg = title === 'Node Size' && mapping.sizeMode === 'area';
+    const limitMin = title === 'Node Size' ? (isAreaModeSvg ? Math.PI : 1) : 0;
+    const limitMax = title === 'Hue/Color' ? 360 : (title === 'Node Size' ? (isAreaModeSvg ? Math.PI * 10000 : 100) : 100);
 
     const activeRangeMin = clamp(dragRange ? dragRange[0] : rangeMin, limitMin, limitMax);
     const activeRangeMax = clamp(dragRange ? dragRange[1] : rangeMax, limitMin, limitMax);
@@ -254,7 +256,7 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                 marker: {
                     size: Array.from({ length: numDemos }, (_, i) => limitMin + i * (limitMax - limitMin) / (numDemos - 1)),
                     sizemode: (mapping.sizeMode || 'diameter') as 'diameter' | 'area',
-                    sizeref: mapping.sizeMode === 'area' ? 4 / limitMax : undefined,
+                    sizeref: mapping.sizeMode === 'area' ? Math.PI : 0.5,
                     color: 'rgba(108, 117, 125, 0.15)',
                     line: {
                         color: 'rgba(108, 117, 125, 0.4)',
@@ -445,7 +447,14 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                                         <button 
                                             type="button" 
                                             className={`btn ${mapping.sizeMode === 'diameter' || !mapping.sizeMode ? 'btn-primary' : 'btn-outline-secondary'}`}
-                                            onClick={() => updateFn({ sizeMode: 'diameter' })}
+                                            onClick={() => {
+                                                if (mapping.sizeMode === 'area') {
+                                                    const r0 = mapping.range ? Math.max(1, Math.sqrt(mapping.range[0] / Math.PI)) : 1;
+                                                    const r1 = mapping.range ? Math.max(1, Math.sqrt(mapping.range[1] / Math.PI)) : 20;
+                                                    let val = typeof mapping.value === 'number' ? Math.max(1, Math.sqrt(mapping.value / Math.PI)) : mapping.value;
+                                                    updateFn({ sizeMode: 'diameter', range: [r0, r1], value: val });
+                                                }
+                                            }}
                                             style={{ fontSize: '0.7rem', padding: '0.15rem 0.4rem', zIndex: 0 }}
                                         >
                                             Radius
@@ -453,7 +462,14 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn, ty
                                         <button 
                                             type="button" 
                                             className={`btn ${mapping.sizeMode === 'area' ? 'btn-primary' : 'btn-outline-secondary'}`}
-                                            onClick={() => updateFn({ sizeMode: 'area' })}
+                                            onClick={() => {
+                                                if (mapping.sizeMode !== 'area') {
+                                                    const a0 = mapping.range ? Math.PI * Math.pow(mapping.range[0], 2) : Math.PI;
+                                                    const a1 = mapping.range ? Math.PI * Math.pow(mapping.range[1], 2) : Math.PI * 400;
+                                                    let val = typeof mapping.value === 'number' ? Math.PI * Math.pow(mapping.value, 2) : mapping.value;
+                                                    updateFn({ sizeMode: 'area', range: [a0, a1], value: val });
+                                                }
+                                            }}
                                             style={{ fontSize: '0.7rem', padding: '0.15rem 0.4rem', zIndex: 0 }}
                                         >
                                             Area

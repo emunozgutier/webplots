@@ -84,13 +84,14 @@ const StyleElement: React.FC<StyleElementProps> = ({ title, mapping, updateFn, t
                         <div className="mt-2">
                             <label className="form-label d-flex justify-content-between text-muted mb-1" style={{ fontSize: '0.75rem' }}>
                                 <span>Value</span>
-                                <span>{mapping.value} {title === 'Hue/Color' ? '' : (title === 'Node Size' ? 'px' : '%')}</span>
+                                <span>{mapping.value} {title === 'Hue/Color' ? '' : (title === 'Node Size' ? (mapping.sizeMode === 'area' ? 'px²' : 'px') : '%')}</span>
                             </label>
                             <input
                                 type="range"
                                 className="form-range"
-                                min={title === 'Node Size' ? 1 : 0}
-                                max={title === 'Hue/Color' ? 360 : 100}
+                                min={title === 'Node Size' ? (mapping.sizeMode === 'area' ? Math.round(Math.PI) : 1) : 0}
+                                max={title === 'Hue/Color' ? 360 : (title === 'Node Size' ? (mapping.sizeMode === 'area' ? Math.round(Math.PI * 10000) : 100) : 100)}
+                                step={title === 'Node Size' && mapping.sizeMode === 'area' ? 10 : 1}
                                 value={Number(mapping.value) || 0}
                                 onChange={e => updateFn({ value: Number(e.target.value) })}
                             />
