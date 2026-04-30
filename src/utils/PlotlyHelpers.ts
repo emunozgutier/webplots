@@ -689,8 +689,8 @@ export const generatePlotConfig = (
                 }
             }
 
-            // Only draw if we found the tracking point OR it's a fixed annotation (no tracking)
-            if (found || !anno.trackColumn) {
+            // Only draw if we found the tracking point OR it's a fixed annotation OR it's a range annotation
+            if (found || !anno.trackColumn || anno.type === 'range') {
                 if (anno.type === 'text') {
                     layout.annotations!.push({
                         text: anno.text,
@@ -723,6 +723,41 @@ export const generatePlotConfig = (
                             color: anno.highlightColor,
                             width: 2
                         }
+                    } as any);
+                } else if (anno.type === 'range') {
+                    const hasX = anno.xMin !== '' && anno.xMin !== undefined || anno.xMax !== '' && anno.xMax !== undefined;
+                    const hasY = anno.yMin !== '' && anno.yMin !== undefined || anno.yMax !== '' && anno.yMax !== undefined;
+                    
+                    const xref = hasX ? 'x' : 'paper';
+                    const yref = hasY ? 'y' : 'paper';
+                    
+                    let x0: any = hasX ? (anno.xMin !== '' && anno.xMin !== undefined ? Number(anno.xMin) : (enableLogXAxis ? 1e-9 : -1e9)) : 0;
+                    let x1: any = hasX ? (anno.xMax !== '' && anno.xMax !== undefined ? Number(anno.xMax) : 1e9) : 1;
+                    
+                    let y0: any = hasY ? (anno.yMin !== '' && anno.yMin !== undefined ? Number(anno.yMin) : (enableLogYAxis ? 1e-9 : -1e9)) : 0;
+                    let y1: any = hasY ? (anno.yMax !== '' && anno.yMax !== undefined ? Number(anno.yMax) : 1e9) : 1;
+
+                    if (xref === 'x' && enableLogXAxis) {
+                        x0 = Math.log10(x0);
+                        x1 = Math.log10(x1);
+                    }
+                    if (yref === 'y' && enableLogYAxis) {
+                        y0 = Math.log10(y0);
+                        y1 = Math.log10(y1);
+                    }
+
+                    layout.shapes!.push({
+                        type: 'rect',
+                        xref,
+                        yref,
+                        x0,
+                        x1,
+                        y0,
+                        y1,
+                        fillcolor: anno.highlightColor,
+                        opacity: 0.2,
+                        line: { width: 0 },
+                        layer: 'below'
                     } as any);
                 }
             }

@@ -5,7 +5,7 @@ import { WorkspaceContext } from '../Workspace/WorkspaceContext';
 
 export interface AnnotationConfig {
     id: string;
-    type: 'text' | 'highlight';
+    type: 'text' | 'highlight' | 'range';
     text: string;
     trackColumn: string;
     trackValue: string;
@@ -15,6 +15,10 @@ export interface AnnotationConfig {
     fontColor: string;
     highlightColor: string;
     highlightSize: number;
+    xMin?: number | '';
+    xMax?: number | '';
+    yMin?: number | '';
+    yMax?: number | '';
 }
 
 export type AnnotationSideMenuState = {
