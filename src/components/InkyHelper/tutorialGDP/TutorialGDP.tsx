@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './TutorialGDP.css';
 import { useWorkspaceStore, workspaceRegistry } from '../../../store/Workspace/useWorkspaceStore';
+import Eyes from '../animation/components/eyes';
 
 interface TutorialStep {
   text: string;
@@ -167,14 +168,7 @@ const TutorialGDP: React.FC = () => {
           <path className="tutorial-gdp-tentacle" d="M 58,78 Q 58,100 58,110" fill="none" stroke="#9C27B0" strokeWidth="7" strokeLinecap="round" />
 
           {/* Eyes */}
-          <g className="tutorial-gdp-eye">
-            <circle cx="35" cy="50" r="5" fill="#FFFFFF" />
-            <circle cx="35" cy="50" r="2" fill="#333333" />
-          </g>
-          <g className="tutorial-gdp-eye">
-            <circle cx="65" cy="50" r="5" fill="#FFFFFF" />
-            <circle cx="65" cy="50" r="2" fill="#333333" />
-          </g>
+          <Eyes />
 
           {/* Smile */}
           <path d="M 45,60 Q 50,65 55,60" fill="none" stroke="#333333" strokeWidth="2" strokeLinecap="round" />
