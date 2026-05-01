@@ -70,35 +70,72 @@
 
 .tutorial-gdp-bubble {
   position: absolute;
-  top: -40px;
-  right: 80px;
+  bottom: 80px; /* Instead of top, anchor to bottom so it grows up */
+  right: 50px;
   background-color: white;
   color: #333;
-  padding: 8px 12px;
+  padding: 16px;
   border-radius: 12px;
   font-size: 14px;
   font-weight: 500;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   opacity: 0;
   transform: translateY(10px) scale(0.9);
   transition: opacity 0.3s ease, transform 0.3s ease;
-  pointer-events: none;
-  white-space: nowrap;
+  pointer-events: auto; /* changed from none to auto for buttons */
+  white-space: normal;
+  width: 250px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .tutorial-gdp-bubble::after {
   content: '';
   position: absolute;
-  bottom: 10px;
-  right: -8px;
-  border-width: 8px 0 8px 12px;
+  bottom: -8px;
+  right: 20px;
+  border-width: 8px 12px 0 0;
   border-style: solid;
-  border-color: transparent transparent transparent white;
+  border-color: white transparent transparent transparent;
   display: block;
   width: 0;
 }
 
-.tutorial-gdp-container:hover .tutorial-gdp-bubble {
+.tutorial-gdp-container:hover .tutorial-gdp-bubble,
+.tutorial-gdp-bubble:hover {
   opacity: 1;
   transform: translateY(0) scale(1);
+}
+
+.tutorial-gdp-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.tutorial-gdp-btn {
+  background: none;
+  border: none;
+  color: #4CAF50;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.tutorial-gdp-btn:hover {
+  background-color: #E8F5E9;
+}
+
+.tutorial-gdp-btn-skip {
+  color: #999;
+  font-weight: normal;
+}
+
+.tutorial-gdp-btn-skip:hover {
+  background-color: #f5f5f5;
+  color: #666;
 }

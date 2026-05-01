@@ -1,28 +1,93 @@
 import React, { useState } from 'react';
 import './TutorialGDP.css';
-import { useWorkspaceStore } from '../../../store/Workspace/useWorkspaceStore';
+import { useWorkspaceStore, workspaceRegistry } from '../../../store/Workspace/useWorkspaceStore';
+
+interface TutorialStep {
+  text: string;
+  action?: (stores: any) => void;
+}
 
 const TutorialGDP: React.FC = () => {
   const isDebugMode = useWorkspaceStore((state) => state.isDebugMode);
-  const [messages] = useState([
-    "Welcome to the GDP plotting tutorial!",
-    "The X-axis shows GDP per capita.",
-    "The Y-axis shows Life Expectancy.",
-    "Bubble size represents population.",
-    "Click play to see the animation over time!"
-  ]);
+  const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
 
-  const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
+  const steps: TutorialStep[] = [
+    {
+      text: "Welcome to the GDP plotting tutorial! Let's build a Gapminder-style chart. Click Next to begin.",
+    },
+    {
+      text: "First, we set the axes. X-axis is 'gdpPercap' (with Log scale!) and Y-axis is 'lifeExp'.",
+      action: (stores) => {
+        stores.axisSideMenuStore.getState().setXAxis('gdpPercap');
+        stores.axisSideMenuStore.getState().addYAxisColumn('lifeExp');
+        stores.plotLayoutStore.getState().setEnableLogXAxis(true);
+      }
+    },
+    {
+      text: "Let's color the bubbles by 'continent'. Notice how the Style side menu updates!",
+      action: (stores) => {
+        stores.styleSideMenuStore.getState().setHue({ source: 'column', value: 'continent', enabled: true });
+      }
+    },
+    {
+      text: "We map the size of the bubbles to the 'pop' (Population) column.",
+      action: (stores) => {
+        stores.styleSideMenuStore.getState().setSize({ source: 'column', value: 'pop', enabled: true, sizeMode: 'area' });
+      }
+    },
+    {
+      text: "Now, let's animate over time by setting the animation column to 'year'.",
+      action: (stores) => {
+        stores.animationSideMenuStore.getState().setAnimationColumn('year');
+      }
+    },
+    {
+      text: "The Plot Area above shows the chart. Below is the Data Table & Stats, which dynamically update with the animation!",
+    },
+    {
+      text: "You're all set! Press Play on the Animation menu on the left and enjoy exploring the data!",
+    }
+  ];
 
-  const handleClick = () => {
-    setCurrentMessageIndex((prev) => (prev + 1) % messages.length);
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [isFinished, setIsFinished] = useState(false);
+
+  const handleNext = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (currentStepIndex < steps.length - 1) {
+      const nextIndex = currentStepIndex + 1;
+      setCurrentStepIndex(nextIndex);
+      
+      const nextStep = steps[nextIndex];
+      if (nextStep.action) {
+        const stores = workspaceRegistry.get(activeWorkspaceId);
+        if (stores) {
+          nextStep.action(stores);
+        }
+      }
+    } else {
+      setIsFinished(true);
+    }
   };
 
-  if (!isDebugMode) return null;
+  const handleSkip = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsFinished(true);
+  };
+
+  if (!isDebugMode || isFinished) return null;
 
   return (
-    <div className="tutorial-gdp-container" onClick={handleClick} title="Click me for GDP plotting tips!">
-      <div className="tutorial-gdp-bubble">{messages[currentMessageIndex]}</div>
+    <div className="tutorial-gdp-container" title="GDP Plotting Tutorial">
+      <div className="tutorial-gdp-bubble">
+        <div>{steps[currentStepIndex].text}</div>
+        <div className="tutorial-gdp-buttons">
+          <button className="tutorial-gdp-btn tutorial-gdp-btn-skip" onClick={handleSkip}>Skip</button>
+          <button className="tutorial-gdp-btn" onClick={handleNext}>
+            {currentStepIndex === steps.length - 1 ? "Finish" : "Next ➔"}
+          </button>
+        </div>
+      </div>
       <svg className="tutorial-gdp-svg" viewBox="-10 -10 120 150" xmlns="http://www.w3.org/2000/svg" style={{ overflow: 'visible' }}>
         <g transform="translate(0, 10)">
           {/* Squid Fins - Greenish */}
