@@ -8,8 +8,7 @@ interface TutorialStep {
 }
 
 const TutorialGDP: React.FC = () => {
-  const isDebugMode = useWorkspaceStore((state) => state.isDebugMode);
-  const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
+  const { isDebugMode, activeWorkspaceId, isTutorialActive, setIsTutorialActive } = useWorkspaceStore();
 
   const [position, setPosition] = useState({ right: 140, bottom: 20 });
   const [isDragging, setIsDragging] = useState(false);
@@ -30,9 +29,18 @@ const TutorialGDP: React.FC = () => {
     if (isDragging) {
       const dx = e.clientX - dragStartRef.current.x;
       const dy = e.clientY - dragStartRef.current.y;
+      
+      let newRight = dragStartRef.current.right - dx;
+      let newBottom = dragStartRef.current.bottom - dy;
+      
+      // Clamp values so it doesn't go off-screen
+      // Container width is roughly 250px including the bubble, height is about 150px
+      newRight = Math.max(0, Math.min(newRight, window.innerWidth - 250));
+      newBottom = Math.max(0, Math.min(newBottom, window.innerHeight - 150));
+      
       setPosition({
-        right: dragStartRef.current.right - dx,
-        bottom: dragStartRef.current.bottom - dy
+        right: newRight,
+        bottom: newBottom
       });
     }
   };
@@ -81,7 +89,6 @@ const TutorialGDP: React.FC = () => {
   ];
 
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [isFinished, setIsFinished] = useState(false);
 
   const handleNext = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -97,16 +104,18 @@ const TutorialGDP: React.FC = () => {
         }
       }
     } else {
-      setIsFinished(true);
+      setIsTutorialActive(false);
+      setCurrentStepIndex(0); // reset for next time
     }
   };
 
   const handleSkip = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsFinished(true);
+    setIsTutorialActive(false);
+    setCurrentStepIndex(0); // reset for next time
   };
 
-  if (!isDebugMode || isFinished) return null;
+  if (!isDebugMode || !isTutorialActive) return null;
 
   return (
     <div 

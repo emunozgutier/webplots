@@ -418,6 +418,14 @@ const TopMenuBar: React.FC = () => {
                         </NavDropdown>
 
                         <NavDropdown title="Help" id="help-nav-dropdown">
+                            {!useWorkspaceStore((state) => state.isTutorialActive) && (
+                                <>
+                                    <NavDropdown.Item onClick={() => useWorkspaceStore.getState().setIsTutorialActive(true)}>
+                                        Talk to Inky
+                                    </NavDropdown.Item>
+                                    <NavDropdown.Divider />
+                                </>
+                            )}
                             <NavDropdown.Item onClick={() => alert('WebPlots v1.0\n\n- Load CSV to visualize data.\n- Save/Load Project to persist your work.')}>
                                 About
                             </NavDropdown.Item>
