@@ -119,11 +119,16 @@
   cursor: pointer;
   padding: 4px 8px;
   border-radius: 4px;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, opacity 0.2s;
 }
 
-.tutorial-gdp-btn:hover {
+.tutorial-gdp-btn:hover:not(:disabled) {
   background-color: #F3E5F5;
+}
+
+.tutorial-gdp-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .tutorial-gdp-btn-skip {

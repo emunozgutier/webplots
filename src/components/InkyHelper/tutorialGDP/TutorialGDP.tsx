@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './TutorialGDP.css';
 import { useWorkspaceStore, workspaceRegistry } from '../../../store/Workspace/useWorkspaceStore';
+import { useCsvDataStore } from '../../../store/useCsvDataStore';
 import Eyes from '../animation/components/eyes';
 
 interface TutorialStep {
@@ -10,6 +11,7 @@ interface TutorialStep {
 
 const TutorialGDP: React.FC = () => {
   const { isDebugMode, activeWorkspaceId, isTutorialActive, setIsTutorialActive } = useWorkspaceStore();
+  const hasData = useCsvDataStore((state) => state.data.length > 0);
 
   const [position, setPosition] = useState({ right: 140, bottom: 20 });
   const [isDragging, setIsDragging] = useState(false);
@@ -53,7 +55,7 @@ const TutorialGDP: React.FC = () => {
 
   const steps: TutorialStep[] = [
     {
-      text: "Welcome to the GDP plotting tutorial! Let's build a Gapminder-style chart. Click Next to begin.",
+      text: "Welcome to the GDP plotting tutorial! First, please load your dataset using the File or Test menu. (The Next button will enable once data is loaded).",
     },
     {
       text: "First, we set the axes. X-axis is 'gdpPercap' (with Log scale!) and Y-axis is 'lifeExp'.",
@@ -93,6 +95,8 @@ const TutorialGDP: React.FC = () => {
 
   const handleNext = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (currentStepIndex === 0 && !hasData) return; // Prevent next if no data
+
     if (currentStepIndex < steps.length - 1) {
       const nextIndex = currentStepIndex + 1;
       setCurrentStepIndex(nextIndex);
@@ -133,7 +137,11 @@ const TutorialGDP: React.FC = () => {
         <div>{steps[currentStepIndex].text}</div>
         <div className="tutorial-gdp-buttons">
           <button className="tutorial-gdp-btn tutorial-gdp-btn-skip" onClick={handleSkip}>Skip</button>
-          <button className="tutorial-gdp-btn" onClick={handleNext}>
+          <button 
+            className="tutorial-gdp-btn" 
+            onClick={handleNext}
+            disabled={currentStepIndex === 0 && !hasData}
+          >
             {currentStepIndex === steps.length - 1 ? "Finish" : "Next ➔"}
           </button>
         </div>
