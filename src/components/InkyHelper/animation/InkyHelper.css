@@ -14,7 +14,6 @@
 }
 
 .inky-container:hover {
-  transform: scale(1.1);
   animation-play-state: paused;
 }
 
