@@ -137,13 +137,14 @@ const TutorialGDP: React.FC = () => {
         <div>{steps[currentStepIndex].text}</div>
         <div className="tutorial-gdp-buttons">
           <button className="tutorial-gdp-btn tutorial-gdp-btn-skip" onClick={handleSkip}>Skip</button>
-          <button 
-            className="tutorial-gdp-btn" 
-            onClick={handleNext}
-            disabled={currentStepIndex === 0 && !hasData}
-          >
-            {currentStepIndex === steps.length - 1 ? "Finish" : "Next ➔"}
-          </button>
+          {!(currentStepIndex === 0 && !hasData) && (
+            <button 
+              className="tutorial-gdp-btn" 
+              onClick={handleNext}
+            >
+              {currentStepIndex === steps.length - 1 ? "Finish" : "Next ➔"}
+            </button>
+          )}
         </div>
       </div>
       <svg className="tutorial-gdp-svg" viewBox="-10 -10 120 150" xmlns="http://www.w3.org/2000/svg" style={{ overflow: 'visible' }}>
