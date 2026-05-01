@@ -36,6 +36,7 @@
 .inky-eye {
   animation: blink 4s infinite;
   transform-origin: center;
+  transform-box: fill-box;
 }
 
 @keyframes float {
