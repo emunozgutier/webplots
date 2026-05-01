@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './InkyHelper.css';
-import { useWorkspaceStore } from '../../store/Workspace/useWorkspaceStore';
+import { useWorkspaceStore } from '../../../store/Workspace/useWorkspaceStore';
 
 const InkyHelper: React.FC = () => {
   const isDebugMode = useWorkspaceStore((state) => state.isDebugMode);
