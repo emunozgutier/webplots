@@ -1,16 +1,17 @@
 .tutorial-gdp-container {
   position: fixed;
-  bottom: 20px;
-  right: 140px; /* offset from InkyHelper if both are visible */
   z-index: 9999;
   width: 100px;
   height: 120px;
-  cursor: pointer;
-  animation: float-gdp 4s ease-in-out infinite;
+  cursor: grab;
   display: flex;
   justify-content: center;
   align-items: center;
-  transition: transform 0.3s ease;
+  touch-action: none; /* prevent scrolling while dragging */
+}
+
+.tutorial-gdp-container:active {
+  cursor: grabbing;
 }
 
 .tutorial-gdp-container:hover {
@@ -133,4 +134,29 @@
 .tutorial-gdp-btn-skip:hover {
   background-color: #f5f5f5;
   color: #666;
+}
+
+.tutorial-gdp-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  line-height: 1;
+  color: #999;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.tutorial-gdp-close:hover {
+  background-color: #ffebee;
+  color: #f44336;
 }

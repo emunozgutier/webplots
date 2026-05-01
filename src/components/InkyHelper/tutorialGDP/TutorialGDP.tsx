@@ -11,6 +11,37 @@ const TutorialGDP: React.FC = () => {
   const isDebugMode = useWorkspaceStore((state) => state.isDebugMode);
   const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
 
+  const [position, setPosition] = useState({ right: 140, bottom: 20 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = React.useRef({ x: 0, y: 0, right: 0, bottom: 0 });
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    setIsDragging(true);
+    dragStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      right: position.right,
+      bottom: position.bottom
+    };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (isDragging) {
+      const dx = e.clientX - dragStartRef.current.x;
+      const dy = e.clientY - dragStartRef.current.y;
+      setPosition({
+        right: dragStartRef.current.right - dx,
+        bottom: dragStartRef.current.bottom - dy
+      });
+    }
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    setIsDragging(false);
+    e.currentTarget.releasePointerCapture(e.pointerId);
+  };
+
   const steps: TutorialStep[] = [
     {
       text: "Welcome to the GDP plotting tutorial! Let's build a Gapminder-style chart. Click Next to begin.",
@@ -78,8 +109,17 @@ const TutorialGDP: React.FC = () => {
   if (!isDebugMode || isFinished) return null;
 
   return (
-    <div className="tutorial-gdp-container" title="GDP Plotting Tutorial">
-      <div className="tutorial-gdp-bubble">
+    <div 
+      className="tutorial-gdp-container" 
+      title="Drag to move, click Next for tips"
+      style={{ right: `${position.right}px`, bottom: `${position.bottom}px` }}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
+    >
+      <div className="tutorial-gdp-bubble" onPointerDown={(e) => e.stopPropagation()}>
+        <button className="tutorial-gdp-close" onClick={handleSkip} title="Close tutorial">×</button>
         <div>{steps[currentStepIndex].text}</div>
         <div className="tutorial-gdp-buttons">
           <button className="tutorial-gdp-btn tutorial-gdp-btn-skip" onClick={handleSkip}>Skip</button>

@@ -6,7 +6,6 @@ import WorkspaceTabs from './components/WorkspaceTabs';
 import { WorkspaceProvider } from './store/Workspace/WorkspaceProvider';
 import { useWorkspaceStore } from './store/Workspace/useWorkspaceStore';
 import PopupMenu from './components/PopupMenu';
-import InkyHelper from './components/InkyHelper/animation/InkyHelper';
 import TutorialGDP from './components/InkyHelper/tutorialGDP/TutorialGDP';
 import './App.css';
 
@@ -32,7 +31,6 @@ function App() {
           </div>
         ))}
       </main>
-      <InkyHelper />
       <TutorialGDP />
     </div>
   );

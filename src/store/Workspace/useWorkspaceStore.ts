@@ -14,6 +14,7 @@ interface WorkspaceState {
     activeWorkspaceId: string;
     isTopMenuBarOpen: boolean;
     isDebugMode: boolean;
+    isTutorialActive: boolean;
 
     // Actions
     addWorkspace: (workspace: Workspace) => void;
@@ -23,6 +24,7 @@ interface WorkspaceState {
     toggleTopMenuBar: () => void;
     toggleDebugMode: () => void;
     setTopMenuBarOpen: (isOpen: boolean) => void;
+    setIsTutorialActive: (isActive: boolean) => void;
 }
 
 export const useWorkspaceStore = create<WorkspaceState>()(
@@ -31,6 +33,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         activeWorkspaceId: 'default',
         isTopMenuBarOpen: true,
         isDebugMode: typeof window !== 'undefined' && (window.location.pathname.endsWith('/beta') || window.location.hash.includes('/beta') || window.location.search.includes('beta')),
+        isTutorialActive: true,
 
         addWorkspace: (workspace) => set((state) => ({
             workspaces: [...state.workspaces, workspace],
@@ -94,5 +97,6 @@ export const useWorkspaceStore = create<WorkspaceState>()(
             return { isDebugMode: newDebugMode };
         }),
         setTopMenuBarOpen: (isOpen) => set({ isTopMenuBarOpen: isOpen }),
+        setIsTutorialActive: (isActive) => set({ isTutorialActive: isActive }),
     })
 );
