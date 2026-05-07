@@ -11,18 +11,20 @@ import { useTraceConfigStore } from '../../store/PlotTable/useTraceConfigStore';
 import { useInkRatioStore } from '../../store/SideMenu/useInkRatioStore';
 import { useStyleSideMenuStore } from '../../store/SideMenu/useStyleSideMenuStore';
 import { useSubplotSideMenuStore } from '../../store/SideMenu/useSubplotSideMenuStore';
+import { useAnimationSideMenuStore } from '../../store/SideMenu/useAnimationSideMenuStore';
+import { useAnnotationSideMenuStore } from '../../store/SideMenu/useAnnotationSideMenuStore';
 import { generatePlotConfig } from '../../utils/PlotlyHelpers';
-import { Step_1_filter, runDataPipeline } from '../../utils/DataFrameLib';
+import { runDataPipeline } from '../../utils/DataFrameLib';
 import { useCsvDataStore } from '../../store/useCsvDataStore';
 import { useFilterSideMenuStore } from '../../store/SideMenu/useFilterSideMenuStore';
 import PlotAreaControlButtons from './PlotAreaControlButtons';
+import AnimationControls from './AnimationControls';
 
 const PlotArea: React.FC = () => {
     const { data: rawDataTable } = useCsvDataStore();
     const { filters } = useFilterSideMenuStore();
-    const data = useMemo(() => {
-        return Step_1_filter(rawDataTable, filters);
-    }, [rawDataTable, filters]);
+    const { animationData } = useAnimationSideMenuStore();
+    const { annotations: annotationData } = useAnnotationSideMenuStore();
 
     const { sideMenuData } = useAxisSideMenuStore();
     const { groupSideMenuData } = useGroupSideMenuStore();
@@ -53,8 +55,8 @@ const PlotArea: React.FC = () => {
         return () => observer.disconnect();
     }, [setChartDimensions]);
 
-    const { plotData, layout, hasData, receipt, stats, generatedTraces } = useMemo(() => {
-        const { processedTraces } = runDataPipeline(rawDataTable, filters, sideMenuData, groupSideMenuData, {
+    const { plotData, layout, hasData, receipt, stats, generatedTraces, pipelineFiltered } = useMemo(() => {
+        const { processedTraces, filtered: pipelineFiltered } = runDataPipeline(rawDataTable, filters, sideMenuData, groupSideMenuData, {
             inkRatio,
             absorbedPoint,
             chartWidth,
@@ -62,12 +64,13 @@ const PlotArea: React.FC = () => {
             pointRadius,
             useCustomRadius,
             customRadius,
-            enableLogAxis: plotLayout.enableLogAxis
+            enableLogXAxis: plotLayout.enableLogXAxis,
+            enableLogYAxis: plotLayout.enableLogYAxis
         }, colorData);
 
         // Step 4: Final Plotly Configuration
-        return generatePlotConfig(
-            data,
+        const plotConfig = generatePlotConfig(
+            pipelineFiltered,
             processedTraces,
             sideMenuData,
             plotLayout,
@@ -76,13 +79,32 @@ const PlotArea: React.FC = () => {
             subplotData,
             absorptionMode,
             maxRadiusRatio,
-            groupSideMenuData.groupAxis
+            groupSideMenuData.groupAxis,
+            animationData,
+            annotationData
         );
+        return { ...plotConfig, pipelineFiltered };
     }, [
-        data, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData,
+        rawDataTable, filters, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData,
         subplotData, absorptionMode, absorbedPoint, maxRadiusRatio, inkRatio, chartWidth,
-        chartHeight, pointRadius, useCustomRadius, customRadius
+        chartHeight, pointRadius, useCustomRadius, customRadius, animationData, annotationData
     ]);
+
+    const uniqueAnimationValuesCount = useMemo(() => {
+        if (!animationData.animationColumn || !pipelineFiltered || pipelineFiltered.length === 0) return 0;
+        const values = new Set<string | number>();
+        for (let i = 0; i < pipelineFiltered.length; i++) {
+            const val = pipelineFiltered[i][animationData.animationColumn];
+            if (val !== undefined && val !== null && val !== '') {
+                values.add(val);
+            }
+        }
+        return values.size;
+    }, [animationData.animationColumn, pipelineFiltered]);
+
+    const transitionDuration = uniqueAnimationValuesCount > 0 
+        ? Math.max(20, Math.floor((10000 / uniqueAnimationValuesCount) / (animationData.speedMultiplier || 1)))
+        : 500;
 
 
     // Update stats in store
@@ -129,14 +151,27 @@ const PlotArea: React.FC = () => {
                 onOpenSettings={handleOpenSettings}
                 onOpenDebug={handleOpenDebug}
             />
-            <div ref={containerRef} className="flex-grow-1 position-relative">
-                <Plot
-                    data={plotData}
-                    layout={layout}
-                    useResizeHandler={true}
-                    style={{ width: '100%', height: '100%' }}
-                    className="w-100 h-100"
-                />
+            <div ref={containerRef} className="flex-grow-1 position-relative d-flex flex-column">
+                <div className="flex-grow-1" style={{ minHeight: 0 }}>
+                    <Plot
+                        data={plotData}
+                        layout={{
+                            ...layout,
+                            transition: {
+                                duration: transitionDuration,
+                                easing: 'cubic-in-out'
+                            }
+                        }}
+                        useResizeHandler={true}
+                        style={{ width: '100%', height: '100%' }}
+                        className="w-100 h-100"
+                    />
+                </div>
+                {animationData.animationColumn && (
+                    <div style={{ flexShrink: 0 }}>
+                        <AnimationControls data={pipelineFiltered} />
+                    </div>
+                )}
             </div>
         </div>
     );

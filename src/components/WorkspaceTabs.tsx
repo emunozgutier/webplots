@@ -83,6 +83,7 @@ const WorkspaceTabs: React.FC = () => {
                                         trace: sourceStores.traceConfigStore.getState(),
                                         subplot: sourceStores.subplotSideMenuStore.getState(),
                                         table: sourceStores.tableStore.getState(),
+                                        animation: sourceStores.animationSideMenuStore.getState(),
                                         local: { ...sourceStores.workspaceLocalStore.getState(), popupContent: null }
                                     };
                                     cloneStoreStates.set(newId, JSON.parse(JSON.stringify(stateSnapshot)));

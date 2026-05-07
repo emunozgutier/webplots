@@ -44,6 +44,34 @@ const FilterElementSettings: React.FC<FilterElementSettingsProps> = ({ filter: i
         return Math.round((count / columnData.length) * 100);
     }, [columnData, activeMin, activeMax]);
 
+    const [localTextMin, setLocalTextMin] = React.useState<string | number>(Math.round(activeMin * 100) / 100);
+    const [localTextMax, setLocalTextMax] = React.useState<string | number>(Math.round(activeMax * 100) / 100);
+
+    React.useEffect(() => {
+        setLocalTextMin(Math.round(activeMin * 100) / 100);
+        setLocalTextMax(Math.round(activeMax * 100) / 100);
+    }, [activeMin, activeMax]);
+
+    React.useEffect(() => {
+        const timer = setTimeout(() => {
+            const numVal = Number(localTextMin);
+            if (localTextMin !== '' && !isNaN(numVal) && numVal !== Math.round(activeMin * 100) / 100) {
+                updateFilter(filter.id, { min: numVal });
+            }
+        }, 400);
+        return () => clearTimeout(timer);
+    }, [localTextMin, activeMin, filter.id, updateFilter]);
+
+    React.useEffect(() => {
+        const timer = setTimeout(() => {
+            const numVal = Number(localTextMax);
+            if (localTextMax !== '' && !isNaN(numVal) && numVal !== Math.round(activeMax * 100) / 100) {
+                updateFilter(filter.id, { max: numVal });
+            }
+        }, 400);
+        return () => clearTimeout(timer);
+    }, [localTextMax, activeMax, filter.id, updateFilter]);
+
     const handleRelayout = (event: any) => {
         // Handle dragging the edges of the grey-out rectangles
         let newMin = activeMin;
@@ -269,8 +297,8 @@ const FilterElementSettings: React.FC<FilterElementSettingsProps> = ({ filter: i
                         <input 
                             type="number" 
                             className="form-control form-control-sm border-primary border-opacity-25" 
-                            value={Math.round(activeMin * 100) / 100} 
-                            onChange={(e) => updateFilter(filter.id, { min: Number(e.target.value) })}
+                            value={localTextMin} 
+                            onChange={(e) => setLocalTextMin(e.target.value)}
                         />
                     </div>
                     <div className="flex-grow-1">
@@ -278,8 +306,8 @@ const FilterElementSettings: React.FC<FilterElementSettingsProps> = ({ filter: i
                         <input 
                             type="number" 
                             className="form-control form-control-sm border-primary border-opacity-25" 
-                            value={Math.round(activeMax * 100) / 100} 
-                            onChange={(e) => updateFilter(filter.id, { max: Number(e.target.value) })}
+                            value={localTextMax} 
+                            onChange={(e) => setLocalTextMax(e.target.value)}
                         />
                     </div>
                 </div>

@@ -6,6 +6,8 @@ import type { TraceConfig } from '../store/PlotTable/useTraceConfigStore';
 import type { StyleSideMenuData } from '../store/SideMenu/useStyleSideMenuStore';
 import type { SubplotSideMenuState } from '../store/SideMenu/useSubplotSideMenuStore';
 import type { TraceStats } from '../store/SideMenu/useInkRatioStore';
+import type { AnimationSideMenuData } from '../store/SideMenu/useAnimationSideMenuStore';
+import type { AnnotationConfig } from '../store/SideMenu/useAnnotationSideMenuStore';
 import { parseToNumeric, calculateLogBase } from './TableMathLib';
 import type { TraceData } from './DataFrameLib';
 
@@ -40,10 +42,12 @@ export const generatePlotConfig = (
     subplotSideMenuData: SubplotSideMenuState,
     absorptionMode: 'none' | 'size' | 'glow' | 'glass',
     maxRadiusRatio: number = 3,
-    groupAxis: string | null = null
+    groupAxis: string | null = null,
+    animationData?: AnimationSideMenuData,
+    annotationData?: AnnotationConfig[]
 ) => {
     const { plotType, xAxis, yAxis } = sideMenuData;
-    const { enableLogAxis, plotTitle, xAxisTitle, yAxisTitle, xRange, yRange, histogramBarmode, legendOrientation, pointTip } = plotLayout;
+    const { enableLogXAxis, enableLogYAxis, plotTitle, xAxisTitle, yAxisTitle, xRange, yRange, histogramBarmode, legendOrientation, pointTip, customHoverConfig } = plotLayout;
 
     const { traceCustomizations, currentPaletteColors } = traceConfig;
     const getColor = (idx: number) => {
@@ -69,8 +73,76 @@ export const generatePlotConfig = (
 
     const stats: Record<string, TraceStats> = {};
 
+    let globalXMin = Infinity, globalXMax = -Infinity;
+    let globalYMin = Infinity, globalYMax = -Infinity;
+
+    if (animationData && animationData.animationColumn) {
+        processedTraces.forEach(t => {
+            t.xData.forEach(v => {
+                const num = parseToNumeric(v);
+                if (num !== null && !isNaN(num)) {
+                    if (num < globalXMin) globalXMin = num;
+                    if (num > globalXMax) globalXMax = num;
+                }
+            });
+            t.yData.forEach(v => {
+                const num = parseToNumeric(v);
+                if (num !== null && !isNaN(num)) {
+                    if (num < globalYMin) globalYMin = num;
+                    if (num > globalYMax) globalYMax = num;
+                }
+            });
+        });
+
+        if (globalXMin !== Infinity) {
+            const span = globalXMax - globalXMin || Math.abs(globalXMax) * 0.1 || 1;
+            globalXMin -= span * 0.05;
+            globalXMax += span * 0.05;
+        }
+        if (globalYMin !== Infinity) {
+            const span = globalYMax - globalYMin || Math.abs(globalYMax) * 0.1 || 1;
+            globalYMin -= span * 0.05;
+            globalYMax += span * 0.05;
+        }
+    }
+
     // Create Plotly traces
-    const plotData: Data[] = processedTraces.flatMap((traceInfo, index) => {
+    const plotData: Data[] = processedTraces.flatMap((origTraceInfo, index) => {
+        let traceInfo = origTraceInfo;
+
+        if (animationData && animationData.animationColumn && animationData.animationValue !== null) {
+            const animCol = animationData.animationColumn;
+            const animVal = animationData.animationValue;
+
+            const baseSurviving = origTraceInfo.survivingIndices || origTraceInfo.rowIndices.map((_, i) => i);
+            const baseAbsorbed = origTraceInfo.absorbedCounts || [];
+
+            const newX: any[] = [];
+            const newY: any[] = [];
+            const newSurviving: number[] = [];
+            const newAbsorbed: number[] = [];
+
+            for (let i = 0; i < baseSurviving.length; i++) {
+                const survivingIdx = baseSurviving[i];
+                const dataIndex = origTraceInfo.rowIndices[survivingIdx];
+                const row = data[dataIndex];
+                if (row && row[animCol] === animVal) {
+                    newSurviving.push(survivingIdx);
+                    newX.push(origTraceInfo.xData[i]);
+                    newY.push(origTraceInfo.yData[i]);
+                    if (baseAbsorbed.length > i) newAbsorbed.push(baseAbsorbed[i]);
+                }
+            }
+
+            traceInfo = {
+                ...origTraceInfo,
+                xData: newX,
+                yData: newY,
+                survivingIndices: newSurviving,
+                absorbedCounts: newAbsorbed
+            };
+        }
+
         const { fullTraceName, yCol, groupName, xData, yData, rowIndices } = traceInfo;
 
         const isSinglePlot = (rows * cols) <= 1;
@@ -207,7 +279,14 @@ export const generatePlotConfig = (
                     else if (lightness.source === 'column' && litColMap) l = litColMap(row[String(lightness.value)]);
                 }
 
-                computedColors.push(`hsl(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%)`);
+                let finalColorStr = `hsl(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%)`;
+                if (hue.enabled !== false && hue.source === 'column') {
+                    const colVal = String(row[String(hue.value)]);
+                    if (colorSideMenuData.groupColorOverrides && colorSideMenuData.groupColorOverrides[colVal]) {
+                        finalColorStr = colorSideMenuData.groupColorOverrides[colVal];
+                    }
+                }
+                computedColors.push(finalColorStr);
 
                 // SHAPE
                 let sh = 'circle'; // Default when disabled
@@ -230,20 +309,38 @@ export const generatePlotConfig = (
                 computedSizes.push(si);
 
                 let hoverStr = '';
-                if (groupAxis && row[groupAxis] !== undefined) {
-                    hoverStr += `<br>${groupAxis}: ${row[groupAxis]}`;
-                } else if (groupName) {
-                    hoverStr += `<br>Group: ${groupName}`;
-                }
-
-                if (hue.enabled !== false && hue.source === 'column') hoverStr += `<br>${hue.value} (Hue): ${row[String(hue.value)]}`;
-                if (saturation.enabled !== false && saturation.source === 'column') hoverStr += `<br>${saturation.value} (Sat): ${row[String(saturation.value)]}`;
-                if (lightness.enabled !== false && lightness.source === 'column') hoverStr += `<br>${lightness.value} (Light): ${row[String(lightness.value)]}`;
-                if (shape.enabled !== false && shape.source === 'column') hoverStr += `<br>${shape.value} (Shape): ${row[String(shape.value)]}`;
-                if (size.enabled !== false && size.source === 'column') hoverStr += `<br>${size.value} (Size): ${row[String(size.value)]}`;
                 
-                if (absorptionMode !== 'none') {
-                    hoverStr += `<br>Absorbed: ${absorbedCounts[loopIdx] || 0}`;
+                if (pointTip === 'custom' && customHoverConfig) {
+                    const { showLabels, selectedColumns, showX, showY } = customHoverConfig;
+                    const lines: string[] = [];
+                    selectedColumns.forEach(col => {
+                        const val = row[col] !== undefined ? row[col] : 'N/A';
+                        if (showLabels) {
+                            lines.push(`${col}: ${val}`);
+                        } else {
+                            lines.push(`${val}`);
+                        }
+                    });
+                    if (lines.length > 0) {
+                        const hasXY = showX || showY;
+                        hoverStr = (hasXY ? '<br>' : '') + lines.join('<br>');
+                    }
+                } else {
+                    if (groupAxis && row[groupAxis] !== undefined) {
+                        hoverStr += `<br>${groupAxis}: ${row[groupAxis]}`;
+                    } else if (groupName) {
+                        hoverStr += `<br>Group: ${groupName}`;
+                    }
+
+                    if (hue.enabled !== false && hue.source === 'column') hoverStr += `<br>${hue.value} (Hue): ${row[String(hue.value)]}`;
+                    if (saturation.enabled !== false && saturation.source === 'column') hoverStr += `<br>${saturation.value} (Sat): ${row[String(saturation.value)]}`;
+                    if (lightness.enabled !== false && lightness.source === 'column') hoverStr += `<br>${lightness.value} (Light): ${row[String(lightness.value)]}`;
+                    if (shape.enabled !== false && shape.source === 'column') hoverStr += `<br>${shape.value} (Shape): ${row[String(shape.value)]}`;
+                    if (size.enabled !== false && size.source === 'column') hoverStr += `<br>${size.value} (Size): ${row[String(size.value)]}`;
+                    
+                    if (absorptionMode !== 'none') {
+                        hoverStr += `<br>Absorbed: ${absorbedCounts[loopIdx] || 0}`;
+                    }
                 }
 
                 computedHoverTexts.push(hoverStr);
@@ -267,6 +364,9 @@ export const generatePlotConfig = (
             // Default mode is 'markers' unless specified
             let mode: 'lines' | 'markers' | 'lines+markers' = customization.mode || 'markers';
             const marker: any = {};
+
+            const activeSizeMode = size.sizeMode || 'diameter';
+            const traceSizeref = activeSizeMode === 'area' ? Math.PI : 0.5;
 
             const baseColor = getColor(index);
             const finalColor = traceColorOverlay || groupColorOverlay || baseColor;
@@ -411,6 +511,8 @@ export const generatePlotConfig = (
                             color: finalMarkerColor,
                             symbol: finalMarkerSymbol,
                             size: glowMarkerSize,
+                            sizemode: activeSizeMode,
+                            sizeref: traceSizeref,
                             line: { width: 0 }
                         }
                     };
@@ -433,15 +535,31 @@ export const generatePlotConfig = (
             }
 
             switch (effectiveHoverMode) {
+                case 'custom':
+                    if (customHoverConfig) {
+                        const { showX, showY, showLabels } = customHoverConfig;
+                        let customTemplate = '';
+                        if (showX && showY) {
+                            customTemplate = showLabels ? `X: %{x}<br>Y: %{y}` : `%{x}, %{y}`;
+                        } else if (showX) {
+                            customTemplate = showLabels ? `X: %{x}` : `%{x}`;
+                        } else if (showY) {
+                            customTemplate = showLabels ? `Y: %{y}` : `%{y}`;
+                        }
+                        hoverTemplateToUse = customTemplate ? `${customTemplate}%{hovertext}<extra></extra>` : `%{hovertext}<extra></extra>`;
+                    } else {
+                        hoverTemplateToUse = '%{x}, %{y}%{hovertext}<extra></extra>';
+                    }
+                    break;
                 case 'xy':
-                    hoverTemplateToUse = '%{x}, %{y}%{hovertext}<extra></extra>';
+                    hoverTemplateToUse = '%{x}, %{y}<extra></extra>';
                     break;
                 case 'xy_absorbed':
-                    hoverTemplateToUse = '%{x}, %{y}%{hovertext}<extra></extra>';
+                    hoverTemplateToUse = '%{x}, %{y}<br>Absorbed: %{customdata}<extra></extra>';
                     break;
                 case 'xy_trace':
                     // Using Plotly's built-in extra trace name flag
-                    hoverTemplateToUse = '%{x}, %{y}%{hovertext}';
+                    hoverTemplateToUse = '%{x}, %{y}';
                     break;
                 case 'default':
                 default:
@@ -469,6 +587,8 @@ export const generatePlotConfig = (
                     color: finalMarkerColor,
                     symbol: finalMarkerSymbol,
                     size: finalMarkerSize,
+                    sizemode: activeSizeMode,
+                    sizeref: traceSizeref,
                     line: { color: finalMarkerColor, ...finalMarkerLine },
                     ...(finalMarkerOpacity !== undefined && { opacity: finalMarkerOpacity })
                 }
@@ -478,31 +598,162 @@ export const generatePlotConfig = (
         });
     });
 
+    let finalPlotTitle = plotTitle || (plotType === 'histogram' ? `Histogram: ${yAxis.join(', ')}` : `Plot: ${yAxis.join(', ')} vs ${xAxis || 'Row Number'}`);
+    
+    if (animationData && animationData.displayMode === 'subtitle' && animationData.animationValue !== null) {
+        finalPlotTitle += `<br><sub>${animationData.animationColumn}: ${animationData.animationValue}</sub>`;
+    }
+
     const layout: Partial<Layout> = {
         width: undefined,
         height: undefined,
-        title: { text: plotTitle || (plotType === 'histogram' ? `Histogram: ${yAxis.join(', ')}` : `Plot: ${yAxis.join(', ')} vs ${xAxis || 'Row Number'}`) },
+        title: { text: finalPlotTitle },
         xaxis: {
             title: { text: xAxisTitle || (plotType === 'histogram' ? 'Value' : (xAxis || 'Row Number')) },
-            type: enableLogAxis ? 'log' : (isXAxisDate ? 'date' : 'linear'),
-            range: plotType === 'histogram' ? undefined : (xRange || undefined),
-            autorange: plotType === 'histogram' ? true : !xRange
+            type: enableLogXAxis ? 'log' : (isXAxisDate ? 'date' : 'linear'),
+            range: plotType === 'histogram' ? undefined : (
+                xRange ? (enableLogXAxis ? [Math.log10(Math.max(xRange[0], 1e-15)), Math.log10(Math.max(xRange[1], 1e-15))] : xRange) :
+                (animationData && animationData.animationColumn && globalXMin !== Infinity ? 
+                    (enableLogXAxis ? [Math.log10(Math.max(globalXMin, 1e-15)), Math.log10(Math.max(globalXMax, 1e-15))] : [globalXMin, globalXMax]) 
+                : undefined)
+            ),
+            autorange: plotType === 'histogram' ? true : (!xRange && !(animationData && animationData.animationColumn && globalXMin !== Infinity))
         },
         yaxis: {
             title: { text: yAxisTitle || (yAxis.length === 1 ? yAxis[0] : 'Values') },
-            type: enableLogAxis ? 'log' : (isYAxisDate ? 'date' : 'linear'),
-            range: plotType === 'histogram' ? undefined : (yRange || undefined),
-            autorange: plotType === 'histogram' ? true : !yRange
+            type: enableLogYAxis ? 'log' : (isYAxisDate ? 'date' : 'linear'),
+            range: plotType === 'histogram' ? undefined : (
+                yRange ? (enableLogYAxis ? [Math.log10(Math.max(yRange[0], 1e-15)), Math.log10(Math.max(yRange[1], 1e-15))] : yRange) :
+                (animationData && animationData.animationColumn && globalYMin !== Infinity ? 
+                    (enableLogYAxis ? [Math.log10(Math.max(globalYMin, 1e-15)), Math.log10(Math.max(globalYMax, 1e-15))] : [globalYMin, globalYMax]) 
+                : undefined)
+            ),
+            autorange: plotType === 'histogram' ? true : (!yRange && !(animationData && animationData.animationColumn && globalYMin !== Infinity))
         },
         autosize: true,
         margin: { l: 50, r: 50, b: 50, t: 50 },
-        showlegend: legendOrientation === 'hidden' ? false : (legendOrientation === 'auto' ? processedTraces.length > 1 : true),
+        showlegend: processedTraces.length > 8 ? false : (legendOrientation === 'hidden' ? false : (legendOrientation === 'auto' ? processedTraces.length > 1 : true)),
         legend: {
             itemsizing: 'constant',
             ...(legendOrientation === 'bottom' ? { orientation: 'h', yanchor: 'bottom', y: -0.2, xanchor: 'center', x: 0.5 } : {})
         },
         barmode: plotType === 'histogram' ? (histogramBarmode || 'overlay') : undefined
     };
+
+    if (animationData && animationData.displayMode === 'background' && animationData.animationValue !== null) {
+        if (!layout.annotations) layout.annotations = [];
+        layout.annotations.push({
+            text: String(animationData.animationValue),
+            font: {
+                size: 150,
+                color: 'rgba(200, 200, 200, 0.2)',
+                family: 'Arial, sans-serif',
+            },
+            xref: 'paper',
+            yref: 'paper',
+            x: 0.5,
+            y: 0.5,
+            showarrow: false,
+            xanchor: 'center',
+            yanchor: 'middle',
+            textangle: 0
+        } as any);
+    }
+
+    if (annotationData && annotationData.length > 0) {
+        if (!layout.annotations) layout.annotations = [];
+        if (!layout.shapes) layout.shapes = [];
+
+        annotationData.forEach(anno => {
+            let targetX: any = 0;
+            let targetY: any = 0;
+            let found = false;
+
+            if (anno.trackColumn && anno.trackValue) {
+                // Find the point in the CURRENT frame's data
+                const row = data.find(r => {
+                    const matchesTrack = String(r[anno.trackColumn]) === String(anno.trackValue);
+                    if (!matchesTrack) return false;
+                    
+                    if (animationData && animationData.animationColumn && animationData.animationValue !== null) {
+                        return String(r[animationData.animationColumn]) === String(animationData.animationValue);
+                    }
+                    return true;
+                });
+                if (row) {
+                    targetX = xAxis ? row[xAxis] : 0;
+                    targetY = yAxis.length > 0 ? row[yAxis[0]] : 0;
+                    if (enableLogXAxis && targetX > 0) targetX = Math.log10(targetX);
+                    if (enableLogYAxis && targetY > 0) targetY = Math.log10(targetY);
+                    found = true;
+                }
+            }
+
+            // Only draw if we found the tracking point OR it's a fixed annotation OR it's a range annotation
+            if (found || !anno.trackColumn || anno.type === 'range') {
+                if (anno.type === 'text') {
+                    layout.annotations!.push({
+                        text: anno.text,
+                        x: found ? targetX : 0.5,
+                        y: found ? targetY : 0.5,
+                        xref: found ? 'x' : 'paper',
+                        yref: found ? 'y' : 'paper',
+                        showarrow: false,
+                        xshift: anno.offsetX,
+                        yshift: -anno.offsetY,
+                        font: {
+                            size: anno.fontSize,
+                            color: anno.fontColor
+                        }
+                    } as any);
+                } else if (anno.type === 'highlight') {
+                    layout.shapes!.push({
+                        type: 'rect',
+                        xref: found ? 'x' : 'paper',
+                        yref: found ? 'y' : 'paper',
+                        x0: -anno.highlightSize / 2 + anno.offsetX,
+                        y0: -anno.highlightSize / 2 - anno.offsetY,
+                        x1: anno.highlightSize / 2 + anno.offsetX,
+                        y1: anno.highlightSize / 2 - anno.offsetY,
+                        xsizemode: 'pixel',
+                        ysizemode: 'pixel',
+                        xanchor: found ? targetX : 0.5,
+                        yanchor: found ? targetY : 0.5,
+                        line: {
+                            color: anno.highlightColor,
+                            width: 2
+                        }
+                    } as any);
+                } else if (anno.type === 'range') {
+                    const hasX = anno.xMin !== '' && anno.xMin !== undefined || anno.xMax !== '' && anno.xMax !== undefined;
+                    const hasY = anno.yMin !== '' && anno.yMin !== undefined || anno.yMax !== '' && anno.yMax !== undefined;
+                    
+                    const xref = hasX ? 'x' : 'paper';
+                    const yref = hasY ? 'y' : 'paper';
+                    
+                    let x0: any = hasX ? (anno.xMin !== '' && anno.xMin !== undefined ? Number(anno.xMin) : (enableLogXAxis ? 1e-9 : -1e9)) : 0;
+                    let x1: any = hasX ? (anno.xMax !== '' && anno.xMax !== undefined ? Number(anno.xMax) : 1e9) : 1;
+                    
+                    let y0: any = hasY ? (anno.yMin !== '' && anno.yMin !== undefined ? Number(anno.yMin) : (enableLogYAxis ? 1e-9 : -1e9)) : 0;
+                    let y1: any = hasY ? (anno.yMax !== '' && anno.yMax !== undefined ? Number(anno.yMax) : 1e9) : 1;
+
+                    layout.shapes!.push({
+                        type: 'rect',
+                        xref,
+                        yref,
+                        x0,
+                        x1,
+                        y0,
+                        y1,
+                        fillcolor: anno.highlightColor,
+                        opacity: 0.2,
+                        line: { width: 0 },
+                        layer: 'below'
+                    } as any);
+                }
+            }
+        });
+    }
 
     // Subplots integration: if rows * cols > 1, inject grid configuration
     const totalSubplots = rows * cols;
@@ -512,15 +763,25 @@ export const generatePlotConfig = (
         // Construct standard axis configs
         const baseTargetXAxis = {
             title: { text: xAxisTitle || (plotType === 'histogram' ? 'Value' : (xAxis || 'Row Number')) },
-            type: enableLogAxis ? 'log' : (isXAxisDate ? 'date' : 'linear'),
-            range: plotType === 'histogram' ? undefined : (xRange || undefined),
-            autorange: plotType === 'histogram' ? true : !xRange
+            type: enableLogXAxis ? 'log' : (isXAxisDate ? 'date' : 'linear'),
+            range: plotType === 'histogram' ? undefined : (
+                xRange ? (enableLogXAxis ? [Math.log10(Math.max(xRange[0], 1e-15)), Math.log10(Math.max(xRange[1], 1e-15))] : xRange) :
+                (animationData && animationData.animationColumn && globalXMin !== Infinity ? 
+                    (enableLogXAxis ? [Math.log10(Math.max(globalXMin, 1e-15)), Math.log10(Math.max(globalXMax, 1e-15))] : [globalXMin, globalXMax]) 
+                : undefined)
+            ),
+            autorange: plotType === 'histogram' ? true : (!xRange && !(animationData && animationData.animationColumn && globalXMin !== Infinity))
         };
         const baseTargetYAxis = {
             title: { text: yAxisTitle || (yAxis.length === 1 ? yAxis[0] : 'Values') },
-            type: enableLogAxis ? 'log' : (isYAxisDate ? 'date' : 'linear'),
-            range: plotType === 'histogram' ? undefined : (yRange || undefined),
-            autorange: plotType === 'histogram' ? true : !yRange
+            type: enableLogYAxis ? 'log' : (isYAxisDate ? 'date' : 'linear'),
+            range: plotType === 'histogram' ? undefined : (
+                yRange ? (enableLogYAxis ? [Math.log10(Math.max(yRange[0], 1e-15)), Math.log10(Math.max(yRange[1], 1e-15))] : yRange) :
+                (animationData && animationData.animationColumn && globalYMin !== Infinity ? 
+                    (enableLogYAxis ? [Math.log10(Math.max(globalYMin, 1e-15)), Math.log10(Math.max(globalYMax, 1e-15))] : [globalYMin, globalYMax]) 
+                : undefined)
+            ),
+            autorange: plotType === 'histogram' ? true : (!yRange && !(animationData && animationData.animationColumn && globalYMin !== Infinity))
         };
 
         // Assign axes dynamically to Layout
@@ -569,6 +830,7 @@ export const generatePlotConfig = (
             const exactCustomization = traceCustomizations?.[fullTraceName] || {};
             const customization = { ...colCustomization, ...exactCustomization };
             customization.color = exactCustomization.color || undefined;
+            const { size } = colorSideMenuData;
 
             let finalName = exactCustomization.displayName || fullTraceName;
             if (!exactCustomization.displayName && colCustomization.displayName && groupName) {
@@ -591,10 +853,12 @@ export const generatePlotConfig = (
 
             if (customization.mode === 'markers') {
                 mode = 'markers';
+                const activeSizeModeReceipt = size.sizeMode || 'diameter';
+                const sizeModeStr = activeSizeModeReceipt === 'area' ? `, sizemode: 'area', sizeref: Math.PI` : `, sizemode: 'diameter', sizeref: 0.5`;
                 if (!activeSymbol) {
-                    markerParamsCode = `\n${traceVar}.marker = { symbol: 'circle', size: ${finalSize} };`;
+                    markerParamsCode = `\n${traceVar}.marker = { symbol: 'circle', size: ${finalSize}${sizeModeStr} };`;
                 } else {
-                    markerParamsCode = `\n${traceVar}.marker = { symbol: '${activeSymbol}', size: ${finalSize} };`;
+                    markerParamsCode = `\n${traceVar}.marker = { symbol: '${activeSymbol}', size: ${finalSize}${sizeModeStr} };`;
                 }
             }
 
@@ -645,13 +909,13 @@ ${traceVar}.line = { color: '${finalColor}' };${markerParamsCode}`);
 
             receipt += `\n  ${xKey}: {
     title: { text: '${layout.xaxis?.title?.text}' },
-    type: '${enableLogAxis ? 'log' : (isXAxisDate ? 'date' : 'linear')}',
-    ${xRange ? `range: [${xRange[0]}, ${xRange[1]}]` : '// autorange: true'}
+    type: '${enableLogXAxis ? 'log' : (isXAxisDate ? 'date' : 'linear')}',
+    ${xRange ? `range: [${enableLogXAxis ? Math.log10(Math.max(xRange[0], 1e-15)) : xRange[0]}, ${enableLogXAxis ? Math.log10(Math.max(xRange[1], 1e-15)) : xRange[1]}]` : '// autorange: true'}
   },`;
             receipt += `\n  ${yKey}: {
     title: { text: '${layout.yaxis?.title?.text}' },
-    type: '${enableLogAxis ? 'log' : (isYAxisDate ? 'date' : 'linear')}',
-    ${yRange ? `range: [${yRange[0]}, ${yRange[1]}]` : '// autorange: true'}
+    type: '${enableLogYAxis ? 'log' : (isYAxisDate ? 'date' : 'linear')}',
+    ${yRange ? `range: [${enableLogYAxis ? Math.log10(Math.max(yRange[0], 1e-15)) : yRange[0]}, ${enableLogYAxis ? Math.log10(Math.max(yRange[1], 1e-15)) : yRange[1]}]` : '// autorange: true'}
   },`;
         }
         receipt += `\n  `;
@@ -659,17 +923,17 @@ ${traceVar}.line = { color: '${finalColor}' };${markerParamsCode}`);
         receipt += `
   xaxis: {
     title: { text: '${layout.xaxis?.title?.text}' },
-    type: '${enableLogAxis ? 'log' : (isXAxisDate ? 'date' : 'linear')}',
-    ${xRange ? `range: [${xRange[0]}, ${xRange[1]}]` : '// autorange: true'}
+    type: '${enableLogXAxis ? 'log' : (isXAxisDate ? 'date' : 'linear')}',
+    ${xRange ? `range: [${enableLogXAxis ? Math.log10(Math.max(xRange[0], 1e-15)) : xRange[0]}, ${enableLogXAxis ? Math.log10(Math.max(xRange[1], 1e-15)) : xRange[1]}]` : '// autorange: true'}
   },
   yaxis: {
     title: { text: '${layout.yaxis?.title?.text}' },
-    type: '${enableLogAxis ? 'log' : (isYAxisDate ? 'date' : 'linear')}',
-    ${yRange ? `range: [${yRange[0]}, ${yRange[1]}]` : '// autorange: true'}
+    type: '${enableLogYAxis ? 'log' : (isYAxisDate ? 'date' : 'linear')}',
+    ${yRange ? `range: [${enableLogYAxis ? Math.log10(Math.max(yRange[0], 1e-15)) : yRange[0]}, ${enableLogYAxis ? Math.log10(Math.max(yRange[1], 1e-15)) : yRange[1]}]` : '// autorange: true'}
   },`;
     }
 
-    receipt += `\n  showlegend: ${legendOrientation === 'hidden' ? 'false' : (legendOrientation === 'auto' ? processedTraces.length > 1 : 'true')}${legendOrientation === 'bottom' ? `,\n  legend: { orientation: 'h', yanchor: 'bottom', y: -0.2, xanchor: 'center', x: 0.5 }` : ''}
+    receipt += `\n  showlegend: ${processedTraces.length > 8 ? 'false' : (legendOrientation === 'hidden' ? 'false' : (legendOrientation === 'auto' ? (processedTraces.length > 1 ? 'true' : 'false') : 'true'))}${legendOrientation === 'bottom' ? `,\n  legend: { orientation: 'h', yanchor: 'bottom', y: -0.2, xanchor: 'center', x: 0.5 }` : ''}
 };\n\n`;
 
     receipt += `Plotly.newPlot('myDiv', plt.data, plt.layout);`;

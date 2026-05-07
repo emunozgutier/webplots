@@ -181,7 +181,7 @@ const TopMenuBar: React.FC = () => {
     const handleLoadWeatherData = async () => {
         try {
             const baseUrl = import.meta.env.BASE_URL || '/';
-            const response = await fetch(`${baseUrl}weather_data.json`);
+            const response = await fetch(`${baseUrl}data/weather_data.json`);
             if (response.ok) {
                 const rawData = await response.json();
                 const flattenedData: any[] = [];
@@ -241,6 +241,76 @@ const TopMenuBar: React.FC = () => {
         } catch (error) {
             console.error("Error fetching weather json:", error);
             alert("Error loading weather data.");
+        }
+    };
+
+    const handleLoadGapminderData = async () => {
+        try {
+            const baseUrl = import.meta.env.BASE_URL || '/';
+            const response = await fetch(`${baseUrl}data/gapminder.json`);
+            if (response.ok) {
+                const rawData = await response.json();
+                const flattenedData: any[] = [];
+
+                for (const country of rawData) {
+                    const { geo, name, gdp, life_expectancy, population, region } = country;
+                    
+                    const yearsSet = new Set<string>();
+                    if (gdp) Object.keys(gdp).forEach(y => yearsSet.add(y));
+                    if (life_expectancy) Object.keys(life_expectancy).forEach(y => yearsSet.add(y));
+                    if (population) Object.keys(population).forEach(y => yearsSet.add(y));
+                    
+                    const years = Array.from(yearsSet).sort((a, b) => parseInt(a) - parseInt(b));
+                    
+                    const currentYear = new Date().getFullYear();
+                    for (const yearStr of years) {
+                        const yearNum = parseInt(yearStr, 10);
+                        if (yearNum > currentYear) continue;
+                        
+                        flattenedData.push({
+                            geo: geo,
+                            country: name,
+                            region: region ?? "unknown",
+                            year: yearNum,
+                            gdp: gdp?.[yearStr] ?? null,
+                            life_expectancy: life_expectancy?.[yearStr] ?? null,
+                            population: population?.[yearStr] ?? null
+                        });
+                    }
+                }
+
+                if (flattenedData.length > 0) {
+                    setPlotData(flattenedData);
+                    const cols = Object.keys(flattenedData[0]);
+                    setColumns(cols);
+                    const activeStores = workspaceRegistry.get(useWorkspaceStore.getState().activeWorkspaceId);
+                    if (activeStores) {
+                        activeStores.axisSideMenuStore.getState().setXAxis('gdp');
+                        activeStores.axisSideMenuStore.getState().addYAxisColumn('life_expectancy');
+                        activeStores.groupSideMenuStore.getState().setGroupAxis('country');
+                        activeStores.styleSideMenuStore.getState().setSize({ source: 'column', value: 'population', enabled: true, sizeMode: 'area', range: [5, 32600], mappingType: 'exponential', midPoint: [0.5, 0.66] });
+                        activeStores.styleSideMenuStore.getState().setHue({ source: 'column', value: 'region', enabled: true });
+                        activeStores.styleSideMenuStore.getState().setColorData({
+                            groupColorOverrides: {
+                                'americas': '#7feb00',
+                                'europe': '#ffe700',
+                                'africa': '#00d5e9',
+                                'asia': '#ff5872'
+                            }
+                        });
+                        activeStores.plotLayoutStore.getState().setEnableLogXAxis(true);
+                        activeStores.animationSideMenuStore.getState().setAnimationColumn('year');
+                        activeStores.animationSideMenuStore.getState().setDisplayMode('background');
+                        activeStores.filterSideMenuStore.getState().addFilter('year', 'number', { min: 1900 });
+                    }
+                }
+            } else {
+                console.error("Failed to fetch gapminder data.");
+                alert("Could not load gapminder data.");
+            }
+        } catch (error) {
+            console.error("Error fetching gapminder json:", error);
+            alert("Error loading gapminder data.");
         }
     };
 
@@ -323,6 +393,9 @@ const TopMenuBar: React.FC = () => {
                             <NavDropdown.Item onClick={handleLoadWeatherData}>
                                 Sample Weather Data
                             </NavDropdown.Item>
+                            <NavDropdown.Item onClick={handleLoadGapminderData}>
+                                World Life Expect vs GDP
+                            </NavDropdown.Item>
                             <NavDropdown.Divider />
                             <NavDropdown.Item onClick={() => {
                                 // Generate 1e6 points
@@ -345,6 +418,14 @@ const TopMenuBar: React.FC = () => {
                         </NavDropdown>
 
                         <NavDropdown title="Help" id="help-nav-dropdown">
+                            {!useWorkspaceStore((state) => state.isTutorialActive) && (
+                                <>
+                                    <NavDropdown.Item onClick={() => useWorkspaceStore.getState().setIsTutorialActive(true)}>
+                                        Talk to Inky
+                                    </NavDropdown.Item>
+                                    <NavDropdown.Divider />
+                                </>
+                            )}
                             <NavDropdown.Item onClick={() => alert('WebPlots v1.0\n\n- Load CSV to visualize data.\n- Save/Load Project to persist your work.')}>
                                 About
                             </NavDropdown.Item>

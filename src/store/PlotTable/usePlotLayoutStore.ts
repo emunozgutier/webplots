@@ -4,7 +4,8 @@ import { useContext } from 'react';
 import { WorkspaceContext } from '../Workspace/WorkspaceContext';
 
 export interface PlotLayout {
-    enableLogAxis: boolean;
+    enableLogXAxis: boolean;
+    enableLogYAxis: boolean;
     plotTitle: string;
     xAxisTitle: string;
     yAxisTitle: string;
@@ -12,12 +13,19 @@ export interface PlotLayout {
     yRange: [number, number] | null;
     histogramBarmode?: 'overlay' | 'stack' | 'group';
     legendOrientation?: 'auto' | 'right' | 'bottom' | 'hidden';
-    pointTip?: 'default' | 'xy' | 'xy_absorbed' | 'xy_trace';
+    pointTip?: 'default' | 'xy' | 'xy_absorbed' | 'xy_trace' | 'custom';
+    customHoverConfig?: {
+        showX: boolean;
+        showY: boolean;
+        showLabels: boolean;
+        selectedColumns: string[];
+    };
 }
 
 export type PlotLayoutState = {
     plotLayout: PlotLayout;
-    setEnableLogAxis: (enable: boolean) => void;
+    setEnableLogXAxis: (enable: boolean) => void;
+    setEnableLogYAxis: (enable: boolean) => void;
     setPlotTitle: (title: string) => void;
     setXAxisTitle: (title: string) => void;
     setYAxisTitle: (title: string) => void;
@@ -25,14 +33,16 @@ export type PlotLayoutState = {
     setYRange: (range: [number, number] | null) => void;
     setHistogramBarmode: (barmode: 'overlay' | 'stack' | 'group') => void;
     setLegendOrientation: (orientation: 'auto' | 'right' | 'bottom' | 'hidden') => void;
-    setPointTip: (tip: 'default' | 'xy' | 'xy_absorbed' | 'xy_trace') => void;
+    setPointTip: (tip: 'default' | 'xy' | 'xy_absorbed' | 'xy_trace' | 'custom') => void;
+    setCustomHoverConfig: (config: PlotLayout['customHoverConfig']) => void;
     loadProject: (plotLayout: PlotLayout) => void;
 }
 
 export const createPlotLayoutStore = () => createStore<PlotLayoutState>()(
     (set) => ({
         plotLayout: {
-            enableLogAxis: false,
+            enableLogXAxis: false,
+            enableLogYAxis: false,
             plotTitle: '',
             xAxisTitle: '',
             yAxisTitle: '',
@@ -40,10 +50,19 @@ export const createPlotLayoutStore = () => createStore<PlotLayoutState>()(
             xRange: null,
             histogramBarmode: 'overlay',
             legendOrientation: 'auto',
-            pointTip: 'default'
+            pointTip: 'default',
+            customHoverConfig: {
+                showX: true,
+                showY: true,
+                showLabels: true,
+                selectedColumns: []
+            }
         },
-        setEnableLogAxis: (enableLogAxis) => set((state) => ({
-            plotLayout: { ...state.plotLayout, enableLogAxis }
+        setEnableLogXAxis: (enableLogXAxis) => set((state) => ({
+            plotLayout: { ...state.plotLayout, enableLogXAxis }
+        })),
+        setEnableLogYAxis: (enableLogYAxis) => set((state) => ({
+            plotLayout: { ...state.plotLayout, enableLogYAxis }
         })),
         setPlotTitle: (plotTitle) => set((state) => ({
             plotLayout: { ...state.plotLayout, plotTitle }
@@ -68,6 +87,9 @@ export const createPlotLayoutStore = () => createStore<PlotLayoutState>()(
         })),
         setPointTip: (pointTip) => set((state) => ({
             plotLayout: { ...state.plotLayout, pointTip }
+        })),
+        setCustomHoverConfig: (customHoverConfig) => set((state) => ({
+            plotLayout: { ...state.plotLayout, customHoverConfig }
         })),
         loadProject: (plotLayout) => set({ plotLayout })
     })

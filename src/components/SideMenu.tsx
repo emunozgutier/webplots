@@ -9,10 +9,10 @@ import GroupSideMenu from './SideMenuComponents/GroupSideMenu';
 import StyleSideMenu from './SideMenuComponents/StyleSideMenu';
 import CreateColumnSideMenu from './SideMenuComponents/CreateColumnSideMenu';
 import SubplotSideMenu from './SideMenuComponents/SubplotSideMenu';
+import AnimationSideMenu from './SideMenuComponents/AnimationSideMenu';
+import AnnotationSideMenu from './SideMenuComponents/AnnotationSideMenu';
 
-
-
-type SideMenuTab = 'create' | 'axis' | 'filter' | 'group' | 'color' | 'ink' | 'subplots';
+type SideMenuTab = 'create' | 'axis' | 'filter' | 'group' | 'color' | 'ink' | 'subplots' | 'animation' | 'annotation';
 
 const SideMenu: React.FC = () => {
     const { columns: storeColumns } = useCsvDataStore();
@@ -80,6 +80,10 @@ const SideMenu: React.FC = () => {
                 return <InkRationSideMenu />;
             case 'subplots':
                 return <SubplotSideMenu />;
+            case 'animation':
+                return <AnimationSideMenu />;
+            case 'annotation':
+                return <AnnotationSideMenu />;
             default:
                 return null;
         }
@@ -138,6 +142,8 @@ const SideMenu: React.FC = () => {
                         {activeTab === 'color' && 'Color & Style'}
                         {activeTab === 'ink' && 'Ink-Data Ratio'}
                         {activeTab === 'subplots' && 'Subplots Settings'}
+                        {activeTab === 'animation' && 'Animation'}
+                        {activeTab === 'annotation' && 'Annotations'}
                     </span>
 
                 </div>
@@ -167,6 +173,8 @@ const SideMenu: React.FC = () => {
                 {renderTabButton('subplots', 'Subplots', 'bi-grid-1x2')}
                 {renderTabButton('color', 'Style', 'bi-palette')}
                 {plotType !== 'histogram' && renderTabButton('ink', 'Ink Ratio', 'bi-droplet')}
+                {renderTabButton('animation', 'Animation', 'bi-play-circle')}
+                {renderTabButton('annotation', 'Annotate', 'bi-chat-square-text')}
             </div>
 
             {/* Resize Handle - Only visible when open */}

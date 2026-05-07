@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useFilterSideMenuStore, type Filter } from '../../../store/SideMenu/useFilterSideMenuStore';
 import { useWorkspaceLocalStore } from '../../../store/Workspace/useWorkspaceLocalStore';
 import FilterElementSettings from './FilterElementSettings';
+import CloseButton from './CloseButton';
 
 interface FilterElementProps {
     filter: Filter;
@@ -18,32 +19,61 @@ const FilterElement: React.FC<FilterElementProps> = ({ filter, stats, getMinMax,
     const { removeFilter, updateFilter } = useFilterSideMenuStore();
     const { setPopupContent } = useWorkspaceLocalStore();
     const [isShrunk, setIsShrunk] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false);
-    const deleteTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+
+    const configMin = (filter.config as any).min;
+    const configMax = (filter.config as any).max;
+    
+    const [localMin, setLocalMin] = useState<string | number>(configMin ?? '');
+    const [localMax, setLocalMax] = useState<string | number>(configMax ?? '');
+    const [localExact, setLocalExact] = useState<string | number>('');
+    const [isExactMode, setIsExactMode] = useState<boolean>(
+        configMin !== undefined && configMax !== undefined && configMin === configMax
+    );
 
     React.useEffect(() => {
-        return () => {
-            if (deleteTimerRef.current) {
-                clearTimeout(deleteTimerRef.current);
-            }
-        };
-    }, []);
-
-    const startDelete = (e: React.MouseEvent | React.TouchEvent) => {
-        e.stopPropagation();
-        setIsDeleting(true);
-        deleteTimerRef.current = setTimeout(() => {
-            removeFilter(filter.id);
-        }, 2000);
-    };
-
-    const cancelDelete = (e: React.MouseEvent | React.TouchEvent) => {
-        e.stopPropagation();
-        if (deleteTimerRef.current) {
-            clearTimeout(deleteTimerRef.current);
-            deleteTimerRef.current = null;
+        setLocalMin(configMin ?? '');
+        setLocalMax(configMax ?? '');
+        
+        if (configMin !== undefined && configMax !== undefined && configMin === configMax) {
+            setLocalExact(configMin);
+        } else {
+            setLocalExact('');
         }
-        setIsDeleting(false);
+    }, [configMin, configMax]);
+
+    React.useEffect(() => {
+        if (isExactMode) return;
+        const timer = setTimeout(() => {
+            if (localMin !== (configMin ?? '')) {
+                updateFilter(filter.id, { min: localMin === '' ? undefined : Number(localMin) });
+            }
+        }, 400);
+        return () => clearTimeout(timer);
+    }, [localMin, configMin, isExactMode, filter.id, updateFilter]);
+
+    React.useEffect(() => {
+        if (isExactMode) return;
+        const timer = setTimeout(() => {
+            if (localMax !== (configMax ?? '')) {
+                updateFilter(filter.id, { max: localMax === '' ? undefined : Number(localMax) });
+            }
+        }, 400);
+        return () => clearTimeout(timer);
+    }, [localMax, configMax, isExactMode, filter.id, updateFilter]);
+
+    React.useEffect(() => {
+        if (!isExactMode) return;
+        const timer = setTimeout(() => {
+            if (localExact !== (configMin ?? '')) {
+                const val = localExact === '' ? undefined : Number(localExact);
+                updateFilter(filter.id, { min: val, max: val });
+            }
+        }, 400);
+        return () => clearTimeout(timer);
+    }, [localExact, configMin, isExactMode, filter.id, updateFilter]);
+
+    const handleExactChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setLocalExact(e.target.value);
     };
 
     const renderHeader = () => (
@@ -79,27 +109,10 @@ const FilterElement: React.FC<FilterElementProps> = ({ filter, stats, getMinMax,
                             <i className="bi bi-gear-fill" style={{ fontSize: '0.8rem' }}></i>
                         </button>
                     )}
-                    <button
-                        className="btn btn-sm btn-link text-danger p-0 ms-1 position-relative overflow-hidden d-flex align-items-center justify-content-center"
-                        style={{ textDecoration: 'none', fontSize: '1.2rem', lineHeight: '1', width: '22px', height: '22px', borderRadius: '4px' }}
-                        onMouseDown={startDelete}
-                        onMouseUp={cancelDelete}
-                        onMouseLeave={cancelDelete}
-                        onTouchStart={startDelete}
-                        onTouchEnd={cancelDelete}
-                        onClick={(e) => e.stopPropagation()} // Prevent any default click actions
-                        title="Hold 2s to Remove Filter"
-                    >
-                        <div 
-                            className="bg-danger position-absolute top-0 start-0 h-100" 
-                            style={{ 
-                                width: isDeleting ? '100%' : '0%', 
-                                transition: isDeleting ? 'width 2s linear' : 'width 0.2s ease-out',
-                                opacity: 0.2,
-                            }} 
-                        />
-                        <span className="position-relative" style={{ zIndex: 1, marginTop: '-2px' }}>&times;</span>
-                    </button>
+                    <CloseButton 
+                        onClose={() => removeFilter(filter.id)} 
+                        title="Hold 2s to Remove Filter" 
+                    />
                 </div>
             </div>
             <div className="mt-n1 overflow-hidden">
@@ -119,34 +132,70 @@ const FilterElement: React.FC<FilterElementProps> = ({ filter, stats, getMinMax,
     );
 
     const renderNumberControls = () => {
-        const { min, max } = filter.config as any;
         const bounds = getMinMax(filter.column);
 
         return (
             <div className="card-body p-2">
+                <div className="d-flex justify-content-center mb-2">
+                    <div className="btn-group btn-group-sm w-100" role="group">
+                        <button 
+                            type="button" 
+                            className={`btn ${!isExactMode ? 'btn-primary' : 'btn-outline-primary'}`}
+                            onClick={() => setIsExactMode(false)}
+                            style={{ fontSize: '0.7rem' }}
+                        >
+                            Range
+                        </button>
+                        <button 
+                            type="button" 
+                            className={`btn ${isExactMode ? 'btn-primary' : 'btn-outline-primary'}`}
+                            onClick={() => setIsExactMode(true)}
+                            style={{ fontSize: '0.7rem' }}
+                        >
+                            Exact
+                        </button>
+                    </div>
+                </div>
+
                 <div className="d-flex flex-column gap-2">
-                    <div className="d-flex align-items-center">
-                        <label className="form-label mb-0 text-muted me-2" style={{ fontSize: '0.75rem', minWidth: '35px' }}>Min</label>
-                        <input
-                            type="number"
-                            className="form-control form-control-sm"
-                            style={{ fontSize: '0.8rem', padding: '0.2rem 0.4rem' }}
-                            value={min ?? ''}
-                            placeholder={String(bounds.min)}
-                            onChange={(e) => updateFilter(filter.id, { min: e.target.value === '' ? undefined : Number(e.target.value) })}
-                        />
-                    </div>
-                    <div className="d-flex align-items-center">
-                        <label className="form-label mb-0 text-muted me-2" style={{ fontSize: '0.75rem', minWidth: '35px' }}>Max</label>
-                        <input
-                            type="number"
-                            className="form-control form-control-sm"
-                            style={{ fontSize: '0.8rem', padding: '0.2rem 0.4rem' }}
-                            value={max ?? ''}
-                            placeholder={String(bounds.max)}
-                            onChange={(e) => updateFilter(filter.id, { max: e.target.value === '' ? undefined : Number(e.target.value) })}
-                        />
-                    </div>
+                    {isExactMode ? (
+                        <div className="d-flex align-items-center">
+                            <label className="form-label mb-0 text-muted me-2" style={{ fontSize: '0.75rem', minWidth: '35px' }}>Value</label>
+                            <input
+                                type="number"
+                                className="form-control form-control-sm"
+                                style={{ fontSize: '0.8rem', padding: '0.2rem 0.4rem' }}
+                                value={localExact}
+                                placeholder="Exact Value"
+                                onChange={handleExactChange}
+                            />
+                        </div>
+                    ) : (
+                        <>
+                            <div className="d-flex align-items-center">
+                                <label className="form-label mb-0 text-muted me-2" style={{ fontSize: '0.75rem', minWidth: '35px' }}>Min</label>
+                                <input
+                                    type="number"
+                                    className="form-control form-control-sm"
+                                    style={{ fontSize: '0.8rem', padding: '0.2rem 0.4rem' }}
+                                    value={localMin}
+                                    placeholder={String(bounds.min)}
+                                    onChange={(e) => setLocalMin(e.target.value)}
+                                />
+                            </div>
+                            <div className="d-flex align-items-center">
+                                <label className="form-label mb-0 text-muted me-2" style={{ fontSize: '0.75rem', minWidth: '35px' }}>Max</label>
+                                <input
+                                    type="number"
+                                    className="form-control form-control-sm"
+                                    style={{ fontSize: '0.8rem', padding: '0.2rem 0.4rem' }}
+                                    value={localMax}
+                                    placeholder={String(bounds.max)}
+                                    onChange={(e) => setLocalMax(e.target.value)}
+                                />
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
         );

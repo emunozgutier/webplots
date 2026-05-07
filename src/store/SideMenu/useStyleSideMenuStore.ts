@@ -14,6 +14,7 @@ export interface AestheticMapping {
     midPoint?: [number, number]; // [cx, cy] for 3-point power curve (0 to 1)
     offset?: number; // Hue shift offset
     enabled?: boolean;
+    sizeMode?: 'diameter' | 'area';
 }
 
 export interface StyleSideMenuData {
@@ -45,7 +46,7 @@ export const createStyleSideMenuStore = () => createStore<StyleSideMenuState>()(
             saturation: { source: 'manual', value: 80, enabled: false },
             lightness: { source: 'manual', value: 50, enabled: false },
             shape: { source: 'manual', value: 'circle', enabled: false },
-            size: { source: 'manual', value: 8, enabled: false },
+            size: { source: 'manual', value: 8, enabled: false, sizeMode: 'diameter' },
             groupColorOverrides: {},
             groupSymbolOverrides: {}
         },

@@ -172,13 +172,14 @@ export const Step_3_ink_ratio_filter = (
         pointRadius: number;
         useCustomRadius: boolean;
         customRadius: number;
-        enableLogAxis: boolean;
+        enableLogXAxis: boolean;
+        enableLogYAxis: boolean;
         globalBounds?: { xMin: number, xMax: number, yMin: number, yMax: number };
     },
     filteredData?: DataRow[],
     activeStyleColumns?: string[]
 ): TraceData[] => {
-    const { inkRatio, absorbedPoint, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius, enableLogAxis, globalBounds } = config;
+    const { inkRatio, absorbedPoint, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius, enableLogXAxis, enableLogYAxis, globalBounds } = config;
 
     return traces.map(trace => {
         const { xData, yData } = trace;
@@ -246,8 +247,8 @@ export const Step_3_ink_ratio_filter = (
         const safeW = chartWidth || 1;
         const safeH = chartHeight || 1;
 
-        const xType = enableLogAxis ? 'log' : 'linear';
-        const yType = enableLogAxis ? 'log' : 'linear';
+        const xType = enableLogXAxis ? 'log' : 'linear';
+        const yType = enableLogYAxis ? 'log' : 'linear';
 
         const xSub = xType === 'log' ? Math.log10(xMin) : xMin;
         const ySub = yType === 'log' ? Math.log10(yMin) : yMin;
@@ -448,7 +449,8 @@ export const runDataPipeline = (
         pointRadius: number;
         useCustomRadius: boolean;
         customRadius: number;
-        enableLogAxis: boolean;
+        enableLogXAxis: boolean;
+        enableLogYAxis: boolean;
     },
     colorData?: any
 ) => {

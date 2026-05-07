@@ -14,6 +14,7 @@ interface WorkspaceState {
     activeWorkspaceId: string;
     isTopMenuBarOpen: boolean;
     isDebugMode: boolean;
+    isTutorialActive: boolean;
 
     // Actions
     addWorkspace: (workspace: Workspace) => void;
@@ -23,6 +24,7 @@ interface WorkspaceState {
     toggleTopMenuBar: () => void;
     toggleDebugMode: () => void;
     setTopMenuBarOpen: (isOpen: boolean) => void;
+    setIsTutorialActive: (isActive: boolean) => void;
 }
 
 export const useWorkspaceStore = create<WorkspaceState>()(
@@ -30,7 +32,8 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         workspaces: [{ id: 'default', name: 'Workspace 1' }],
         activeWorkspaceId: 'default',
         isTopMenuBarOpen: true,
-        isDebugMode: false,
+        isDebugMode: typeof window !== 'undefined' && (window.location.pathname.endsWith('/beta') || window.location.hash.includes('/beta') || window.location.search.includes('beta')),
+        isTutorialActive: true,
 
         addWorkspace: (workspace) => set((state) => ({
             workspaces: [...state.workspaces, workspace],
@@ -62,6 +65,8 @@ export const useWorkspaceStore = create<WorkspaceState>()(
             localStorage.removeItem(`webplots-workspace-${id}-workspaceLocalStore`);
             localStorage.removeItem(`webplots-workspace-${id}-subplotSideMenuStore`);
             localStorage.removeItem(`webplots-workspace-${id}-tableStore`);
+            localStorage.removeItem(`webplots-workspace-${id}-animationSideMenuStore`);
+            localStorage.removeItem(`webplots-workspace-${id}-annotationSideMenuStore`);
 
             return {
                 workspaces: remainingWorkspaces,
@@ -73,7 +78,25 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         })),
         setActiveWorkspaceId: (id) => set({ activeWorkspaceId: id }),
         toggleTopMenuBar: () => set((state) => ({ isTopMenuBarOpen: !state.isTopMenuBarOpen })),
-        toggleDebugMode: () => set((state) => ({ isDebugMode: !state.isDebugMode })),
+        toggleDebugMode: () => set((state) => {
+            const newDebugMode = !state.isDebugMode;
+            if (typeof window !== 'undefined') {
+                const url = new URL(window.location.href);
+                if (newDebugMode) {
+                    if (!url.pathname.endsWith('/beta')) {
+                        const newPath = url.pathname === '/' ? '/beta' : url.pathname.replace(/\/$/, '') + '/beta';
+                        window.history.pushState({}, '', newPath + url.search + url.hash);
+                    }
+                } else {
+                    if (url.pathname.endsWith('/beta')) {
+                        const newPath = url.pathname.replace(/\/beta$/, '') || '/';
+                        window.history.pushState({}, '', newPath + url.search + url.hash);
+                    }
+                }
+            }
+            return { isDebugMode: newDebugMode };
+        }),
         setTopMenuBarOpen: (isOpen) => set({ isTopMenuBarOpen: isOpen }),
+        setIsTutorialActive: (isActive) => set({ isTutorialActive: isActive }),
     })
 );
