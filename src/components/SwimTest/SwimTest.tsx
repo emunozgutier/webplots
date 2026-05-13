@@ -6,6 +6,9 @@ const SwimTest: React.FC = () => {
   const [target, setTarget] = useState({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
   const [position, setPosition] = useState({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
   const [rotation, setRotation] = useState(0);
+  
+  const [isMouseDown, setIsMouseDown] = useState(false);
+  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
 
   const requestRef = useRef<number>(0);
   const posRef = useRef(position);
@@ -25,7 +28,9 @@ const SwimTest: React.FC = () => {
       const dy = currentTarget.y - currentPos.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
 
-      if (distance > 2) {
+      const margin = 100;
+
+      if (distance > margin) {
         // Speed
         const speed = 4;
         const vx = (dx / distance) * speed;
@@ -63,12 +68,66 @@ const SwimTest: React.FC = () => {
     return () => cancelAnimationFrame(requestRef.current);
   }, []);
 
-  const handleClick = (e: React.MouseEvent) => {
+  const handlePointerDown = (e: React.PointerEvent) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setIsMouseDown(true);
+    setCursorPos({ x: e.clientX, y: e.clientY });
     setTarget({ x: e.clientX, y: e.clientY });
   };
 
+  const handlePointerMove = (e: React.PointerEvent) => {
+    setCursorPos({ x: e.clientX, y: e.clientY });
+    if (isMouseDown) {
+      setTarget({ x: e.clientX, y: e.clientY });
+    }
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    e.currentTarget.releasePointerCapture(e.pointerId);
+    setIsMouseDown(false);
+  };
+
+  // Calculate right tentacle path based on cursor position
+  const armLength = 150;
+  const distToCursor = Math.sqrt(Math.pow(cursorPos.x - position.x, 2) + Math.pow(cursorPos.y - position.y, 2));
+  const isReaching = isMouseDown && distToCursor <= armLength;
+
+  let rightTentaclePath = "M 75,65 Q 100,80 85,110";
+  let rightTentacleClubRot = 0;
+  let rightTentacleClubX = 85;
+  let rightTentacleClubY = 115;
+
+  if (isReaching) {
+    const dx = cursorPos.x - position.x;
+    const dy = cursorPos.y - position.y;
+    // Invert the squid's rotation to map global vector to local SVG coordinates
+    const rad = -(rotation * Math.PI) / 180;
+    const lx = dx * Math.cos(rad) - dy * Math.sin(rad) + 50; // 50 is local center X
+    const ly = dx * Math.sin(rad) + dy * Math.cos(rad) + 60; // 60 is local center Y
+    
+    rightTentacleClubX = lx;
+    const pathEndY = ly - 5; // End path slightly before the club center
+    rightTentacleClubY = ly;
+
+    // Control point curves outwards to wrap around the body
+    const mx = (75 + lx) / 2 + 50; 
+    const my = (65 + pathEndY) / 2;
+
+    rightTentaclePath = `M 75,65 Q ${mx},${my} ${lx},${pathEndY}`;
+    
+    // Rotate the club ellipse to align with the angle of the tentacle tip
+    const clubAngle = Math.atan2(pathEndY - my, lx - mx) * (180 / Math.PI) - 90;
+    rightTentacleClubRot = clubAngle;
+  }
+
   return (
-    <div className="swimtest-container" onClick={handleClick}>
+    <div 
+      className="swimtest-container" 
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
+    >
       <div className="swimtest-instruction">Click anywhere to make Inky swim there!</div>
       
       {/* Target Marker */}
@@ -104,9 +163,16 @@ const SwimTest: React.FC = () => {
             </g>
             
             {/* Right Feeding Tentacle (Club) */}
-            <g className="inky-tentacle">
-              <path d="M 75,65 Q 100,80 85,110" fill="none" stroke="#9C27B0" strokeWidth="5" strokeLinecap="round" />
-              <ellipse cx="85" cy="115" rx="5" ry="9" fill="#9C27B0" />
+            <g className={isReaching ? "" : "inky-tentacle"}>
+              <path d={rightTentaclePath} fill="none" stroke="#9C27B0" strokeWidth="5" strokeLinecap="round" />
+              <ellipse 
+                cx={rightTentacleClubX} 
+                cy={rightTentacleClubY} 
+                rx="5" 
+                ry="9" 
+                fill="#9C27B0" 
+                transform={isReaching ? `rotate(${rightTentacleClubRot}, ${rightTentacleClubX}, ${rightTentacleClubY})` : undefined} 
+              />
             </g>
 
             {/* Front tentacles */}
