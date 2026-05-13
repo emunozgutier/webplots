@@ -43,8 +43,8 @@ const InkyHelper: React.FC<InkyHelperProps> = ({
       onClick={onClick}
       title={title}
     >
-      {speechProps && <SpeechBubble {...speechProps} />}
       <InkyBody {...bodyProps} />
+      {speechProps && <SpeechBubble {...speechProps} />}
     </div>
   );
 };
