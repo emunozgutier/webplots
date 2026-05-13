@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import InkyBody from '../animation/components/InkyBody';
+import InkyHelper from '../InkyHelper';
 import './SwimTest.css';
 
 const SwimTest: React.FC = () => {
@@ -206,23 +206,29 @@ const SwimTest: React.FC = () => {
           transform: `translate(${position.x - 50}px, ${position.y - 60}px) rotate(${rotation}deg)` 
         }}
       >
-        <InkyBody 
-          leftTentacle={{
-            path: leftTentaclePath,
-            clubX: leftTentacleClubX,
-            clubY: leftTentacleClubY,
-            clubRot: leftTentacleClubRot,
-            isReaching: isReachingLeft
+        <InkyHelper 
+          speechProps={{
+            text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+            type: "hover"
           }}
-          rightTentacle={{
-            path: rightTentaclePath,
-            clubX: rightTentacleClubX,
-            clubY: rightTentacleClubY,
-            clubRot: rightTentacleClubRot,
-            isReaching: isReachingRight
+          bodyProps={{
+            leftTentacle: {
+              path: leftTentaclePath,
+              clubX: leftTentacleClubX,
+              clubY: leftTentacleClubY,
+              clubRot: leftTentacleClubRot,
+              isReaching: isReachingLeft
+            },
+            rightTentacle: {
+              path: rightTentaclePath,
+              clubX: rightTentacleClubX,
+              clubY: rightTentacleClubY,
+              clubRot: rightTentacleClubRot,
+              isReaching: isReachingRight
+            },
+            tentacleClass: "inky-tentacle",
+            eyeClass: "inky-eye"
           }}
-          tentacleClass="inky-tentacle"
-          eyeClass="inky-eye"
         />
       </div>
     </div>

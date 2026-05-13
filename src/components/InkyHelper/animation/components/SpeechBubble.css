@@ -35,8 +35,8 @@
   width: 0;
 }
 
-/* Trigger hover state if the parent has .inky-container and is hovered */
-.inky-container:hover .inky-speech-bubble-hover {
+/* Trigger hover state if the parent has .inky-wrapper and is hovered */
+.inky-wrapper:hover .inky-speech-bubble-hover {
   opacity: 1;
   transform: translateY(0) scale(1);
 }
