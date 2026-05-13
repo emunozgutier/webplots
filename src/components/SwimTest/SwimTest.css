@@ -1,0 +1,75 @@
+.swimtest-container {
+  width: 100vw;
+  height: 100vh;
+  background-color: #e0f7fa;
+  position: relative;
+  overflow: hidden;
+  cursor: crosshair;
+}
+
+.swimtest-instruction {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-family: sans-serif;
+  font-weight: bold;
+  color: #006064;
+  pointer-events: none;
+  z-index: 10;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.swimtest-inky {
+  position: absolute;
+  width: 100px;
+  height: 120px;
+  pointer-events: none;
+  transform-origin: center center;
+  transition: transform 0.05s linear;
+}
+
+.swimtest-target {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ff4081;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+}
+
+/* Animations for tentacles from InkyHelper.css */
+.inky-tentacle {
+  transform-origin: top center;
+  animation: wiggle 2s ease-in-out infinite alternate;
+}
+
+.inky-tentacle:nth-child(even) {
+  animation-delay: 0.5s;
+}
+
+.inky-eye {
+  animation: blink 4s infinite;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+@keyframes wiggle {
+  0% { transform: rotate(-10deg); }
+  100% { transform: rotate(10deg); }
+}
+
+@keyframes blink {
+  0%, 96%, 98% { transform: scaleY(1); }
+  97%, 100% { transform: scaleY(0.1); }
+}

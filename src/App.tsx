@@ -7,10 +7,15 @@ import { WorkspaceProvider } from './store/Workspace/WorkspaceProvider';
 import { useWorkspaceStore } from './store/Workspace/useWorkspaceStore';
 import PopupMenu from './components/PopupMenu';
 import TutorialGDP from './components/InkyHelper/tutorialGDP/TutorialGDP';
+import SwimTest from './components/SwimTest/SwimTest';
 import './App.css';
 
 function App() {
   const { isTopMenuBarOpen, workspaces, activeWorkspaceId } = useWorkspaceStore();
+
+  if (window.location.pathname.includes('/beta/swimtest')) {
+    return <SwimTest />;
+  }
 
   return (
     <div className="container-fluid vh-100 d-flex flex-column p-0 position-relative">

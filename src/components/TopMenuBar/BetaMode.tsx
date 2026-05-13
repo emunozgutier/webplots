@@ -38,11 +38,23 @@ const BetaMode: React.FC<BetaModeProps> = ({ show, onHide }) => {
                     <li className="mb-2">
                         <strong>Saturation Control:</strong> A highly complex property for adjusting raw HSL saturation limits. Modifying saturation curves manually requires a proper understanding of data-to-color-space mapping.
                     </li>
-                    <li>
+                    <li className="mb-2">
                         <strong>Trajectory Calculator Coordinates:</strong> Real-time debugging table detailing the Bezier mapping anchors and their actual X/Y boundary evaluations within the Style Element popup.
                     </li>
-                    <li>
+                    <li className="mb-2">
                         <strong>Glass Absorption Mode:</strong> A transparent rendering effect where overlapped ink ratio dots accumulate localized opacity relative to maximum point density.
+                    </li>
+                    <li className="mb-2">
+                        <strong>Inky Swim Test:</strong> A debug environment for testing the swimming and rotation animations of the Inky helper.
+                        <div className="mt-1">
+                            <Button 
+                                variant="outline-primary" 
+                                size="sm" 
+                                onClick={() => window.open(`${import.meta.env.BASE_URL || '/'}beta/swimtest/`, '_blank')}
+                            >
+                                Launch Swim Test <i className="bi bi-box-arrow-up-right ms-1"></i>
+                            </Button>
+                        </div>
                     </li>
                 </ul>
             </Modal.Body>
