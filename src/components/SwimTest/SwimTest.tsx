@@ -6,6 +6,7 @@ const SwimTest: React.FC = () => {
   const [target, setTarget] = useState({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
   const [position, setPosition] = useState({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
   const [rotation, setRotation] = useState(0);
+  const [tick, setTick] = useState(0);
   
   const [isMouseDown, setIsMouseDown] = useState(false);
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
@@ -21,6 +22,7 @@ const SwimTest: React.FC = () => {
 
   useEffect(() => {
     const updatePosition = () => {
+      setTick(Date.now());
       const currentPos = posRef.current;
       const currentTarget = targetRef.current;
 
@@ -87,37 +89,82 @@ const SwimTest: React.FC = () => {
     setIsMouseDown(false);
   };
 
-  // Calculate right tentacle path based on cursor position
+  // Calculate tentacle path based on cursor position
   const armLength = 150;
   const distToCursor = Math.sqrt(Math.pow(cursorPos.x - position.x, 2) + Math.pow(cursorPos.y - position.y, 2));
   const isReaching = isMouseDown && distToCursor <= armLength;
+
+  const dxTarget = target.x - position.x;
+  const dyTarget = target.y - position.y;
+  const distToTarget = Math.sqrt(dxTarget * dxTarget + dyTarget * dyTarget);
+  const margin = 100;
+  // If we arrived at the margin and we aren't dragging it, we point at the target
+  const isPointing = !isReaching && distToTarget <= margin + 5; 
+
+  let leftTentaclePath = "M 25,65 Q 0,80 15,110";
+  let leftTentacleClubRot = 0;
+  let leftTentacleClubX = 15;
+  let leftTentacleClubY = 115;
+  let isReachingLeft = false;
 
   let rightTentaclePath = "M 75,65 Q 100,80 85,110";
   let rightTentacleClubRot = 0;
   let rightTentacleClubX = 85;
   let rightTentacleClubY = 115;
+  let isReachingRight = false;
 
-  if (isReaching) {
-    const dx = cursorPos.x - position.x;
-    const dy = cursorPos.y - position.y;
+  const isTentacleActive = isReaching || isPointing;
+
+  if (isTentacleActive) {
+    let gx = 0;
+    let gy = 0;
+
+    if (isReaching) {
+      gx = cursorPos.x;
+      gy = cursorPos.y;
+    } else if (isPointing) {
+      const baseAngle = Math.atan2(dyTarget, dxTarget);
+      // Oscillate the distance (poking motion) instead of the angle
+      const wiggleDistance = Math.sin(tick / 150) * 15; // +/- 15 pixels
+      const pointLength = distToTarget - 25 + wiggleDistance; 
+      
+      gx = position.x + Math.cos(baseAngle) * pointLength;
+      gy = position.y + Math.sin(baseAngle) * pointLength;
+    }
+
+    const dxTip = gx - position.x;
+    const dyTip = gy - position.y;
+
     // Invert the squid's rotation to map global vector to local SVG coordinates
     const rad = -(rotation * Math.PI) / 180;
-    const lx = dx * Math.cos(rad) - dy * Math.sin(rad) + 50; // 50 is local center X
-    const ly = dx * Math.sin(rad) + dy * Math.cos(rad) + 60; // 60 is local center Y
+    const lx = dxTip * Math.cos(rad) - dyTip * Math.sin(rad) + 50; // 50 is local center X
+    const ly = dxTip * Math.sin(rad) + dyTip * Math.cos(rad) + 60; // 60 is local center Y
     
-    rightTentacleClubX = lx;
-    const pathEndY = ly - 5; // End path slightly before the club center
-    rightTentacleClubY = ly;
+    if (lx < 50) {
+      isReachingLeft = true;
+      leftTentacleClubX = lx;
+      const pathEndY = ly - 5;
+      leftTentacleClubY = ly;
 
-    // Control point curves outwards to wrap around the body
-    const mx = (75 + lx) / 2 + 50; 
-    const my = (65 + pathEndY) / 2;
+      // Control point curves outwards to wrap around the body
+      const mx = (25 + lx) / 2 - 50; 
+      const my = (65 + pathEndY) / 2;
 
-    rightTentaclePath = `M 75,65 Q ${mx},${my} ${lx},${pathEndY}`;
-    
-    // Rotate the club ellipse to align with the angle of the tentacle tip
-    const clubAngle = Math.atan2(pathEndY - my, lx - mx) * (180 / Math.PI) - 90;
-    rightTentacleClubRot = clubAngle;
+      leftTentaclePath = `M 25,65 Q ${mx},${my} ${lx},${pathEndY}`;
+      leftTentacleClubRot = Math.atan2(pathEndY - my, lx - mx) * (180 / Math.PI) - 90;
+    } else {
+      isReachingRight = true;
+      rightTentacleClubX = lx;
+      const pathEndY = ly - 5; // End path slightly before the club center
+      rightTentacleClubY = ly;
+
+      // Control point curves outwards to wrap around the body
+      const mx = (75 + lx) / 2 + 50; 
+      const my = (65 + pathEndY) / 2;
+
+      rightTentaclePath = `M 75,65 Q ${mx},${my} ${lx},${pathEndY}`;
+      rightTentacleClubRot = Math.atan2(pathEndY - my, lx - mx) * (180 / Math.PI) - 90;
+    }
   }
 
   return (
@@ -157,13 +204,20 @@ const SwimTest: React.FC = () => {
             <path d="M 50,-15 Q 35,5 25,40 C 15,60 15,75 25,80 C 35,85 65,85 75,80 C 85,75 85,60 75,40 Q 65,5 50,-15 Z" fill="#9C27B0" />
 
             {/* Left Feeding Tentacle (Club) */}
-            <g className="inky-tentacle">
-              <path d="M 25,65 Q 0,80 15,110" fill="none" stroke="#9C27B0" strokeWidth="5" strokeLinecap="round" />
-              <ellipse cx="15" cy="115" rx="5" ry="9" fill="#9C27B0" />
+            <g className={isReachingLeft ? "" : "inky-tentacle"}>
+              <path d={leftTentaclePath} fill="none" stroke="#9C27B0" strokeWidth="5" strokeLinecap="round" />
+              <ellipse 
+                cx={leftTentacleClubX} 
+                cy={leftTentacleClubY} 
+                rx="5" 
+                ry="9" 
+                fill="#9C27B0" 
+                transform={isReachingLeft ? `rotate(${leftTentacleClubRot}, ${leftTentacleClubX}, ${leftTentacleClubY})` : undefined} 
+              />
             </g>
             
             {/* Right Feeding Tentacle (Club) */}
-            <g className={isReaching ? "" : "inky-tentacle"}>
+            <g className={isReachingRight ? "" : "inky-tentacle"}>
               <path d={rightTentaclePath} fill="none" stroke="#9C27B0" strokeWidth="5" strokeLinecap="round" />
               <ellipse 
                 cx={rightTentacleClubX} 
@@ -171,7 +225,7 @@ const SwimTest: React.FC = () => {
                 rx="5" 
                 ry="9" 
                 fill="#9C27B0" 
-                transform={isReaching ? `rotate(${rightTentacleClubRot}, ${rightTentacleClubX}, ${rightTentacleClubY})` : undefined} 
+                transform={isReachingRight ? `rotate(${rightTentacleClubRot}, ${rightTentacleClubX}, ${rightTentacleClubY})` : undefined} 
               />
             </g>
 
