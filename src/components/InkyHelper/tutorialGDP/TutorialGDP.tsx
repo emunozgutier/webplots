@@ -3,11 +3,7 @@ import './TutorialGDP.css';
 import { useWorkspaceStore, workspaceRegistry } from '../../../store/Workspace/useWorkspaceStore';
 import { useCsvDataStore } from '../../../store/useCsvDataStore';
 import Eyes from '../animation/components/eyes';
-
-interface TutorialStep {
-  text: string;
-  action?: (stores: any) => void;
-}
+import { gdpTutorialSteps } from './tutorialScript';
 
 const TutorialGDP: React.FC = () => {
   const { isDebugMode, activeWorkspaceId, isTutorialActive, setIsTutorialActive } = useWorkspaceStore();
@@ -53,55 +49,23 @@ const TutorialGDP: React.FC = () => {
     e.currentTarget.releasePointerCapture(e.pointerId);
   };
 
-  const steps: TutorialStep[] = [
-    {
-      text: "Welcome to the GDP plotting tutorial! First, please load your dataset using the File or Test menu. (The Next button will enable once data is loaded).",
-    },
-    {
-      text: "First, we set the axes. X-axis is 'gdpPercap' (with Log scale!) and Y-axis is 'lifeExp'.",
-      action: (stores) => {
-        stores.axisSideMenuStore.getState().setXAxis('gdpPercap');
-        stores.axisSideMenuStore.getState().addYAxisColumn('lifeExp');
-        stores.plotLayoutStore.getState().setEnableLogXAxis(true);
-      }
-    },
-    {
-      text: "Let's color the bubbles by 'continent'. Notice how the Style side menu updates!",
-      action: (stores) => {
-        stores.styleSideMenuStore.getState().setHue({ source: 'column', value: 'continent', enabled: true });
-      }
-    },
-    {
-      text: "We map the size of the bubbles to the 'pop' (Population) column.",
-      action: (stores) => {
-        stores.styleSideMenuStore.getState().setSize({ source: 'column', value: 'pop', enabled: true, sizeMode: 'area' });
-      }
-    },
-    {
-      text: "Now, let's animate over time by setting the animation column to 'year'.",
-      action: (stores) => {
-        stores.animationSideMenuStore.getState().setAnimationColumn('year');
-      }
-    },
-    {
-      text: "The Plot Area above shows the chart. Below is the Data Table & Stats, which dynamically update with the animation!",
-    },
-    {
-      text: "You're all set! Press Play on the Animation menu on the left and enjoy exploring the data!",
-    }
-  ];
-
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
   const handleNext = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (currentStepIndex === 0 && !hasData) return; // Prevent next if no data
+    
+    const currentStep = gdpTutorialSteps[currentStepIndex];
+    if (currentStep.requireDataLoaded && !hasData) return;
+    if (currentStep.requirementCheck) {
+      const stores = workspaceRegistry.get(activeWorkspaceId);
+      if (stores && !currentStep.requirementCheck(stores)) return;
+    }
 
-    if (currentStepIndex < steps.length - 1) {
+    if (currentStepIndex < gdpTutorialSteps.length - 1) {
       const nextIndex = currentStepIndex + 1;
       setCurrentStepIndex(nextIndex);
       
-      const nextStep = steps[nextIndex];
+      const nextStep = gdpTutorialSteps[nextIndex];
       if (nextStep.action) {
         const stores = workspaceRegistry.get(activeWorkspaceId);
         if (stores) {
@@ -134,17 +98,30 @@ const TutorialGDP: React.FC = () => {
     >
       <div className="tutorial-gdp-bubble" onPointerDown={(e) => e.stopPropagation()}>
         <button className="tutorial-gdp-close" onClick={handleSkip} title="Close tutorial">×</button>
-        <div>{steps[currentStepIndex].text}</div>
+        <div>{gdpTutorialSteps[currentStepIndex].text}</div>
         <div className="tutorial-gdp-buttons">
           <button className="tutorial-gdp-btn tutorial-gdp-btn-skip" onClick={handleSkip}>Skip</button>
-          {!(currentStepIndex === 0 && !hasData) && (
-            <button 
-              className="tutorial-gdp-btn" 
-              onClick={handleNext}
-            >
-              {currentStepIndex === steps.length - 1 ? "Finish" : "Next ➔"}
-            </button>
-          )}
+          
+          {(() => {
+            const currentStep = gdpTutorialSteps[currentStepIndex];
+            const isDataMissing = currentStep.requireDataLoaded && !hasData;
+            let isCustomCheckMissing = false;
+            if (currentStep.requirementCheck) {
+              const stores = workspaceRegistry.get(activeWorkspaceId);
+              if (stores) isCustomCheckMissing = !currentStep.requirementCheck(stores);
+            }
+            
+            const canGoNext = !isDataMissing && !isCustomCheckMissing;
+            
+            return canGoNext && (
+              <button 
+                className="tutorial-gdp-btn" 
+                onClick={handleNext}
+              >
+                {currentStepIndex === gdpTutorialSteps.length - 1 ? "Finish" : "Next ➔"}
+              </button>
+            );
+          })()}
         </div>
       </div>
       <svg className="tutorial-gdp-svg" viewBox="-10 -10 120 150" xmlns="http://www.w3.org/2000/svg" style={{ overflow: 'visible' }}>
