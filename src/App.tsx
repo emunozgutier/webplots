@@ -7,7 +7,7 @@ import { WorkspaceProvider } from './store/Workspace/WorkspaceProvider';
 import { useWorkspaceStore } from './store/Workspace/useWorkspaceStore';
 import PopupMenu from './components/PopupMenu';
 import TutorialGDP from './components/InkyHelper/tutorialGDP/TutorialGDP';
-import SwimTest from './components/SwimTest/SwimTest';
+import SwimTest from './components/InkyHelper/SwimTest/SwimTest';
 import './App.css';
 
 function App() {

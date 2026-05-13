@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Eyes from '../InkyHelper/animation/components/eyes';
+import InkyBody from '../animation/components/InkyBody';
 import './SwimTest.css';
 
 const SwimTest: React.FC = () => {
@@ -206,60 +206,24 @@ const SwimTest: React.FC = () => {
           transform: `translate(${position.x - 50}px, ${position.y - 60}px) rotate(${rotation}deg)` 
         }}
       >
-        <svg className="inky-svg" viewBox="-10 -10 120 150" xmlns="http://www.w3.org/2000/svg" style={{ overflow: 'visible' }}>
-          <g transform="translate(0, 10)">
-            {/* Squid Fins */}
-            <path d="M 50,-15 L 20,5 L 30,25 Z" fill="#8E24AA" />
-            <path d="M 50,-15 L 80,5 L 70,25 Z" fill="#8E24AA" />
-
-            {/* Back/Smaller tentacles */}
-            <path className="inky-tentacle" d="M 35,75 Q 30,95 35,105" fill="none" stroke="#7B1FA2" strokeWidth="6" strokeLinecap="round" />
-            <path className="inky-tentacle" d="M 65,75 Q 70,95 65,105" fill="none" stroke="#7B1FA2" strokeWidth="6" strokeLinecap="round" />
-
-            {/* Squid Mantle & Body */}
-            <path d="M 50,-15 Q 35,5 25,40 C 15,60 15,75 25,80 C 35,85 65,85 75,80 C 85,75 85,60 75,40 Q 65,5 50,-15 Z" fill="#9C27B0" />
-
-            {/* Left Feeding Tentacle (Club) */}
-            <g className={isReachingLeft ? "" : "inky-tentacle"}>
-              <path d={leftTentaclePath} fill="none" stroke="#9C27B0" strokeWidth="5" strokeLinecap="round" />
-              <ellipse 
-                cx={leftTentacleClubX} 
-                cy={leftTentacleClubY} 
-                rx="5" 
-                ry="9" 
-                fill="#9C27B0" 
-                transform={isReachingLeft ? `rotate(${leftTentacleClubRot}, ${leftTentacleClubX}, ${leftTentacleClubY})` : undefined} 
-              />
-            </g>
-            
-            {/* Right Feeding Tentacle (Club) */}
-            <g className={isReachingRight ? "" : "inky-tentacle"}>
-              <path d={rightTentaclePath} fill="none" stroke="#9C27B0" strokeWidth="5" strokeLinecap="round" />
-              <ellipse 
-                cx={rightTentacleClubX} 
-                cy={rightTentacleClubY} 
-                rx="5" 
-                ry="9" 
-                fill="#9C27B0" 
-                transform={isReachingRight ? `rotate(${rightTentacleClubRot}, ${rightTentacleClubX}, ${rightTentacleClubY})` : undefined} 
-              />
-            </g>
-
-            {/* Front tentacles */}
-            <path className="inky-tentacle" d="M 42,78 Q 42,100 42,110" fill="none" stroke="#9C27B0" strokeWidth="7" strokeLinecap="round" />
-            <path className="inky-tentacle" d="M 58,78 Q 58,100 58,110" fill="none" stroke="#9C27B0" strokeWidth="7" strokeLinecap="round" />
-
-            {/* Eyes */}
-            <Eyes className="inky-eye" />
-
-            {/* Smile */}
-            <path d="M 45,60 Q 50,65 55,60" fill="none" stroke="#333333" strokeWidth="2" strokeLinecap="round" />
-            
-            {/* Cheeks */}
-            <ellipse cx="25" cy="55" rx="4" ry="2" fill="#BA68C8" opacity="0.6" />
-            <ellipse cx="75" cy="55" rx="4" ry="2" fill="#BA68C8" opacity="0.6" />
-          </g>
-        </svg>
+        <InkyBody 
+          leftTentacle={{
+            path: leftTentaclePath,
+            clubX: leftTentacleClubX,
+            clubY: leftTentacleClubY,
+            clubRot: leftTentacleClubRot,
+            isReaching: isReachingLeft
+          }}
+          rightTentacle={{
+            path: rightTentaclePath,
+            clubX: rightTentacleClubX,
+            clubY: rightTentacleClubY,
+            clubRot: rightTentacleClubRot,
+            isReaching: isReachingRight
+          }}
+          tentacleClass="inky-tentacle"
+          eyeClass="inky-eye"
+        />
       </div>
     </div>
   );
