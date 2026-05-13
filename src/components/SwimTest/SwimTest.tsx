@@ -40,10 +40,20 @@ const SwimTest: React.FC = () => {
         // Calculate rotation
         const targetAngle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
         
-        // Smooth rotation (optional, but let's keep it simple first or snap to angle)
-        // To handle wrapping at 360 we just snap it for now
         rotRef.current = targetAngle;
         setRotation(rotRef.current);
+      } else {
+        // Find the nearest upright angle (multiple of 360)
+        const targetUpright = Math.round(rotRef.current / 360) * 360;
+        
+        if (Math.abs(rotRef.current - targetUpright) > 0.5) {
+          // Slowly interpolate towards the upright position
+          rotRef.current = rotRef.current + (targetUpright - rotRef.current) * 0.05;
+          setRotation(rotRef.current);
+        } else if (rotRef.current !== targetUpright) {
+          rotRef.current = targetUpright;
+          setRotation(targetUpright);
+        }
       }
 
       requestRef.current = requestAnimationFrame(updatePosition);
