@@ -142,28 +142,44 @@ const SwimTest: React.FC = () => {
     
     if (lx < 50) {
       isReachingLeft = true;
-      leftTentacleClubX = lx;
-      const pathEndY = ly - 5;
-      leftTentacleClubY = ly;
+      const startX = 25;
+      const startY = 65;
+      const angleRad = Math.atan2(ly - startY, lx - startX);
+      
+      // Center of the ellipse is 9 units back from the tip
+      leftTentacleClubX = lx - Math.cos(angleRad) * 9;
+      leftTentacleClubY = ly - Math.sin(angleRad) * 9;
+      
+      // The wrist where the path connects is 18 units back from the tip
+      const endX = lx - Math.cos(angleRad) * 18;
+      const endY = ly - Math.sin(angleRad) * 18;
 
       // Control point curves outwards to wrap around the body
-      const mx = (25 + lx) / 2 - 50; 
-      const my = (65 + pathEndY) / 2;
+      const mx = (startX + endX) / 2 - 50; 
+      const my = (startY + endY) / 2;
 
-      leftTentaclePath = `M 25,65 Q ${mx},${my} ${lx},${pathEndY}`;
-      leftTentacleClubRot = Math.atan2(pathEndY - my, lx - mx) * (180 / Math.PI) - 90;
+      leftTentaclePath = `M ${startX},${startY} Q ${mx},${my} ${endX},${endY}`;
+      leftTentacleClubRot = angleRad * (180 / Math.PI) - 90;
     } else {
       isReachingRight = true;
-      rightTentacleClubX = lx;
-      const pathEndY = ly - 5; // End path slightly before the club center
-      rightTentacleClubY = ly;
+      const startX = 75;
+      const startY = 65;
+      const angleRad = Math.atan2(ly - startY, lx - startX);
+      
+      // Center of the ellipse is 9 units back from the tip
+      rightTentacleClubX = lx - Math.cos(angleRad) * 9;
+      rightTentacleClubY = ly - Math.sin(angleRad) * 9;
+      
+      // The wrist where the path connects is 18 units back from the tip
+      const endX = lx - Math.cos(angleRad) * 18;
+      const endY = ly - Math.sin(angleRad) * 18;
 
       // Control point curves outwards to wrap around the body
-      const mx = (75 + lx) / 2 + 50; 
-      const my = (65 + pathEndY) / 2;
+      const mx = (startX + endX) / 2 + 50; 
+      const my = (startY + endY) / 2;
 
-      rightTentaclePath = `M 75,65 Q ${mx},${my} ${lx},${pathEndY}`;
-      rightTentacleClubRot = Math.atan2(pathEndY - my, lx - mx) * (180 / Math.PI) - 90;
+      rightTentaclePath = `M ${startX},${startY} Q ${mx},${my} ${endX},${endY}`;
+      rightTentacleClubRot = angleRad * (180 / Math.PI) - 90;
     }
   }
 
