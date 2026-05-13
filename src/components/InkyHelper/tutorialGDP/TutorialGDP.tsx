@@ -3,6 +3,7 @@ import './TutorialGDP.css';
 import { useWorkspaceStore, workspaceRegistry } from '../../../store/Workspace/useWorkspaceStore';
 import { useCsvDataStore } from '../../../store/useCsvDataStore';
 import Eyes from '../animation/components/eyes';
+import SpeechBubble from '../animation/components/SpeechBubble';
 import { gdpTutorialSteps } from './tutorialScript';
 
 const TutorialGDP: React.FC = () => {
@@ -96,13 +97,14 @@ const TutorialGDP: React.FC = () => {
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
     >
-      <div className="tutorial-gdp-bubble" onPointerDown={(e) => e.stopPropagation()}>
-        <button className="tutorial-gdp-close" onClick={handleSkip} title="Close tutorial">×</button>
-        <div>{gdpTutorialSteps[currentStepIndex].text}</div>
-        <div className="tutorial-gdp-buttons">
-          <button className="tutorial-gdp-btn tutorial-gdp-btn-skip" onClick={handleSkip}>Skip</button>
-          
-          {(() => {
+      <div className="tutorial-gdp-wrapper" onPointerDown={(e) => e.stopPropagation()}>
+        <SpeechBubble 
+          text={gdpTutorialSteps[currentStepIndex].text}
+          type="persistent"
+          onSkip={handleSkip}
+          onNext={handleNext}
+          nextLabel={currentStepIndex === gdpTutorialSteps.length - 1 ? "Finish" : "Next ➔"}
+          canGoNext={(() => {
             const currentStep = gdpTutorialSteps[currentStepIndex];
             const isDataMissing = currentStep.requireDataLoaded && !hasData;
             let isCustomCheckMissing = false;
@@ -110,19 +112,9 @@ const TutorialGDP: React.FC = () => {
               const stores = workspaceRegistry.get(activeWorkspaceId);
               if (stores) isCustomCheckMissing = !currentStep.requirementCheck(stores);
             }
-            
-            const canGoNext = !isDataMissing && !isCustomCheckMissing;
-            
-            return canGoNext && (
-              <button 
-                className="tutorial-gdp-btn" 
-                onClick={handleNext}
-              >
-                {currentStepIndex === gdpTutorialSteps.length - 1 ? "Finish" : "Next ➔"}
-              </button>
-            );
+            return !isDataMissing && !isCustomCheckMissing;
           })()}
-        </div>
+        />
       </div>
       <svg className="tutorial-gdp-svg" viewBox="-10 -10 120 150" xmlns="http://www.w3.org/2000/svg" style={{ overflow: 'visible' }}>
         <g transform="translate(0, 10)">

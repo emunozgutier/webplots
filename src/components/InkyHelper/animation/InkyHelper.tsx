@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './InkyHelper.css';
 import { useWorkspaceStore } from '../../../store/Workspace/useWorkspaceStore';
 import Eyes from './components/eyes';
+import SpeechBubble from './components/SpeechBubble';
 
 const InkyHelper: React.FC = () => {
   const isDebugMode = useWorkspaceStore((state) => state.isDebugMode);
@@ -23,7 +24,7 @@ const InkyHelper: React.FC = () => {
 
   return (
     <div className="inky-container" onClick={handleClick} title="Click me!">
-      <div className="inky-bubble">{messages[currentMessageIndex]}</div>
+      <SpeechBubble text={messages[currentMessageIndex]} type="hover" />
       <svg className="inky-svg" viewBox="-10 -10 120 150" xmlns="http://www.w3.org/2000/svg" style={{ overflow: 'visible' }}>
         <g transform="translate(0, 10)">
           {/* Squid Fins */}
