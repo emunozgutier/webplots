@@ -87,10 +87,6 @@ const SpeechBubble: React.FC<SpeechBubbleProps> = ({
       className={`inky-speech-bubble ${isHover ? 'inky-speech-bubble-hover' : `inky-speech-bubble-persistent placement-${placement}`}`}
       onPointerDown={(e) => !isHover && e.stopPropagation()}
     >
-      {!isHover && onSkip && (
-        <button className="inky-speech-close" onClick={onSkip} title="Close">×</button>
-      )}
-      
       <div className="inky-speech-text" style={{ position: 'relative' }}>
         {/* Invisible full text establishes the final dimensions so the bubble doesn't resize while typing */}
         <div style={{ visibility: 'hidden', pointerEvents: 'none' }}>

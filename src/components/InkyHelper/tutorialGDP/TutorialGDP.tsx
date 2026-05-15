@@ -32,10 +32,9 @@ const TutorialGDP: React.FC = () => {
       let newRight = dragStartRef.current.right - dx;
       let newBottom = dragStartRef.current.bottom - dy;
       
-      // Clamp values so it doesn't go off-screen
-      // Container width is roughly 250px including the bubble, height is about 150px
-      newRight = Math.max(0, Math.min(newRight, window.innerWidth - 250));
-      newBottom = Math.max(0, Math.min(newBottom, window.innerHeight - 150));
+      // Clamp values so Inky doesn't go off-screen (Inky is 100x120)
+      newRight = Math.max(0, Math.min(newRight, window.innerWidth - 100));
+      newBottom = Math.max(0, Math.min(newBottom, window.innerHeight - 120));
       
       setPosition({
         right: newRight,
@@ -96,9 +95,49 @@ const TutorialGDP: React.FC = () => {
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
     >
+      <button 
+        onClick={(e) => { e.stopPropagation(); setIsTutorialActive(false); }} 
+        style={{ 
+          position: 'absolute', 
+          top: 0, 
+          right: 0, 
+          pointerEvents: 'auto', 
+          background: 'rgba(255,255,255,0.8)', 
+          backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+          color: '#666', 
+          border: '1px solid rgba(0,0,0,0.1)', 
+          borderRadius: '50%', 
+          width: 24, 
+          height: 24, 
+          cursor: 'pointer', 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          fontWeight: 'bold', 
+          fontSize: '16px', 
+          boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+          padding: 0,
+          transition: 'all 0.2s ease',
+          zIndex: 102
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = '#ffebee';
+          e.currentTarget.style.color = '#f44336';
+          e.currentTarget.style.borderColor = '#ffcdd2';
+          e.currentTarget.style.transform = 'scale(1.1)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = 'rgba(255,255,255,0.8)';
+          e.currentTarget.style.color = '#666';
+          e.currentTarget.style.borderColor = 'rgba(0,0,0,0.1)';
+          e.currentTarget.style.transform = 'scale(1)';
+        }}
+        title="Close Inky"
+      >
+        ×
+      </button>
       <InkyHelper 
         className="tutorial-gdp-wrapper"
-        onPointerDown={(e) => e.stopPropagation()}
         speechProps={{
           text: gdpTutorialSteps[currentStepIndex].text,
           type: "persistent",
