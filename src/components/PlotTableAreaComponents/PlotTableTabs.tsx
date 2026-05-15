@@ -6,6 +6,7 @@ export const ViewToggleButtons: React.FC<{ viewMode: 'plot' | 'table'; setViewMo
         <ul className="nav nav-tabs border-0">
             <li className="nav-item me-1">
                 <button
+                    id="plot-view-tab"
                     className={`nav-link fs-5 px-4 py-2 ${viewMode === 'plot' ? 'active fw-bold bg-white text-primary' : 'text-primary bg-light'}`}
                     onClick={() => setViewMode('plot')}
                     title="View Plot"

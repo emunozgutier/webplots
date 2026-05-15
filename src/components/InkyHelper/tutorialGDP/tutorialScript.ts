@@ -121,6 +121,30 @@ export const gdpTutorialSteps: TutorialStep[] = [
     }
   },
   {
+    text: "Now click the 'Plot' tab to see our scatter plot!",
+    targetSelector: "#plot-view-tab",
+    requirementCheck: () => {
+        const tab = document.querySelector('#plot-view-tab');
+        return tab?.classList.contains('active') || document.querySelector('.js-plotly-plot') !== null;
+    }
+  },
+  {
+    text: "Let's fix the X-axis scale! Click the 'Settings' button on the bottom right.",
+    targetSelector: "#plot-settings-btn",
+    targetPosition: "above",
+    requirementCheck: (stores) => {
+        return stores.workspaceLocalStore.getState().popupContent !== null;
+    }
+  },
+  {
+    text: "Check the 'Log X-Axis' box to use a logarithmic scale. You can close the settings popup when you're done.",
+    targetSelector: "#enableLogXAxisToggle",
+    targetPosition: "above",
+    requirementCheck: (stores) => {
+        return stores.plotLayoutStore.getState().enableLogXAxis === true && stores.workspaceLocalStore.getState().popupContent === null;
+    }
+  },
+  {
     text: "Let's color the bubbles by 'region'. Notice how the Style side menu updates!",
     action: (stores) => {
       stores.styleSideMenuStore.getState().setHue({ source: 'column', value: 'region', enabled: true });

@@ -136,6 +136,7 @@ const PlotAreaControlButtons: React.FC<PlotAreaControlButtonsProps> = ({ onOpenS
                     </button>
                 )}
                 <button
+                    id="plot-settings-btn"
                     className="btn btn-outline-secondary"
                     onClick={onOpenSettings}
                     title="Open Settings"
