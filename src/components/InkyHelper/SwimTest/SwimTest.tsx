@@ -215,16 +215,16 @@ const SwimTest: React.FC = () => {
           position: 'absolute',
           left: bubblePos.x - 50,
           top: bubblePos.y - 60,
+          width: 100,
+          height: 120,
           pointerEvents: 'none',
           zIndex: 100
         }}
       >
-        <div style={{ position: 'relative' }}>
-          <SpeechBubble 
-            text={distToTarget > margin ? "Follow Me" : "Lorem ipsum dolor sit amet, consectetur adipiscing elit."}
-            type="persistent"
-          />
-        </div>
+        <SpeechBubble 
+          text={distToTarget > margin ? "Follow Me" : "Lorem ipsum dolor sit amet, consectetur adipiscing elit."}
+          type="persistent"
+        />
       </div>
 
       {/* Inky */}
