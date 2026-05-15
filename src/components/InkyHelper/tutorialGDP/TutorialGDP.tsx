@@ -3,6 +3,7 @@ import './TutorialGDP.css';
 import { useWorkspaceStore, workspaceRegistry } from '../../../store/Workspace/useWorkspaceStore';
 import { useCsvDataStore } from '../../../store/useCsvDataStore';
 import InkyHelper from '../InkyHelper';
+import SpeechBubble from '../animation/components/SpeechBubble';
 import { gdpTutorialSteps } from './tutorialScript';
 
 const TutorialGDP: React.FC = () => {
@@ -10,6 +11,7 @@ const TutorialGDP: React.FC = () => {
   const hasData = useCsvDataStore((state) => state.data.length > 0);
 
   const [position, setPosition] = useState({ x: window.innerWidth - 240, y: window.innerHeight - 140 });
+  const [bubblePos, setBubblePos] = useState({ x: window.innerWidth - 240, y: window.innerHeight - 140 });
   const [target, setTarget] = useState({ x: window.innerWidth - 240, y: window.innerHeight - 140 });
   const [rotation, setRotation] = useState(0);
   const [tick, setTick] = useState(0);
@@ -18,6 +20,7 @@ const TutorialGDP: React.FC = () => {
 
   const requestRef = React.useRef<number>(0);
   const posRef = React.useRef(position);
+  const bubblePosRef = React.useRef(bubblePos);
   const targetRef = React.useRef(target);
   const rotRef = React.useRef(rotation);
   const dragStartRef = React.useRef({ startX: 0, startY: 0, squidStartX: 0, squidStartY: 0 });
@@ -65,6 +68,13 @@ const TutorialGDP: React.FC = () => {
           }
         }
       }
+
+      // Smooth lerp for the speech bubble so it doesn't move too fast
+      bubblePosRef.current = {
+        x: bubblePosRef.current.x + (posRef.current.x - bubblePosRef.current.x) * 0.05,
+        y: bubblePosRef.current.y + (posRef.current.y - bubblePosRef.current.y) * 0.05
+      };
+      setBubblePos(bubblePosRef.current);
 
       requestRef.current = requestAnimationFrame(updatePosition);
     };
@@ -260,73 +270,30 @@ const TutorialGDP: React.FC = () => {
     }
   }
 
+  const isMoving = !isDragging && distToTarget > margin + 5;
+  const currentText = isMoving ? "Follow me" : gdpTutorialSteps[currentStepIndex].text;
+
   return (
-    <div 
-      className={`tutorial-gdp-container ${isDragging ? 'dragging' : ''}`}
-      title="Drag to move, click Next for tips"
-      style={{ 
-        left: 0,
-        top: 0,
-        transform: `translate(${position.x - 50}px, ${position.y - 60}px) rotate(${rotation}deg)`
-      }}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerCancel={handlePointerUp}
-    >
-      <button 
-        onClick={(e) => { e.stopPropagation(); setIsTutorialActive(false); }} 
-        style={{ 
-          position: 'absolute', 
-          top: 0, 
-          bottom: 'auto', 
-          left: placement === 'top-right' ? 0 : 'auto', 
-          right: placement === 'top-right' ? 'auto' : 0, 
-          pointerEvents: 'auto', 
-          background: 'rgba(255,255,255,0.8)', 
-          backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
-          color: '#666', 
-          border: '1px solid rgba(0,0,0,0.1)', 
-          borderRadius: '50%', 
-          width: 24, 
-          height: 24, 
-          cursor: 'pointer', 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          fontWeight: 'bold', 
-          fontSize: '16px', 
-          boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
-          padding: 0,
-          transition: 'all 0.2s ease',
-          zIndex: 102
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = '#ffebee';
-          e.currentTarget.style.color = '#f44336';
-          e.currentTarget.style.borderColor = '#ffcdd2';
-          e.currentTarget.style.transform = 'scale(1.1)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = 'rgba(255,255,255,0.8)';
-          e.currentTarget.style.color = '#666';
-          e.currentTarget.style.borderColor = 'rgba(0,0,0,0.1)';
-          e.currentTarget.style.transform = 'scale(1)';
-        }}
-        title="Close Inky"
-      >
-        ×
-      </button>
-      <InkyHelper 
-        className="tutorial-gdp-wrapper"
-        speechProps={{
-          placement,
-          text: gdpTutorialSteps[currentStepIndex].text,
-          type: "persistent",
-          onSkip: handleSkip,
-          onNext: handleNext,
-          nextLabel: currentStepIndex === gdpTutorialSteps.length - 1 ? "Finish" : "Next ➔",
-          canGoNext: (() => {
+    <>
+      <div style={{ 
+        position: 'fixed', 
+        zIndex: 1040, 
+        left: 0, 
+        top: 0, 
+        transform: `translate(${bubblePos.x - 50}px, ${bubblePos.y - 60}px)`, 
+        pointerEvents: 'none', 
+        width: 100, 
+        height: 120 
+      }}>
+        <SpeechBubble 
+          placement={placement}
+          text={currentText}
+          type="persistent"
+          instant={isMoving}
+          onSkip={handleSkip}
+          onNext={handleNext}
+          nextLabel={currentStepIndex === gdpTutorialSteps.length - 1 ? "Finish" : "Next ➔"}
+          canGoNext={(() => {
             const currentStep = gdpTutorialSteps[currentStepIndex];
             const isDataMissing = currentStep.requireDataLoaded && !hasData;
             let isCustomCheckMissing = false;
@@ -335,10 +302,10 @@ const TutorialGDP: React.FC = () => {
               if (stores) isCustomCheckMissing = !currentStep.requirementCheck(stores);
             }
             return !isDataMissing && !isCustomCheckMissing;
-          })(),
-          customFooter: gdpTutorialSteps[currentStepIndex].choices ? (
+          })()}
+          customFooter={!isMoving && gdpTutorialSteps[currentStepIndex].choices ? (
             <div className="inky-speech-buttons" style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-              {gdpTutorialSteps[currentStepIndex].choices.map((choice, i) => (
+              {gdpTutorialSteps[currentStepIndex].choices!.map((choice, i) => (
                 <button 
                   key={i}
                   className={`inky-speech-btn ${choice.primary ? '' : 'inky-speech-btn-skip'}`}
@@ -361,9 +328,70 @@ const TutorialGDP: React.FC = () => {
                 </button>
               ))}
             </div>
-          ) : undefined
+          ) : undefined}
+        />
+      </div>
+
+      <div 
+        className={`tutorial-gdp-container ${isDragging ? 'dragging' : ''}`}
+        title="Drag to move, click Next for tips"
+        style={{ 
+          left: 0,
+          top: 0,
+          transform: `translate(${position.x - 50}px, ${position.y - 60}px)`
         }}
-        bodyProps={{
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+      >
+        <button 
+          onClick={(e) => { e.stopPropagation(); setIsTutorialActive(false); }} 
+          style={{ 
+            position: 'absolute', 
+            top: 0, 
+            bottom: 'auto', 
+            left: placement === 'top-right' ? 0 : 'auto', 
+            right: placement === 'top-right' ? 'auto' : 0, 
+            pointerEvents: 'auto', 
+            background: 'rgba(255,255,255,0.8)', 
+            backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+            color: '#666', 
+            border: '1px solid rgba(0,0,0,0.1)', 
+            borderRadius: '50%', 
+            width: 24, 
+            height: 24, 
+            cursor: 'pointer', 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            fontWeight: 'bold', 
+            fontSize: '16px', 
+            boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+            padding: 0,
+            transition: 'all 0.2s ease',
+            zIndex: 102
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = '#ffebee';
+            e.currentTarget.style.color = '#f44336';
+            e.currentTarget.style.borderColor = '#ffcdd2';
+            e.currentTarget.style.transform = 'scale(1.1)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(255,255,255,0.8)';
+            e.currentTarget.style.color = '#666';
+            e.currentTarget.style.borderColor = 'rgba(0,0,0,0.1)';
+            e.currentTarget.style.transform = 'scale(1)';
+          }}
+          title="Close Inky"
+        >
+          ×
+        </button>
+        <div style={{ transform: `rotate(${rotation}deg)` }}>
+          <InkyHelper 
+            className="tutorial-gdp-wrapper"
+            bodyProps={{
           leftTentacle: {
             path: leftTentaclePath,
             clubX: leftTentacleClubX,
