@@ -10,6 +10,7 @@ const TutorialGDP: React.FC = () => {
   const hasData = useCsvDataStore((state) => state.data.length > 0);
 
   const [position, setPosition] = useState({ right: 140, bottom: 20 });
+  const [transitionTime, setTransitionTime] = useState(0.8);
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = React.useRef({ x: 0, y: 0, right: 0, bottom: 0 });
 
@@ -83,6 +84,36 @@ const TutorialGDP: React.FC = () => {
     setCurrentStepIndex(0); // reset for next time
   };
 
+  React.useEffect(() => {
+    const currentStep = gdpTutorialSteps[currentStepIndex];
+    const targetSelector = currentStep.targetSelector;
+    if (targetSelector && !isDragging) {
+      // Small timeout to let UI settle
+      setTimeout(() => {
+        const el = document.querySelector(targetSelector);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          // Swim to further below and to the right of the element to keep distance
+          let newRight = window.innerWidth - rect.right - 120;
+          let newBottom = window.innerHeight - rect.bottom - 180;
+          
+          // Clamp so it stays on screen
+          newRight = Math.max(0, Math.min(newRight, window.innerWidth - 100));
+          newBottom = Math.max(0, Math.min(newBottom, window.innerHeight - 120));
+          
+          // Calculate distance to determine transition time (e.g. 250px per second)
+          const dx = newRight - position.right;
+          const dy = newBottom - position.bottom;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          const duration = Math.min(4.0, Math.max(0.5, dist / 250)); // limit speed, max 4s, min 0.5s
+          
+          setTransitionTime(duration);
+          setPosition({ right: newRight, bottom: newBottom });
+        }
+      }, 100);
+    }
+  }, [currentStepIndex, isDragging]);
+
   if (!isDebugMode || !isTutorialActive) return null;
 
   // Calculate placement based on screen coordinates
@@ -98,9 +129,13 @@ const TutorialGDP: React.FC = () => {
 
   return (
     <div 
-      className="tutorial-gdp-container" 
+      className={`tutorial-gdp-container ${isDragging ? 'dragging' : ''}`}
       title="Drag to move, click Next for tips"
-      style={{ right: `${position.right}px`, bottom: `${position.bottom}px` }}
+      style={{ 
+        right: `${position.right}px`, 
+        bottom: `${position.bottom}px`,
+        transitionDuration: isDragging ? '0s' : `${transitionTime}s`
+      }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
@@ -112,8 +147,8 @@ const TutorialGDP: React.FC = () => {
           position: 'absolute', 
           top: 0, 
           bottom: 'auto', 
-          left: placement.includes('right') ? 0 : 'auto', 
-          right: placement.includes('right') ? 'auto' : 0, 
+          left: placement === 'top-right' ? 0 : 'auto', 
+          right: placement === 'top-right' ? 'auto' : 0, 
           pointerEvents: 'auto', 
           background: 'rgba(255,255,255,0.8)', 
           backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',

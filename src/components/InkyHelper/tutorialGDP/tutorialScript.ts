@@ -31,9 +31,9 @@ export const gdpTutorialSteps: TutorialStep[] = [
     ]
   },
   {
-    text: "Welcome to the GDP plotting tutorial! First, please load your dataset using the File or Test menu. (The Next button will enable once data is loaded).",
+    text: "First, let's load the data. Go to Test > World Life Expect vs GDP to load the sample data.",
     requireDataLoaded: true,
-    targetSelector: "#test-nav-dropdown" // Example: Pointing at the Test menu
+    targetSelector: "#test-nav-dropdown" 
   },
   {
     text: "First, we set the axes. X-axis is 'gdpPercap' (with Log scale!) and Y-axis is 'lifeExp'.",

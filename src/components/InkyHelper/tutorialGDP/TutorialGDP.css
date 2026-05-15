@@ -8,6 +8,11 @@
   justify-content: center;
   align-items: center;
   touch-action: none; /* prevent scrolling while dragging */
+  transition: right 0.8s ease-in-out, bottom 0.8s ease-in-out;
+}
+
+.tutorial-gdp-container.dragging {
+  transition: none;
 }
 
 .tutorial-gdp-container:active {
