@@ -9,6 +9,7 @@ const SwimTest: React.FC = () => {
   const [bubblePos, setBubblePos] = useState({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
   const [rotation, setRotation] = useState(0);
   const [tick, setTick] = useState(0);
+  const [mode, setMode] = useState<'swim' | 'point'>('swim');
   
   const [isMouseDown, setIsMouseDown] = useState(false);
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
@@ -18,6 +19,11 @@ const SwimTest: React.FC = () => {
   const bubblePosRef = useRef(bubblePos);
   const targetRef = useRef(target);
   const rotRef = useRef(rotation);
+  const modeRef = useRef(mode);
+
+  useEffect(() => {
+    modeRef.current = mode;
+  }, [mode]);
 
   useEffect(() => {
     targetRef.current = target;
@@ -47,9 +53,8 @@ const SwimTest: React.FC = () => {
         posRef.current = { x: nextX, y: nextY };
         setPosition(posRef.current);
 
-        // Calculate rotation
+        // Calculate rotation (both modes)
         const targetAngle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
-        
         rotRef.current = targetAngle;
         setRotation(rotRef.current);
       } else {
@@ -123,7 +128,7 @@ const SwimTest: React.FC = () => {
   let rightTentacleClubY = 115;
   let isReachingRight = false;
 
-  const isTentacleActive = isReaching || isPointing;
+  const isTentacleActive = mode === 'point' && (isReaching || isPointing);
 
   if (isTentacleActive) {
     let gx = 0;
@@ -136,6 +141,7 @@ const SwimTest: React.FC = () => {
       const baseAngle = Math.atan2(dyTarget, dxTarget);
       // Oscillate the distance (poking motion) instead of the angle
       const wiggleDistance = Math.sin(tick / 150) * 15; // +/- 15 pixels
+      
       const pointLength = distToTarget - 25 + wiggleDistance; 
       
       gx = position.x + Math.cos(baseAngle) * pointLength;
@@ -202,6 +208,29 @@ const SwimTest: React.FC = () => {
       onPointerCancel={handlePointerUp}
     >
       <div className="swimtest-instruction">Click anywhere to make Inky swim there!</div>
+      
+      {/* Toggle Controls */}
+      <div 
+        style={{ 
+          position: 'absolute', top: 20, left: 20, zIndex: 100, 
+          backgroundColor: 'rgba(255, 255, 255, 0.9)', padding: 12, 
+          borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          fontFamily: 'sans-serif'
+        }}
+        onPointerDown={(e) => e.stopPropagation()}
+        onPointerUp={(e) => e.stopPropagation()}
+        onPointerMove={(e) => e.stopPropagation()}
+      >
+        <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', color: '#333', fontWeight: 'bold' }}>
+          <input 
+            type="checkbox" 
+            checked={mode === 'point'} 
+            onChange={(e) => setMode(e.target.checked ? 'point' : 'swim')} 
+            style={{ marginRight: 8, width: 16, height: 16 }}
+          />
+          Enable Pointing
+        </label>
+      </div>
       
       {/* Target Marker */}
       <div 
