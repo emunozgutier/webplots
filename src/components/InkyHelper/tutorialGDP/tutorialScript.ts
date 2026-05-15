@@ -95,15 +95,30 @@ export const gdpTutorialSteps: TutorialStep[] = [
     }
   },
   {
-    text: "Now, let's configure our chart! Open the Axis menu and set the X-axis to 'gdp' (with Log scale checked!) and the Y-axis to 'life_expectancy'.",
-    targetSelector: ".axis-side-menu-container", 
+    text: "Now, let's configure our chart! Open the Axis menu and set the X-axis to 'gdp' (with Log scale checked!).",
+    targetSelector: "#x-axis-dropzone", 
     dynamicTargetSelector: () => {
+        const dropzone = document.querySelector('#x-axis-dropzone');
+        if (dropzone && dropzone.getBoundingClientRect().height > 0) return '#x-axis-dropzone';
         return document.querySelector('#axis-side-menu') ? '#axis-side-menu' : '.axis-side-menu-container';
     },
     requirementCheck: (stores) => {
       const axisData = stores.axisSideMenuStore.getState().sideMenuData;
       const enableLogX = stores.plotLayoutStore.getState().enableLogXAxis;
-      return axisData.xAxis === 'gdp' && axisData.yAxis.includes('life_expectancy') && enableLogX === true;
+      return axisData.xAxis === 'gdp' && enableLogX === true;
+    }
+  },
+  {
+    text: "Great! Now set the Y-axis to 'life_expectancy'.",
+    targetSelector: "#y-axis-dropzone", 
+    dynamicTargetSelector: () => {
+        const dropzone = document.querySelector('#y-axis-dropzone');
+        if (dropzone && dropzone.getBoundingClientRect().height > 0) return '#y-axis-dropzone';
+        return document.querySelector('#axis-side-menu') ? '#axis-side-menu' : '.axis-side-menu-container';
+    },
+    requirementCheck: (stores) => {
+      const axisData = stores.axisSideMenuStore.getState().sideMenuData;
+      return axisData.yAxis.includes('life_expectancy');
     }
   },
   {
