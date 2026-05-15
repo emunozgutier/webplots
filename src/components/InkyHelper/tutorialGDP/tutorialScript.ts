@@ -137,8 +137,17 @@ export const gdpTutorialSteps: TutorialStep[] = [
     }
   },
   {
-    text: "Check the 'Log X-Axis' box to use a logarithmic scale. You can close the settings popup when you're done.",
+    text: "Check the 'Log X-Axis' box to use a logarithmic scale.",
     targetSelector: "#enableLogXAxisToggle",
+    targetPosition: "above",
+    requirementCheck: () => {
+        const checkbox = document.querySelector('#enableLogXAxisToggle') as HTMLInputElement;
+        return checkbox && checkbox.checked === true;
+    }
+  },
+  {
+    text: "Now click 'Save Layout' to apply the changes and close the popup.",
+    targetSelector: "#save-layout-btn",
     targetPosition: "above",
     requirementCheck: (stores) => {
         return stores.plotLayoutStore.getState().enableLogXAxis === true && stores.workspaceLocalStore.getState().popupContent === null;

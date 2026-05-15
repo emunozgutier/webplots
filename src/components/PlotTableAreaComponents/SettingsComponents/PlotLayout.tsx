@@ -276,7 +276,7 @@ const PlotLayout: React.FC = () => {
             </div>
             <div className="card-footer bg-light d-flex justify-content-end">
                 <button className="btn btn-sm btn-secondary me-2" onClick={closePopup}>Close</button>
-                <button className="btn btn-sm btn-primary" onClick={handleSave}>Save Layout</button>
+                <button id="save-layout-btn" className="btn btn-sm btn-primary" onClick={handleSave}>Save Layout</button>
             </div>
         </>
     );
