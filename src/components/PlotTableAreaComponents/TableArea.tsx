@@ -36,7 +36,7 @@ const TableArea: React.FC = () => {
     const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
     const [currentBatch, setCurrentBatch] = useState(0);
     const BATCH_SIZE = 100;
-    const { setPopupContent } = useWorkspaceLocalStore();
+    const { setPopupContent, closePopup } = useWorkspaceLocalStore();
     const { 
         summaryMode, 
         setSummaryMode, 
@@ -143,7 +143,12 @@ const TableArea: React.FC = () => {
             }
 
             setPopupContent(
-                <div className="bg-white p-4 rounded shadow d-flex flex-column" style={{ width: '100%', height: '100%' }}>
+                <div className="bg-white p-4 rounded shadow d-flex flex-column position-relative" style={{ width: '100%', height: '100%' }}>
+                    <button 
+                        className="btn-close position-absolute top-0 end-0 m-3" 
+                        onClick={() => closePopup()}
+                        aria-label="Close"
+                    ></button>
                     <h4>Distribution of {key}</h4>
                     <div className="flex-grow-1 position-relative">
                         <Plot
@@ -165,7 +170,12 @@ const TableArea: React.FC = () => {
             const counts: Record<string, number> = {};
             rawValues.forEach((v: any) => { counts[String(v)] = (counts[String(v)] || 0) + 1; });
             setPopupContent(
-                <div className="bg-white p-4 rounded shadow d-flex flex-column" style={{ width: '100%', height: '100%' }}>
+                <div className="bg-white p-4 rounded shadow d-flex flex-column position-relative" style={{ width: '100%', height: '100%' }}>
+                    <button 
+                        className="btn-close position-absolute top-0 end-0 m-3" 
+                        onClick={() => closePopup()}
+                        aria-label="Close"
+                    ></button>
                     <h4>Frequencies of {key}</h4>
                     <div className="flex-grow-1 position-relative">
                         <Plot
