@@ -99,8 +99,8 @@ export const gdpTutorialSteps: TutorialStep[] = [
     targetSelector: "#x-axis-dropzone", 
     dynamicTargetSelector: () => {
         const dropzone = document.querySelector('#x-axis-dropzone');
-        if (dropzone && dropzone.getBoundingClientRect().height > 0) return '#x-axis-dropzone';
-        return document.querySelector('#axis-side-menu') ? '#axis-side-menu' : '.axis-side-menu-container';
+        if (dropzone && dropzone.getBoundingClientRect().width > 0) return '#x-axis-dropzone';
+        return '#side-menu-btn-axis';
     },
     requirementCheck: (stores) => {
       const axisData = stores.axisSideMenuStore.getState().sideMenuData;
@@ -113,8 +113,8 @@ export const gdpTutorialSteps: TutorialStep[] = [
     targetSelector: "#y-axis-dropzone", 
     dynamicTargetSelector: () => {
         const dropzone = document.querySelector('#y-axis-dropzone');
-        if (dropzone && dropzone.getBoundingClientRect().height > 0) return '#y-axis-dropzone';
-        return document.querySelector('#axis-side-menu') ? '#axis-side-menu' : '.axis-side-menu-container';
+        if (dropzone && dropzone.getBoundingClientRect().width > 0) return '#y-axis-dropzone';
+        return '#side-menu-btn-axis';
     },
     requirementCheck: (stores) => {
       const axisData = stores.axisSideMenuStore.getState().sideMenuData;

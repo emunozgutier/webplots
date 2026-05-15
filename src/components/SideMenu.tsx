@@ -92,6 +92,7 @@ const SideMenu: React.FC = () => {
     const renderTabButton = (tab: SideMenuTab, label: string, iconClass: string) => {
         return (
             <button
+                id={`side-menu-btn-${tab}`}
                 className={`btn btn-sm w-100 mb-2 p-2 ${activeTab === tab ? 'btn-primary' : 'btn-light text-secondary'} border-0 rounded-0 rounded-start`}
                 onClick={() => {
                     if (activeTab === tab) {
