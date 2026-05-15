@@ -95,7 +95,7 @@ export const gdpTutorialSteps: TutorialStep[] = [
     }
   },
   {
-    text: "Now, let's configure our chart! Open the Axis menu and set the X-axis to 'gdp' (with Log scale checked!).",
+    text: "Now, let's configure our chart! Open the Axis menu and set the X-axis to 'gdp'.",
     targetSelector: "#x-axis-label", 
     dynamicTargetSelector: () => {
         const label = document.querySelector('#x-axis-label');
@@ -104,8 +104,7 @@ export const gdpTutorialSteps: TutorialStep[] = [
     },
     requirementCheck: (stores) => {
       const axisData = stores.axisSideMenuStore.getState().sideMenuData;
-      const enableLogX = stores.plotLayoutStore.getState().enableLogXAxis;
-      return axisData.xAxis === 'gdp' && enableLogX === true;
+      return axisData.xAxis === 'gdp';
     }
   },
   {
