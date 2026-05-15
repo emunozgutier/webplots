@@ -85,6 +85,17 @@ const TutorialGDP: React.FC = () => {
 
   if (!isDebugMode || !isTutorialActive) return null;
 
+  // Calculate placement based on screen coordinates
+  const inkyX = window.innerWidth - position.right - 100;
+  const inkyY = window.innerHeight - position.bottom - 120;
+  
+  let placement: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' = 'top-left';
+  if (inkyY < 250) {
+    placement = inkyX < 350 ? 'bottom-right' : 'bottom-left';
+  } else {
+    placement = inkyX < 350 ? 'top-right' : 'top-left';
+  }
+
   return (
     <div 
       className="tutorial-gdp-container" 
@@ -100,7 +111,9 @@ const TutorialGDP: React.FC = () => {
         style={{ 
           position: 'absolute', 
           top: 0, 
-          right: 0, 
+          bottom: 'auto', 
+          left: placement.includes('right') ? 0 : 'auto', 
+          right: placement.includes('right') ? 'auto' : 0, 
           pointerEvents: 'auto', 
           background: 'rgba(255,255,255,0.8)', 
           backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
@@ -139,6 +152,7 @@ const TutorialGDP: React.FC = () => {
       <InkyHelper 
         className="tutorial-gdp-wrapper"
         speechProps={{
+          placement,
           text: gdpTutorialSteps[currentStepIndex].text,
           type: "persistent",
           onSkip: handleSkip,

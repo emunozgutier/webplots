@@ -359,7 +359,9 @@ const SwimTest: React.FC = () => {
               style={{ 
                 position: 'absolute', 
                 top: 0, 
-                right: 0, 
+                bottom: 'auto', 
+                left: placement.includes('right') ? 0 : 'auto', 
+                right: placement.includes('right') ? 'auto' : 0, 
                 pointerEvents: 'auto', 
                 background: 'rgba(255,255,255,0.8)', 
                 backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
