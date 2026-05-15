@@ -12,6 +12,7 @@ export interface TutorialStep {
   
   // Where the squid should point its tentacle
   targetSelector?: string;
+  dynamicTargetSelector?: () => string | undefined;
   targetCoords?: { x: number, y: number };
   
   // Requirements that must be met before the "Next" button is enabled
@@ -33,7 +34,15 @@ export const gdpTutorialSteps: TutorialStep[] = [
   {
     text: "First, let's load the data. Go to Test > World Life Expect vs GDP to load the sample data.",
     requireDataLoaded: true,
-    targetSelector: "#test-nav-dropdown" 
+    targetSelector: "#test-nav-dropdown",
+    dynamicTargetSelector: () => {
+      // Check if the dropdown menu is open and the item is visible
+      const el = document.querySelector("#test-nav-gapminder");
+      if (el && el.getBoundingClientRect().height > 0) {
+        return "#test-nav-gapminder";
+      }
+      return "#test-nav-dropdown";
+    }
   },
   {
     text: "First, we set the axes. X-axis is 'gdpPercap' (with Log scale!) and Y-axis is 'lifeExp'.",

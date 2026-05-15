@@ -155,11 +155,13 @@ const TutorialGDP: React.FC = () => {
 
   React.useEffect(() => {
     const currentStep = gdpTutorialSteps[currentStepIndex];
-    const targetSelector = currentStep.targetSelector;
-    if (targetSelector && !isDragging) {
-      // Small timeout to let UI settle
-      setTimeout(() => {
-        const el = document.querySelector(targetSelector);
+    
+    if (!isDragging) {
+      const interval = setInterval(() => {
+        const selector = currentStep.dynamicTargetSelector ? currentStep.dynamicTargetSelector() : currentStep.targetSelector;
+        if (!selector) return;
+        
+        const el = document.querySelector(selector);
         if (el) {
           const rect = el.getBoundingClientRect();
           // Target slightly offset so the tentacles can point (to the right of the element)
@@ -170,11 +172,17 @@ const TutorialGDP: React.FC = () => {
           targetX = Math.max(0, Math.min(targetX, window.innerWidth - 100));
           targetY = Math.max(0, Math.min(targetY, window.innerHeight - 120));
           
-          setTarget({ x: targetX, y: targetY });
-          targetRef.current = { x: targetX, y: targetY };
-          setTargetElementPos({ x: rect.left + rect.width / 2, y: rect.bottom });
+          // Only update target if it moved significantly
+          const currentT = targetRef.current;
+          if (Math.abs(currentT.x - targetX) > 5 || Math.abs(currentT.y - targetY) > 5) {
+            setTarget({ x: targetX, y: targetY });
+            targetRef.current = { x: targetX, y: targetY };
+            setTargetElementPos({ x: rect.left + rect.width / 2, y: rect.bottom });
+          }
         }
-      }, 100);
+      }, 200); // Check every 200ms
+
+      return () => clearInterval(interval);
     }
   }, [currentStepIndex, isDragging]);
 
@@ -412,7 +420,9 @@ const TutorialGDP: React.FC = () => {
           svgStyle: { overflow: 'visible', filter: 'drop-shadow(0px 10px 15px rgba(0, 0, 0, 0.2))' }
         }}
       />
-    </div>
+        </div>
+      </div>
+    </>
   );
 };
 

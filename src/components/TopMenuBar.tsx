@@ -393,7 +393,7 @@ const TopMenuBar: React.FC = () => {
                             <NavDropdown.Item onClick={handleLoadWeatherData}>
                                 Sample Weather Data
                             </NavDropdown.Item>
-                            <NavDropdown.Item onClick={handleLoadGapminderData}>
+                            <NavDropdown.Item id="test-nav-gapminder" onClick={handleLoadGapminderData}>
                                 World Life Expect vs GDP
                             </NavDropdown.Item>
                             <NavDropdown.Divider />
