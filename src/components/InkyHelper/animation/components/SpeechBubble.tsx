@@ -89,7 +89,16 @@ const SpeechBubble: React.FC<SpeechBubbleProps> = ({
         <button className="inky-speech-close" onClick={onSkip} title="Close">×</button>
       )}
       
-      <div className="inky-speech-text">{displayedText}</div>
+      <div className="inky-speech-text" style={{ position: 'relative' }}>
+        {/* Invisible full text establishes the final dimensions so the bubble doesn't resize while typing */}
+        <div style={{ visibility: 'hidden', pointerEvents: 'none' }}>
+          {targetText}
+        </div>
+        {/* Absolutely positioned typing text */}
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+          {displayedText}
+        </div>
+      </div>
       
       {!isHover && (onNext || onSkip) && state === 'IDLE' && (
         <div className="inky-speech-buttons">

@@ -342,7 +342,7 @@ const SwimTest: React.FC = () => {
             />
           </div>
 
-          {/* Squid Controls (Attached to squid) */}
+          {/* Close Button (Attached to squid) */}
           <div 
             style={{
               position: 'absolute',
@@ -354,33 +354,61 @@ const SwimTest: React.FC = () => {
               zIndex: 101,
             }}
           >
-            <div style={{ position: 'absolute', top: -30, right: -40, pointerEvents: 'auto', display: 'flex', gap: 8, background: 'rgba(255,255,255,0.6)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.4)', padding: '4px 8px', borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
-              <div 
-                onPointerDown={handleSquidDragStart}
-                onPointerMove={handleSquidDragMove}
-                onPointerUp={handleSquidDragEnd}
-                onPointerCancel={handleSquidDragEnd}
-                style={{ cursor: 'grab', display: 'flex', alignItems: 'center', userSelect: 'none', fontSize: '18px', color: '#666' }}
-                title="Drag Inky"
-              >
-                ☰
-              </div>
-              <button 
-                onClick={(e) => { e.stopPropagation(); setIsClosed(true); }} 
-                style={{ background: '#ffebee', color: '#f44336', border: 'none', borderRadius: '50%', width: 24, height: 24, cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold', fontSize: '16px', padding: 0 }}
-                title="Close Inky"
-              >
-                ×
-              </button>
-            </div>
+            <button 
+              onClick={(e) => { e.stopPropagation(); setIsClosed(true); }} 
+              style={{ 
+                position: 'absolute', 
+                top: 0, 
+                right: 0, 
+                pointerEvents: 'auto', 
+                background: 'rgba(255,255,255,0.8)', 
+                backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+                color: '#666', 
+                border: '1px solid rgba(0,0,0,0.1)', 
+                borderRadius: '50%', 
+                width: 24, 
+                height: 24, 
+                cursor: 'pointer', 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                fontWeight: 'bold', 
+                fontSize: '16px', 
+                boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+                padding: 0,
+                transition: 'all 0.2s ease',
+                zIndex: 102
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#ffebee';
+                e.currentTarget.style.color = '#f44336';
+                e.currentTarget.style.borderColor = '#ffcdd2';
+                e.currentTarget.style.transform = 'scale(1.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.8)';
+                e.currentTarget.style.color = '#666';
+                e.currentTarget.style.borderColor = 'rgba(0,0,0,0.1)';
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
+              title="Close Inky"
+            >
+              ×
+            </button>
           </div>
 
           {/* Inky */}
           <div 
             className="swimtest-inky"
             style={{ 
-              transform: `translate(${position.x - 50}px, ${position.y - 60}px) rotate(${rotation}deg)` 
+              transform: `translate(${position.x - 50}px, ${position.y - 60}px) rotate(${rotation}deg)`,
+              cursor: isSquidDragging ? 'grabbing' : 'grab',
+              touchAction: 'none'
             }}
+            onPointerDown={handleSquidDragStart}
+            onPointerMove={handleSquidDragMove}
+            onPointerUp={handleSquidDragEnd}
+            onPointerCancel={handleSquidDragEnd}
           >
             <InkyHelper 
               bodyProps={{
