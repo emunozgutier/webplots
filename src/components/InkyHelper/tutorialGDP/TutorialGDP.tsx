@@ -25,6 +25,7 @@ const TutorialGDP: React.FC = () => {
   const tripStartPosRef = React.useRef(position);
   const rotRef = React.useRef(rotation);
   const dragStartRef = React.useRef({ startX: 0, startY: 0, squidStartX: 0, squidStartY: 0 });
+  const prevStepRef = React.useRef(-1);
 
   React.useEffect(() => {
     const updatePosition = () => {
@@ -299,8 +300,14 @@ const TutorialGDP: React.FC = () => {
   const totalTripDistance = Math.sqrt(dxTotal * dxTotal + dyTotal * dyTotal);
 
   const isMoving = !isDragging && distToTarget > margin + 5;
-  const isLongTrip = totalTripDistance > window.innerWidth * 0.1;
+  const isLongTrip = totalTripDistance > Math.max(window.innerWidth * 0.15, 200);
   const currentText = (isMoving && isLongTrip) ? "Follow me" : gdpTutorialSteps[currentStepIndex].text;
+
+  let isNewStep = false;
+  if (prevStepRef.current !== currentStepIndex) {
+    isNewStep = true;
+    prevStepRef.current = currentStepIndex;
+  }
 
   return (
     <>
@@ -318,7 +325,7 @@ const TutorialGDP: React.FC = () => {
           placement={placement}
           text={currentText}
           type="persistent"
-          instant={isMoving}
+          instant={isMoving || !isNewStep}
           onSkip={handleSkip}
           onNext={handleNext}
           nextLabel={currentStepIndex === gdpTutorialSteps.length - 1 ? "Finish" : "Next ➔"}
