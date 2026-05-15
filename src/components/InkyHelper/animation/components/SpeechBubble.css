@@ -56,16 +56,30 @@
   gap: 12px;
 }
 
+.inky-speech-bubble-persistent::before {
+  content: '';
+  position: absolute;
+  bottom: -11px;
+  right: 18px;
+  border-width: 13px 0 0 18px;
+  border-style: solid;
+  border-color: #9C27B0 transparent transparent transparent;
+  display: block;
+  width: 0;
+  z-index: 1;
+}
+
 .inky-speech-bubble-persistent::after {
   content: '';
   position: absolute;
   bottom: -8px;
   right: 20px;
-  border-width: 8px 12px 0 0;
+  border-width: 10px 0 0 14px;
   border-style: solid;
   border-color: white transparent transparent transparent;
   display: block;
   width: 0;
+  z-index: 2;
 }
 
 .inky-speech-buttons {
