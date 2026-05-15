@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import InkyHelper from '../InkyHelper';
+import SpeechBubble from '../animation/components/SpeechBubble';
 import './SwimTest.css';
 
 const SwimTest: React.FC = () => {
   const [target, setTarget] = useState({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
   const [position, setPosition] = useState({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
+  const [bubblePos, setBubblePos] = useState({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
   const [rotation, setRotation] = useState(0);
   const [tick, setTick] = useState(0);
   
@@ -13,6 +15,7 @@ const SwimTest: React.FC = () => {
 
   const requestRef = useRef<number>(0);
   const posRef = useRef(position);
+  const bubblePosRef = useRef(bubblePos);
   const targetRef = useRef(target);
   const rotRef = useRef(rotation);
 
@@ -62,6 +65,13 @@ const SwimTest: React.FC = () => {
           setRotation(targetUpright);
         }
       }
+
+      // Smooth lerp for the speech bubble so it doesn't move too fast
+      bubblePosRef.current = {
+        x: bubblePosRef.current.x + (posRef.current.x - bubblePosRef.current.x) * 0.05,
+        y: bubblePosRef.current.y + (posRef.current.y - bubblePosRef.current.y) * 0.05
+      };
+      setBubblePos(bubblePosRef.current);
 
       requestRef.current = requestAnimationFrame(updatePosition);
     };
@@ -199,6 +209,24 @@ const SwimTest: React.FC = () => {
         style={{ left: target.x, top: target.y }}
       />
 
+      {/* Trailing Horizontal Speech Bubble */}
+      <div 
+        style={{
+          position: 'absolute',
+          left: bubblePos.x - 50,
+          top: bubblePos.y - 60,
+          pointerEvents: 'none',
+          zIndex: 100
+        }}
+      >
+        <div style={{ position: 'relative' }}>
+          <SpeechBubble 
+            text={distToTarget > margin ? "Follow Me" : "Lorem ipsum dolor sit amet, consectetur adipiscing elit."}
+            type="persistent"
+          />
+        </div>
+      </div>
+
       {/* Inky */}
       <div 
         className="swimtest-inky"
@@ -207,10 +235,6 @@ const SwimTest: React.FC = () => {
         }}
       >
         <InkyHelper 
-          speechProps={{
-            text: distToTarget > margin ? "Follow me!" : "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-            type: "persistent"
-          }}
           bodyProps={{
             leftTentacle: {
               path: leftTentaclePath,
