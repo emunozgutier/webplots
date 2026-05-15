@@ -47,6 +47,26 @@ export const gdpTutorialSteps: TutorialStep[] = [
   {
     text: "Great! Now take a look at the Data Table below. Try scrolling to the right until you can see the 'year', 'gdp', and 'life_expectancy' columns.",
     targetSelector: ".table-scroll-container",
+    requirementCheck: () => {
+        const container = document.querySelector('.table-scroll-container');
+        if (!container) return false;
+        
+        const headers = Array.from(container.querySelectorAll('th'));
+        const targetHeaders = headers.filter(th => {
+            const text = th.textContent?.toLowerCase() || '';
+            return text.includes('year') || text.includes('gdp') || text.includes('life_expectancy');
+        });
+
+        if (targetHeaders.length < 3) return false;
+
+        const containerRect = container.getBoundingClientRect();
+        
+        return targetHeaders.every(th => {
+            const rect = th.getBoundingClientRect();
+            // Check if header is at least partially visible within the scroll container
+            return rect.right > containerRect.left && rect.left < containerRect.right;
+        });
+    }
   },
   {
     text: "First, we set the axes. X-axis is 'gdp' (with Log scale!) and Y-axis is 'life_expectancy'.",
