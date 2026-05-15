@@ -114,7 +114,33 @@ const TutorialGDP: React.FC = () => {
               if (stores) isCustomCheckMissing = !currentStep.requirementCheck(stores);
             }
             return !isDataMissing && !isCustomCheckMissing;
-          })()
+          })(),
+          customFooter: gdpTutorialSteps[currentStepIndex].choices ? (
+            <div className="inky-speech-buttons" style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+              {gdpTutorialSteps[currentStepIndex].choices.map((choice, i) => (
+                <button 
+                  key={i}
+                  className={`inky-speech-btn ${choice.primary ? '' : 'inky-speech-btn-skip'}`}
+                  onClick={(e) => {
+                    if (choice.actionType === 'next') handleNext(e);
+                    else if (choice.actionType === 'skip') handleSkip(e);
+                  }}
+                  style={{
+                    flex: 1,
+                    background: choice.primary ? '#9C27B0' : 'transparent',
+                    color: choice.primary ? 'white' : '#666',
+                    border: choice.primary ? 'none' : '1px solid #ccc',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  {choice.label}
+                </button>
+              ))}
+            </div>
+          ) : undefined
         }}
         bodyProps={{
           tentacleClass: "tutorial-gdp-tentacle",

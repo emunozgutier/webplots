@@ -1,3 +1,9 @@
+export interface TutorialChoice {
+  label: string;
+  actionType: 'next' | 'skip';
+  primary?: boolean;
+}
+
 export interface TutorialStep {
   text: string;
   
@@ -5,16 +11,25 @@ export interface TutorialStep {
   action?: (stores: any) => void;
   
   // Where the squid should point its tentacle
-  // Can be a CSS selector (e.g., '#file-nav-dropdown') or exact coordinates
   targetSelector?: string;
   targetCoords?: { x: number, y: number };
   
   // Requirements that must be met before the "Next" button is enabled
   requireDataLoaded?: boolean;
   requirementCheck?: (stores: any) => boolean;
+
+  // Custom choices to display instead of the default Next/Skip buttons
+  choices?: TutorialChoice[];
 }
 
 export const gdpTutorialSteps: TutorialStep[] = [
+  {
+    text: "Would you like a tutorial?",
+    choices: [
+      { label: "GDP Tutorial", actionType: "next", primary: true },
+      { label: "No thanks", actionType: "skip" }
+    ]
+  },
   {
     text: "Welcome to the GDP plotting tutorial! First, please load your dataset using the File or Test menu. (The Next button will enable once data is loaded).",
     requireDataLoaded: true,

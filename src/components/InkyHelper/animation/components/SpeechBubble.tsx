@@ -12,6 +12,7 @@ export interface SpeechBubbleProps {
   instant?: boolean;
   delayMs?: number;
   placement?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+  customFooter?: React.ReactNode;
 }
 
 type TypewriterState = 'IDLE' | 'WAITING' | 'TYPING';
@@ -27,6 +28,7 @@ const SpeechBubble: React.FC<SpeechBubbleProps> = ({
   instant = false,
   delayMs = 1000,
   placement = 'top-left',
+  customFooter,
 }) => {
   const isHover = type === 'hover';
   
@@ -100,15 +102,19 @@ const SpeechBubble: React.FC<SpeechBubbleProps> = ({
         </div>
       </div>
       
-      {!isHover && (onNext || onSkip) && state === 'IDLE' && (
-        <div className="inky-speech-buttons">
-          {onSkip && <button className="inky-speech-btn inky-speech-btn-skip" onClick={onSkip}>Skip</button>}
-          {onNext && canGoNext && (
-            <button className="inky-speech-btn" onClick={onNext}>
-              {nextLabel}
-            </button>
-          )}
-        </div>
+      {!isHover && state === 'IDLE' && (
+        customFooter ? customFooter : (
+          (onNext || onSkip) && (
+            <div className="inky-speech-buttons">
+              {onSkip && <button className="inky-speech-btn inky-speech-btn-skip" onClick={onSkip}>Skip</button>}
+              {onNext && canGoNext && (
+                <button className="inky-speech-btn" onClick={onNext}>
+                  {nextLabel}
+                </button>
+              )}
+            </div>
+          )
+        )
       )}
     </div>
   );
