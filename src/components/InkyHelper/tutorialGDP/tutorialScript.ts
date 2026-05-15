@@ -20,6 +20,7 @@ export interface TutorialStep {
   // Requirements that must be met before the "Next" button is enabled
   requireDataLoaded?: boolean;
   requirementCheck?: (stores: any) => boolean;
+  autoAdvance?: boolean;
 
   // Custom choices to display instead of the default Next/Skip buttons
   choices?: TutorialChoice[];
@@ -90,6 +91,7 @@ export const gdpTutorialSteps: TutorialStep[] = [
     text: "Here is the zoomed distribution! Notice how there are 2 clear Gaussians (peaks) in this plot, showing a bimodal distribution of life expectancy. Close this popup when you're ready to proceed.",
     targetSelector: "#popup-menu-container",
     targetPosition: "above",
+    autoAdvance: false,
     requirementCheck: (stores) => {
         return stores.workspaceLocalStore.getState().popupContent === null;
     }
@@ -154,16 +156,59 @@ export const gdpTutorialSteps: TutorialStep[] = [
     }
   },
   {
-    text: "Let's color the bubbles by 'region'. Notice how the Style side menu updates!",
-    action: (stores) => {
-      stores.styleSideMenuStore.getState().setHue({ source: 'column', value: 'region', enabled: true });
-    },
-    targetSelector: ".style-side-menu"
+    text: "Now, open the 'Style' menu from the right side bar to customize how our data looks.",
+    targetSelector: "#side-menu-btn-color",
+    requirementCheck: () => {
+        const el = document.querySelector('#style-element-huecolor-source');
+        return el !== null && el.getBoundingClientRect().width > 0;
+    }
   },
   {
-    text: "We map the size of the bubbles to the 'population' column.",
-    action: (stores) => {
-      stores.styleSideMenuStore.getState().setSize({ source: 'column', value: 'population', enabled: true, sizeMode: 'area' });
+    text: "First, let's color the bubbles by region! Change the 'Source Mode' under 'Hue/Color' to 'Column Value'.",
+    targetSelector: "#style-element-huecolor-source",
+    dynamicTargetSelector: () => {
+        const el = document.querySelector('#style-element-huecolor-source');
+        if (el && el.getBoundingClientRect().width > 0) return '#style-element-huecolor-source';
+        return '#side-menu-btn-color';
+    },
+    requirementCheck: (stores) => {
+        return stores.styleSideMenuStore.getState().colorData.hue.source === 'column';
+    }
+  },
+  {
+    text: "Now select 'region' as the dataset column for Hue/Color.",
+    targetSelector: "#style-element-huecolor-column",
+    dynamicTargetSelector: () => {
+        const el = document.querySelector('#style-element-huecolor-column');
+        if (el && el.getBoundingClientRect().width > 0) return '#style-element-huecolor-column';
+        return '#side-menu-btn-color';
+    },
+    requirementCheck: (stores) => {
+        return stores.styleSideMenuStore.getState().colorData.hue.value === 'region';
+    }
+  },
+  {
+    text: "Next, let's change the size of the bubbles based on population! Change the 'Source Mode' under 'Node Size' to 'Column Value'.",
+    targetSelector: "#style-element-nodesize-source",
+    dynamicTargetSelector: () => {
+        const el = document.querySelector('#style-element-nodesize-source');
+        if (el && el.getBoundingClientRect().width > 0) return '#style-element-nodesize-source';
+        return '#side-menu-btn-color';
+    },
+    requirementCheck: (stores) => {
+        return stores.styleSideMenuStore.getState().colorData.size.source === 'column';
+    }
+  },
+  {
+    text: "Select 'population' as the dataset column for Node Size.",
+    targetSelector: "#style-element-nodesize-column",
+    dynamicTargetSelector: () => {
+        const el = document.querySelector('#style-element-nodesize-column');
+        if (el && el.getBoundingClientRect().width > 0) return '#style-element-nodesize-column';
+        return '#side-menu-btn-color';
+    },
+    requirementCheck: (stores) => {
+        return stores.styleSideMenuStore.getState().colorData.size.value === 'population';
     }
   },
   {

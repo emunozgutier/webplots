@@ -122,8 +122,10 @@ const TutorialGDP: React.FC = () => {
 
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
-  const handleNext = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleNext = (e?: React.MouseEvent | Event) => {
+    if (e && typeof e.stopPropagation === 'function') {
+      e.stopPropagation();
+    }
     
     const currentStep = gdpTutorialSteps[currentStepIndex];
     if (currentStep.requireDataLoaded && !hasData) return;
@@ -172,6 +174,20 @@ const TutorialGDP: React.FC = () => {
       }
     }
   }, [hasData, currentStepIndex, activeWorkspaceId]);
+
+  // Auto-advance for requirement checks
+  React.useEffect(() => {
+    const currentStep = gdpTutorialSteps[currentStepIndex];
+    if (currentStep.requirementCheck && (currentStep as any).autoAdvance !== false) {
+      const interval = setInterval(() => {
+        const stores = workspaceRegistry.get(activeWorkspaceId);
+        if (stores && currentStep.requirementCheck!(stores)) {
+          handleNext(new Event('autoNext'));
+        }
+      }, 300);
+      return () => clearInterval(interval);
+    }
+  }, [currentStepIndex, activeWorkspaceId]);
 
   React.useEffect(() => {
     const currentStep = gdpTutorialSteps[currentStepIndex];
@@ -361,6 +377,9 @@ const TutorialGDP: React.FC = () => {
           nextLabel={currentStepIndex === gdpTutorialSteps.length - 1 ? "Finish" : "Next ➔"}
           canGoNext={(() => {
             const currentStep = gdpTutorialSteps[currentStepIndex];
+            if (currentStep.requirementCheck && (currentStep as any).autoAdvance !== false) {
+              return false; // Hide Next button if it auto-advances
+            }
             const isDataMissing = currentStep.requireDataLoaded && !hasData;
             let isCustomCheckMissing = false;
             if (currentStep.requirementCheck) {

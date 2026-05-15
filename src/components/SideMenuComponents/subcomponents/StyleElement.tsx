@@ -70,6 +70,7 @@ const StyleElement: React.FC<StyleElementProps> = ({ title, mapping, updateFn, t
                     <div className="mb-2">
                         <label className="form-label text-muted small mb-1" style={{ fontSize: '0.75rem' }}>Source Mode</label>
                         <select
+                            id={`style-element-${title.replace(/[^a-zA-Z]/g, '').toLowerCase()}-source`}
                             className="form-select form-select-sm"
                             value={mapping.source}
                             onChange={e => updateFn({ source: e.target.value as MappingSource, value: type === 'number' ? (title === 'Node Size' ? 8 : 50) : 'circle' })}
@@ -115,6 +116,7 @@ const StyleElement: React.FC<StyleElementProps> = ({ title, mapping, updateFn, t
                         <div className="mt-2">
                             <label className="form-label text-muted mb-1" style={{ fontSize: '0.75rem' }}>Dataset Column</label>
                             <select
+                                id={`style-element-${title.replace(/[^a-zA-Z]/g, '').toLowerCase()}-column`}
                                 className="form-select form-select-sm"
                                 value={String(mapping.value)}
                                 onChange={e => updateFn({ value: e.target.value })}
