@@ -9,38 +9,97 @@ const TutorialGDP: React.FC = () => {
   const { isDebugMode, activeWorkspaceId, isTutorialActive, setIsTutorialActive } = useWorkspaceStore();
   const hasData = useCsvDataStore((state) => state.data.length > 0);
 
-  const [position, setPosition] = useState({ right: 140, bottom: 20 });
-  const [transitionTime, setTransitionTime] = useState(0.8);
+  const [position, setPosition] = useState({ x: window.innerWidth - 240, y: window.innerHeight - 140 });
+  const [target, setTarget] = useState({ x: window.innerWidth - 240, y: window.innerHeight - 140 });
+  const [rotation, setRotation] = useState(0);
+  const [tick, setTick] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const dragStartRef = React.useRef({ x: 0, y: 0, right: 0, bottom: 0 });
+  const [targetElementPos, setTargetElementPos] = useState<{ x: number, y: number } | null>(null);
+
+  const requestRef = React.useRef<number>(0);
+  const posRef = React.useRef(position);
+  const targetRef = React.useRef(target);
+  const rotRef = React.useRef(rotation);
+  const dragStartRef = React.useRef({ startX: 0, startY: 0, squidStartX: 0, squidStartY: 0 });
+
+  React.useEffect(() => {
+    const updatePosition = () => {
+      setTick(Date.now());
+      const currentPos = posRef.current;
+      const currentTarget = targetRef.current;
+
+      const dx = currentTarget.x - currentPos.x;
+      const dy = currentTarget.y - currentPos.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      const margin = 50; // Smaller margin so he gets close enough
+
+      if (!isDragging) {
+        if (distance > margin) {
+          // Speed
+          const speed = 4;
+          const vx = (dx / distance) * speed;
+          const vy = (dy / distance) * speed;
+
+          const nextX = currentPos.x + vx;
+          const nextY = currentPos.y + vy;
+
+          posRef.current = { x: nextX, y: nextY };
+          setPosition(posRef.current);
+
+          // Calculate rotation
+          const targetAngle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+          rotRef.current = targetAngle;
+          setRotation(rotRef.current);
+        } else {
+          // Find the nearest upright angle (multiple of 360)
+          const targetUpright = Math.round(rotRef.current / 360) * 360;
+          
+          if (Math.abs(rotRef.current - targetUpright) > 0.5) {
+            // Slowly interpolate towards the upright position
+            rotRef.current = rotRef.current + (targetUpright - rotRef.current) * 0.05;
+            setRotation(rotRef.current);
+          } else if (rotRef.current !== targetUpright) {
+            rotRef.current = targetUpright;
+            setRotation(targetUpright);
+          }
+        }
+      }
+
+      requestRef.current = requestAnimationFrame(updatePosition);
+    };
+
+    requestRef.current = requestAnimationFrame(updatePosition);
+    return () => cancelAnimationFrame(requestRef.current);
+  }, [isDragging]);
 
   const handlePointerDown = (e: React.PointerEvent) => {
     setIsDragging(true);
     dragStartRef.current = {
-      x: e.clientX,
-      y: e.clientY,
-      right: position.right,
-      bottom: position.bottom
+      startX: e.clientX,
+      startY: e.clientY,
+      squidStartX: position.x,
+      squidStartY: position.y
     };
     e.currentTarget.setPointerCapture(e.pointerId);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
     if (isDragging) {
-      const dx = e.clientX - dragStartRef.current.x;
-      const dy = e.clientY - dragStartRef.current.y;
+      const dx = e.clientX - dragStartRef.current.startX;
+      const dy = e.clientY - dragStartRef.current.startY;
       
-      let newRight = dragStartRef.current.right - dx;
-      let newBottom = dragStartRef.current.bottom - dy;
+      let newX = dragStartRef.current.squidStartX + dx;
+      let newY = dragStartRef.current.squidStartY + dy;
       
       // Clamp values so Inky doesn't go off-screen (Inky is 100x120)
-      newRight = Math.max(0, Math.min(newRight, window.innerWidth - 100));
-      newBottom = Math.max(0, Math.min(newBottom, window.innerHeight - 120));
+      newX = Math.max(0, Math.min(newX, window.innerWidth - 100));
+      newY = Math.max(0, Math.min(newY, window.innerHeight - 120));
       
-      setPosition({
-        right: newRight,
-        bottom: newBottom
-      });
+      setPosition({ x: newX, y: newY });
+      setTarget({ x: newX, y: newY });
+      posRef.current = { x: newX, y: newY };
+      targetRef.current = { x: newX, y: newY };
     }
   };
 
@@ -93,22 +152,17 @@ const TutorialGDP: React.FC = () => {
         const el = document.querySelector(targetSelector);
         if (el) {
           const rect = el.getBoundingClientRect();
-          // Swim to further below and to the right of the element to keep distance
-          let newRight = window.innerWidth - rect.right - 120;
-          let newBottom = window.innerHeight - rect.bottom - 180;
+          // Target slightly offset so the tentacles can point (to the right of the element)
+          let targetX = rect.right + 80;
+          let targetY = rect.top + 10;
           
           // Clamp so it stays on screen
-          newRight = Math.max(0, Math.min(newRight, window.innerWidth - 100));
-          newBottom = Math.max(0, Math.min(newBottom, window.innerHeight - 120));
+          targetX = Math.max(0, Math.min(targetX, window.innerWidth - 100));
+          targetY = Math.max(0, Math.min(targetY, window.innerHeight - 120));
           
-          // Calculate distance to determine transition time (e.g. 250px per second)
-          const dx = newRight - position.right;
-          const dy = newBottom - position.bottom;
-          const dist = Math.sqrt(dx*dx + dy*dy);
-          const duration = Math.min(4.0, Math.max(0.5, dist / 250)); // limit speed, max 4s, min 0.5s
-          
-          setTransitionTime(duration);
-          setPosition({ right: newRight, bottom: newBottom });
+          setTarget({ x: targetX, y: targetY });
+          targetRef.current = { x: targetX, y: targetY };
+          setTargetElementPos({ x: rect.left + rect.width / 2, y: rect.bottom });
         }
       }, 100);
     }
@@ -117,8 +171,8 @@ const TutorialGDP: React.FC = () => {
   if (!isDebugMode || !isTutorialActive) return null;
 
   // Calculate placement based on screen coordinates
-  const inkyX = window.innerWidth - position.right - 100;
-  const inkyY = window.innerHeight - position.bottom - 120;
+  const inkyX = position.x;
+  const inkyY = position.y;
   
   let placement: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' = 'top-left';
   if (inkyY < 250) {
@@ -127,14 +181,93 @@ const TutorialGDP: React.FC = () => {
     placement = inkyX < 350 ? 'top-right' : 'top-left';
   }
 
+  // Calculate tentacle path based on target element position
+  const dxTarget = target.x - position.x;
+  const dyTarget = target.y - position.y;
+  const distToTarget = Math.sqrt(dxTarget * dxTarget + dyTarget * dyTarget);
+  const margin = 50;
+  // If we arrived at the margin and we aren't dragging it, we point at the target element
+  const isPointing = !isDragging && distToTarget <= margin + 5 && targetElementPos !== null; 
+
+  let leftTentaclePath = "M 25,65 Q 0,80 15,110";
+  let leftTentacleClubRot = 0;
+  let leftTentacleClubX = 15;
+  let leftTentacleClubY = 115;
+  let isReachingLeft = false;
+
+  let rightTentaclePath = "M 75,65 Q 100,80 85,110";
+  let rightTentacleClubRot = 0;
+  let rightTentacleClubX = 85;
+  let rightTentacleClubY = 115;
+  let isReachingRight = false;
+
+  if (isPointing && targetElementPos) {
+    const pointDistX = targetElementPos.x - position.x;
+    const pointDistY = targetElementPos.y - position.y;
+    const baseAngle = Math.atan2(pointDistY, pointDistX);
+    // Oscillate the distance (poking motion)
+    const wiggleDistance = Math.sin(tick / 150) * 15; 
+    
+    // Stretch to the element
+    const distToElement = Math.sqrt(pointDistX * pointDistX + pointDistY * pointDistY);
+    const pointLength = Math.min(distToElement - 25 + wiggleDistance, 200); // cap length
+    
+    const gx = position.x + Math.cos(baseAngle) * pointLength;
+    const gy = position.y + Math.sin(baseAngle) * pointLength;
+
+    const dxTip = gx - position.x;
+    const dyTip = gy - position.y;
+
+    // Invert the squid's rotation to map global vector to local SVG coordinates
+    const rad = -(rotation * Math.PI) / 180;
+    const lx = dxTip * Math.cos(rad) - dyTip * Math.sin(rad) + 50; 
+    const ly = dxTip * Math.sin(rad) + dyTip * Math.cos(rad) + 60; 
+    
+    if (lx < 50) {
+      isReachingLeft = true;
+      const startX = 25;
+      const startY = 65;
+      const angleRad = Math.atan2(ly - startY, lx - startX);
+      
+      leftTentacleClubX = lx - Math.cos(angleRad) * 9;
+      leftTentacleClubY = ly - Math.sin(angleRad) * 9;
+      
+      const endX = lx - Math.cos(angleRad) * 18;
+      const endY = ly - Math.sin(angleRad) * 18;
+
+      const mx = (startX + endX) / 2 - 50; 
+      const my = (startY + endY) / 2;
+
+      leftTentaclePath = `M ${startX},${startY} Q ${mx},${my} ${endX},${endY}`;
+      leftTentacleClubRot = angleRad * (180 / Math.PI) - 90;
+    } else {
+      isReachingRight = true;
+      const startX = 75;
+      const startY = 65;
+      const angleRad = Math.atan2(ly - startY, lx - startX);
+      
+      rightTentacleClubX = lx - Math.cos(angleRad) * 9;
+      rightTentacleClubY = ly - Math.sin(angleRad) * 9;
+      
+      const endX = lx - Math.cos(angleRad) * 18;
+      const endY = ly - Math.sin(angleRad) * 18;
+
+      const mx = (startX + endX) / 2 + 50; 
+      const my = (startY + endY) / 2;
+
+      rightTentaclePath = `M ${startX},${startY} Q ${mx},${my} ${endX},${endY}`;
+      rightTentacleClubRot = angleRad * (180 / Math.PI) - 90;
+    }
+  }
+
   return (
     <div 
       className={`tutorial-gdp-container ${isDragging ? 'dragging' : ''}`}
       title="Drag to move, click Next for tips"
       style={{ 
-        right: `${position.right}px`, 
-        bottom: `${position.bottom}px`,
-        transitionDuration: isDragging ? '0s' : `${transitionTime}s`
+        left: 0,
+        top: 0,
+        transform: `translate(${position.x - 50}px, ${position.y - 60}px) rotate(${rotation}deg)`
       }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
@@ -231,6 +364,20 @@ const TutorialGDP: React.FC = () => {
           ) : undefined
         }}
         bodyProps={{
+          leftTentacle: {
+            path: leftTentaclePath,
+            clubX: leftTentacleClubX,
+            clubY: leftTentacleClubY,
+            clubRot: leftTentacleClubRot,
+            isReaching: isReachingLeft
+          },
+          rightTentacle: {
+            path: rightTentaclePath,
+            clubX: rightTentacleClubX,
+            clubY: rightTentacleClubY,
+            clubRot: rightTentacleClubRot,
+            isReaching: isReachingRight
+          },
           tentacleClass: "tutorial-gdp-tentacle",
           eyeClass: "tutorial-gdp-eye",
           svgClassName: "tutorial-gdp-svg",
