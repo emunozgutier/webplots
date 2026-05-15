@@ -514,15 +514,25 @@ const TableArea: React.FC = () => {
                                                 const val = row[col];
                                                 let displayVal: any = val;
                                                 
+                                                const isYearCol = col.toLowerCase().includes('year');
+                                                
                                                 if (val === null || val === undefined) {
                                                     displayVal = '';
                                                 } else if (typeof val === 'boolean') {
                                                     displayVal = String(val);
                                                 } else if (typeof val === 'number') {
-                                                    displayVal = formatNumber(val, numberFormat, significantDigits, alignDecimal);
+                                                    if (isYearCol) {
+                                                        displayVal = String(val);
+                                                    } else {
+                                                        displayVal = formatNumber(val, numberFormat, significantDigits, alignDecimal);
+                                                    }
                                                 } else if (typeof val === 'string' && !isNaN(Number(val)) && val.trim() !== '') {
                                                     // Also format strings that look like numbers
-                                                    displayVal = formatNumber(Number(val), numberFormat, significantDigits, alignDecimal);
+                                                    if (isYearCol) {
+                                                        displayVal = val;
+                                                    } else {
+                                                        displayVal = formatNumber(Number(val), numberFormat, significantDigits, alignDecimal);
+                                                    }
                                                 }
  
                                                 let bgColor = '';
