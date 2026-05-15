@@ -155,6 +155,24 @@ const TutorialGDP: React.FC = () => {
     setCurrentStepIndex(0); // reset for next time
   };
 
+  // Auto-advance if the current step is waiting for data and data is loaded
+  React.useEffect(() => {
+    const currentStep = gdpTutorialSteps[currentStepIndex];
+    if (currentStep.requireDataLoaded && hasData) {
+      if (currentStepIndex < gdpTutorialSteps.length - 1) {
+        const nextIndex = currentStepIndex + 1;
+        setCurrentStepIndex(nextIndex);
+        const nextStep = gdpTutorialSteps[nextIndex];
+        if (nextStep.action) {
+          const stores = workspaceRegistry.get(activeWorkspaceId);
+          if (stores) {
+            nextStep.action(stores);
+          }
+        }
+      }
+    }
+  }, [hasData, currentStepIndex, activeWorkspaceId]);
+
   React.useEffect(() => {
     const currentStep = gdpTutorialSteps[currentStepIndex];
     

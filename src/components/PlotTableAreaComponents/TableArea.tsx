@@ -477,6 +477,7 @@ const TableArea: React.FC = () => {
                                                     <Dropdown>
                                                         <Dropdown.Toggle 
                                                             as={BadgeToggle}
+                                                            id={`type-badge-${col}`}
                                                             className="badge fw-bold" 
                                                             style={{ fontSize: '0.65rem', backgroundColor: typeColors[columnTypes[col]] || typeColors['Generic'], color: '#fff' }}
                                                         >
