@@ -515,6 +515,7 @@ const TableArea: React.FC = () => {
                                                         </button>
                                                     </div>
                                                     <button
+                                                        id={`zoom-btn-${col}`}
                                                         className="btn btn-sm btn-outline-info py-0 px-1 ms-1"
                                                         title="Zoom Data"
                                                         onClick={() => handleZoom(col)}

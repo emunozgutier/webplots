@@ -80,6 +80,13 @@ export const gdpTutorialSteps: TutorialStep[] = [
     }
   },
   {
+    text: "Now click on the zoom button (the magnifying glass) in the 'life_expectancy' column header to view its data distribution.",
+    targetSelector: "#zoom-btn-life_expectancy",
+    requirementCheck: (stores) => {
+        return stores.workspaceLocalStore.getState().popupContent !== null;
+    }
+  },
+  {
     text: "Now, let's configure our chart! Open the Axis menu and set the X-axis to 'gdp' (with Log scale checked!) and the Y-axis to 'life_expectancy'.",
     targetSelector: ".axis-side-menu-container", 
     dynamicTargetSelector: () => {
