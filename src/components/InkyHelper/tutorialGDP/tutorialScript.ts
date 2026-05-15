@@ -48,7 +48,7 @@ export const gdpTutorialSteps: TutorialStep[] = [
   },
   {
     text: "Before we continue, let's make sure the 'year' column is treated as literal years instead of formatted numbers. In the Data Table below, click the 'Generic' badge under the 'year' column header and change it to 'Year'.",
-    targetSelector: ".table-scroll-container",
+    targetSelector: "#type-badge-year",
     requirementCheck: () => {
         return useColumnTypeStore.getState().overrides['year'] === 'Year';
     }
