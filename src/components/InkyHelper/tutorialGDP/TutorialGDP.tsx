@@ -198,9 +198,9 @@ const TutorialGDP: React.FC = () => {
           }
           
           
-          // Clamp so it stays on screen
-          targetX = Math.max(0, Math.min(targetX, window.innerWidth - 100));
-          targetY = Math.max(0, Math.min(targetY, window.innerHeight - 120));
+          // Clamp so it stays on screen, ensuring the top half isn't cut off
+          targetX = Math.max(50, Math.min(targetX, window.innerWidth - 100));
+          targetY = Math.max(80, Math.min(targetY, window.innerHeight - 120));
           
           // Only update target if it moved significantly
           const currentT = targetRef.current;
@@ -343,7 +343,7 @@ const TutorialGDP: React.FC = () => {
     <>
       <div style={{ 
         position: 'fixed', 
-        zIndex: 1040, 
+        zIndex: 1060, 
         left: 0, 
         top: 0, 
         transform: `translate(${bubblePos.x - 50}px, ${bubblePos.y - 60}px)`, 
@@ -402,6 +402,7 @@ const TutorialGDP: React.FC = () => {
         className={`tutorial-gdp-container ${isDragging ? 'dragging' : ''}`}
         title="Drag to move, click Next for tips"
         style={{ 
+          zIndex: 1060,
           left: 0,
           top: 0,
           transform: `translate(${position.x - 50}px, ${position.y - 60}px)`
