@@ -1,3 +1,5 @@
+import { useColumnTypeStore } from '../../../store/useColumnTypeStore';
+
 export interface TutorialChoice {
   label: string;
   actionType: 'next' | 'skip';
@@ -42,6 +44,13 @@ export const gdpTutorialSteps: TutorialStep[] = [
         return "#test-nav-gapminder";
       }
       return "#test-nav-dropdown";
+    }
+  },
+  {
+    text: "Before we continue, let's make sure the 'year' column is treated as literal years instead of formatted numbers. In the Data Table below, click the 'Generic' badge under the 'year' column header and change it to 'Year'.",
+    targetSelector: ".table-scroll-container",
+    requirementCheck: () => {
+        return useColumnTypeStore.getState().overrides['year'] === 'Year';
     }
   },
   {

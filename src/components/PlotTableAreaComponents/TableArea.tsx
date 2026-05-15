@@ -571,24 +571,24 @@ const TableArea: React.FC = () => {
                                                 const val = row[col];
                                                 let displayVal: any = val;
                                                 
-                                                const isYearCol = col.toLowerCase().includes('year');
+                                                const colType = columnTypes[col];
                                                 
                                                 if (val === null || val === undefined) {
                                                     displayVal = '';
                                                 } else if (typeof val === 'boolean') {
                                                     displayVal = String(val);
                                                 } else if (typeof val === 'number') {
-                                                    if (isYearCol) {
-                                                        displayVal = String(val);
-                                                    } else {
+                                                    if (colType === 'Generic') {
                                                         displayVal = formatNumber(val, numberFormat, significantDigits, alignDecimal);
+                                                    } else {
+                                                        displayVal = String(val);
                                                     }
                                                 } else if (typeof val === 'string' && !isNaN(Number(val)) && val.trim() !== '') {
                                                     // Also format strings that look like numbers
-                                                    if (isYearCol) {
-                                                        displayVal = val;
-                                                    } else {
+                                                    if (colType === 'Generic') {
                                                         displayVal = formatNumber(Number(val), numberFormat, significantDigits, alignDecimal);
+                                                    } else {
+                                                        displayVal = val;
                                                     }
                                                 }
  

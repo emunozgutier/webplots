@@ -507,7 +507,6 @@ export const calculateLogBase = (cx: number, cy: number, maxBase: number = 30): 
  */
 export const inferColumnType = (data: any[], column: string): string => {
     const lowerCol = column.toLowerCase();
-    if (lowerCol.includes('year')) return 'Year';
     if (lowerCol.includes('date')) return 'Date';
     if (lowerCol.includes('time')) return 'Time';
 
@@ -534,16 +533,6 @@ export const inferColumnType = (data: any[], column: string): string => {
 
     if (numCount / totalProcessed > 0.8) {
         // Mostly numeric
-        let isYear = true;
-        for (const v of Array.from(uniqueValues)) {
-            const numV = Number(v);
-            if (isNaN(numV) || numV < 1000 || numV > 2500 || !Number.isInteger(numV)) {
-                isYear = false;
-                break;
-            }
-        }
-        if (isYear && uniqueValues.size > 0) return 'Year';
-        
         return 'Generic';
     } else {
         // Mostly strings
