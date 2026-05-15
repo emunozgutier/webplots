@@ -22,6 +22,7 @@ const TutorialGDP: React.FC = () => {
   const posRef = React.useRef(position);
   const bubblePosRef = React.useRef(bubblePos);
   const targetRef = React.useRef(target);
+  const tripStartPosRef = React.useRef(position);
   const rotRef = React.useRef(rotation);
   const dragStartRef = React.useRef({ startX: 0, startY: 0, squidStartX: 0, squidStartY: 0 });
 
@@ -165,7 +166,7 @@ const TutorialGDP: React.FC = () => {
         if (el) {
           const rect = el.getBoundingClientRect();
           // Target slightly offset so the tentacles can point (to the right of the element)
-          let targetX = rect.right + 80;
+          let targetX = rect.right + 150;
           let targetY = rect.top + 10;
           
           // Clamp so it stays on screen
@@ -177,7 +178,8 @@ const TutorialGDP: React.FC = () => {
           if (Math.abs(currentT.x - targetX) > 5 || Math.abs(currentT.y - targetY) > 5) {
             setTarget({ x: targetX, y: targetY });
             targetRef.current = { x: targetX, y: targetY };
-            setTargetElementPos({ x: rect.left + rect.width / 2, y: rect.bottom });
+            setTargetElementPos({ x: rect.right - 10, y: rect.top + rect.height / 2 });
+            tripStartPosRef.current = posRef.current;
           }
         }
       }, 200); // Check every 200ms
@@ -192,12 +194,25 @@ const TutorialGDP: React.FC = () => {
   const inkyX = position.x;
   const inkyY = position.y;
   
-  let placement: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' = 'top-left';
-  if (inkyY < 250) {
-    placement = inkyX < 350 ? 'bottom-right' : 'bottom-left';
+  let isRightSide = true;
+  let isBottom = true;
+
+  if (targetElementPos && !isDragging) {
+     // Put bubble on opposite side of the target element
+     isRightSide = targetElementPos.x < inkyX;
+     isBottom = targetElementPos.y < inkyY;
   } else {
-    placement = inkyX < 350 ? 'top-right' : 'top-left';
+     isRightSide = inkyX < window.innerWidth / 2;
+     isBottom = inkyY < 250;
   }
+  
+  // Safety overrides to prevent bubble from going off-screen (Bubble is ~300px wide, ~200px tall)
+  if (inkyX > window.innerWidth - 350) isRightSide = false;
+  if (inkyX < 300) isRightSide = true;
+  if (inkyY > window.innerHeight - 250) isBottom = false;
+  if (inkyY < 200) isBottom = true;
+
+  const placement: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' = `${isBottom ? 'bottom' : 'top'}-${isRightSide ? 'right' : 'left'}` as any;
 
   // Calculate tentacle path based on target element position
   const dxTarget = target.x - position.x;
@@ -278,8 +293,14 @@ const TutorialGDP: React.FC = () => {
     }
   }
 
+  // Calculate total trip distance to decide if we should say "Follow me"
+  const dxTotal = target.x - tripStartPosRef.current.x;
+  const dyTotal = target.y - tripStartPosRef.current.y;
+  const totalTripDistance = Math.sqrt(dxTotal * dxTotal + dyTotal * dyTotal);
+
   const isMoving = !isDragging && distToTarget > margin + 5;
-  const currentText = isMoving ? "Follow me" : gdpTutorialSteps[currentStepIndex].text;
+  const isLongTrip = totalTripDistance > window.innerWidth * 0.1;
+  const currentText = (isMoving && isLongTrip) ? "Follow me" : gdpTutorialSteps[currentStepIndex].text;
 
   return (
     <>

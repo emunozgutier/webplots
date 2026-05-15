@@ -285,23 +285,26 @@ const TopMenuBar: React.FC = () => {
                     setColumns(cols);
                     const activeStores = workspaceRegistry.get(useWorkspaceStore.getState().activeWorkspaceId);
                     if (activeStores) {
-                        activeStores.axisSideMenuStore.getState().setXAxis('gdp');
-                        activeStores.axisSideMenuStore.getState().addYAxisColumn('life_expectancy');
-                        activeStores.groupSideMenuStore.getState().setGroupAxis('country');
-                        activeStores.styleSideMenuStore.getState().setSize({ source: 'column', value: 'population', enabled: true, sizeMode: 'area', range: [5, 32600], mappingType: 'exponential', midPoint: [0.5, 0.66] });
-                        activeStores.styleSideMenuStore.getState().setHue({ source: 'column', value: 'region', enabled: true });
-                        activeStores.styleSideMenuStore.getState().setColorData({
-                            groupColorOverrides: {
-                                'americas': '#7feb00',
-                                'europe': '#ffe700',
-                                'africa': '#00d5e9',
-                                'asia': '#ff5872'
-                            }
-                        });
-                        activeStores.plotLayoutStore.getState().setEnableLogXAxis(true);
-                        activeStores.animationSideMenuStore.getState().setAnimationColumn('year');
-                        activeStores.animationSideMenuStore.getState().setDisplayMode('background');
-                        activeStores.filterSideMenuStore.getState().addFilter('year', 'number', { min: 1900 });
+                        const isTutorialActive = useWorkspaceStore.getState().isTutorialActive;
+                        if (!isTutorialActive) {
+                            activeStores.axisSideMenuStore.getState().setXAxis('gdp');
+                            activeStores.axisSideMenuStore.getState().addYAxisColumn('life_expectancy');
+                            activeStores.groupSideMenuStore.getState().setGroupAxis('country');
+                            activeStores.styleSideMenuStore.getState().setSize({ source: 'column', value: 'population', enabled: true, sizeMode: 'area', range: [5, 32600], mappingType: 'exponential', midPoint: [0.5, 0.66] });
+                            activeStores.styleSideMenuStore.getState().setHue({ source: 'column', value: 'region', enabled: true });
+                            activeStores.styleSideMenuStore.getState().setColorData({
+                                groupColorOverrides: {
+                                    'americas': '#7feb00',
+                                    'europe': '#ffe700',
+                                    'africa': '#00d5e9',
+                                    'asia': '#ff5872'
+                                }
+                            });
+                            activeStores.plotLayoutStore.getState().setEnableLogXAxis(true);
+                            activeStores.animationSideMenuStore.getState().setAnimationColumn('year');
+                            activeStores.animationSideMenuStore.getState().setDisplayMode('background');
+                            activeStores.filterSideMenuStore.getState().addFilter('year', 'number', { min: 1900 });
+                        }
                     }
                 }
             } else {
