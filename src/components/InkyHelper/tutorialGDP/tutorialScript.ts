@@ -87,6 +87,14 @@ export const gdpTutorialSteps: TutorialStep[] = [
     }
   },
   {
+    text: "Here is the zoomed distribution! Notice how there are 2 clear Gaussians (peaks) in this plot, showing a bimodal distribution of life expectancy. Close this popup when you're ready to proceed.",
+    targetSelector: "#popup-menu-container",
+    targetPosition: "above",
+    requirementCheck: (stores) => {
+        return stores.workspaceLocalStore.getState().popupContent === null;
+    }
+  },
+  {
     text: "Now, let's configure our chart! Open the Axis menu and set the X-axis to 'gdp' (with Log scale checked!) and the Y-axis to 'life_expectancy'.",
     targetSelector: ".axis-side-menu-container", 
     dynamicTargetSelector: () => {

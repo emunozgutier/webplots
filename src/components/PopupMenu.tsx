@@ -13,6 +13,7 @@ const PopupMenu: React.FC = () => {
             onClick={closePopup}
         >
             <div
+                id="popup-menu-container"
                 onClick={(e) => e.stopPropagation()}
                 className="d-flex flex-column"
                 style={{ width: '80%', height: '80%' }}
