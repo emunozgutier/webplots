@@ -209,7 +209,7 @@ const SwimTest: React.FC = () => {
         <InkyHelper 
           speechProps={{
             text: distToTarget > margin ? "Follow me!" : "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-            type: "hover"
+            type: "persistent"
           }}
           bodyProps={{
             leftTentacle: {
