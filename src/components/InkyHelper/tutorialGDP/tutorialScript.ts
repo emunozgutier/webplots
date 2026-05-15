@@ -23,6 +23,8 @@ export interface TutorialStep {
 
   // Custom choices to display instead of the default Next/Skip buttons
   choices?: TutorialChoice[];
+  
+  targetPosition?: 'above' | 'right';
 }
 
 export const gdpTutorialSteps: TutorialStep[] = [
@@ -47,15 +49,15 @@ export const gdpTutorialSteps: TutorialStep[] = [
     }
   },
   {
-    text: "Before we continue, let's make sure the 'year' column is treated as literal years instead of formatted numbers. In the Data Table below, click the 'Generic' badge under the 'year' column header and change it to 'Year'.",
+    text: "Let's first set the year column to the year type. Click the 'Generic' badge under the 'year' column header and change it to 'Year'.",
     targetSelector: "#type-badge-year",
+    targetPosition: "above",
     requirementCheck: () => {
         return useColumnTypeStore.getState().overrides['year'] === 'Year';
     }
   },
   {
-    text: "Great! Now take a look at the Data Table below. Try scrolling to the right until the 'life_expectancy' column appears.",
-    targetSelector: ".table-scroll-container",
+    text: "Great! Now scroll right until you can see the whole life expectancy column.",
     requirementCheck: () => {
         const container = document.querySelector('.table-scroll-container');
         if (!container) return false;

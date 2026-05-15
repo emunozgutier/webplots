@@ -179,14 +179,24 @@ const TutorialGDP: React.FC = () => {
     if (!isDragging) {
       const interval = setInterval(() => {
         const selector = currentStep.dynamicTargetSelector ? currentStep.dynamicTargetSelector() : currentStep.targetSelector;
-        if (!selector) return;
+        if (!selector) {
+          setTargetElementPos(null);
+          return;
+        }
         
         const el = document.querySelector(selector);
         if (el) {
           const rect = el.getBoundingClientRect();
-          // Target slightly offset so the tentacles can point (to the right of the element)
           let targetX = rect.right + 150;
           let targetY = rect.top + 10;
+          let elementPos = { x: rect.right - 10, y: rect.top + rect.height / 2 };
+
+          if ((currentStep as any).targetPosition === 'above') {
+            targetX = rect.left + rect.width / 2 - 50; // Centered above
+            targetY = rect.top - 180; // Way above
+            elementPos = { x: rect.left + rect.width / 2, y: rect.top };
+          }
+          
           
           // Clamp so it stays on screen
           targetX = Math.max(0, Math.min(targetX, window.innerWidth - 100));
@@ -197,9 +207,11 @@ const TutorialGDP: React.FC = () => {
           if (Math.abs(currentT.x - targetX) > 5 || Math.abs(currentT.y - targetY) > 5) {
             setTarget({ x: targetX, y: targetY });
             targetRef.current = { x: targetX, y: targetY };
-            setTargetElementPos({ x: rect.right - 10, y: rect.top + rect.height / 2 });
+            setTargetElementPos(elementPos);
             tripStartPosRef.current = posRef.current;
           }
+        } else {
+          setTargetElementPos(null);
         }
       }, 200); // Check every 200ms
 
