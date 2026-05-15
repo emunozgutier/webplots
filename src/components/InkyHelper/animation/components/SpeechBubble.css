@@ -1,11 +1,13 @@
 .inky-speech-bubble {
   position: absolute;
-  background-color: white;
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   color: #333;
   border-radius: 12px;
   font-size: 14px;
   font-weight: 500;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
   display: flex;
   flex-direction: column;
   z-index: 10;
@@ -30,7 +32,7 @@
   right: -8px;
   border-width: 8px 0 8px 12px;
   border-style: solid;
-  border-color: transparent transparent transparent white;
+  border-color: transparent transparent transparent rgba(255, 255, 255, 0.8);
   display: block;
   width: 0;
 }
@@ -43,43 +45,90 @@
 
 /* The persistent type (TutorialGDP) */
 .inky-speech-bubble-persistent {
-  bottom: 80px;
-  right: 50px;
   padding: 16px;
   border: 2px solid #9C27B0;
   opacity: 1;
-  transform: translateY(0) scale(1);
   pointer-events: auto; 
   white-space: normal;
   width: 320px;
   max-width: 80vw;
   gap: 12px;
+  top: 0;
+  left: 0;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.inky-speech-bubble-persistent::before {
-  content: '';
-  position: absolute;
-  bottom: -11px;
-  right: 18px;
+/* Placements */
+.placement-top-left {
+  transform: translate(calc(-100% + 50px), calc(-100% + 40px));
+}
+.placement-top-left::before {
+  content: ''; position: absolute;
+  bottom: -11px; right: 18px;
   border-width: 13px 0 0 18px;
-  border-style: solid;
-  border-color: #9C27B0 transparent transparent transparent;
-  display: block;
-  width: 0;
-  z-index: 1;
+  border-style: solid; border-color: #9C27B0 transparent transparent transparent;
+  width: 0; z-index: 1;
+}
+.placement-top-left::after {
+  content: ''; position: absolute;
+  bottom: -8px; right: 20px;
+  border-width: 10px 0 0 14px;
+  border-style: solid; border-color: rgba(255, 255, 255, 0.8) transparent transparent transparent;
+  width: 0; z-index: 2;
 }
 
-.inky-speech-bubble-persistent::after {
-  content: '';
-  position: absolute;
-  bottom: -8px;
-  right: 20px;
-  border-width: 10px 0 0 14px;
-  border-style: solid;
-  border-color: white transparent transparent transparent;
-  display: block;
-  width: 0;
-  z-index: 2;
+.placement-top-right {
+  transform: translate(50px, calc(-100% + 40px));
+}
+.placement-top-right::before {
+  content: ''; position: absolute;
+  bottom: -11px; left: 18px;
+  border-width: 13px 18px 0 0;
+  border-style: solid; border-color: #9C27B0 transparent transparent transparent;
+  width: 0; z-index: 1;
+}
+.placement-top-right::after {
+  content: ''; position: absolute;
+  bottom: -8px; left: 20px;
+  border-width: 10px 14px 0 0;
+  border-style: solid; border-color: rgba(255, 255, 255, 0.8) transparent transparent transparent;
+  width: 0; z-index: 2;
+}
+
+.placement-bottom-left {
+  transform: translate(calc(-100% + 50px), 100px);
+}
+.placement-bottom-left::before {
+  content: ''; position: absolute;
+  top: -11px; right: 18px;
+  border-width: 0 0 13px 18px;
+  border-style: solid; border-color: transparent transparent #9C27B0 transparent;
+  width: 0; z-index: 1;
+}
+.placement-bottom-left::after {
+  content: ''; position: absolute;
+  top: -8px; right: 20px;
+  border-width: 0 0 10px 14px;
+  border-style: solid; border-color: transparent transparent rgba(255, 255, 255, 0.8) transparent;
+  width: 0; z-index: 2;
+}
+
+.placement-bottom-right {
+  transform: translate(50px, 100px);
+}
+.placement-bottom-right::before {
+  content: ''; position: absolute;
+  top: -11px; left: 18px;
+  border-width: 0 18px 13px 0;
+  border-style: solid; border-color: transparent transparent #9C27B0 transparent;
+  width: 0; z-index: 1;
+}
+.placement-bottom-right::after {
+  content: ''; position: absolute;
+  top: -8px; left: 20px;
+  border-width: 0 14px 10px 0;
+  border-style: solid; border-color: transparent transparent rgba(255, 255, 255, 0.8) transparent;
+  width: 0; z-index: 2;
 }
 
 .inky-speech-buttons {

@@ -10,8 +10,11 @@ const SwimTest: React.FC = () => {
   const [rotation, setRotation] = useState(0);
   const [tick, setTick] = useState(0);
   const [mode, setMode] = useState<'swim' | 'point'>('swim');
+  const [placement, setPlacement] = useState<'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'>('top-left');
   
   const [isMouseDown, setIsMouseDown] = useState(false);
+  const [isSquidDragging, setIsSquidDragging] = useState(false);
+  const [isClosed, setIsClosed] = useState(false);
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
 
   const requestRef = useRef<number>(0);
@@ -20,6 +23,7 @@ const SwimTest: React.FC = () => {
   const targetRef = useRef(target);
   const rotRef = useRef(rotation);
   const modeRef = useRef(mode);
+  const placementRef = useRef(placement);
 
   useEffect(() => {
     modeRef.current = mode;
@@ -77,6 +81,36 @@ const SwimTest: React.FC = () => {
         y: bubblePosRef.current.y + (posRef.current.y - bubblePosRef.current.y) * 0.05
       };
       setBubblePos(bubblePosRef.current);
+      
+      // Hysteresis logic for speech bubble placement
+      const bubbleX = bubblePosRef.current.x;
+      const bubbleY = bubblePosRef.current.y;
+      
+      const isCurrentlyRight = placementRef.current.includes('right');
+      const isCurrentlyBottom = placementRef.current.includes('bottom');
+      
+      let nextIsRight = isCurrentlyRight;
+      let nextIsBottom = isCurrentlyBottom;
+      
+      // Horizontal hysteresis (Bubble is 320px wide)
+      if (isCurrentlyRight) {
+        if (bubbleX > 500) nextIsRight = false; // Switch back to left
+      } else {
+        if (bubbleX < 350) nextIsRight = true; // Switch to right
+      }
+      
+      // Vertical hysteresis
+      if (isCurrentlyBottom) {
+        if (bubbleY > 400) nextIsBottom = false; // Switch back to top
+      } else {
+        if (bubbleY < 250) nextIsBottom = true; // Switch to bottom
+      }
+      
+      const nextPlacement = `${nextIsBottom ? 'bottom' : 'top'}-${nextIsRight ? 'right' : 'left'}` as any;
+      if (nextPlacement !== placementRef.current) {
+        placementRef.current = nextPlacement;
+        setPlacement(nextPlacement);
+      }
 
       requestRef.current = requestAnimationFrame(updatePosition);
     };
@@ -102,6 +136,29 @@ const SwimTest: React.FC = () => {
   const handlePointerUp = (e: React.PointerEvent) => {
     e.currentTarget.releasePointerCapture(e.pointerId);
     setIsMouseDown(false);
+  };
+
+  const handleSquidDragStart = (e: React.PointerEvent) => {
+    e.stopPropagation();
+    setIsSquidDragging(true);
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const handleSquidDragMove = (e: React.PointerEvent) => {
+    if (isSquidDragging) {
+      e.stopPropagation();
+      setTarget({ x: e.clientX, y: e.clientY });
+      targetRef.current = { x: e.clientX, y: e.clientY };
+      posRef.current = { x: e.clientX, y: e.clientY };
+      setPosition(posRef.current);
+      setCursorPos({ x: e.clientX, y: e.clientY });
+    }
+  };
+
+  const handleSquidDragEnd = (e: React.PointerEvent) => {
+    e.stopPropagation();
+    setIsSquidDragging(false);
+    e.currentTarget.releasePointerCapture(e.pointerId);
   };
 
   // Calculate tentacle path based on cursor position
@@ -213,8 +270,10 @@ const SwimTest: React.FC = () => {
       <div 
         style={{ 
           position: 'absolute', top: 20, left: 20, zIndex: 100, 
-          backgroundColor: 'rgba(255, 255, 255, 0.9)', padding: 12, 
-          borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          backgroundColor: 'rgba(255, 255, 255, 0.6)', padding: 12, 
+          borderRadius: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+          backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+          border: '1px solid rgba(255,255,255,0.4)',
           fontFamily: 'sans-serif'
         }}
         onPointerDown={(e) => e.stopPropagation()}
@@ -231,61 +290,121 @@ const SwimTest: React.FC = () => {
           Enable Pointing
         </label>
       </div>
-      
-      {/* Target Marker */}
-      <div 
-        className="swimtest-target"
-        style={{ left: target.x, top: target.y }}
-      />
 
-      {/* Trailing Horizontal Speech Bubble */}
-      <div 
-        style={{
-          position: 'absolute',
-          left: bubblePos.x - 50,
-          top: bubblePos.y - 60,
-          width: 100,
-          height: 120,
-          pointerEvents: 'none',
-          zIndex: 100
-        }}
-      >
-        <SpeechBubble 
-          text={distToTarget > margin ? "Follow Me" : "Lorem ipsum dolor sit amet, consectetur adipiscing elit."}
-          type="persistent"
-          instant={distToTarget > margin}
-          delayMs={1000}
-        />
-      </div>
-
-      {/* Inky */}
-      <div 
-        className="swimtest-inky"
-        style={{ 
-          transform: `translate(${position.x - 50}px, ${position.y - 60}px) rotate(${rotation}deg)` 
-        }}
-      >
-        <InkyHelper 
-          bodyProps={{
-            leftTentacle: {
-              path: leftTentaclePath,
-              clubX: leftTentacleClubX,
-              clubY: leftTentacleClubY,
-              clubRot: leftTentacleClubRot,
-              isReaching: isReachingLeft
-            },
-            rightTentacle: {
-              path: rightTentaclePath,
-              clubX: rightTentacleClubX,
-              clubY: rightTentacleClubY,
-              clubRot: rightTentacleClubRot,
-              isReaching: isReachingRight
-            },
-            tentacleClass: "inky-tentacle",
-            eyeClass: "inky-eye"
+      {isClosed ? (
+        <button 
+          onClick={(e) => { e.stopPropagation(); setIsClosed(false); }}
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            padding: '12px 24px',
+            fontSize: '18px',
+            background: '#9C27B0',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+            zIndex: 1000,
+            fontWeight: 'bold'
           }}
-        />
-      </div>
+        >
+          Open Inky
+        </button>
+      ) : (
+        <>
+          {/* Target Marker */}
+          <div 
+            className="swimtest-target"
+            style={{ left: target.x, top: target.y }}
+          />
+
+          {/* Trailing Horizontal Speech Bubble */}
+          <div 
+            style={{
+              position: 'absolute',
+              left: bubblePos.x - 50,
+              top: bubblePos.y - 60,
+              width: 100,
+              height: 120,
+              pointerEvents: 'none',
+              zIndex: 100
+            }}
+          >
+            <SpeechBubble 
+              text={distToTarget > margin && !isSquidDragging ? "Follow Me" : "Lorem ipsum dolor sit amet, consectetur adipiscing elit."}
+              type="persistent"
+              instant={distToTarget > margin && !isSquidDragging}
+              delayMs={1000}
+              placement={placement}
+            />
+          </div>
+
+          {/* Squid Controls (Attached to squid) */}
+          <div 
+            style={{
+              position: 'absolute',
+              left: position.x - 50,
+              top: position.y - 60,
+              width: 100,
+              height: 120,
+              pointerEvents: 'none',
+              zIndex: 101,
+            }}
+          >
+            <div style={{ position: 'absolute', top: -30, right: -40, pointerEvents: 'auto', display: 'flex', gap: 8, background: 'rgba(255,255,255,0.6)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.4)', padding: '4px 8px', borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+              <div 
+                onPointerDown={handleSquidDragStart}
+                onPointerMove={handleSquidDragMove}
+                onPointerUp={handleSquidDragEnd}
+                onPointerCancel={handleSquidDragEnd}
+                style={{ cursor: 'grab', display: 'flex', alignItems: 'center', userSelect: 'none', fontSize: '18px', color: '#666' }}
+                title="Drag Inky"
+              >
+                ☰
+              </div>
+              <button 
+                onClick={(e) => { e.stopPropagation(); setIsClosed(true); }} 
+                style={{ background: '#ffebee', color: '#f44336', border: 'none', borderRadius: '50%', width: 24, height: 24, cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold', fontSize: '16px', padding: 0 }}
+                title="Close Inky"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+
+          {/* Inky */}
+          <div 
+            className="swimtest-inky"
+            style={{ 
+              transform: `translate(${position.x - 50}px, ${position.y - 60}px) rotate(${rotation}deg)` 
+            }}
+          >
+            <InkyHelper 
+              bodyProps={{
+                leftTentacle: {
+                  path: leftTentaclePath,
+                  clubX: leftTentacleClubX,
+                  clubY: leftTentacleClubY,
+                  clubRot: leftTentacleClubRot,
+                  isReaching: isReachingLeft
+                },
+                rightTentacle: {
+                  path: rightTentaclePath,
+                  clubX: rightTentacleClubX,
+                  clubY: rightTentacleClubY,
+                  clubRot: rightTentacleClubRot,
+                  isReaching: isReachingRight
+                },
+                tentacleClass: "inky-tentacle",
+                eyeClass: "inky-eye"
+              }}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 };

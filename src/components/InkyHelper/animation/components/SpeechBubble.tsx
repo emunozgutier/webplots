@@ -11,6 +11,7 @@ export interface SpeechBubbleProps {
   skipDelay?: boolean;
   instant?: boolean;
   delayMs?: number;
+  placement?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 }
 
 type TypewriterState = 'IDLE' | 'WAITING' | 'TYPING';
@@ -25,6 +26,7 @@ const SpeechBubble: React.FC<SpeechBubbleProps> = ({
   skipDelay = false,
   instant = false,
   delayMs = 1000,
+  placement = 'top-left',
 }) => {
   const isHover = type === 'hover';
   
@@ -80,7 +82,7 @@ const SpeechBubble: React.FC<SpeechBubbleProps> = ({
 
   return (
     <div 
-      className={`inky-speech-bubble ${isHover ? 'inky-speech-bubble-hover' : 'inky-speech-bubble-persistent'}`}
+      className={`inky-speech-bubble ${isHover ? 'inky-speech-bubble-hover' : `inky-speech-bubble-persistent placement-${placement}`}`}
       onPointerDown={(e) => !isHover && e.stopPropagation()}
     >
       {!isHover && onSkip && (
