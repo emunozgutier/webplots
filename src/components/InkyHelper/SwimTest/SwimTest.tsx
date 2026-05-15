@@ -253,6 +253,8 @@ const SwimTest: React.FC = () => {
         <SpeechBubble 
           text={distToTarget > margin ? "Follow Me" : "Lorem ipsum dolor sit amet, consectetur adipiscing elit."}
           type="persistent"
+          instant={distToTarget > margin}
+          delayMs={1000}
         />
       </div>
 
