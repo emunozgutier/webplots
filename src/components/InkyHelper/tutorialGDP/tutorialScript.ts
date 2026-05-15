@@ -45,25 +45,29 @@ export const gdpTutorialSteps: TutorialStep[] = [
     }
   },
   {
-    text: "First, we set the axes. X-axis is 'gdpPercap' (with Log scale!) and Y-axis is 'lifeExp'.",
+    text: "Great! Now take a look at the Data Table below. Try scrolling to the right until you can see the 'year', 'gdp', and 'life_expectancy' columns.",
+    targetSelector: ".table-scroll-container",
+  },
+  {
+    text: "First, we set the axes. X-axis is 'gdp' (with Log scale!) and Y-axis is 'life_expectancy'.",
     action: (stores) => {
-      stores.axisSideMenuStore.getState().setXAxis('gdpPercap');
-      stores.axisSideMenuStore.getState().addYAxisColumn('lifeExp');
+      stores.axisSideMenuStore.getState().setXAxis('gdp');
+      stores.axisSideMenuStore.getState().addYAxisColumn('life_expectancy');
       stores.plotLayoutStore.getState().setEnableLogXAxis(true);
     },
     targetSelector: ".axis-config-panel" // Just an example selector, adjust to your actual UI
   },
   {
-    text: "Let's color the bubbles by 'continent'. Notice how the Style side menu updates!",
+    text: "Let's color the bubbles by 'region'. Notice how the Style side menu updates!",
     action: (stores) => {
-      stores.styleSideMenuStore.getState().setHue({ source: 'column', value: 'continent', enabled: true });
+      stores.styleSideMenuStore.getState().setHue({ source: 'column', value: 'region', enabled: true });
     },
     targetSelector: ".style-side-menu"
   },
   {
-    text: "We map the size of the bubbles to the 'pop' (Population) column.",
+    text: "We map the size of the bubbles to the 'population' column.",
     action: (stores) => {
-      stores.styleSideMenuStore.getState().setSize({ source: 'column', value: 'pop', enabled: true, sizeMode: 'area' });
+      stores.styleSideMenuStore.getState().setSize({ source: 'column', value: 'population', enabled: true, sizeMode: 'area' });
     }
   },
   {
