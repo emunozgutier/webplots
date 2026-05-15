@@ -12,9 +12,11 @@ import { useTableStore } from '../../store/PlotTable/useTableStore';
 import Plot from 'react-plotly.js';
 import ControlButtons from './TableAreaComponents/ControlButtons';
 import BatchButtons from './TableAreaComponents/BatchButtons';
-import { calculateGaussianStats, formatNumber, parseToNumeric, sortData } from '../../utils/TableMathLib';
+import { calculateGaussianStats, formatNumber, parseToNumeric, sortData, inferColumnType } from '../../utils/TableMathLib';
+import { useStyleStore } from '../../store/useStyle';
 
 const TableArea: React.FC = () => {
+    const { typeColors } = useStyleStore();
     const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
     const [currentBatch, setCurrentBatch] = useState(0);
     const BATCH_SIZE = 100;
@@ -209,6 +211,14 @@ const TableArea: React.FC = () => {
         return datasetMode === 'all' ? allData : filteredData;
     }, [allData, filteredData, datasetMode]);
     const displayColumns = datasetMode === 'all' ? allColumns : usedColumns;
+
+    const columnTypes = useMemo(() => {
+        const types: Record<string, string> = {};
+        displayColumns.forEach(col => {
+            types[col] = inferColumnType(displayData, col);
+        });
+        return types;
+    }, [displayData, displayColumns]);
 
     // Reset selection and batch when dataset changes
     React.useEffect(() => {
@@ -438,8 +448,13 @@ const TableArea: React.FC = () => {
                                             className="bg-light align-top"
                                         >
                                             <div className="d-flex justify-content-between align-items-center mb-1">
-                                                <div className="fw-bold">{col}</div>
-                                                <div className="d-flex gap-1 ms-2">
+                                                <div>
+                                                    <div className="fw-bold">{col}</div>
+                                                    <span className="badge fw-bold" style={{ fontSize: '0.65rem', backgroundColor: typeColors[columnTypes[col]] || typeColors['Generic'], color: '#fff' }}>
+                                                        {columnTypes[col]}
+                                                    </span>
+                                                </div>
+                                                <div className="d-flex gap-1 ms-2 align-items-start">
                                                     <div className="btn-group">
                                                         <button
                                                             className={`btn btn-sm py-0 px-1 ${sortConfig?.key === col && sortConfig?.direction === 'asc' ? 'btn-secondary' : 'btn-outline-secondary'}`}

@@ -500,3 +500,70 @@ export const calculateLogBase = (cx: number, cy: number, maxBase: number = 30): 
     
     return (low + high) / 2;
 };
+
+/**
+ * Infers the data type of a column based on its name and sample values.
+ * Returns one of: 'Year', 'Date', 'Time', 'Category', 'Generic'
+ */
+export const inferColumnType = (data: any[], column: string): string => {
+    const lowerCol = column.toLowerCase();
+    if (lowerCol.includes('year')) return 'Year';
+    if (lowerCol.includes('date')) return 'Date';
+    if (lowerCol.includes('time')) return 'Time';
+
+    let numCount = 0;
+    let strCount = 0;
+    let totalProcessed = 0;
+    const uniqueValues = new Set<any>();
+
+    // Sample up to 100 non-empty values
+    for (let i = 0; i < data.length && totalProcessed < 100; i++) {
+        const val = data[i][column];
+        if (val === null || val === undefined || val === '') continue;
+        
+        totalProcessed++;
+        uniqueValues.add(val);
+        if (typeof val === 'number' || (!isNaN(Number(val)) && String(val).trim() !== '')) {
+            numCount++;
+        } else {
+            strCount++;
+        }
+    }
+
+    if (totalProcessed === 0) return 'Generic';
+
+    if (numCount / totalProcessed > 0.8) {
+        // Mostly numeric
+        let isYear = true;
+        for (const v of Array.from(uniqueValues)) {
+            const numV = Number(v);
+            if (isNaN(numV) || numV < 1000 || numV > 2500 || !Number.isInteger(numV)) {
+                isYear = false;
+                break;
+            }
+        }
+        if (isYear && uniqueValues.size > 0) return 'Year';
+        
+        return 'Generic';
+    } else {
+        // Mostly strings
+        const datePattern = /^\d{4}-\d{2}-\d{2}/;
+        const timePattern = /^\d{1,2}:\d{2}(:\d{2})?$/;
+        
+        let dateCount = 0;
+        let timeCount = 0;
+        
+        for (const v of Array.from(uniqueValues)) {
+            const strV = String(v).trim();
+            if (datePattern.test(strV)) dateCount++;
+            if (timePattern.test(strV)) timeCount++;
+        }
+        
+        if (dateCount / uniqueValues.size > 0.8) return 'Date';
+        if (timeCount / uniqueValues.size > 0.8) return 'Time';
+        
+        if (uniqueValues.size < 50 || uniqueValues.size / totalProcessed < 0.5) return 'Category';
+        
+        return 'Generic';
+    }
+};
