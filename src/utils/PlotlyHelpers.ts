@@ -617,7 +617,8 @@ export const generatePlotConfig = (
                     (enableLogXAxis ? [Math.log10(Math.max(globalXMin, 1e-15)), Math.log10(Math.max(globalXMax, 1e-15))] : [globalXMin, globalXMax]) 
                 : undefined)
             ),
-            autorange: plotType === 'histogram' ? true : (!xRange && !(animationData && animationData.animationColumn && globalXMin !== Infinity))
+            autorange: plotType === 'histogram' ? true : (!xRange && !(animationData && animationData.animationColumn && globalXMin !== Infinity)),
+            exponentformat: 'none'
         },
         yaxis: {
             title: { text: yAxisTitle || (yAxis.length === 1 ? yAxis[0] : 'Values') },
@@ -628,7 +629,8 @@ export const generatePlotConfig = (
                     (enableLogYAxis ? [Math.log10(Math.max(globalYMin, 1e-15)), Math.log10(Math.max(globalYMax, 1e-15))] : [globalYMin, globalYMax]) 
                 : undefined)
             ),
-            autorange: plotType === 'histogram' ? true : (!yRange && !(animationData && animationData.animationColumn && globalYMin !== Infinity))
+            autorange: plotType === 'histogram' ? true : (!yRange && !(animationData && animationData.animationColumn && globalYMin !== Infinity)),
+            exponentformat: 'none'
         },
         autosize: true,
         margin: { l: 50, r: 50, b: 50, t: 50 },
@@ -770,7 +772,8 @@ export const generatePlotConfig = (
                     (enableLogXAxis ? [Math.log10(Math.max(globalXMin, 1e-15)), Math.log10(Math.max(globalXMax, 1e-15))] : [globalXMin, globalXMax]) 
                 : undefined)
             ),
-            autorange: plotType === 'histogram' ? true : (!xRange && !(animationData && animationData.animationColumn && globalXMin !== Infinity))
+            autorange: plotType === 'histogram' ? true : (!xRange && !(animationData && animationData.animationColumn && globalXMin !== Infinity)),
+            exponentformat: 'none'
         };
         const baseTargetYAxis = {
             title: { text: yAxisTitle || (yAxis.length === 1 ? yAxis[0] : 'Values') },
@@ -781,7 +784,8 @@ export const generatePlotConfig = (
                     (enableLogYAxis ? [Math.log10(Math.max(globalYMin, 1e-15)), Math.log10(Math.max(globalYMax, 1e-15))] : [globalYMin, globalYMax]) 
                 : undefined)
             ),
-            autorange: plotType === 'histogram' ? true : (!yRange && !(animationData && animationData.animationColumn && globalYMin !== Infinity))
+            autorange: plotType === 'histogram' ? true : (!yRange && !(animationData && animationData.animationColumn && globalYMin !== Infinity)),
+            exponentformat: 'none'
         };
 
         // Assign axes dynamically to Layout
