@@ -63,18 +63,22 @@ export const gdpTutorialSteps: TutorialStep[] = [
         
         return targetHeaders.every(th => {
             const rect = th.getBoundingClientRect();
-            return rect.right > containerRect.left && rect.left < containerRect.right;
+            // Check if it's FULLY visible with a slight padding, ensuring the user really scrolled to it
+            return rect.left >= containerRect.left && rect.right <= containerRect.right - 10;
         });
     }
   },
   {
-    text: "First, we set the axes. X-axis is 'gdp' (with Log scale!) and Y-axis is 'life_expectancy'.",
-    action: (stores) => {
-      stores.axisSideMenuStore.getState().setXAxis('gdp');
-      stores.axisSideMenuStore.getState().addYAxisColumn('life_expectancy');
-      stores.plotLayoutStore.getState().setEnableLogXAxis(true);
+    text: "Now, let's configure our chart! Open the Axis menu and set the X-axis to 'gdp' (with Log scale checked!) and the Y-axis to 'life_expectancy'.",
+    targetSelector: ".axis-side-menu-container", 
+    dynamicTargetSelector: () => {
+        return document.querySelector('#axis-side-menu') ? '#axis-side-menu' : '.axis-side-menu-container';
     },
-    targetSelector: ".axis-config-panel" // Just an example selector, adjust to your actual UI
+    requirementCheck: (stores) => {
+      const axisData = stores.axisSideMenuStore.getState().sideMenuData;
+      const enableLogX = stores.plotLayoutStore.getState().enableLogXAxis;
+      return axisData.xAxis === 'gdp' && axisData.yAxis.includes('life_expectancy') && enableLogX === true;
+    }
   },
   {
     text: "Let's color the bubbles by 'region'. Notice how the Style side menu updates!",
