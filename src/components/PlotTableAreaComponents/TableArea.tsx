@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Table } from 'react-bootstrap';
+import { Table, Dropdown } from 'react-bootstrap';
 import { useCsvDataStore } from '../../store/useCsvDataStore';
 import { Step_1_filter } from '../../utils/DataFrameLib';
 import { useAxisSideMenuStore } from '../../store/SideMenu/useAxisSideMenuStore';
@@ -12,11 +12,27 @@ import { useTableStore } from '../../store/PlotTable/useTableStore';
 import Plot from 'react-plotly.js';
 import ControlButtons from './TableAreaComponents/ControlButtons';
 import BatchButtons from './TableAreaComponents/BatchButtons';
-import { calculateGaussianStats, formatNumber, parseToNumeric, sortData, inferColumnType } from '../../utils/TableMathLib';
+import { calculateGaussianStats, formatNumber, parseToNumeric, sortData, inferColumnType, getAvailableColumnTypes } from '../../utils/TableMathLib';
 import { useStyleStore } from '../../store/useStyle';
+import { useColumnTypeStore } from '../../store/useColumnTypeStore';
+
+const BadgeToggle = React.forwardRef<HTMLSpanElement, any>(({ children, onClick, style, className }, ref) => (
+    <span
+        ref={ref}
+        onClick={(e) => {
+            e.preventDefault();
+            onClick(e);
+        }}
+        className={className}
+        style={{ ...style, cursor: 'pointer' }}
+    >
+        {children}
+    </span>
+));
 
 const TableArea: React.FC = () => {
     const { typeColors } = useStyleStore();
+    const { overrides, setOverride } = useColumnTypeStore();
     const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
     const [currentBatch, setCurrentBatch] = useState(0);
     const BATCH_SIZE = 100;
@@ -215,9 +231,17 @@ const TableArea: React.FC = () => {
     const columnTypes = useMemo(() => {
         const types: Record<string, string> = {};
         displayColumns.forEach(col => {
-            types[col] = inferColumnType(displayData, col);
+            types[col] = overrides[col] || inferColumnType(displayData, col);
         });
         return types;
+    }, [displayData, displayColumns, overrides]);
+
+    const availableColumnTypes = useMemo(() => {
+        const avail: Record<string, string[]> = {};
+        displayColumns.forEach(col => {
+            avail[col] = getAvailableColumnTypes(displayData, col);
+        });
+        return avail;
     }, [displayData, displayColumns]);
 
     // Reset selection and batch when dataset changes
@@ -450,9 +474,27 @@ const TableArea: React.FC = () => {
                                             <div className="d-flex justify-content-between align-items-center mb-1">
                                                 <div>
                                                     <div className="fw-bold">{col}</div>
-                                                    <span className="badge fw-bold" style={{ fontSize: '0.65rem', backgroundColor: typeColors[columnTypes[col]] || typeColors['Generic'], color: '#fff' }}>
-                                                        {columnTypes[col]}
-                                                    </span>
+                                                    <Dropdown>
+                                                        <Dropdown.Toggle 
+                                                            as={BadgeToggle}
+                                                            className="badge fw-bold" 
+                                                            style={{ fontSize: '0.65rem', backgroundColor: typeColors[columnTypes[col]] || typeColors['Generic'], color: '#fff' }}
+                                                        >
+                                                            {columnTypes[col]}
+                                                        </Dropdown.Toggle>
+                                                        <Dropdown.Menu style={{ minWidth: 'auto', fontSize: '0.8rem' }}>
+                                                            {availableColumnTypes[col]?.map(type => (
+                                                                <Dropdown.Item 
+                                                                    key={type} 
+                                                                    onClick={() => setOverride(col, type)}
+                                                                    active={type === columnTypes[col]}
+                                                                    className="py-1 px-3"
+                                                                >
+                                                                    {type}
+                                                                </Dropdown.Item>
+                                                            ))}
+                                                        </Dropdown.Menu>
+                                                    </Dropdown>
                                                 </div>
                                                 <div className="d-flex gap-1 ms-2 align-items-start">
                                                     <div className="btn-group">

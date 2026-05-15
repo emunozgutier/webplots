@@ -567,3 +567,50 @@ export const inferColumnType = (data: any[], column: string): string => {
         return 'Generic';
     }
 };
+
+/**
+ * Returns the possible data types a column could reasonably be interpreted as.
+ */
+export const getAvailableColumnTypes = (data: any[], column: string): string[] => {
+    let numCount = 0;
+    let strCount = 0;
+    let totalProcessed = 0;
+    const uniqueValues = new Set<any>();
+
+    for (let i = 0; i < data.length && totalProcessed < 100; i++) {
+        const val = data[i][column];
+        if (val === null || val === undefined || val === '') continue;
+        
+        totalProcessed++;
+        uniqueValues.add(val);
+        if (typeof val === 'number' || (!isNaN(Number(val)) && String(val).trim() !== '')) {
+            numCount++;
+        } else {
+            strCount++;
+        }
+    }
+
+    if (totalProcessed === 0) return ['Generic', 'Category', 'Year', 'Date', 'Time'];
+
+    if (numCount / totalProcessed > 0.8) {
+        return ['Generic', 'Category', 'Year', 'Date', 'Time'];
+    } else {
+        const datePattern = /^\d{4}-\d{2}-\d{2}/;
+        const timePattern = /^\d{1,2}:\d{2}(:\d{2})?$/;
+        
+        let dateCount = 0;
+        let timeCount = 0;
+        
+        for (const v of Array.from(uniqueValues)) {
+            const strV = String(v).trim();
+            if (datePattern.test(strV)) dateCount++;
+            if (timePattern.test(strV)) timeCount++;
+        }
+        
+        if (dateCount / uniqueValues.size > 0.8) return ['Date', 'Category'];
+        if (timeCount / uniqueValues.size > 0.8) return ['Time', 'Category'];
+        
+        // Pure strings that aren't dates or times can only be a category
+        return ['Category'];
+    }
+};
