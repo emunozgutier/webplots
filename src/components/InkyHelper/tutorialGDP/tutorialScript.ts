@@ -96,10 +96,10 @@ export const gdpTutorialSteps: TutorialStep[] = [
   },
   {
     text: "Now, let's configure our chart! Open the Axis menu and set the X-axis to 'gdp' (with Log scale checked!).",
-    targetSelector: "#x-axis-dropzone", 
+    targetSelector: "#x-axis-label", 
     dynamicTargetSelector: () => {
-        const dropzone = document.querySelector('#x-axis-dropzone');
-        if (dropzone && dropzone.getBoundingClientRect().width > 0) return '#x-axis-dropzone';
+        const label = document.querySelector('#x-axis-label');
+        if (label && label.getBoundingClientRect().width > 0) return '#x-axis-label';
         return '#side-menu-btn-axis';
     },
     requirementCheck: (stores) => {
@@ -110,10 +110,10 @@ export const gdpTutorialSteps: TutorialStep[] = [
   },
   {
     text: "Great! Now set the Y-axis to 'life_expectancy'.",
-    targetSelector: "#y-axis-dropzone", 
+    targetSelector: "#y-axis-label", 
     dynamicTargetSelector: () => {
-        const dropzone = document.querySelector('#y-axis-dropzone');
-        if (dropzone && dropzone.getBoundingClientRect().width > 0) return '#y-axis-dropzone';
+        const label = document.querySelector('#y-axis-label');
+        if (label && label.getBoundingClientRect().width > 0) return '#y-axis-label';
         return '#side-menu-btn-axis';
     },
     requirementCheck: (stores) => {

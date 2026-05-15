@@ -67,7 +67,7 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
                         {hasColumns ? (
                             <>
                                 <div className="mb-3">
-                                    <label className="form-label fw-bold small mb-2">Y-Axis <small className="text-muted fw-normal">({yAxis.length}/8)</small></label>
+                                    <label id="y-axis-label" className="form-label fw-bold small mb-2">Y-Axis <small className="text-muted fw-normal">({yAxis.length}/8)</small></label>
                                     <div
                                         id="y-axis-dropzone"
                                         className={`border rounded p-2 ${dragOverY ? 'bg-info bg-opacity-10 border-info' : 'bg-white'}`}
@@ -98,7 +98,7 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
 
                                 {plotType !== 'histogram' && (
                                     <div className="mb-0 mt-3">
-                                        <label className="form-label fw-bold small mb-2">X-Axis</label>
+                                        <label id="x-axis-label" className="form-label fw-bold small mb-2">X-Axis</label>
                                         <div
                                             id="x-axis-dropzone"
                                             className={`border rounded p-2 ${dragOverX ? 'bg-info bg-opacity-10 border-info' : 'bg-white'}`}
