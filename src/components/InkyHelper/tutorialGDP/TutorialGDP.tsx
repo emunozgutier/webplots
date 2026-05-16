@@ -397,6 +397,7 @@ const TutorialGDP: React.FC = () => {
           squidPos={position}
           targetPos={targetElementPos}
           isDragging={isDragging}
+          onClose={(e) => { e.stopPropagation(); setIsTutorialActive(false); }}
           text={currentText}
           type="persistent"
           instant={isMoving || !isNewStep}
@@ -459,49 +460,7 @@ const TutorialGDP: React.FC = () => {
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
       >
-        <button 
-          onClick={(e) => { e.stopPropagation(); setIsTutorialActive(false); }} 
-          style={{ 
-            position: 'absolute', 
-            top: 0, 
-            bottom: 'auto', 
-            left: (placement === 'ne' || placement === 'e' || placement === 'se') ? 0 : 'auto', 
-            right: (placement === 'ne' || placement === 'e' || placement === 'se') ? 'auto' : 0, 
-            pointerEvents: 'auto', 
-            background: 'rgba(255,255,255,0.8)', 
-            backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
-            color: '#666', 
-            border: '1px solid rgba(0,0,0,0.1)', 
-            borderRadius: '50%', 
-            width: 24, 
-            height: 24, 
-            cursor: 'pointer', 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            fontWeight: 'bold', 
-            fontSize: '16px', 
-            boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
-            padding: 0,
-            transition: 'all 0.2s ease',
-            zIndex: 102
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#ffebee';
-            e.currentTarget.style.color = '#f44336';
-            e.currentTarget.style.borderColor = '#ffcdd2';
-            e.currentTarget.style.transform = 'scale(1.1)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(255,255,255,0.8)';
-            e.currentTarget.style.color = '#666';
-            e.currentTarget.style.borderColor = 'rgba(0,0,0,0.1)';
-            e.currentTarget.style.transform = 'scale(1)';
-          }}
-          title="Close Inky"
-        >
-          ×
-        </button>
+
         <div style={{ transform: `rotate(${rotation}deg)` }}>
           <InkyHelper 
             className="tutorial-gdp-wrapper"

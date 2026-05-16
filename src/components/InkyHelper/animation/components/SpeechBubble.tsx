@@ -16,6 +16,7 @@ export interface SpeechBubbleProps {
   targetPos?: { x: number, y: number } | null;
   isDragging?: boolean;
   onPlacementChange?: (placement: 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw') => void;
+  onClose?: (e: React.MouseEvent) => void;
   customFooter?: React.ReactNode;
 }
 
@@ -36,6 +37,7 @@ const SpeechBubble: React.FC<SpeechBubbleProps> = ({
   targetPos,
   isDragging = false,
   onPlacementChange,
+  onClose,
   customFooter,
 }) => {
   const isHover = type === 'hover';
@@ -154,6 +156,15 @@ const SpeechBubble: React.FC<SpeechBubbleProps> = ({
       className={`inky-speech-bubble ${isHover ? 'inky-speech-bubble-hover' : `inky-speech-bubble-persistent placement-${computedPlacement}`}`}
       onPointerDown={(e) => !isHover && e.stopPropagation()}
     >
+      {onClose && !isHover && (
+        <button 
+          className="inky-speech-close" 
+          onClick={onClose}
+          title="Close Inky"
+        >
+          ×
+        </button>
+      )}
       <div className="inky-speech-text" style={{ position: 'relative' }}>
         {/* Invisible full text establishes the final dimensions so the bubble doesn't resize while typing */}
         <div style={{ visibility: 'hidden', pointerEvents: 'none' }}>
