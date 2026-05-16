@@ -11,7 +11,11 @@ export interface SpeechBubbleProps {
   skipDelay?: boolean;
   instant?: boolean;
   delayMs?: number;
-  placement?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+  placement?: 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
+  squidPos?: { x: number, y: number };
+  targetPos?: { x: number, y: number } | null;
+  isDragging?: boolean;
+  onPlacementChange?: (placement: 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw') => void;
   customFooter?: React.ReactNode;
 }
 
@@ -27,7 +31,11 @@ const SpeechBubble: React.FC<SpeechBubbleProps> = ({
   skipDelay = false,
   instant = false,
   delayMs = 1000,
-  placement = 'top-left',
+  placement = 'ne',
+  squidPos,
+  targetPos,
+  isDragging = false,
+  onPlacementChange,
   customFooter,
 }) => {
   const isHover = type === 'hover';
@@ -36,6 +44,65 @@ const SpeechBubble: React.FC<SpeechBubbleProps> = ({
   const [targetText, setTargetText] = useState<string | React.ReactNode>("");
   const [state, setState] = useState<TypewriterState>('IDLE');
   const [charIndex, setCharIndex] = useState(0);
+  const [computedPlacement, setComputedPlacement] = useState(placement);
+
+  useEffect(() => {
+    if (!squidPos) {
+      setComputedPlacement(placement);
+      return;
+    }
+    
+    let nextPlacement: 'n' | 'nw' | 'w' | 'sw' | 's' | 'se' | 'e' | 'ne' = 'se';
+    const inkyX = squidPos.x;
+    const inkyY = squidPos.y;
+
+    if (targetPos && !isDragging) {
+      const dx = inkyX - targetPos.x;
+      const dy = inkyY - targetPos.y;
+      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+      
+      if (angle >= -22.5 && angle < 22.5) nextPlacement = 'e';
+      else if (angle >= 22.5 && angle < 67.5) nextPlacement = 'se';
+      else if (angle >= 67.5 && angle < 112.5) nextPlacement = 's';
+      else if (angle >= 112.5 && angle < 157.5) nextPlacement = 'sw';
+      else if (angle >= 157.5 || angle < -157.5) nextPlacement = 'w';
+      else if (angle >= -157.5 && angle < -112.5) nextPlacement = 'nw';
+      else if (angle >= -112.5 && angle < -67.5) nextPlacement = 'n';
+      else if (angle >= -67.5 && angle < -22.5) nextPlacement = 'ne';
+    } else {
+      if (inkyX < window.innerWidth / 2) {
+        nextPlacement = inkyY < window.innerHeight / 2 ? 'se' : 'ne';
+      } else {
+        nextPlacement = inkyY < window.innerHeight / 2 ? 'sw' : 'nw';
+      }
+    }
+
+    // Safety overrides to prevent bubble from going off-screen (Bubble is ~320px wide, ~200px tall)
+    if (inkyX > window.innerWidth - 350) {
+      if (nextPlacement === 'e' || nextPlacement === 'ne' || nextPlacement === 'se' || nextPlacement === 'n' || nextPlacement === 's') {
+        nextPlacement = inkyY < 200 ? 'sw' : (inkyY > window.innerHeight - 250 ? 'nw' : 'w');
+      }
+    } else if (inkyX < 350) {
+      if (nextPlacement === 'w' || nextPlacement === 'nw' || nextPlacement === 'sw' || nextPlacement === 'n' || nextPlacement === 's') {
+        nextPlacement = inkyY < 200 ? 'se' : (inkyY > window.innerHeight - 250 ? 'ne' : 'e');
+      }
+    }
+
+    if (inkyY > window.innerHeight - 250) {
+      if (nextPlacement === 's' || nextPlacement === 'se' || nextPlacement === 'sw') {
+        nextPlacement = inkyX < 350 ? 'ne' : (inkyX > window.innerWidth - 350 ? 'nw' : 'n');
+      }
+    } else if (inkyY < 250) {
+      if (nextPlacement === 'n' || nextPlacement === 'ne' || nextPlacement === 'nw') {
+        nextPlacement = inkyX < 350 ? 'se' : (inkyX > window.innerWidth - 350 ? 'sw' : 's');
+      }
+    }
+
+    if (nextPlacement !== computedPlacement) {
+      setComputedPlacement(nextPlacement);
+      onPlacementChange?.(nextPlacement);
+    }
+  }, [squidPos, targetPos, isDragging, placement, computedPlacement, onPlacementChange]);
 
   useEffect(() => {
     if (text !== targetText) {
@@ -84,7 +151,7 @@ const SpeechBubble: React.FC<SpeechBubbleProps> = ({
 
   return (
     <div 
-      className={`inky-speech-bubble ${isHover ? 'inky-speech-bubble-hover' : `inky-speech-bubble-persistent placement-${placement}`}`}
+      className={`inky-speech-bubble ${isHover ? 'inky-speech-bubble-hover' : `inky-speech-bubble-persistent placement-${computedPlacement}`}`}
       onPointerDown={(e) => !isHover && e.stopPropagation()}
     >
       <div className="inky-speech-text" style={{ position: 'relative' }}>

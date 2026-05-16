@@ -10,7 +10,7 @@ const SwimTest: React.FC = () => {
   const [rotation, setRotation] = useState(0);
   const [tick, setTick] = useState(0);
   const [mode, setMode] = useState<'swim' | 'point'>('swim');
-  const [placement, setPlacement] = useState<'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'>('top-left');
+  const [placement, setPlacement] = useState<'n' | 'nw' | 'w' | 'sw' | 's' | 'se' | 'e' | 'ne'>('nw');
   
   const [isMouseDown, setIsMouseDown] = useState(false);
   const [isSquidDragging, setIsSquidDragging] = useState(false);
@@ -86,27 +86,27 @@ const SwimTest: React.FC = () => {
       const bubbleX = bubblePosRef.current.x;
       const bubbleY = bubblePosRef.current.y;
       
-      const isCurrentlyRight = placementRef.current.includes('right');
-      const isCurrentlyBottom = placementRef.current.includes('bottom');
+      const isCurrentlyRight = placementRef.current === 'ne' || placementRef.current === 'e' || placementRef.current === 'se';
+      const isCurrentlyBottom = placementRef.current === 'sw' || placementRef.current === 's' || placementRef.current === 'se';
       
       let nextIsRight = isCurrentlyRight;
       let nextIsBottom = isCurrentlyBottom;
       
       // Horizontal hysteresis (Bubble is 320px wide)
       if (isCurrentlyRight) {
-        if (bubbleX > 500) nextIsRight = false; // Switch back to left
+        if (bubbleX > window.innerWidth - 350) nextIsRight = false; // Switch back to left
       } else {
         if (bubbleX < 350) nextIsRight = true; // Switch to right
       }
       
       // Vertical hysteresis
       if (isCurrentlyBottom) {
-        if (bubbleY > 400) nextIsBottom = false; // Switch back to top
+        if (bubbleY > window.innerHeight - 250) nextIsBottom = false; // Switch back to top
       } else {
         if (bubbleY < 250) nextIsBottom = true; // Switch to bottom
       }
       
-      const nextPlacement = `${nextIsBottom ? 'bottom' : 'top'}-${nextIsRight ? 'right' : 'left'}` as any;
+      const nextPlacement = nextIsBottom ? (nextIsRight ? 'se' : 'sw') : (nextIsRight ? 'ne' : 'nw');
       if (nextPlacement !== placementRef.current) {
         placementRef.current = nextPlacement;
         setPlacement(nextPlacement);
@@ -360,8 +360,8 @@ const SwimTest: React.FC = () => {
                 position: 'absolute', 
                 top: 0, 
                 bottom: 'auto', 
-                left: placement === 'top-right' ? 0 : 'auto', 
-                right: placement === 'top-right' ? 'auto' : 0, 
+                left: (placement === 'ne' || placement === 'e' || placement === 'se') ? 0 : 'auto', 
+                right: (placement === 'ne' || placement === 'e' || placement === 'se') ? 'auto' : 0, 
                 pointerEvents: 'auto', 
                 background: 'rgba(255,255,255,0.8)', 
                 backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',

@@ -17,6 +17,7 @@ const TutorialGDP: React.FC = () => {
   const [tick, setTick] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [targetElementPos, setTargetElementPos] = useState<{ x: number, y: number } | null>(null);
+  const [placement, setPlacement] = useState<'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw'>('se');
 
   const requestRef = React.useRef<number>(0);
   const posRef = React.useRef(position);
@@ -203,16 +204,63 @@ const TutorialGDP: React.FC = () => {
         const el = document.querySelector(selector);
         if (el) {
           const rect = el.getBoundingClientRect();
-          let targetX = rect.right + 150;
-          let targetY = rect.top + 10;
-          let elementPos = { x: rect.right - 10, y: rect.top + rect.height / 2 };
-
-          if ((currentStep as any).targetPosition === 'above') {
-            targetX = rect.left + rect.width / 2 - 50; // Centered above
-            targetY = rect.top - 180; // Way above
-            elementPos = { x: rect.left + rect.width / 2, y: rect.top };
-          }
+          let elementPos = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
           
+          const dist = 180;
+          const directions = [
+            { dir: 'n',  dx: 0, dy: -1 },
+            { dir: 'nw', dx: -0.707, dy: -0.707 },
+            { dir: 'w',  dx: -1, dy: 0 },
+            { dir: 'sw', dx: -0.707, dy: 0.707 },
+            { dir: 's',  dx: 0, dy: 1 },
+            { dir: 'se', dx: 0.707, dy: 0.707 },
+            { dir: 'e',  dx: 1, dy: 0 },
+            { dir: 'ne', dx: 0.707, dy: -0.707 }
+          ];
+
+          let targetX = elementPos.x + dist;
+          let targetY = elementPos.y;
+          
+          let requestedDir = (currentStep as any).targetPosition;
+          
+          if (requestedDir && directions.some(d => d.dir === requestedDir)) {
+            const d = directions.find(d => d.dir === requestedDir)!;
+            targetX = elementPos.x + d.dx * dist;
+            targetY = elementPos.y + d.dy * dist;
+            
+            // Adjust elementPos for strict anchoring on the edge instead of the center
+            if (requestedDir === 'n' || requestedDir === 'nw' || requestedDir === 'ne') elementPos.y = rect.top;
+            if (requestedDir === 's' || requestedDir === 'sw' || requestedDir === 'se') elementPos.y = rect.bottom;
+            if (requestedDir === 'e' || requestedDir === 'ne' || requestedDir === 'se') elementPos.x = rect.right;
+            if (requestedDir === 'w' || requestedDir === 'nw' || requestedDir === 'sw') elementPos.x = rect.left;
+          } else {
+            // Find best fit on screen
+            let maxScore = -Infinity;
+            for (const d of directions) {
+               const tx = elementPos.x + d.dx * dist;
+               const ty = elementPos.y + d.dy * dist;
+               
+               const spaceX = Math.min(tx, window.innerWidth - tx);
+               const spaceY = Math.min(ty, window.innerHeight - ty);
+               
+               if (spaceX > 50 && spaceY > 60) {
+                  let score = spaceX + spaceY; 
+                  // preference for right side and bottom
+                  if (d.dir === 'e' || d.dir === 'se' || d.dir === 's') score += 500;
+                  
+                  if (score > maxScore) {
+                      maxScore = score;
+                      targetX = tx;
+                      targetY = ty;
+                  }
+               }
+            }
+            if (maxScore === -Infinity) {
+               const d = directions.find(d => d.dir === 'se')!;
+               targetX = elementPos.x + d.dx * dist;
+               targetY = elementPos.y + d.dy * dist;
+            }
+          }
           
           // Clamp so it stays on screen, ensuring the top half isn't cut off
           targetX = Math.max(50, Math.min(targetX, window.innerWidth - 100));
@@ -236,30 +284,6 @@ const TutorialGDP: React.FC = () => {
   }, [currentStepIndex, isDragging]);
 
   if (!isDebugMode || !isTutorialActive) return null;
-
-  // Calculate placement based on screen coordinates
-  const inkyX = position.x;
-  const inkyY = position.y;
-  
-  let isRightSide = true;
-  let isBottom = true;
-
-  if (targetElementPos && !isDragging) {
-     // Put bubble on opposite side of the target element
-     isRightSide = targetElementPos.x < inkyX;
-     isBottom = targetElementPos.y < inkyY;
-  } else {
-     isRightSide = inkyX < window.innerWidth / 2;
-     isBottom = inkyY < 250;
-  }
-  
-  // Safety overrides to prevent bubble from going off-screen (Bubble is ~300px wide, ~200px tall)
-  if (inkyX > window.innerWidth - 350) isRightSide = false;
-  if (inkyX < 300) isRightSide = true;
-  if (inkyY > window.innerHeight - 250) isBottom = false;
-  if (inkyY < 200) isBottom = true;
-
-  const placement: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' = `${isBottom ? 'bottom' : 'top'}-${isRightSide ? 'right' : 'left'}` as any;
 
   // Calculate tentacle path based on target element position
   const dxTarget = target.x - position.x;
@@ -369,6 +393,10 @@ const TutorialGDP: React.FC = () => {
       }}>
         <SpeechBubble 
           placement={placement}
+          onPlacementChange={setPlacement}
+          squidPos={position}
+          targetPos={targetElementPos}
+          isDragging={isDragging}
           text={currentText}
           type="persistent"
           instant={isMoving || !isNewStep}
@@ -437,8 +465,8 @@ const TutorialGDP: React.FC = () => {
             position: 'absolute', 
             top: 0, 
             bottom: 'auto', 
-            left: placement === 'top-right' ? 0 : 'auto', 
-            right: placement === 'top-right' ? 'auto' : 0, 
+            left: (placement === 'ne' || placement === 'e' || placement === 'se') ? 0 : 'auto', 
+            right: (placement === 'ne' || placement === 'e' || placement === 'se') ? 'auto' : 0, 
             pointerEvents: 'auto', 
             background: 'rgba(255,255,255,0.8)', 
             backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',

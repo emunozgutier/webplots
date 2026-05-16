@@ -25,7 +25,7 @@ export interface TutorialStep {
   // Custom choices to display instead of the default Next/Skip buttons
   choices?: TutorialChoice[];
   
-  targetPosition?: 'above' | 'right';
+  targetPosition?: 'n' | 'nw' | 'w' | 'sw' | 's' | 'se' | 'e' | 'ne';
 }
 
 export const gdpTutorialSteps: TutorialStep[] = [
@@ -52,7 +52,7 @@ export const gdpTutorialSteps: TutorialStep[] = [
   {
     text: "Let's first set the year column to the year type. Click the 'Generic' badge under the 'year' column header and change it to 'Year'.",
     targetSelector: "#type-badge-year",
-    targetPosition: "above",
+    targetPosition: "n",
     requirementCheck: () => {
         return useColumnTypeStore.getState().overrides['year'] === 'Year';
     }
@@ -90,7 +90,7 @@ export const gdpTutorialSteps: TutorialStep[] = [
   {
     text: "Here is the zoomed distribution! Notice how there are 2 clear Gaussians (peaks) in this plot, showing a bimodal distribution of life expectancy. Close this popup when you're ready to proceed.",
     targetSelector: "#popup-menu-container",
-    targetPosition: "above",
+    targetPosition: "n",
     autoAdvance: false,
     requirementCheck: (stores) => {
         return stores.workspaceLocalStore.getState().popupContent === null;
@@ -133,7 +133,7 @@ export const gdpTutorialSteps: TutorialStep[] = [
   {
     text: "Let's fix the X-axis scale! Click the 'Settings' button on the bottom right.",
     targetSelector: "#plot-settings-btn",
-    targetPosition: "above",
+    targetPosition: "n",
     requirementCheck: (stores) => {
         return stores.workspaceLocalStore.getState().popupContent !== null;
     }
@@ -141,7 +141,7 @@ export const gdpTutorialSteps: TutorialStep[] = [
   {
     text: "Check the 'Log X-Axis' box to use a logarithmic scale.",
     targetSelector: "#enableLogXAxisToggle",
-    targetPosition: "above",
+    targetPosition: "n",
     requirementCheck: () => {
         const checkbox = document.querySelector('#enableLogXAxisToggle') as HTMLInputElement;
         return checkbox && checkbox.checked === true;
@@ -150,7 +150,7 @@ export const gdpTutorialSteps: TutorialStep[] = [
   {
     text: "Now click 'Save Layout' to apply the changes and close the popup.",
     targetSelector: "#save-layout-btn",
-    targetPosition: "above",
+    targetPosition: "n",
     requirementCheck: (stores) => {
         return stores.plotLayoutStore.getState().plotLayout.enableLogXAxis === true && stores.workspaceLocalStore.getState().popupContent === null;
     }
