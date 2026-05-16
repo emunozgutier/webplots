@@ -26,6 +26,7 @@ export interface TutorialStep {
   choices?: TutorialChoice[];
   
   targetPosition?: 'n' | 'nw' | 'w' | 'sw' | 's' | 'se' | 'e' | 'ne';
+  bubblePlacement?: 'n' | 'nw' | 'w' | 'sw' | 's' | 'se' | 'e' | 'ne';
 }
 
 export const gdpTutorialSteps: TutorialStep[] = [
@@ -34,7 +35,8 @@ export const gdpTutorialSteps: TutorialStep[] = [
     choices: [
       { label: "GDP Tutorial", actionType: "next", primary: true },
       { label: "No thanks", actionType: "skip" }
-    ]
+    ],
+    bubblePlacement: 'nw'
   },
   {
     text: "First, let's load the data. Go to Test > World Life Expect vs GDP to load the sample data.",
@@ -47,7 +49,8 @@ export const gdpTutorialSteps: TutorialStep[] = [
         return "#test-nav-gapminder";
       }
       return "#test-nav-dropdown";
-    }
+    },
+    bubblePlacement: 'se'
   },
   {
     text: "Let's first set the year column to the year type. Click the 'Generic' badge under the 'year' column header and change it to 'Year'.",

@@ -397,6 +397,7 @@ const TutorialGDP: React.FC = () => {
           squidPos={position}
           targetPos={targetElementPos}
           isDragging={isDragging}
+          targetPlacement={gdpTutorialSteps[currentStepIndex].bubblePlacement}
           onClose={(e) => { e.stopPropagation(); setIsTutorialActive(false); }}
           text={currentText}
           type="persistent"

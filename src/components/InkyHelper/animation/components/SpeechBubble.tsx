@@ -14,6 +14,7 @@ export interface SpeechBubbleProps {
   placement?: 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
   squidPos?: { x: number, y: number };
   targetPos?: { x: number, y: number } | null;
+  targetPlacement?: 'n' | 'nw' | 'w' | 'sw' | 's' | 'se' | 'e' | 'ne';
   isDragging?: boolean;
   onPlacementChange?: (placement: 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw') => void;
   onClose?: (e: React.MouseEvent) => void;
@@ -35,6 +36,7 @@ const SpeechBubble: React.FC<SpeechBubbleProps> = ({
   placement = 'ne',
   squidPos,
   targetPos,
+  targetPlacement,
   isDragging = false,
   onPlacementChange,
   onClose,
@@ -48,9 +50,17 @@ const SpeechBubble: React.FC<SpeechBubbleProps> = ({
   const [charIndex, setCharIndex] = useState(0);
   const [computedPlacement, setComputedPlacement] = useState(placement);
 
+  const [idealPlacement, setIdealPlacement] = useState(placement);
+
+  // 1. Determine the ideal final placement
   useEffect(() => {
+    if (targetPlacement) {
+      setIdealPlacement(targetPlacement);
+      return;
+    }
+
     if (!squidPos) {
-      setComputedPlacement(placement);
+      setIdealPlacement(placement);
       return;
     }
     
@@ -79,7 +89,7 @@ const SpeechBubble: React.FC<SpeechBubbleProps> = ({
       }
     }
 
-    // Safety overrides to prevent bubble from going off-screen (Bubble is ~320px wide, ~200px tall)
+    // Safety overrides to prevent bubble from going off-screen
     if (inkyX > window.innerWidth - 350) {
       if (nextPlacement === 'e' || nextPlacement === 'ne' || nextPlacement === 'se' || nextPlacement === 'n' || nextPlacement === 's') {
         nextPlacement = inkyY < 200 ? 'sw' : (inkyY > window.innerHeight - 250 ? 'nw' : 'w');
@@ -100,11 +110,41 @@ const SpeechBubble: React.FC<SpeechBubbleProps> = ({
       }
     }
 
-    if (nextPlacement !== computedPlacement) {
-      setComputedPlacement(nextPlacement);
-      onPlacementChange?.(nextPlacement);
+    setIdealPlacement(nextPlacement);
+  }, [squidPos, targetPos, isDragging, placement, targetPlacement]);
+
+  // 2. Animate towards idealPlacement
+  useEffect(() => {
+    if (computedPlacement === idealPlacement) return;
+
+    const dirs = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'] as const;
+    const curIdx = dirs.indexOf(computedPlacement as any);
+    const targetIdx = dirs.indexOf(idealPlacement as any);
+    
+    if (curIdx === -1 || targetIdx === -1) {
+      setComputedPlacement(idealPlacement);
+      onPlacementChange?.(idealPlacement);
+      return;
     }
-  }, [squidPos, targetPos, isDragging, placement, computedPlacement, onPlacementChange]);
+
+    const timeout = setTimeout(() => {
+      // Find shortest path
+      let diff = targetIdx - curIdx;
+      if (diff > 4) diff -= 8;
+      if (diff < -4) diff += 8;
+      
+      const step = diff > 0 ? 1 : -1;
+      let nextIdx = curIdx + step;
+      if (nextIdx < 0) nextIdx = 7;
+      if (nextIdx > 7) nextIdx = 0;
+      
+      const nextDir = dirs[nextIdx];
+      setComputedPlacement(nextDir);
+      onPlacementChange?.(nextDir);
+    }, 150);
+
+    return () => clearTimeout(timeout);
+  }, [computedPlacement, idealPlacement, onPlacementChange]);
 
   useEffect(() => {
     if (text !== targetText) {
