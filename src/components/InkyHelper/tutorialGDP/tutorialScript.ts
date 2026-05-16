@@ -105,6 +105,8 @@ export const gdpTutorialSteps: TutorialStep[] = [
   {
     text: "Now click on the zoom button (the magnifying glass) in the 'life_expectancy' column header to view its data distribution.",
     targetSelector: "#zoom-btn-life_expectancy",
+    targetPosition: "n",
+    bubblePlacement: "w",
     requirementCheck: (stores) => {
         return stores.workspaceLocalStore.getState().popupContent !== null;
     }
