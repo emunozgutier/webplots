@@ -222,12 +222,15 @@ const TutorialGDP: React.FC = () => {
           let targetX = elementPos.x + dist;
           let targetY = elementPos.y;
           
-          let requestedDir = (currentStep as any).targetPosition;
+          let requestedDir = currentStep.dynamicTargetPosition
+            ? currentStep.dynamicTargetPosition()
+            : currentStep.targetPosition;
           
           if (requestedDir && directions.some(d => d.dir === requestedDir)) {
             const d = directions.find(d => d.dir === requestedDir)!;
-            targetX = elementPos.x + d.dx * dist;
-            targetY = elementPos.y + d.dy * dist;
+            const appliedDist = d.dir === 'e' ? dist * 1.5 : dist;
+            targetX = elementPos.x + d.dx * appliedDist;
+            targetY = elementPos.y + d.dy * appliedDist;
             
             // Adjust elementPos for strict anchoring on the edge instead of the center
             if (requestedDir === 'n' || requestedDir === 'nw' || requestedDir === 'ne') elementPos.y = rect.top;
@@ -238,8 +241,9 @@ const TutorialGDP: React.FC = () => {
             // Find best fit on screen
             let maxScore = -Infinity;
             for (const d of directions) {
-               const tx = elementPos.x + d.dx * dist;
-               const ty = elementPos.y + d.dy * dist;
+               const appliedDist = d.dir === 'e' ? dist * 1.5 : dist;
+               const tx = elementPos.x + d.dx * appliedDist;
+               const ty = elementPos.y + d.dy * appliedDist;
                
                const spaceX = Math.min(tx, window.innerWidth - tx);
                const spaceY = Math.min(ty, window.innerHeight - ty);

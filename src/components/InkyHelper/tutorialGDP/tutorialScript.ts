@@ -27,6 +27,7 @@ export interface TutorialStep {
   choices?: TutorialChoice[];
   
   targetPosition?: CardinalDirection;
+  dynamicTargetPosition?: () => CardinalDirection;
   bubblePlacement?: CardinalDirection;
 }
 
@@ -50,6 +51,13 @@ export const gdpTutorialSteps: TutorialStep[] = [
         return "#test-nav-gapminder";
       }
       return "#test-nav-dropdown";
+    },
+    dynamicTargetPosition: () => {
+      const el = document.querySelector("#test-nav-gapminder");
+      if (el && el.getBoundingClientRect().height > 0) {
+        return "e";
+      }
+      return "se";
     },
     bubblePlacement: 'se'
   },
