@@ -142,7 +142,7 @@ const SpeechBubble: React.FC<SpeechBubbleProps> = ({
       const nextDir = CARDINAL_DIRECTIONS[nextIdx];
       setComputedPlacement(nextDir);
       onPlacementChange?.(nextDir);
-    }, 150);
+    }, 300);
 
     return () => clearTimeout(timeout);
   }, [computedPlacement, idealPlacement, onPlacementChange]);
