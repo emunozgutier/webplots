@@ -230,8 +230,34 @@ export const generatePlotConfig = (
                 };
             };
 
+            // Identify if the hue column is mostly numeric or categorical
+            let hueIsNumeric = true;
+            if (hue.source === 'column') {
+                let validNumCount = 0;
+                for (let i = 0; i < data.length; i++) {
+                    const v = data[i][String(hue.value)];
+                    if (v !== null && v !== undefined && v !== '') {
+                        if (!isNaN(parseFloat(String(v)))) validNumCount++;
+                    }
+                }
+                hueIsNumeric = validNumCount / data.length > 0.8;
+            }
+
             // Pre-compute lookup functions for column mappings
-            const hueColMap = hue.source === 'column' ? getColumnMapRule(String(hue.value), hue.range ? hue.range[0] : 0, hue.range ? hue.range[1] : 360, hue.mappingType, hue.midPoint) : null;
+            const hueColMap = hue.source === 'column' && hueIsNumeric ? getColumnMapRule(String(hue.value), hue.range ? hue.range[0] : 0, hue.range ? hue.range[1] : 360, hue.mappingType, hue.midPoint) : null;
+            
+            let hueCatMap: ((val: any) => number) | null = null;
+            if (hue.source === 'column' && !hueIsNumeric) {
+                const uniqueValsSet = new Set<string>();
+                for (let i = 0; i < data.length; i++) {
+                    uniqueValsSet.add(String(data[i][String(hue.value)]));
+                }
+                const uniqueVals = Array.from(uniqueValsSet).sort();
+                hueCatMap = (val: any) => {
+                    const idx = uniqueVals.indexOf(String(val));
+                    return (Math.max(0, idx) * 137.5) % 360;
+                };
+            }
             const satColMap = saturation.source === 'column' ? getColumnMapRule(String(saturation.value), saturation.range ? saturation.range[0] : 0, saturation.range ? saturation.range[1] : 100, saturation.mappingType, saturation.midPoint) : null;
             const litColMap = lightness.source === 'column' ? getColumnMapRule(String(lightness.value), lightness.range ? lightness.range[0] : 0, lightness.range ? lightness.range[1] : 100, lightness.mappingType, lightness.midPoint) : null;
             const sizeColMap = size.source === 'column' ? getColumnMapRule(String(size.value), size.range ? size.range[0] : 2, size.range ? size.range[1] : 20, size.mappingType, size.midPoint) : null;
@@ -257,8 +283,10 @@ export const generatePlotConfig = (
                 if (hue.enabled !== false) {
                     if (hue.source === 'manual') h = Number(hue.value);
                     else if (hue.source === 'group') h = (index * 137.5) % 360; // Golden angle spread
-                    else if (hue.source === 'column' && hueColMap) {
-                        const rawH = hueColMap(row[String(hue.value)]);
+                    else if (hue.source === 'column') {
+                        let rawH = 0;
+                        if (hueColMap) rawH = hueColMap(row[String(hue.value)]);
+                        else if (hueCatMap) rawH = hueCatMap(row[String(hue.value)]);
                         h = ((rawH + (hue.offset || 0)) % 360 + 360) % 360;
                     }
                 }

@@ -152,15 +152,27 @@ export const gdpTutorialSteps: TutorialStep[] = [
     targetSelector: "#save-layout-btn",
     targetPosition: "above",
     requirementCheck: (stores) => {
-        return stores.plotLayoutStore.getState().enableLogXAxis === true && stores.workspaceLocalStore.getState().popupContent === null;
+        return stores.plotLayoutStore.getState().plotLayout.enableLogXAxis === true && stores.workspaceLocalStore.getState().popupContent === null;
     }
   },
   {
     text: "Now, open the 'Style' menu from the right side bar to customize how our data looks.",
     targetSelector: "#side-menu-btn-color",
     requirementCheck: () => {
-        const el = document.querySelector('#style-element-huecolor-source');
+        const el = document.querySelector('#style-element-huecolor-toggle');
         return el !== null && el.getBoundingClientRect().width > 0;
+    }
+  },
+  {
+    text: "Toggle the switch on 'Hue/Color' to enable it.",
+    targetSelector: "#style-element-huecolor-toggle",
+    dynamicTargetSelector: () => {
+        const el = document.querySelector('#style-element-huecolor-toggle');
+        if (el && el.getBoundingClientRect().width > 0) return '#style-element-huecolor-toggle';
+        return '#side-menu-btn-color';
+    },
+    requirementCheck: (stores) => {
+        return stores.styleSideMenuStore.getState().colorData.hue.enabled === true;
     }
   },
   {
@@ -188,7 +200,19 @@ export const gdpTutorialSteps: TutorialStep[] = [
     }
   },
   {
-    text: "Next, let's change the size of the bubbles based on population! Change the 'Source Mode' under 'Node Size' to 'Column Value'.",
+    text: "Next, let's change the size of the bubbles! First, toggle the switch on 'Node Size' to enable it.",
+    targetSelector: "#style-element-nodesize-toggle",
+    dynamicTargetSelector: () => {
+        const el = document.querySelector('#style-element-nodesize-toggle');
+        if (el && el.getBoundingClientRect().width > 0) return '#style-element-nodesize-toggle';
+        return '#side-menu-btn-color';
+    },
+    requirementCheck: (stores) => {
+        return stores.styleSideMenuStore.getState().colorData.size.enabled === true;
+    }
+  },
+  {
+    text: "Change the 'Source Mode' under 'Node Size' to 'Column Value'.",
     targetSelector: "#style-element-nodesize-source",
     dynamicTargetSelector: () => {
         const el = document.querySelector('#style-element-nodesize-source');

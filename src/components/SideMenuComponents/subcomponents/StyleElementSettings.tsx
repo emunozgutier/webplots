@@ -595,10 +595,11 @@ const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn }) 
                                     <h6 className="fw-bold mb-3">Categorical Colors</h6>
                                     <div className="text-muted small mb-3">Assign a specific color for each text category. These colors will be used when mapping the "Hue/Color" to the "{mapping.value}" column.</div>
                                     <div className="d-flex flex-column gap-2 flex-grow-1" style={{ overflowY: 'auto' }}>
-                                        {sortedCats.map(cat => {
+                                        {sortedCats.map((cat, i) => {
                                             const overrideColor = colorData.groupColorOverrides?.[cat];
-                                            const defaultColor = '#888888';
-                                            const effectiveColor = overrideColor || defaultColor;
+                                            const autoHue = (i * 137.5) % 360;
+                                            const autoColor = `hsl(${Math.round((autoHue + (mapping.offset || 0)) % 360)}, 80%, 50%)`;
+                                            const effectiveColor = overrideColor || autoColor;
                                             const count = categoryCounts[cat] || 0;
                                             return (
                                                 <div key={cat} className="d-flex justify-content-between align-items-center border-bottom pb-1 pt-1">

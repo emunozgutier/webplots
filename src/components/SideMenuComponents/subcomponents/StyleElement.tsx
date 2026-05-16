@@ -54,6 +54,7 @@ const StyleElement: React.FC<StyleElementProps> = ({ title, mapping, updateFn, t
                     {!isExternallyManaged && (
                         <div className="form-check form-switch m-0 d-flex align-items-center">
                             <input
+                                id={`style-element-${title.replace(/[^a-zA-Z]/g, '').toLowerCase()}-toggle`}
                                 className="form-check-input"
                                 type="checkbox"
                                 checked={isEnabled}
@@ -126,7 +127,14 @@ const StyleElement: React.FC<StyleElementProps> = ({ title, mapping, updateFn, t
                             </select>
                             {type === 'number' && typeof mapping.value === 'string' && mapping.value !== '' && (
                                 <div className="mt-2 text-end">
-                                    <Button variant="outline-primary" size="sm" className="w-100" style={{ fontSize: '0.75rem' }} onClick={() => setPopupContent(<StyleElementSettings title={title} mapping={mapping} updateFn={updateFn} type={type} />)}>
+                                    <Button 
+                                        id={`style-element-${title.replace(/[^a-zA-Z]/g, '').toLowerCase()}-configure`}
+                                        variant="outline-primary" 
+                                        size="sm" 
+                                        className="w-100" 
+                                        style={{ fontSize: '0.75rem' }} 
+                                        onClick={() => setPopupContent(<StyleElementSettings title={title} mapping={mapping} updateFn={updateFn} type={type} />)}
+                                    >
                                         <i className="bi bi-sliders me-1"></i>
                                         Configure Mapping
                                     </Button>
