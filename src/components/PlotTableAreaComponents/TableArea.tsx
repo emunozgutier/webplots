@@ -16,9 +16,10 @@ import { calculateGaussianStats, formatNumber, parseToNumeric, sortData, inferCo
 import { useStyleStore } from '../../store/useStyle';
 import { useColumnTypeStore } from '../../store/useColumnTypeStore';
 
-const BadgeToggle = React.forwardRef<HTMLSpanElement, any>(({ children, onClick, style, className }, ref) => (
+const BadgeToggle = React.forwardRef<HTMLSpanElement, any>(({ children, onClick, style, className, id }, ref) => (
     <span
         ref={ref}
+        id={id}
         onClick={(e) => {
             e.preventDefault();
             onClick(e);
