@@ -8,6 +8,7 @@ interface DragableColumnProps {
 const DragableColumn: React.FC<DragableColumnProps> = ({ columnName, onDragStart }) => {
     return (
         <div
+            id={`draggable-column-${columnName}`}
             draggable
             onDragStart={(e) => onDragStart(e, columnName)}
             className="list-group-item list-group-item-action cursor-grab p-2"

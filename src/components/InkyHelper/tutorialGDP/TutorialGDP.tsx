@@ -297,7 +297,47 @@ const TutorialGDP: React.FC = () => {
   const margin = 50;
   // If we arrived at the margin and we aren't dragging it, we point at the target element
   const currentStep = gdpTutorialSteps[currentStepIndex];
-  const isPointing = distToTarget <= margin + 5 && targetElementPos !== null && !isDragging && !currentStep.noPointing;
+
+  let animatedTargetElementPos = targetElementPos;
+  let isGrabbing = false;
+
+  if (currentStep.dragAndDrop) {
+      const dragDropCfg = currentStep.dragAndDrop();
+      if (dragDropCfg) {
+          const srcEl = document.querySelector(dragDropCfg.sourceSelector);
+          const dstEl = document.querySelector(dragDropCfg.destSelector);
+          if (srcEl && dstEl) {
+              const srcRect = srcEl.getBoundingClientRect();
+              const dstRect = dstEl.getBoundingClientRect();
+              const srcPos = { x: srcRect.left + srcRect.width / 2, y: srcRect.top + srcRect.height / 2 };
+              const dstPos = { x: dstRect.left + dstRect.width / 2, y: dstRect.top + dstRect.height / 2 };
+              
+              const cycle = tick % 3000;
+              let p = 0;
+              if (cycle < 500) {
+                  p = 0; 
+                  isGrabbing = false;
+              } else if (cycle < 2000) {
+                  const t = (cycle - 500) / 1500;
+                  p = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+                  isGrabbing = true;
+              } else if (cycle < 2500) {
+                  p = 1; 
+                  isGrabbing = false;
+              } else {
+                  p = 0;
+                  isGrabbing = false;
+              }
+              
+              animatedTargetElementPos = {
+                  x: srcPos.x + (dstPos.x - srcPos.x) * p,
+                  y: srcPos.y + (dstPos.y - srcPos.y) * p
+              };
+          }
+      }
+  }
+
+  const isPointing = distToTarget <= margin + 5 && animatedTargetElementPos !== null && !isDragging && !currentStep.noPointing;
 
   let leftTentaclePath = "M 25,65 Q 0,80 15,110";
   let leftTentacleClubRot = 0;
@@ -311,16 +351,17 @@ const TutorialGDP: React.FC = () => {
   let rightTentacleClubY = 115;
   let isReachingRight = false;
 
-  if (isPointing && targetElementPos) {
-    const pointDistX = targetElementPos.x - position.x;
-    const pointDistY = targetElementPos.y - position.y;
+  if (isPointing && animatedTargetElementPos) {
+    const pointDistX = animatedTargetElementPos.x - position.x;
+    const pointDistY = animatedTargetElementPos.y - position.y;
     const baseAngle = Math.atan2(pointDistY, pointDistX);
     // Oscillate the distance (poking motion)
-    const wiggleDistance = Math.sin(tick / 150) * 15; 
+    const wiggleDistance = isGrabbing ? 0 : Math.sin(tick / 150) * 15; 
     
     // Stretch to the element
     const distToElement = Math.sqrt(pointDistX * pointDistX + pointDistY * pointDistY);
-    const pointLength = Math.min(distToElement - 25 + wiggleDistance, 200); // cap length
+    const maxTentacleLength = currentStep.dragAndDrop ? 3000 : 200;
+    const pointLength = Math.min(distToElement - 25 + wiggleDistance, maxTentacleLength); // cap length
     
     const gx = position.x + Math.cos(baseAngle) * pointLength;
     const gy = position.y + Math.sin(baseAngle) * pointLength;

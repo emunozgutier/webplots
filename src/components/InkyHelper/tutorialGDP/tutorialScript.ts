@@ -31,6 +31,7 @@ export interface TutorialStep {
   bubblePlacement?: CardinalDirection;
   dynamicBubblePlacement?: () => CardinalDirection;
   noPointing?: boolean;
+  dragAndDrop?: () => { sourceSelector: string; destSelector: string } | undefined;
 }
 
 export const gdpTutorialSteps: TutorialStep[] = [
@@ -129,6 +130,11 @@ export const gdpTutorialSteps: TutorialStep[] = [
         const label = document.querySelector('#x-axis-label');
         if (label && label.getBoundingClientRect().width > 0) return '#x-axis-label';
         return '#side-menu-btn-axis';
+    },
+    dragAndDrop: () => {
+        const label = document.querySelector('#x-axis-label');
+        const destSelector = (label && label.getBoundingClientRect().width > 0) ? '#x-axis-label' : '#side-menu-btn-axis';
+        return { sourceSelector: "#draggable-column-gdp", destSelector };
     },
     requirementCheck: (stores) => {
       const axisData = stores.axisSideMenuStore.getState().sideMenuData;
