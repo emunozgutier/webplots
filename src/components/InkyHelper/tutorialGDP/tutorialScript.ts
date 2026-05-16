@@ -30,6 +30,7 @@ export interface TutorialStep {
   dynamicTargetPosition?: () => CardinalDirection;
   bubblePlacement?: CardinalDirection;
   dynamicBubblePlacement?: () => CardinalDirection;
+  noPointing?: boolean;
 }
 
 export const gdpTutorialSteps: TutorialStep[] = [
@@ -114,7 +115,9 @@ export const gdpTutorialSteps: TutorialStep[] = [
   {
     text: "Here is the zoomed distribution! Notice how there are 2 clear Gaussians (peaks) in this plot, showing a bimodal distribution of life expectancy. Close this popup when you're ready to proceed.",
     targetSelector: "#popup-menu-container",
-    targetPosition: "n",
+    targetPosition: "w",
+    bubblePlacement: "e",
+    noPointing: true,
     autoAdvance: false,
     requirementCheck: (stores) => {
         return stores.workspaceLocalStore.getState().popupContent === null;

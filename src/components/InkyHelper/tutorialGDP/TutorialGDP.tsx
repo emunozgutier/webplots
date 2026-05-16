@@ -296,7 +296,8 @@ const TutorialGDP: React.FC = () => {
   const distToTarget = Math.sqrt(dxTarget * dxTarget + dyTarget * dyTarget);
   const margin = 50;
   // If we arrived at the margin and we aren't dragging it, we point at the target element
-  const isPointing = !isDragging && distToTarget <= margin + 5 && targetElementPos !== null; 
+  const currentStep = gdpTutorialSteps[currentStepIndex];
+  const isPointing = distToTarget <= margin + 5 && targetElementPos !== null && !isDragging && !currentStep.noPointing;
 
   let leftTentaclePath = "M 25,65 Q 0,80 15,110";
   let leftTentacleClubRot = 0;
