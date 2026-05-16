@@ -73,12 +73,14 @@ export const gdpTutorialSteps: TutorialStep[] = [
     text: "Let's first set the year column to the year type. Click the 'Generic' badge under the 'year' column header and change it to 'Year'.",
     targetSelector: "#type-badge-year",
     targetPosition: "n",
+    bubblePlacement: 'w',
     requirementCheck: () => {
         return useColumnTypeStore.getState().overrides['year'] === 'Year';
     }
   },
   {
     text: "Great! Now scroll right until you can see the whole life expectancy column.",
+    bubblePlacement: 'w',
     requirementCheck: () => {
         const container = document.querySelector('.table-scroll-container');
         if (!container) return false;
