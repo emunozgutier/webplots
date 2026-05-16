@@ -29,6 +29,7 @@ export interface TutorialStep {
   targetPosition?: CardinalDirection;
   dynamicTargetPosition?: () => CardinalDirection;
   bubblePlacement?: CardinalDirection;
+  dynamicBubblePlacement?: () => CardinalDirection;
 }
 
 export const gdpTutorialSteps: TutorialStep[] = [
@@ -59,7 +60,14 @@ export const gdpTutorialSteps: TutorialStep[] = [
       }
       return "se";
     },
-    bubblePlacement: 'se'
+    bubblePlacement: 'se',
+    dynamicBubblePlacement: () => {
+      const el = document.querySelector("#test-nav-gapminder");
+      if (el && el.getBoundingClientRect().height > 0) {
+        return "e";
+      }
+      return "se";
+    }
   },
   {
     text: "Let's first set the year column to the year type. Click the 'Generic' badge under the 'year' column header and change it to 'Year'.",
