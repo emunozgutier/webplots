@@ -118,7 +118,6 @@ export const gdpTutorialSteps: TutorialStep[] = [
     targetPosition: "w",
     bubblePlacement: "e",
     noPointing: true,
-    autoAdvance: false,
     requirementCheck: (stores) => {
         return stores.workspaceLocalStore.getState().popupContent === null;
     }
