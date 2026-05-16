@@ -309,8 +309,23 @@ const TutorialGDP: React.FC = () => {
           if (srcEl && dstEl) {
               const srcRect = srcEl.getBoundingClientRect();
               const dstRect = dstEl.getBoundingClientRect();
-              const srcPos = { x: srcRect.left + srcRect.width / 2, y: srcRect.top + srcRect.height / 2 };
-              const dstPos = { x: dstRect.left + dstRect.width / 2, y: dstRect.top + dstRect.height / 2 };
+              let srcPos = { x: srcRect.left + srcRect.width / 2, y: srcRect.top + srcRect.height / 2 };
+              if (dragDropCfg.sourcePosition) {
+                  const dir = dragDropCfg.sourcePosition;
+                  if (dir === 'n' || dir === 'nw' || dir === 'ne') srcPos.y = srcRect.top;
+                  if (dir === 's' || dir === 'sw' || dir === 'se') srcPos.y = srcRect.bottom;
+                  if (dir === 'e' || dir === 'ne' || dir === 'se') srcPos.x = srcRect.right;
+                  if (dir === 'w' || dir === 'nw' || dir === 'sw') srcPos.x = srcRect.left;
+              }
+
+              let dstPos = { x: dstRect.left + dstRect.width / 2, y: dstRect.top + dstRect.height / 2 };
+              if (dragDropCfg.destPosition) {
+                  const dir = dragDropCfg.destPosition;
+                  if (dir === 'n' || dir === 'nw' || dir === 'ne') dstPos.y = dstRect.top;
+                  if (dir === 's' || dir === 'sw' || dir === 'se') dstPos.y = dstRect.bottom;
+                  if (dir === 'e' || dir === 'ne' || dir === 'se') dstPos.x = dstRect.right;
+                  if (dir === 'w' || dir === 'nw' || dir === 'sw') dstPos.x = dstRect.left;
+              }
               
               const cycle = tick % 3000;
               let p = 0;
@@ -361,7 +376,8 @@ const TutorialGDP: React.FC = () => {
     // Stretch to the element
     const distToElement = Math.sqrt(pointDistX * pointDistX + pointDistY * pointDistY);
     const maxTentacleLength = currentStep.dragAndDrop ? 3000 : 200;
-    const pointLength = Math.min(distToElement - 25 + wiggleDistance, maxTentacleLength); // cap length
+    const offset = currentStep.dragAndDrop ? 5 : -25; // Overlap slightly when grabbing
+    const pointLength = Math.min(distToElement + offset + wiggleDistance, maxTentacleLength); // cap length
     
     const gx = position.x + Math.cos(baseAngle) * pointLength;
     const gy = position.y + Math.sin(baseAngle) * pointLength;
@@ -424,6 +440,24 @@ const TutorialGDP: React.FC = () => {
   if (prevStepRef.current !== currentStepIndex) {
     isNewStep = true;
     prevStepRef.current = currentStepIndex;
+  }
+
+  // --- Debug Visualization Logic ---
+  let debugRect: DOMRect | null = null;
+  if (isDebugMode) {
+      if (currentStep.dragAndDrop) {
+          const cfg = currentStep.dragAndDrop();
+          if (cfg) {
+              const el = document.querySelector(cfg.sourceSelector);
+              if (el) debugRect = el.getBoundingClientRect();
+          }
+      } else {
+          const selector = currentStep.dynamicTargetSelector ? currentStep.dynamicTargetSelector() : currentStep.targetSelector;
+          if (selector) {
+              const el = document.querySelector(selector);
+              if (el) debugRect = el.getBoundingClientRect();
+          }
+      }
   }
 
   return (
@@ -539,6 +573,52 @@ const TutorialGDP: React.FC = () => {
       />
         </div>
       </div>
+      
+      {/* --- Debug Visualization Layer --- */}
+      {isDebugMode && debugRect && (
+        <div style={{ position: 'fixed', zIndex: 9999, pointerEvents: 'none', left: 0, top: 0 }}>
+          {/* Render the 8 Cardinal Points */}
+          {[
+            { dir: 'N', x: debugRect.left + debugRect.width / 2, y: debugRect.top },
+            { dir: 'NE', x: debugRect.right, y: debugRect.top },
+            { dir: 'E', x: debugRect.right, y: debugRect.top + debugRect.height / 2 },
+            { dir: 'SE', x: debugRect.right, y: debugRect.bottom },
+            { dir: 'S', x: debugRect.left + debugRect.width / 2, y: debugRect.bottom },
+            { dir: 'SW', x: debugRect.left, y: debugRect.bottom },
+            { dir: 'W', x: debugRect.left, y: debugRect.top + debugRect.height / 2 },
+            { dir: 'NW', x: debugRect.left, y: debugRect.top },
+          ].map(pt => (
+            <div key={pt.dir} style={{
+              position: 'absolute',
+              left: pt.x, top: pt.y,
+              transform: 'translate(-50%, -50%)',
+              background: 'rgba(255, 165, 0, 0.8)',
+              color: 'black',
+              fontSize: '10px',
+              fontWeight: 'bold',
+              padding: '2px 4px',
+              borderRadius: '4px',
+              border: '1px solid black'
+            }}>
+              {pt.dir}
+            </div>
+          ))}
+
+          {/* Render the actual animated target position */}
+          {animatedTargetElementPos && (
+            <div style={{
+              position: 'absolute',
+              left: animatedTargetElementPos.x, top: animatedTargetElementPos.y,
+              transform: 'translate(-50%, -50%)',
+              width: 12, height: 12,
+              background: 'red',
+              borderRadius: '50%',
+              border: '2px solid white',
+              boxShadow: '0 0 4px black'
+            }} />
+          )}
+        </div>
+      )}
     </>
   );
 };

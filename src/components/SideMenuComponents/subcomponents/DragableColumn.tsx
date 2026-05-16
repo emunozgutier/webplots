@@ -17,7 +17,7 @@ const DragableColumn: React.FC<DragableColumnProps> = ({ columnName, onDragStart
         >
             <div className="d-flex align-items-center">
                 <span className="me-2 text-muted" style={{ cursor: 'grab' }}>⋮⋮</span>
-                <span className="text-truncate">{columnName}</span>
+                <span id={`draggable-column-text-${columnName}`} className="text-truncate">{columnName}</span>
             </div>
         </div>
     );
