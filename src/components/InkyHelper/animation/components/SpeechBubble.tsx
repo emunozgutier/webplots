@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import type { CardinalDirection } from '../../../../utils/DataClasses';
+import { CARDINAL_DIRECTIONS } from '../../../../utils/DataClasses';
 import './SpeechBubble.css';
 
 export interface SpeechBubbleProps {
@@ -11,12 +13,12 @@ export interface SpeechBubbleProps {
   skipDelay?: boolean;
   instant?: boolean;
   delayMs?: number;
-  placement?: 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
+  placement?: CardinalDirection;
   squidPos?: { x: number, y: number };
   targetPos?: { x: number, y: number } | null;
-  targetPlacement?: 'n' | 'nw' | 'w' | 'sw' | 's' | 'se' | 'e' | 'ne';
+  targetPlacement?: CardinalDirection;
   isDragging?: boolean;
-  onPlacementChange?: (placement: 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw') => void;
+  onPlacementChange?: (placement: CardinalDirection) => void;
   onClose?: (e: React.MouseEvent) => void;
   customFooter?: React.ReactNode;
 }
@@ -64,7 +66,7 @@ const SpeechBubble: React.FC<SpeechBubbleProps> = ({
       return;
     }
     
-    let nextPlacement: 'n' | 'nw' | 'w' | 'sw' | 's' | 'se' | 'e' | 'ne' = 'se';
+    let nextPlacement: CardinalDirection = 'se';
     const inkyX = squidPos.x;
     const inkyY = squidPos.y;
 
@@ -117,9 +119,8 @@ const SpeechBubble: React.FC<SpeechBubbleProps> = ({
   useEffect(() => {
     if (computedPlacement === idealPlacement) return;
 
-    const dirs = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'] as const;
-    const curIdx = dirs.indexOf(computedPlacement as any);
-    const targetIdx = dirs.indexOf(idealPlacement as any);
+    const curIdx = CARDINAL_DIRECTIONS.indexOf(computedPlacement as any);
+    const targetIdx = CARDINAL_DIRECTIONS.indexOf(idealPlacement as any);
     
     if (curIdx === -1 || targetIdx === -1) {
       setComputedPlacement(idealPlacement);
@@ -138,7 +139,7 @@ const SpeechBubble: React.FC<SpeechBubbleProps> = ({
       if (nextIdx < 0) nextIdx = 7;
       if (nextIdx > 7) nextIdx = 0;
       
-      const nextDir = dirs[nextIdx];
+      const nextDir = CARDINAL_DIRECTIONS[nextIdx];
       setComputedPlacement(nextDir);
       onPlacementChange?.(nextDir);
     }, 150);

@@ -1,4 +1,5 @@
 import { useColumnTypeStore } from '../../../store/useColumnTypeStore';
+import type { CardinalDirection } from '../../../utils/DataClasses';
 
 export interface TutorialChoice {
   label: string;
@@ -25,8 +26,8 @@ export interface TutorialStep {
   // Custom choices to display instead of the default Next/Skip buttons
   choices?: TutorialChoice[];
   
-  targetPosition?: 'n' | 'nw' | 'w' | 'sw' | 's' | 'se' | 'e' | 'ne';
-  bubblePlacement?: 'n' | 'nw' | 'w' | 'sw' | 's' | 'se' | 'e' | 'ne';
+  targetPosition?: CardinalDirection;
+  bubblePlacement?: CardinalDirection;
 }
 
 export const gdpTutorialSteps: TutorialStep[] = [

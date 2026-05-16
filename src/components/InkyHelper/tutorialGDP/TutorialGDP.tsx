@@ -5,6 +5,7 @@ import { useCsvDataStore } from '../../../store/useCsvDataStore';
 import InkyHelper from '../InkyHelper';
 import SpeechBubble from '../animation/components/SpeechBubble';
 import { gdpTutorialSteps } from './tutorialScript';
+import type { CardinalDirection } from '../../../utils/DataClasses';
 
 const TutorialGDP: React.FC = () => {
   const { isDebugMode, activeWorkspaceId, isTutorialActive, setIsTutorialActive } = useWorkspaceStore();
@@ -17,7 +18,7 @@ const TutorialGDP: React.FC = () => {
   const [tick, setTick] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [targetElementPos, setTargetElementPos] = useState<{ x: number, y: number } | null>(null);
-  const [placement, setPlacement] = useState<'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw'>('se');
+  const [placement, setPlacement] = useState<CardinalDirection>('nw');
 
   const requestRef = React.useRef<number>(0);
   const posRef = React.useRef(position);

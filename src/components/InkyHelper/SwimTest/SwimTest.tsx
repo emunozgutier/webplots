@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import InkyHelper from '../InkyHelper';
 import SpeechBubble from '../animation/components/SpeechBubble';
+
+import type { CardinalDirection } from '../../../utils/DataClasses';
 import './SwimTest.css';
 
 const SwimTest: React.FC = () => {
@@ -10,7 +12,7 @@ const SwimTest: React.FC = () => {
   const [rotation, setRotation] = useState(0);
   const [tick, setTick] = useState(0);
   const [mode, setMode] = useState<'swim' | 'point'>('swim');
-  const [placement, setPlacement] = useState<'n' | 'nw' | 'w' | 'sw' | 's' | 'se' | 'e' | 'ne'>('nw');
+  const [placement, setPlacement] = useState<CardinalDirection>('nw');
   
   const [isMouseDown, setIsMouseDown] = useState(false);
   const [isSquidDragging, setIsSquidDragging] = useState(false);
