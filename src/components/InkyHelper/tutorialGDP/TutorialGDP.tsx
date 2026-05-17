@@ -385,10 +385,16 @@ const TutorialGDP: React.FC = () => {
     const dxTip = gx - position.x;
     const dyTip = gy - position.y;
 
+    // The SVG has a viewBox of width 120, height 150, but the container is 100x120.
+    // The scale factor is 150 / 120 = 1.25 SVG units per pixel.
+    const svgScale = 1.25;
+    const svgDxTip = dxTip * svgScale;
+    const svgDyTip = dyTip * svgScale;
+
     // Invert the squid's rotation to map global vector to local SVG coordinates
     const rad = -(rotation * Math.PI) / 180;
-    const lx = dxTip * Math.cos(rad) - dyTip * Math.sin(rad) + 50; 
-    const ly = dxTip * Math.sin(rad) + dyTip * Math.cos(rad) + 60; 
+    const lx = svgDxTip * Math.cos(rad) - svgDyTip * Math.sin(rad) + 50; 
+    const ly = svgDxTip * Math.sin(rad) + svgDyTip * Math.cos(rad) + 60; 
     
     if (lx < 50) {
       isReachingLeft = true;
@@ -576,46 +582,24 @@ const TutorialGDP: React.FC = () => {
       
       {/* --- Debug Visualization Layer --- */}
       {isDebugMode && debugRect && (
-        <div style={{ position: 'fixed', zIndex: 9999, pointerEvents: 'none', left: 0, top: 0 }}>
-          {/* Render the 8 Cardinal Points */}
-          {[
-            { dir: 'N', x: debugRect.left + debugRect.width / 2, y: debugRect.top },
-            { dir: 'NE', x: debugRect.right, y: debugRect.top },
-            { dir: 'E', x: debugRect.right, y: debugRect.top + debugRect.height / 2 },
-            { dir: 'SE', x: debugRect.right, y: debugRect.bottom },
-            { dir: 'S', x: debugRect.left + debugRect.width / 2, y: debugRect.bottom },
-            { dir: 'SW', x: debugRect.left, y: debugRect.bottom },
-            { dir: 'W', x: debugRect.left, y: debugRect.top + debugRect.height / 2 },
-            { dir: 'NW', x: debugRect.left, y: debugRect.top },
-          ].map(pt => (
-            <div key={pt.dir} style={{
-              position: 'absolute',
-              left: pt.x, top: pt.y,
-              transform: 'translate(-50%, -50%)',
-              background: 'rgba(255, 165, 0, 0.8)',
-              color: 'black',
-              fontSize: '10px',
-              fontWeight: 'bold',
-              padding: '2px 4px',
-              borderRadius: '4px',
-              border: '1px solid black'
-            }}>
-              {pt.dir}
-            </div>
-          ))}
-
-          {/* Render the actual animated target position */}
+        <div style={{ position: 'fixed', zIndex: 9999, pointerEvents: 'none', left: 0, top: 0, width: '100vw', height: '100vh' }}>
+          {/* Render the actual animated target position as a 3x radius octagon */}
           {animatedTargetElementPos && (
-            <div style={{
+            <svg style={{
               position: 'absolute',
               left: animatedTargetElementPos.x, top: animatedTargetElementPos.y,
               transform: 'translate(-50%, -50%)',
-              width: 12, height: 12,
-              background: 'red',
-              borderRadius: '50%',
-              border: '2px solid white',
-              boxShadow: '0 0 4px black'
-            }} />
+              width: 36, height: 36,
+              overflow: 'visible'
+            }}>
+              <polygon 
+                points="10.8,0 25.2,0 36,10.8 36,25.2 25.2,36 10.8,36 0,25.2 0,10.8"
+                fill="red"
+                stroke="white"
+                strokeWidth="2"
+                style={{ filter: 'drop-shadow(0 0 4px rgba(0,0,0,0.5))' }}
+              />
+            </svg>
           )}
         </div>
       )}
