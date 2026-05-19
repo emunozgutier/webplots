@@ -1,5 +1,5 @@
 {
-    "commit_title": "Move BetaMode into TopMenuBar folder",
-    "commit_message": "Relocate BetaMode.tsx into src/components/TopMenuBar/ and update the import in TopMenuBar.tsx to './TopMenuBar/BetaMode'. This is a refactor-only change (file move and import path update) with no behavior or API changes.",
-    "version_string": "2026.16.1"
+    "commit_title": "Extract isTutorialActive selector in TopMenuBar",
+    "commit_message": "Introduce an isTutorialActive constant using useWorkspaceStore and replace the inline selector call in the Help dropdown JSX. This simplifies the component render, improves readability, and avoids calling the selector directly inside the JSX.",
+    "version_string": "2026.21.2"
 }
