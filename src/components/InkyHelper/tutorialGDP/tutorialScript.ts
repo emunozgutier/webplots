@@ -300,7 +300,7 @@ export const gdpTutorialSteps: TutorialStep[] = [
             annotationStore.addAnnotation({
                 id: 'china-anno',
                 type: 'text',
-                text: '🇨🇳 China',
+                text: 'China',
                 trackColumn: 'country',
                 trackValue: 'China',
                 offsetX: 0,
@@ -313,7 +313,7 @@ export const gdpTutorialSteps: TutorialStep[] = [
             annotationStore.addAnnotation({
                 id: 'usa-anno',
                 type: 'text',
-                text: '🇺🇸 United States',
+                text: 'United States',
                 trackColumn: 'country',
                 trackValue: 'United States',
                 offsetX: 0,
