@@ -600,7 +600,7 @@ const TutorialGDP: React.FC = () => {
               position: 'absolute',
               left: debugRect.left + debugRect.width / 2, 
               top: debugRect.top + debugRect.height / 2,
-              transform: 'translate(-50%, -50%)',
+              transform: 'translate(-50%, -50%) rotate(22.5deg)',
               width: 36, height: 36,
               overflow: 'visible'
             }}>
