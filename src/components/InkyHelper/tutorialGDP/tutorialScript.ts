@@ -276,13 +276,27 @@ export const gdpTutorialSteps: TutorialStep[] = [
     text: "The Plot Area above shows the chart. Below is the Data Table & Stats, which dynamically update with the animation!",
   },
   {
-    text: "Now, let's animate over time by setting the animation column to 'year'.",
-    action: (stores) => {
-      stores.animationSideMenuStore.getState().setAnimationColumn('year');
+    text: "Now, let's animate over time! Open the 'Animation' menu on the right side bar.",
+    targetSelector: "#side-menu-btn-animation",
+    requirementCheck: () => {
+        const el = document.querySelector('#animation-column-select');
+        return el !== null && el.getBoundingClientRect().width > 0;
+    }
+  },
+  {
+    text: "Select 'year' as the Timeline Column.",
+    targetSelector: "#animation-column-select",
+    dynamicTargetSelector: () => {
+        const el = document.querySelector('#animation-column-select');
+        if (el && el.getBoundingClientRect().width > 0) return '#animation-column-select';
+        return '#side-menu-btn-animation';
     },
-    targetSelector: ".animation-controls"
+    requirementCheck: (stores) => {
+        return stores.animationSideMenuStore.getState().animationData.animationColumn === 'year';
+    }
   },
   {
     text: "You're all set! Press Play on the timeline below the plot and enjoy exploring the data!",
+    targetSelector: ".animation-controls"
   }
 ];

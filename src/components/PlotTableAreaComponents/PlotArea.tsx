@@ -56,7 +56,8 @@ const PlotArea: React.FC = () => {
     }, [setChartDimensions]);
 
     const { plotData, layout, hasData, receipt, stats, generatedTraces, pipelineFiltered } = useMemo(() => {
-        const dataToProcess = rawDataTable.length > 2048 ? rawDataTable.slice(0, 2048) : rawDataTable;
+        const shouldLimit = !animationData.animationColumn && rawDataTable.length > 2048;
+        const dataToProcess = shouldLimit ? rawDataTable.slice(0, 2048) : rawDataTable;
         const { processedTraces, filtered: pipelineFiltered } = runDataPipeline(dataToProcess, filters, sideMenuData, groupSideMenuData, {
             inkRatio,
             absorbedPoint,

@@ -10,20 +10,7 @@ const AnimationSideMenu: React.FC = () => {
     const { columns } = useCsvDataStore();
     const { animationData, setAnimationColumn } = useAnimationSideMenuStore();
     const { setPopupContent } = useWorkspaceLocalStore();
-    const { isTutorialActive } = useWorkspaceStore();
-
     const { animationColumn } = animationData;
-
-    if (isTutorialActive) {
-        return (
-            <div className="p-3 d-flex flex-column h-100 overflow-auto">
-                <h6 className="fw-bold mb-3 text-secondary border-bottom pb-2">Animation Settings</h6>
-                <div className="alert alert-secondary fst-italic" style={{ fontSize: '0.85rem' }}>
-                    Animation settings are locked during the tutorial.
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="p-3 d-flex flex-column h-100 overflow-auto">
@@ -35,6 +22,7 @@ const AnimationSideMenu: React.FC = () => {
                 </div>
                 <div className="card-body p-2 pt-0">
                     <select
+                        id="animation-column-select"
                         className="form-select form-select-sm"
                         value={animationColumn}
                         onChange={(e) => setAnimationColumn(e.target.value)}

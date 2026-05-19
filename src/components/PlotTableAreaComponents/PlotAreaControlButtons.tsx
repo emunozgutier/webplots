@@ -109,9 +109,9 @@ const PlotAreaControlButtons: React.FC<PlotAreaControlButtonsProps> = ({ onOpenS
             <div className="btn-group btn-group-sm">
                 {isDebugMode && (
                     <>
-                        <span className={`btn btn-outline-secondary disabled fw-bold ${data.length > 2048 ? 'text-warning' : ''}`} title={data.length > 2048 ? `Dataset too large! Showing only the first 2,048 of ${data.length.toLocaleString()} points.` : "Total Points"}>
-                            {data.length > 2048 && <i className="bi bi-exclamation-triangle-fill me-1"></i>}
-                            {data.length > 2048 ? `2,048 out of ${data.length.toLocaleString()} pts` : `${data.length.toLocaleString()} pts`}
+                        <span className={`btn btn-outline-secondary disabled fw-bold ${!animationColumn && data.length > 2048 ? 'text-warning' : ''}`} title={!animationColumn && data.length > 2048 ? `Dataset too large! Showing only the first 2,048 of ${data.length.toLocaleString()} points.` : "Total Points"}>
+                            {!animationColumn && data.length > 2048 && <i className="bi bi-exclamation-triangle-fill me-1"></i>}
+                            {!animationColumn && data.length > 2048 ? `2,048 out of ${data.length.toLocaleString()} pts` : `${data.length.toLocaleString()} pts`}
                         </span>
                         <button
                             className="btn btn-outline-secondary"
