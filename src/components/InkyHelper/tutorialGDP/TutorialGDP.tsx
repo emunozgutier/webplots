@@ -48,7 +48,7 @@ const TutorialGDP: React.FC = () => {
       if (!isDragging) {
         if (distance > margin) {
           // Speed
-          const speed = 4;
+          const speed = 8;
           const vx = (dx / distance) * speed;
           const vy = (dy / distance) * speed;
 
