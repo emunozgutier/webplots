@@ -232,11 +232,7 @@ const TutorialGDP: React.FC = () => {
             targetX = elementPos.x + d.dx * appliedDist;
             targetY = elementPos.y + d.dy * appliedDist;
             
-            // Adjust elementPos for strict anchoring on the edge instead of the center
-            if (requestedDir === 'n' || requestedDir === 'nw' || requestedDir === 'ne') elementPos.y = rect.top;
-            if (requestedDir === 's' || requestedDir === 'sw' || requestedDir === 'se') elementPos.y = rect.bottom;
-            if (requestedDir === 'e' || requestedDir === 'ne' || requestedDir === 'se') elementPos.x = rect.right;
-            if (requestedDir === 'w' || requestedDir === 'nw' || requestedDir === 'sw') elementPos.x = rect.left;
+            // Point towards the center of the element to align with the octagons
           } else {
             // Find best fit on screen
             let maxScore = -Infinity;
@@ -371,12 +367,13 @@ const TutorialGDP: React.FC = () => {
     const pointDistY = animatedTargetElementPos.y - position.y;
     const baseAngle = Math.atan2(pointDistY, pointDistX);
     // Oscillate the distance (poking motion)
-    const wiggleDistance = isGrabbing ? 0 : Math.sin(tick / 150) * 15; 
+    const wiggleDistance = isGrabbing ? 0 : Math.sin(tick / 150) * 13.46; 
     
     // Stretch to the element
     const distToElement = Math.sqrt(pointDistX * pointDistX + pointDistY * pointDistY);
     const maxTentacleLength = currentStep.dragAndDrop ? 3000 : 200;
-    const offset = currentStep.dragAndDrop ? 5 : -25; // Overlap slightly when grabbing
+    const offset = currentStep.dragAndDrop ? 5 : -22.07; 
+    
     const pointLength = Math.min(distToElement + offset + wiggleDistance, maxTentacleLength); // cap length
     
     const gx = position.x + Math.cos(baseAngle) * pointLength;
@@ -594,25 +591,39 @@ const TutorialGDP: React.FC = () => {
             boxSizing: 'border-box'
           }} />
           
-          {/* Render the octagon centered on the target element */}
-          {debugRect && (
-            <svg style={{
-              position: 'absolute',
-              left: debugRect.left + debugRect.width / 2, 
-              top: debugRect.top + debugRect.height / 2,
-              transform: 'translate(-50%, -50%) rotate(22.5deg)',
-              width: 36, height: 36,
-              overflow: 'visible'
-            }}>
-              <polygon 
-                points="10.8,0 25.2,0 36,10.8 36,25.2 25.2,36 10.8,36 0,25.2 0,10.8"
-                fill="rgba(255, 0, 0, 0.5)"
-                stroke="white"
-                strokeWidth="2"
-                style={{ filter: 'drop-shadow(0 0 4px rgba(0,0,0,0.5))' }}
-              />
-            </svg>
-          )}
+          {/* Big hand location octagon */}
+          <svg viewBox="0 0 36 36" style={{
+            position: 'absolute',
+            left: debugRect.left + debugRect.width / 2, 
+            top: debugRect.top + debugRect.height / 2,
+            transform: 'translate(-50%, -50%) rotate(22.5deg)',
+            width: 66, height: 66,
+            overflow: 'visible'
+          }}>
+            <polygon 
+              points="10.8,0 25.2,0 36,10.8 36,25.2 25.2,36 10.8,36 0,25.2 0,10.8"
+              fill="rgba(0, 255, 0, 0.2)"
+              stroke="white"
+              strokeWidth="1"
+            />
+          </svg>
+
+          {/* Small hand location octagon */}
+          <svg viewBox="0 0 36 36" style={{
+            position: 'absolute',
+            left: debugRect.left + debugRect.width / 2, 
+            top: debugRect.top + debugRect.height / 2,
+            transform: 'translate(-50%, -50%) rotate(22.5deg)',
+            width: 16, height: 16,
+            overflow: 'visible'
+          }}>
+            <polygon 
+              points="10.8,0 25.2,0 36,10.8 36,25.2 25.2,36 10.8,36 0,25.2 0,10.8"
+              fill="rgba(0, 0, 255, 0.5)"
+              stroke="white"
+              strokeWidth="1"
+            />
+          </svg>
         </div>
       )}
     </>
