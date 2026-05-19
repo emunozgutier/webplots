@@ -17,6 +17,7 @@ interface VersionData {
 
 const TopMenuBar: React.FC = () => {
     const { data, columns, setPlotData, setColumns, loadProject: loadPlotDataProject } = useCsvDataStore();
+    const isTutorialActive = useWorkspaceStore((state) => state.isTutorialActive);
 
     const csvInputRef = useRef<HTMLInputElement>(null);
     const projectInputRef = useRef<HTMLInputElement>(null);
@@ -421,7 +422,7 @@ const TopMenuBar: React.FC = () => {
                         </NavDropdown>
 
                         <NavDropdown title="Help" id="help-nav-dropdown">
-                            {!useWorkspaceStore((state) => state.isTutorialActive) && (
+                            {!isTutorialActive && (
                                 <>
                                     <NavDropdown.Item onClick={() => useWorkspaceStore.getState().setIsTutorialActive(true)}>
                                         Talk to Inky
