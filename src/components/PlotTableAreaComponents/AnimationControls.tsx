@@ -75,7 +75,7 @@ const AnimationControls: React.FC<AnimationControlsProps> = ({ data }) => {
     }
 
     return (
-        <div className="w-100 bg-light border-top p-2 d-flex flex-column" style={{ zIndex: 10 }}>
+        <div className="animation-controls w-100 bg-light border-top p-2 d-flex flex-column" style={{ zIndex: 10 }}>
             <div className="d-flex align-items-center mb-1">
                 <span className="fw-bold text-primary me-auto" style={{ fontSize: '0.85rem' }}>Timeline: {animationColumn}</span>
                 <div className="badge bg-secondary">{String(uniqueValues[currentIndex])}</div>

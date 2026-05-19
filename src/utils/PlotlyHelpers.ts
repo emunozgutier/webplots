@@ -527,6 +527,7 @@ export const generatePlotConfig = (
                         mode: mode,
                         type: 'scatter',
                         name: finalName + ' (Glow)',
+                        ids: safeSurvivingIndices.map(survivingIdx => String(rowIndices[survivingIdx])),
                         hoverinfo: 'skip',
                         showlegend: false,
                         legendgroup: finalName,
@@ -603,6 +604,7 @@ export const generatePlotConfig = (
                 mode: mode,
                 type: finalX.length > 50000 ? 'scattergl' : 'scatter',
                 name: finalName,
+                ids: safeSurvivingIndices.map(survivingIdx => String(rowIndices[survivingIdx])),
                 legendgroup: finalName,
                 hovertext: computedHoverTexts,
                 customdata: absorbedCounts, // inject it into Plotly for the hover template

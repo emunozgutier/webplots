@@ -108,14 +108,19 @@ const PlotAreaControlButtons: React.FC<PlotAreaControlButtonsProps> = ({ onOpenS
         <div className="p-2 bg-light border-top d-flex justify-content-end align-items-center mt-auto shadow-sm" style={{ zIndex: 10 }}>
             <div className="btn-group btn-group-sm">
                 {isDebugMode && (
-                    <button
-                        className="btn btn-outline-secondary"
-                        onClick={onOpenDebug}
-                        title="Toggle Code Receipt"
-                    >
-                        <i className="bi bi-code-square me-1"></i>
-                        Debug Trace
-                    </button>
+                    <>
+                        <span className="btn btn-outline-secondary disabled fw-bold" title="Total Points">
+                            {data.length.toLocaleString()} pts
+                        </span>
+                        <button
+                            className="btn btn-outline-secondary"
+                            onClick={onOpenDebug}
+                            title="Toggle Code Receipt"
+                        >
+                            <i className="bi bi-code-square me-1"></i>
+                            Debug Trace
+                        </button>
+                    </>
                 )}
                 <button
                     className="btn btn-outline-secondary"
