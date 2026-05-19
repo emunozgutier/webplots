@@ -273,6 +273,9 @@ export const gdpTutorialSteps: TutorialStep[] = [
     }
   },
   {
+    text: "The Plot Area above shows the chart. Below is the Data Table & Stats, which dynamically update with the animation!",
+  },
+  {
     text: "Now, let's animate over time by setting the animation column to 'year'.",
     action: (stores) => {
       stores.animationSideMenuStore.getState().setAnimationColumn('year');
@@ -280,9 +283,6 @@ export const gdpTutorialSteps: TutorialStep[] = [
     targetSelector: ".animation-controls"
   },
   {
-    text: "The Plot Area above shows the chart. Below is the Data Table & Stats, which dynamically update with the animation!",
-  },
-  {
-    text: "You're all set! Press Play on the Animation menu on the left and enjoy exploring the data!",
+    text: "You're all set! Press Play on the timeline below the plot and enjoy exploring the data!",
   }
 ];
