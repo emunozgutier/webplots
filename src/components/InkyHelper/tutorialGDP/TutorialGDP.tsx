@@ -496,6 +496,7 @@ const TutorialGDP: React.FC = () => {
           }
           onClose={(e) => { e.stopPropagation(); setIsTutorialActive(false); }}
           text={currentText}
+          stepInfo={(!isMoving && !currentStep.choices) ? `Step ${currentStepIndex + 1} of ${gdpTutorialSteps.length}` : undefined}
           type="persistent"
           instant={isMoving || !isNewStep}
           onSkip={handleSkip}

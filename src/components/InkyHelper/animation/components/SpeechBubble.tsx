@@ -21,6 +21,7 @@ export interface SpeechBubbleProps {
   onPlacementChange?: (placement: CardinalDirection) => void;
   onClose?: (e: React.MouseEvent) => void;
   customFooter?: React.ReactNode;
+  stepInfo?: string;
 }
 
 type TypewriterState = 'IDLE' | 'WAITING' | 'TYPING';
@@ -43,6 +44,7 @@ const SpeechBubble: React.FC<SpeechBubbleProps> = ({
   onPlacementChange,
   onClose,
   customFooter,
+  stepInfo,
 }) => {
   const isHover = type === 'hover';
   
@@ -205,6 +207,11 @@ const SpeechBubble: React.FC<SpeechBubbleProps> = ({
         >
           ×
         </button>
+      )}
+      {stepInfo && (
+        <div style={{ fontSize: '0.75em', opacity: 0.7, marginBottom: '6px', fontWeight: 'bold' }}>
+          {stepInfo}
+        </div>
       )}
       <div className="inky-speech-text" style={{ position: 'relative' }}>
         {/* Invisible full text establishes the final dimensions so the bubble doesn't resize while typing */}
