@@ -301,7 +301,7 @@ const TutorialGDP: React.FC = () => {
     }
   }, [currentStepIndex, isDragging]);
 
-  if (!isDebugMode || !isTutorialActive) return null;
+  if (!isTutorialActive) return null;
 
   // Calculate tentacle path based on target element position
   const dxTarget = target.x - position.x;
