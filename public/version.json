@@ -1,5 +1,5 @@
 {
-    "commit_title": "Extract isTutorialActive selector in TopMenuBar",
-    "commit_message": "Introduce an isTutorialActive constant using useWorkspaceStore and replace the inline selector call in the Help dropdown JSX. This simplifies the component render, improves readability, and avoids calling the selector directly inside the JSX.",
+    "commit_title": "Remove unused setSpeedMultiplier and import",
+    "commit_message": "Clean up unused code: remove the unused setSpeedMultiplier destructure from AnimationControls and drop an unused useWorkspaceStore import in AnimationSideMenu. This eliminates lint warnings and unused references without changing runtime behavior.",
     "version_string": "2026.21.2"
 }
