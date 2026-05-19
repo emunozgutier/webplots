@@ -367,12 +367,12 @@ const TutorialGDP: React.FC = () => {
     const pointDistY = animatedTargetElementPos.y - position.y;
     const baseAngle = Math.atan2(pointDistY, pointDistX);
     // Oscillate the distance (poking motion)
-    const wiggleDistance = isGrabbing ? 0 : Math.sin(tick / 150) * 13.46; 
+    const wiggleDistance = isGrabbing ? 0 : Math.sin(tick / 150) * 11.31; 
     
     // Stretch to the element
     const distToElement = Math.sqrt(pointDistX * pointDistX + pointDistY * pointDistY);
     const maxTentacleLength = currentStep.dragAndDrop ? 3000 : 200;
-    const offset = currentStep.dragAndDrop ? 5 : -22.07; 
+    const offset = currentStep.dragAndDrop ? 5 : -24.23; 
     
     const pointLength = Math.min(distToElement + offset + wiggleDistance, maxTentacleLength); // cap length
     
@@ -614,7 +614,7 @@ const TutorialGDP: React.FC = () => {
             left: debugRect.left + debugRect.width / 2, 
             top: debugRect.top + debugRect.height / 2,
             transform: 'translate(-50%, -50%) rotate(22.5deg)',
-            width: 16, height: 16,
+            width: 24, height: 24,
             overflow: 'visible'
           }}>
             <polygon 
