@@ -82,6 +82,7 @@ const AnimationControls: React.FC<AnimationControlsProps> = ({ data }) => {
             </div>
             <div className="d-flex align-items-center">
                 <button 
+                    id="animation-play-button"
                     className={`btn btn-sm ${isPlaying ? 'btn-danger' : 'btn-primary'} me-2`} 
                     onClick={() => {
                         if (!isPlaying && currentIndex >= uniqueValues.length - 1) {

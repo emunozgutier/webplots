@@ -325,6 +325,6 @@ export const gdpTutorialSteps: TutorialStep[] = [
             });
         }
     },
-    targetSelector: ".animation-controls"
+    targetSelector: "#animation-play-button"
   }
 ];

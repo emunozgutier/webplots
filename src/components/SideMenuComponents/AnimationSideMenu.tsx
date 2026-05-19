@@ -16,7 +16,7 @@ const AnimationSideMenu: React.FC = () => {
         <div className="p-3 d-flex flex-column h-100 overflow-auto">
             <h6 className="fw-bold mb-3 text-secondary border-bottom pb-2">Animation Settings</h6>
 
-            <div className="card shadow-sm mb-3">
+            <div className="card p-2 shadow-sm mb-3">
                 <div className="card-header bg-light p-2 border-bottom-0">
                     <span className="fw-bold text-primary" style={{ fontSize: '0.85rem' }}>Timeline Column</span>
                 </div>
@@ -33,11 +33,11 @@ const AnimationSideMenu: React.FC = () => {
 
                     {animationColumn && (
                         <div className="mt-2 text-end">
-                            <Button 
-                                variant="outline-secondary" 
-                                size="sm" 
-                                className="w-100" 
-                                style={{ fontSize: '0.75rem' }} 
+                            <Button
+                                variant="outline-secondary"
+                                size="sm"
+                                className="w-100"
+                                style={{ fontSize: '0.75rem' }}
                                 onClick={() => setPopupContent(<AnimationSettings />)}
                             >
                                 <i className="bi bi-gear me-1"></i>
