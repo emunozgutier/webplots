@@ -60,21 +60,8 @@ export const gdpTutorialSteps: TutorialStep[] = [
       }
       return "#test-nav-dropdown";
     },
-    dynamicTargetPosition: () => {
-      const el = document.querySelector("#test-nav-gapminder");
-      if (el && el.getBoundingClientRect().height > 0) {
-        return "e";
-      }
-      return "se";
-    },
+    targetPosition: 'se',
     bubblePlacement: 'se',
-    dynamicBubblePlacement: () => {
-      const el = document.querySelector("#test-nav-gapminder");
-      if (el && el.getBoundingClientRect().height > 0) {
-        return "e";
-      }
-      return "se";
-    }
   },
   {
     text: "Let's first set the year column to the year type. Click the 'Generic' badge under the 'year' column header and change it to 'Year'.",
@@ -130,21 +117,6 @@ export const gdpTutorialSteps: TutorialStep[] = [
   },
   {
     text: "Now, let's configure our chart! Open the Axis menu and set the X-axis to 'gdp'.",
-    targetSelector: "#x-axis-label", 
-    dynamicTargetSelector: () => {
-        const label = document.querySelector('#x-axis-label');
-        if (label && label.getBoundingClientRect().width > 0) return '#x-axis-label';
-        return '#side-menu-btn-axis';
-    },
-    dragAndDrop: () => {
-        const label = document.querySelector('#x-axis-label');
-        const destSelector = (label && label.getBoundingClientRect().width > 0) ? '#x-axis-label' : '#side-menu-btn-axis';
-        return { 
-            sourceSelector: "#draggable-column-text-gdp", 
-            destSelector,
-            sourcePosition: 'e'
-        };
-    },
     requirementCheck: (stores) => {
       const axisData = stores.axisSideMenuStore.getState().sideMenuData;
       return axisData.xAxis === 'gdp';
