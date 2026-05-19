@@ -583,18 +583,30 @@ const TutorialGDP: React.FC = () => {
       {/* --- Debug Visualization Layer --- */}
       {isDebugMode && debugRect && (
         <div style={{ position: 'fixed', zIndex: 9999, pointerEvents: 'none', left: 0, top: 0, width: '100vw', height: '100vh' }}>
-          {/* Render the actual animated target position as a 3x radius octagon */}
-          {animatedTargetElementPos && (
+          {/* Render the bounding box of the target element */}
+          <div style={{
+            position: 'absolute',
+            left: debugRect.left,
+            top: debugRect.top,
+            width: debugRect.width,
+            height: debugRect.height,
+            border: '2px dashed red',
+            boxSizing: 'border-box'
+          }} />
+          
+          {/* Render the octagon centered on the target element */}
+          {debugRect && (
             <svg style={{
               position: 'absolute',
-              left: animatedTargetElementPos.x, top: animatedTargetElementPos.y,
+              left: debugRect.left + debugRect.width / 2, 
+              top: debugRect.top + debugRect.height / 2,
               transform: 'translate(-50%, -50%)',
               width: 36, height: 36,
               overflow: 'visible'
             }}>
               <polygon 
                 points="10.8,0 25.2,0 36,10.8 36,25.2 25.2,36 10.8,36 0,25.2 0,10.8"
-                fill="red"
+                fill="rgba(255, 0, 0, 0.5)"
                 stroke="white"
                 strokeWidth="2"
                 style={{ filter: 'drop-shadow(0 0 4px rgba(0,0,0,0.5))' }}
