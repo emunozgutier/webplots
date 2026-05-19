@@ -139,6 +139,21 @@ export const gdpTutorialSteps: TutorialStep[] = [
   },
   {
     text: "Great! Now set the Y-axis to 'life_expectancy'.",
+    targetSelector: "#y-axis-label", 
+    dynamicTargetSelector: () => {
+        const label = document.querySelector('#y-axis-label');
+        if (label && label.getBoundingClientRect().width > 0) return '#y-axis-label';
+        return '#side-menu-btn-axis';
+    },
+    dragAndDrop: () => {
+        const label = document.querySelector('#y-axis-label');
+        const destSelector = (label && label.getBoundingClientRect().width > 0) ? '#y-axis-label' : '#side-menu-btn-axis';
+        return { 
+            sourceSelector: "#draggable-column-text-life_expectancy", 
+            destSelector,
+            sourcePosition: 'e'
+        };
+    },
     requirementCheck: (stores) => {
       const axisData = stores.axisSideMenuStore.getState().sideMenuData;
       return axisData.yAxis.includes('life_expectancy');

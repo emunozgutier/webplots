@@ -375,12 +375,16 @@ const TutorialGDP: React.FC = () => {
     const distToElement = Math.sqrt(pointDistX * pointDistX + pointDistY * pointDistY);
     const maxTentacleLength = currentStep.dragAndDrop ? 3000 : 200;
 
-    // Calculate mean reach and amplitude based on the octagon radii
-    const meanReach = (BIG_OCTAGON_RADIUS + SMALL_OCTAGON_RADIUS) / 2;
-    const reachAmplitude = (BIG_OCTAGON_RADIUS - SMALL_OCTAGON_RADIUS) / 2;
+    // Calculate bounds with a buffer so it never touches the blue octagon and stays inside the green
+    const minReach = SMALL_OCTAGON_RADIUS + 4; 
+    const maxReach = BIG_OCTAGON_RADIUS - 2;
     
-    const offset = currentStep.dragAndDrop ? 5 : -meanReach; 
-    const wiggleDistance = isGrabbing ? 0 : Math.sin(tick / 150) * reachAmplitude; 
+    const meanReach = (maxReach + minReach) / 2;
+    const reachAmplitude = (maxReach - minReach) / 2;
+    
+    const offset = -meanReach; 
+    // When grabbing, hold the hand exactly at minReach (reachAmplitude extends the hand fully towards target)
+    const wiggleDistance = isGrabbing ? reachAmplitude : Math.sin(tick / 150) * reachAmplitude; 
     
     const pointLength = Math.min(distToElement + offset + wiggleDistance, maxTentacleLength); // cap length
     
@@ -587,52 +591,72 @@ const TutorialGDP: React.FC = () => {
       </div>
       
       {/* --- Debug Visualization Layer --- */}
-      {isDebugMode && debugRect && (
+      {isDebugMode && (
         <div style={{ position: 'fixed', zIndex: 9999, pointerEvents: 'none', left: 0, top: 0, width: '100vw', height: '100vh' }}>
-          {/* Render the bounding box of the target element */}
-          <div style={{
-            position: 'absolute',
-            left: debugRect.left,
-            top: debugRect.top,
-            width: debugRect.width,
-            height: debugRect.height,
-            border: '2px dashed red',
-            boxSizing: 'border-box'
-          }} />
-          
-          {/* Big hand location octagon */}
-          <svg style={{
-            position: 'absolute',
-            left: debugRect.left + debugRect.width / 2, 
-            top: debugRect.top + debugRect.height / 2,
-            transform: 'translate(-50%, -50%)',
-            width: BIG_OCTAGON_RADIUS * 2, height: BIG_OCTAGON_RADIUS * 2,
-            overflow: 'visible'
-          }}>
-            <polygon 
-              points={Array.from({length: 8}).map((_, i) => `${BIG_OCTAGON_RADIUS + BIG_OCTAGON_RADIUS * Math.cos(i * Math.PI / 4)},${BIG_OCTAGON_RADIUS + BIG_OCTAGON_RADIUS * Math.sin(i * Math.PI / 4)}`).join(' ')}
-              fill="rgba(0, 255, 0, 0.2)"
-              stroke="white"
-              strokeWidth="1"
-            />
-          </svg>
+          {(() => {
+            const rects: DOMRect[] = [];
+            const currentStep = gdpTutorialSteps[currentStepIndex];
+            if (currentStep && currentStep.dragAndDrop) {
+              const cfg = currentStep.dragAndDrop();
+              if (cfg) {
+                const srcEl = document.querySelector(cfg.sourceSelector);
+                const dstEl = document.querySelector(cfg.destSelector);
+                if (srcEl) rects.push(srcEl.getBoundingClientRect());
+                if (dstEl) rects.push(dstEl.getBoundingClientRect());
+              }
+            } else if (debugRect) {
+              rects.push(debugRect);
+            }
 
-          {/* Small hand location octagon */}
-          <svg style={{
-            position: 'absolute',
-            left: debugRect.left + debugRect.width / 2, 
-            top: debugRect.top + debugRect.height / 2,
-            transform: 'translate(-50%, -50%)',
-            width: SMALL_OCTAGON_RADIUS * 2, height: SMALL_OCTAGON_RADIUS * 2,
-            overflow: 'visible'
-          }}>
-            <polygon 
-              points={Array.from({length: 8}).map((_, i) => `${SMALL_OCTAGON_RADIUS + SMALL_OCTAGON_RADIUS * Math.cos(i * Math.PI / 4)},${SMALL_OCTAGON_RADIUS + SMALL_OCTAGON_RADIUS * Math.sin(i * Math.PI / 4)}`).join(' ')}
-              fill="rgba(0, 0, 255, 0.5)"
-              stroke="white"
-              strokeWidth="1"
-            />
-          </svg>
+            return rects.map((r, idx) => (
+              <React.Fragment key={idx}>
+                {/* Render the bounding box of the target element */}
+                <div style={{
+                  position: 'absolute',
+                  left: r.left,
+                  top: r.top,
+                  width: r.width,
+                  height: r.height,
+                  border: '2px dashed red',
+                  boxSizing: 'border-box'
+                }} />
+                
+                {/* Big hand location octagon */}
+                <svg style={{
+                  position: 'absolute',
+                  left: r.left + r.width / 2, 
+                  top: r.top + r.height / 2,
+                  transform: 'translate(-50%, -50%)',
+                  width: BIG_OCTAGON_RADIUS * 2, height: BIG_OCTAGON_RADIUS * 2,
+                  overflow: 'visible'
+                }}>
+                  <polygon 
+                    points={Array.from({length: 8}).map((_, i) => `${BIG_OCTAGON_RADIUS + BIG_OCTAGON_RADIUS * Math.cos(i * Math.PI / 4)},${BIG_OCTAGON_RADIUS + BIG_OCTAGON_RADIUS * Math.sin(i * Math.PI / 4)}`).join(' ')}
+                    fill="rgba(0, 255, 0, 0.2)"
+                    stroke="white"
+                    strokeWidth="1"
+                  />
+                </svg>
+
+                {/* Small hand location octagon */}
+                <svg style={{
+                  position: 'absolute',
+                  left: r.left + r.width / 2, 
+                  top: r.top + r.height / 2,
+                  transform: 'translate(-50%, -50%)',
+                  width: SMALL_OCTAGON_RADIUS * 2, height: SMALL_OCTAGON_RADIUS * 2,
+                  overflow: 'visible'
+                }}>
+                  <polygon 
+                    points={Array.from({length: 8}).map((_, i) => `${SMALL_OCTAGON_RADIUS + SMALL_OCTAGON_RADIUS * Math.cos(i * Math.PI / 4)},${SMALL_OCTAGON_RADIUS + SMALL_OCTAGON_RADIUS * Math.sin(i * Math.PI / 4)}`).join(' ')}
+                    fill="rgba(0, 0, 255, 0.5)"
+                    stroke="white"
+                    strokeWidth="1"
+                  />
+                </svg>
+              </React.Fragment>
+            ));
+          })()}
         </div>
       )}
     </>
