@@ -117,6 +117,21 @@ export const gdpTutorialSteps: TutorialStep[] = [
   },
   {
     text: "Now, let's configure our chart! Open the Axis menu and set the X-axis to 'gdp'.",
+    targetSelector: "#x-axis-label", 
+    dynamicTargetSelector: () => {
+        const label = document.querySelector('#x-axis-label');
+        if (label && label.getBoundingClientRect().width > 0) return '#x-axis-label';
+        return '#side-menu-btn-axis';
+    },
+    dragAndDrop: () => {
+        const label = document.querySelector('#x-axis-label');
+        const destSelector = (label && label.getBoundingClientRect().width > 0) ? '#x-axis-label' : '#side-menu-btn-axis';
+        return { 
+            sourceSelector: "#draggable-column-text-gdp", 
+            destSelector,
+            sourcePosition: 'e'
+        };
+    },
     requirementCheck: (stores) => {
       const axisData = stores.axisSideMenuStore.getState().sideMenuData;
       return axisData.xAxis === 'gdp';
@@ -124,12 +139,6 @@ export const gdpTutorialSteps: TutorialStep[] = [
   },
   {
     text: "Great! Now set the Y-axis to 'life_expectancy'.",
-    targetSelector: "#y-axis-label", 
-    dynamicTargetSelector: () => {
-        const label = document.querySelector('#y-axis-label');
-        if (label && label.getBoundingClientRect().width > 0) return '#y-axis-label';
-        return '#side-menu-btn-axis';
-    },
     requirementCheck: (stores) => {
       const axisData = stores.axisSideMenuStore.getState().sideMenuData;
       return axisData.yAxis.includes('life_expectancy');
