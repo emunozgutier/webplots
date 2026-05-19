@@ -1,5 +1,5 @@
 {
-    "commit_title": "Move BetaMode into TopMenuBar folder",
-    "commit_message": "Relocate BetaMode.tsx into src/components/TopMenuBar/ and update the import in TopMenuBar.tsx to './TopMenuBar/BetaMode'. This is a refactor-only change (file move and import path update) with no behavior or API changes.",
-    "version_string": "2026.16.1"
+    "commit_title": "Remove unused setSpeedMultiplier and import",
+    "commit_message": "Clean up unused code: remove the unused setSpeedMultiplier destructure from AnimationControls and drop an unused useWorkspaceStore import in AnimationSideMenu. This eliminates lint warnings and unused references without changing runtime behavior.",
+    "version_string": "2026.21.2"
 }
