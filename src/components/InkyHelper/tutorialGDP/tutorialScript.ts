@@ -296,7 +296,7 @@ export const gdpTutorialSteps: TutorialStep[] = [
     }
   },
   {
-    text: "You're all set! Press Play on the timeline below the plot and enjoy exploring the data!",
+    text: "You're all set! Notice how the visual perfectly mirrors the classic Gapminder bubble chart! Press Play on the timeline below the plot and enjoy exploring the data!",
     targetSelector: ".animation-controls"
   }
 ];
