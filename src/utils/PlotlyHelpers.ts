@@ -489,7 +489,7 @@ export const generatePlotConfig = (
             let finalMarkerColor = marker.color;
             let finalMarkerSymbol = marker.symbol;
             let finalMarkerSize = marker.size;
-            let finalMarkerLine = marker.line;
+            let finalMarkerLine = marker.line || { color: '#333333', width: 0.5 };
             let finalMarkerOpacity: any = 0.7; // default transparency to see overlaps
 
             // Apply visual tweaks based on absorptionMode!

@@ -46,8 +46,13 @@ export const createStyleSideMenuStore = () => createStore<StyleSideMenuState>()(
             saturation: { source: 'manual', value: 80, enabled: false },
             lightness: { source: 'manual', value: 50, enabled: false },
             shape: { source: 'manual', value: 'circle', enabled: false },
-            size: { source: 'manual', value: 8, enabled: false, sizeMode: 'diameter' },
-            groupColorOverrides: {},
+            size: { source: 'manual', value: 8, enabled: false, sizeMode: 'area', range: [4, 60] },
+            groupColorOverrides: {
+                'Asia': '#ff5872',
+                'Americas': '#7eb852',
+                'Europe': '#ffe700',
+                'Africa': '#00d5e9'
+            },
             groupSymbolOverrides: {}
         },
 
