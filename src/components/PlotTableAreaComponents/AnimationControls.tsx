@@ -95,21 +95,22 @@ const AnimationControls: React.FC<AnimationControlsProps> = ({ data }) => {
                     <i className={`bi ${isPlaying ? 'bi-pause-fill' : 'bi-play-fill'} fs-5`}></i>
                 </button>
 
-                <select 
-                    className="form-select form-select-sm me-3" 
-                    style={{ width: 'auto', flexShrink: 0, fontSize: '0.8rem', padding: '0.25rem 1.5rem 0.25rem 0.5rem' }}
-                    value={speedMultiplier}
-                    onChange={(e) => setSpeedMultiplier(Number(e.target.value))}
-                    title="Animation Speed"
+                <button 
+                    className="btn btn-sm btn-outline-secondary me-3" 
+                    onClick={() => {
+                        const nextIndex = currentIndex + 1;
+                        if (nextIndex < uniqueValues.length) {
+                            setAnimationValue(uniqueValues[nextIndex]);
+                        } else {
+                            // Loop back to start if at the end
+                            setAnimationValue(uniqueValues[0]);
+                        }
+                    }}
+                    style={{ borderRadius: '50%', width: '36px', height: '36px', padding: 0, flexShrink: 0 }}
+                    title="Next Frame"
                 >
-                    <option value="0.25">0.25x</option>
-                    <option value="0.5">0.5x</option>
-                    <option value="1">1x</option>
-                    <option value="2">2x</option>
-                    <option value="4">4x</option>
-                    <option value="10">10x</option>
-                </select>
-                
+                    <i className="bi bi-skip-forward-fill fs-6"></i>
+                </button>
                 <div className="flex-grow-1">
                     <input
                         type="range"
