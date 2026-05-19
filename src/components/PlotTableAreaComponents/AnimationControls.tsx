@@ -6,7 +6,7 @@ interface AnimationControlsProps {
 }
 
 const AnimationControls: React.FC<AnimationControlsProps> = ({ data }) => {
-    const { animationData, setAnimationValue, setIsPlaying, setSpeedMultiplier } = useAnimationSideMenuStore();
+    const { animationData, setAnimationValue, setIsPlaying } = useAnimationSideMenuStore();
 
     const { animationColumn, animationValue, isPlaying, speedMultiplier = 1 } = animationData;
 

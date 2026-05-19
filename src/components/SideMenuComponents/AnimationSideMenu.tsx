@@ -2,7 +2,6 @@ import React from 'react';
 import { useAnimationSideMenuStore } from '../../store/SideMenu/useAnimationSideMenuStore';
 import { useCsvDataStore } from '../../store/useCsvDataStore';
 import { useWorkspaceLocalStore } from '../../store/Workspace/useWorkspaceLocalStore';
-import { useWorkspaceStore } from '../../store/Workspace/useWorkspaceStore';
 import { Button } from 'react-bootstrap';
 import AnimationSettings from './subcomponents/AnimationSettings';
 
