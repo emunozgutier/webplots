@@ -539,6 +539,10 @@ const TutorialGDP: React.FC = () => {
                   key={i}
                   className={`inky-speech-btn ${choice.primary ? '' : 'inky-speech-btn-skip'}`}
                   onClick={(e) => {
+                    if (choice.action) {
+                      const stores = workspaceRegistry.get(activeWorkspaceId);
+                      if (stores) choice.action(stores);
+                    }
                     if (choice.actionType === 'next') handleNext(e);
                     else if (choice.actionType === 'skip') handleSkip(e);
                   }}

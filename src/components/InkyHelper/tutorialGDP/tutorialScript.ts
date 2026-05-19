@@ -5,6 +5,7 @@ export interface TutorialChoice {
   label: string;
   actionType: 'next' | 'skip';
   primary?: boolean;
+  action?: (stores: any) => void;
 }
 
 export interface TutorialStep {
@@ -135,7 +136,17 @@ export const gdpTutorialSteps: TutorialStep[] = [
     requirementCheck: (stores) => {
       const axisData = stores.axisSideMenuStore.getState().sideMenuData;
       return axisData.xAxis === 'gdp';
-    }
+    },
+    choices: [
+      {
+        label: "Auto-Assign (For Bot)",
+        actionType: "next",
+        primary: true,
+        action: (stores) => {
+            stores.axisSideMenuStore.getState().setXAxis('gdp');
+        }
+      }
+    ]
   },
   {
     text: "Great! Now set the Y-axis to 'life_expectancy'.",
@@ -157,7 +168,17 @@ export const gdpTutorialSteps: TutorialStep[] = [
     requirementCheck: (stores) => {
       const axisData = stores.axisSideMenuStore.getState().sideMenuData;
       return axisData.yAxis.includes('life_expectancy');
-    }
+    },
+    choices: [
+      {
+        label: "Auto-Assign (For Bot)",
+        actionType: "next",
+        primary: true,
+        action: (stores) => {
+            stores.axisSideMenuStore.getState().addYAxisColumn('life_expectancy');
+        }
+      }
+    ]
   },
   {
     text: "Now click the 'Plot' tab to see our scatter plot!",
