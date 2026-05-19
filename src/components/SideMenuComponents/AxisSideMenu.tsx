@@ -118,7 +118,7 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
                                                 </div>
                                             ) : (
                                                 <div className="text-muted small fst-italic text-center d-flex flex-column" style={{ fontSize: '0.8rem' }}>
-                                                    <span className="fw-bold mb-1">Default: Row Number</span>
+                                                    <span id="x-axis-default-text" className="fw-bold mb-1">Default: Row Number</span>
                                                     <span>Drag column here to override</span>
                                                 </div>
                                             )}

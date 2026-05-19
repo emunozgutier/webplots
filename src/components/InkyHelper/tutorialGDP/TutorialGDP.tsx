@@ -211,6 +211,19 @@ const TutorialGDP: React.FC = () => {
           const rect = el.getBoundingClientRect();
           let elementPos = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
           
+          if (currentStep.dragAndDrop) {
+            const dragDropCfg = currentStep.dragAndDrop();
+            if (dragDropCfg) {
+              const srcEl = document.querySelector(dragDropCfg.sourceSelector);
+              const dstEl = document.querySelector(dragDropCfg.destSelector);
+              if (srcEl && dstEl) {
+                const srcRect = srcEl.getBoundingClientRect();
+                const dstRect = dstEl.getBoundingClientRect();
+                elementPos.y = (srcRect.top + srcRect.height / 2 + dstRect.top + dstRect.height / 2) / 2;
+              }
+            }
+          }
+          
           const dist = 180;
           const directions = [
             { dir: 'n',  dx: 0, dy: -1 },

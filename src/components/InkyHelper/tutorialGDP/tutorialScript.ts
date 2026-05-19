@@ -117,15 +117,15 @@ export const gdpTutorialSteps: TutorialStep[] = [
   },
   {
     text: "Now, let's configure our chart! Open the Axis menu and set the X-axis to 'gdp'.",
-    targetSelector: "#x-axis-label", 
+    targetSelector: "#x-axis-default-text", 
     dynamicTargetSelector: () => {
-        const label = document.querySelector('#x-axis-label');
-        if (label && label.getBoundingClientRect().width > 0) return '#x-axis-label';
+        const label = document.querySelector('#x-axis-default-text');
+        if (label && label.getBoundingClientRect().width > 0) return '#x-axis-default-text';
         return '#side-menu-btn-axis';
     },
     dragAndDrop: () => {
-        const label = document.querySelector('#x-axis-label');
-        const destSelector = (label && label.getBoundingClientRect().width > 0) ? '#x-axis-label' : '#side-menu-btn-axis';
+        const label = document.querySelector('#x-axis-default-text');
+        const destSelector = (label && label.getBoundingClientRect().width > 0) ? '#x-axis-default-text' : '#side-menu-btn-axis';
         return { 
             sourceSelector: "#draggable-column-text-gdp", 
             destSelector,
