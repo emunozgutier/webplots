@@ -293,38 +293,7 @@ export const gdpTutorialSteps: TutorialStep[] = [
     }
   },
   {
-    text: "You're all set! Notice how the visual perfectly mirrors the classic Gapminder bubble chart! We've also added labels for China and the US to track their paths. Press Play on the timeline below the plot and enjoy exploring the data!",
-    action: (stores) => {
-        const annotationStore = stores.annotationSideMenuStore.getState();
-        if (annotationStore.annotations.length === 0) {
-            annotationStore.addAnnotation({
-                id: 'china-anno',
-                type: 'text',
-                text: 'China',
-                trackColumn: 'country',
-                trackValue: 'China',
-                offsetX: 0,
-                offsetY: 20,
-                fontSize: 14,
-                fontColor: '#333333',
-                highlightColor: '#ff0000',
-                highlightSize: 10
-            });
-            annotationStore.addAnnotation({
-                id: 'usa-anno',
-                type: 'text',
-                text: 'United States',
-                trackColumn: 'country',
-                trackValue: 'United States',
-                offsetX: 0,
-                offsetY: 20,
-                fontSize: 14,
-                fontColor: '#333333',
-                highlightColor: '#ff0000',
-                highlightSize: 10
-            });
-        }
-    },
+    text: "You're all set! Notice how the visual perfectly mirrors the classic Gapminder bubble chart! Press Play on the timeline below the plot and enjoy exploring the data!",
     targetSelector: "#animation-play-button"
   }
 ];
