@@ -20,6 +20,10 @@ const TutorialGDP: React.FC = () => {
   const [targetElementPos, setTargetElementPos] = useState<{ x: number, y: number } | null>(null);
   const [placement, setPlacement] = useState<CardinalDirection>('nw');
 
+  // Parameters for the debug octagons and squid hand reach
+  const SMALL_OCTAGON_RADIUS = 13;
+  const BIG_OCTAGON_RADIUS = 36;
+
   const requestRef = React.useRef<number>(0);
   const posRef = React.useRef(position);
   const bubblePosRef = React.useRef(bubblePos);
@@ -366,13 +370,17 @@ const TutorialGDP: React.FC = () => {
     const pointDistX = animatedTargetElementPos.x - position.x;
     const pointDistY = animatedTargetElementPos.y - position.y;
     const baseAngle = Math.atan2(pointDistY, pointDistX);
-    // Oscillate the distance (poking motion)
-    const wiggleDistance = isGrabbing ? 0 : Math.sin(tick / 150) * 11.31; 
     
     // Stretch to the element
     const distToElement = Math.sqrt(pointDistX * pointDistX + pointDistY * pointDistY);
     const maxTentacleLength = currentStep.dragAndDrop ? 3000 : 200;
-    const offset = currentStep.dragAndDrop ? 5 : -24.23; 
+
+    // Calculate mean reach and amplitude based on the octagon radii
+    const meanReach = (BIG_OCTAGON_RADIUS + SMALL_OCTAGON_RADIUS) / 2;
+    const reachAmplitude = (BIG_OCTAGON_RADIUS - SMALL_OCTAGON_RADIUS) / 2;
+    
+    const offset = currentStep.dragAndDrop ? 5 : -meanReach; 
+    const wiggleDistance = isGrabbing ? 0 : Math.sin(tick / 150) * reachAmplitude; 
     
     const pointLength = Math.min(distToElement + offset + wiggleDistance, maxTentacleLength); // cap length
     
@@ -592,16 +600,16 @@ const TutorialGDP: React.FC = () => {
           }} />
           
           {/* Big hand location octagon */}
-          <svg viewBox="0 0 36 36" style={{
+          <svg style={{
             position: 'absolute',
             left: debugRect.left + debugRect.width / 2, 
             top: debugRect.top + debugRect.height / 2,
-            transform: 'translate(-50%, -50%) rotate(22.5deg)',
-            width: 66, height: 66,
+            transform: 'translate(-50%, -50%)',
+            width: BIG_OCTAGON_RADIUS * 2, height: BIG_OCTAGON_RADIUS * 2,
             overflow: 'visible'
           }}>
             <polygon 
-              points="10.8,0 25.2,0 36,10.8 36,25.2 25.2,36 10.8,36 0,25.2 0,10.8"
+              points={Array.from({length: 8}).map((_, i) => `${BIG_OCTAGON_RADIUS + BIG_OCTAGON_RADIUS * Math.cos(i * Math.PI / 4)},${BIG_OCTAGON_RADIUS + BIG_OCTAGON_RADIUS * Math.sin(i * Math.PI / 4)}`).join(' ')}
               fill="rgba(0, 255, 0, 0.2)"
               stroke="white"
               strokeWidth="1"
@@ -609,16 +617,16 @@ const TutorialGDP: React.FC = () => {
           </svg>
 
           {/* Small hand location octagon */}
-          <svg viewBox="0 0 36 36" style={{
+          <svg style={{
             position: 'absolute',
             left: debugRect.left + debugRect.width / 2, 
             top: debugRect.top + debugRect.height / 2,
-            transform: 'translate(-50%, -50%) rotate(22.5deg)',
-            width: 24, height: 24,
+            transform: 'translate(-50%, -50%)',
+            width: SMALL_OCTAGON_RADIUS * 2, height: SMALL_OCTAGON_RADIUS * 2,
             overflow: 'visible'
           }}>
             <polygon 
-              points="10.8,0 25.2,0 36,10.8 36,25.2 25.2,36 10.8,36 0,25.2 0,10.8"
+              points={Array.from({length: 8}).map((_, i) => `${SMALL_OCTAGON_RADIUS + SMALL_OCTAGON_RADIUS * Math.cos(i * Math.PI / 4)},${SMALL_OCTAGON_RADIUS + SMALL_OCTAGON_RADIUS * Math.sin(i * Math.PI / 4)}`).join(' ')}
               fill="rgba(0, 0, 255, 0.5)"
               stroke="white"
               strokeWidth="1"
