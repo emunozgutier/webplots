@@ -273,9 +273,6 @@ export const gdpTutorialSteps: TutorialStep[] = [
     }
   },
   {
-    text: "The Plot Area above shows the chart. Below is the Data Table & Stats, which dynamically update with the animation!",
-  },
-  {
     text: "Now, let's animate over time! Open the 'Animation' menu on the right side bar.",
     targetSelector: "#side-menu-btn-animation",
     requirementCheck: () => {
