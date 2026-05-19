@@ -386,7 +386,7 @@ const TutorialGDP: React.FC = () => {
     
     // Stretch to the element
     const distToElement = Math.sqrt(pointDistX * pointDistX + pointDistY * pointDistY);
-    const maxTentacleLength = currentStep.dragAndDrop ? 3000 : 200;
+    const maxTentacleLength = currentStep.dragAndDrop ? 3000 : 800;
 
     // Calculate bounds with a buffer so it never touches the blue octagon and stays inside the green
     const minReach = SMALL_OCTAGON_RADIUS + 4; 

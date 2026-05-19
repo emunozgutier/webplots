@@ -91,7 +91,7 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
                                                 ))}
                                             </div>
                                         ) : (
-                                            <div className="text-muted small fst-italic text-center" style={{ fontSize: '0.8rem' }}>Drag column here</div>
+                                            <div id="y-axis-default-text" className="text-muted small fst-italic text-center" style={{ fontSize: '0.8rem' }}>Drag column here</div>
                                         )}
                                     </div>
                                 </div>
