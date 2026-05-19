@@ -111,7 +111,7 @@ const PlotAreaControlButtons: React.FC<PlotAreaControlButtonsProps> = ({ onOpenS
                     <>
                         <span className={`btn btn-outline-secondary disabled fw-bold ${data.length > 2048 ? 'text-warning' : ''}`} title={data.length > 2048 ? `Dataset too large! Showing only the first 2,048 of ${data.length.toLocaleString()} points.` : "Total Points"}>
                             {data.length > 2048 && <i className="bi bi-exclamation-triangle-fill me-1"></i>}
-                            {data.length > 2048 ? '2,048' : data.length.toLocaleString()} pts
+                            {data.length > 2048 ? `2,048 out of ${data.length.toLocaleString()} pts` : `${data.length.toLocaleString()} pts`}
                         </span>
                         <button
                             className="btn btn-outline-secondary"
