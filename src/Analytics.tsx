@@ -4,8 +4,9 @@ import './Analytics.css';
 // Declare types for window since we are modifying global scope
 declare global {
   interface Window {
-    dataLayer: any[];
-    gtag: (...args: any[]) => void;
+    dataLayer?: any[];
+    gtag?: (...args: any[]) => void;
+    [key: string]: any; // Allow ga-disable dynamic keys
   }
 }
 
@@ -14,6 +15,9 @@ const CONSENT_KEY = 'webplots-analytics-consent';
 const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 
 const loadGoogleAnalytics = () => {
+  // Ensure Google Analytics is not disabled
+  window[`ga-disable-${GA_MEASUREMENT_ID}`] = false;
+
   if (typeof window.gtag !== 'undefined') return; // Script already initialized and loaded
 
   // 1. Create and inject the async script tag
@@ -28,7 +32,7 @@ const loadGoogleAnalytics = () => {
   // Google's script uses traditional function to capture arguments object
   window.gtag = function () {
     // eslint-disable-next-line prefer-rest-params
-    window.dataLayer.push(arguments);
+    window.dataLayer?.push(arguments);
   };
   
   // 3. Configure gtag
@@ -52,6 +56,10 @@ export const Analytics: React.FC = () => {
           setShowBanner(true);
         } else if (status === 'granted') {
           loadGoogleAnalytics();
+          window.dispatchEvent(new Event('analytics-status-changed'));
+        } else {
+          window[`ga-disable-${GA_MEASUREMENT_ID}`] = true;
+          window.dispatchEvent(new Event('analytics-status-changed'));
         }
       } catch (e) {
         // In case of parsing error, clear and show banner
@@ -78,6 +86,7 @@ export const Analytics: React.FC = () => {
     );
     loadGoogleAnalytics();
     setShowBanner(false);
+    window.dispatchEvent(new Event('analytics-status-changed'));
   };
 
   const handleDecline = () => {
@@ -85,7 +94,9 @@ export const Analytics: React.FC = () => {
       CONSENT_KEY,
       JSON.stringify({ status: 'denied', timestamp: Date.now() })
     );
+    window[`ga-disable-${GA_MEASUREMENT_ID}`] = true;
     setShowBanner(false);
+    window.dispatchEvent(new Event('analytics-status-changed'));
   };
 
   if (!showBanner) return null;
