@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import './Analytics.css';
+import { useAnalyticsStore } from './store/useAnalytics';
 
 // Declare types for window since we are modifying global scope
 declare global {
@@ -11,7 +12,6 @@ declare global {
 }
 
 const GA_MEASUREMENT_ID = 'G-XDRYGHGCVL';
-const CONSENT_KEY = 'webplots-analytics-consent';
 const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 
 const loadGoogleAnalytics = () => {
@@ -41,109 +41,82 @@ const loadGoogleAnalytics = () => {
 };
 
 export const Analytics: React.FC = () => {
-  const [showBanner, setShowBanner] = useState<boolean>(false);
+  const { status, timestamp, setConsent, resetConsent } = useAnalyticsStore();
 
   useEffect(() => {
-    const savedConsent = localStorage.getItem(CONSENT_KEY);
-    if (!savedConsent) {
-      setShowBanner(true);
-    } else {
-      try {
-        const { status, timestamp } = JSON.parse(savedConsent);
-        const isExpired = Date.now() - timestamp > ONE_WEEK_MS;
-
-        if (isExpired) {
-          setShowBanner(true);
-        } else if (status === 'granted') {
-          loadGoogleAnalytics();
-          window.dispatchEvent(new Event('analytics-status-changed'));
-        } else {
-          window[`ga-disable-${GA_MEASUREMENT_ID}`] = true;
-          window.dispatchEvent(new Event('analytics-status-changed'));
-        }
-      } catch (e) {
-        // In case of parsing error, clear and show banner
-        localStorage.removeItem(CONSENT_KEY);
-        setShowBanner(true);
+    // Check weekly expiration on mount
+    if (status && timestamp) {
+      const isExpired = Date.now() - timestamp > ONE_WEEK_MS;
+      if (isExpired) {
+        resetConsent();
       }
     }
+  }, [status, timestamp, resetConsent]);
 
-    // Listener for manual triggers via Help > Enable/Disable Analytics
-    const handleTrigger = () => {
-      setShowBanner(true);
-    };
-
-    window.addEventListener('trigger-analytics-consent', handleTrigger);
-    return () => {
-      window.removeEventListener('trigger-analytics-consent', handleTrigger);
-    };
-  }, []);
+  useEffect(() => {
+    // Handle loading/disabling GA script reactively based on store status
+    if (status === 'granted') {
+      loadGoogleAnalytics();
+    } else if (status === 'denied') {
+      window[`ga-disable-${GA_MEASUREMENT_ID}`] = true;
+    }
+  }, [status]);
 
   const handleAccept = () => {
-    localStorage.setItem(
-      CONSENT_KEY,
-      JSON.stringify({ status: 'granted', timestamp: Date.now() })
-    );
-    loadGoogleAnalytics();
-    setShowBanner(false);
-    window.dispatchEvent(new Event('analytics-status-changed'));
+    setConsent('granted');
   };
 
   const handleDecline = () => {
-    localStorage.setItem(
-      CONSENT_KEY,
-      JSON.stringify({ status: 'denied', timestamp: Date.now() })
-    );
-    window[`ga-disable-${GA_MEASUREMENT_ID}`] = true;
-    setShowBanner(false);
-    window.dispatchEvent(new Event('analytics-status-changed'));
+    setConsent('denied');
   };
 
-  if (!showBanner) return null;
+  // Only show the consent banner if the status has not been chosen yet (status === null)
+  if (status !== null) return null;
 
   return (
     <>
       <div className="analytics-backdrop" onClick={handleDecline} />
       <div className="analytics-consent-banner d-flex flex-column gap-3" role="dialog" aria-labelledby="analytics-consent-title">
-      <button 
-        className="analytics-close-btn" 
-        onClick={handleDecline} 
-        aria-label="Close consent banner"
-        title="Decline analytics tracking"
-      >
-        <i className="bi bi-x-lg"></i>
-      </button>
+        <button 
+          className="analytics-close-btn" 
+          onClick={handleDecline} 
+          aria-label="Close consent banner"
+          title="Decline analytics tracking"
+        >
+          <i className="bi bi-x-lg"></i>
+        </button>
 
-      <div className="d-flex align-items-start gap-3">
-        <div className="analytics-icon-wrapper">
-          <i className="bi bi-graph-up-arrow"></i>
+        <div className="d-flex align-items-start gap-3">
+          <div className="analytics-icon-wrapper">
+            <i className="bi bi-graph-up-arrow"></i>
+          </div>
+          <div className="d-flex flex-column">
+            <h4 id="analytics-consent-title" className="analytics-title m-0">Help Us Improve WebPlots!</h4>
+            <span className="analytics-text mt-1">
+              We use Google Analytics to study application performance and feature usage. 
+              No personal identifiers are stored. Your support keeps WebPlots growing!
+            </span>
+          </div>
         </div>
-        <div className="d-flex flex-column">
-          <h4 id="analytics-consent-title" className="analytics-title m-0">Help Us Improve WebPlots!</h4>
-          <span className="analytics-text mt-1">
-            We use Google Analytics to study application performance and feature usage. 
-            No personal identifiers are stored. Your support keeps WebPlots growing!
-          </span>
+
+        <div className="d-flex justify-content-end gap-2 mt-1">
+          <button 
+            className="btn btn-analytics-secondary btn-sm" 
+            onClick={handleDecline}
+          >
+            Decline
+          </button>
+          <button 
+            className="btn btn-analytics-primary btn-sm" 
+            onClick={handleAccept}
+          >
+            Allow Analytics
+          </button>
         </div>
       </div>
-
-      <div className="d-flex justify-content-end gap-2 mt-1">
-        <button 
-          className="btn btn-analytics-secondary btn-sm" 
-          onClick={handleDecline}
-        >
-          Decline
-        </button>
-        <button 
-          className="btn btn-analytics-primary btn-sm" 
-          onClick={handleAccept}
-        >
-          Allow Analytics
-        </button>
-      </div>
-    </div>
-  </>
+    </>
   );
 };
 
 export default Analytics;
+

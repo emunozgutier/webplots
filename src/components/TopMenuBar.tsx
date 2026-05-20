@@ -8,6 +8,7 @@ import { useWorkspaceStore, workspaceRegistry } from '../store/Workspace/useWork
 import { getSmallDataset, getLargeColumnDataset, getSimulationDataset, getBinningTestData } from '../utils/TestDatasets';
 import { generateTestGaussianData } from '../utils/TableMathLib';
 import BetaMode from './TopMenuBar/BetaMode';
+import { useAnalyticsStore } from '../store/useAnalytics';
 
 interface VersionData {
     commit_title: string;
@@ -25,30 +26,10 @@ const TopMenuBar: React.FC = () => {
     const [showVersionModal, setShowVersionModal] = useState(false);
     const [showBetaModal, setShowBetaModal] = useState(false);
     const [versionData, setVersionData] = useState<VersionData | null>(null);
-    const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState<boolean>(false);
-
-    useEffect(() => {
-        const checkAnalyticsStatus = () => {
-            const savedConsent = localStorage.getItem('webplots-analytics-consent');
-            if (savedConsent) {
-                try {
-                    const { status } = JSON.parse(savedConsent);
-                    setIsAnalyticsEnabled(status === 'granted');
-                } catch {
-                    setIsAnalyticsEnabled(false);
-                }
-            } else {
-                setIsAnalyticsEnabled(false);
-            }
-        };
-
-        checkAnalyticsStatus();
-        window.addEventListener('analytics-status-changed', checkAnalyticsStatus);
-        
-        return () => {
-            window.removeEventListener('analytics-status-changed', checkAnalyticsStatus);
-        };
-    }, []);
+    const status = useAnalyticsStore((state) => state.status);
+    const setConsent = useAnalyticsStore((state) => state.setConsent);
+    const resetConsent = useAnalyticsStore((state) => state.resetConsent);
+    const isAnalyticsEnabled = status === 'granted';
 
     useEffect(() => {
         const fetchVersion = async () => {
@@ -381,18 +362,9 @@ const TopMenuBar: React.FC = () => {
 
     const handleToggleAnalytics = () => {
         if (isAnalyticsEnabled) {
-            // Disable immediately
-            localStorage.setItem(
-                'webplots-analytics-consent',
-                JSON.stringify({ status: 'denied', timestamp: Date.now() })
-            );
-            // Opt-out from future tracking
-            window['ga-disable-G-XDRYGHGCVL'] = true;
-            window.dispatchEvent(new Event('analytics-status-changed'));
-            alert('Google Analytics has been disabled.');
+            setConsent('denied');
         } else {
-            // Trigger consent banner to ask for permission
-            window.dispatchEvent(new Event('trigger-analytics-consent'));
+            resetConsent();
         }
     };
 
