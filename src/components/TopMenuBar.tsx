@@ -25,6 +25,30 @@ const TopMenuBar: React.FC = () => {
     const [showVersionModal, setShowVersionModal] = useState(false);
     const [showBetaModal, setShowBetaModal] = useState(false);
     const [versionData, setVersionData] = useState<VersionData | null>(null);
+    const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState<boolean>(false);
+
+    useEffect(() => {
+        const checkAnalyticsStatus = () => {
+            const savedConsent = localStorage.getItem('webplots-analytics-consent');
+            if (savedConsent) {
+                try {
+                    const { status } = JSON.parse(savedConsent);
+                    setIsAnalyticsEnabled(status === 'granted');
+                } catch {
+                    setIsAnalyticsEnabled(false);
+                }
+            } else {
+                setIsAnalyticsEnabled(false);
+            }
+        };
+
+        checkAnalyticsStatus();
+        window.addEventListener('analytics-status-changed', checkAnalyticsStatus);
+        
+        return () => {
+            window.removeEventListener('analytics-status-changed', checkAnalyticsStatus);
+        };
+    }, []);
 
     useEffect(() => {
         const fetchVersion = async () => {
@@ -355,6 +379,23 @@ const TopMenuBar: React.FC = () => {
         }
     };
 
+    const handleToggleAnalytics = () => {
+        if (isAnalyticsEnabled) {
+            // Disable immediately
+            localStorage.setItem(
+                'webplots-analytics-consent',
+                JSON.stringify({ status: 'denied', timestamp: Date.now() })
+            );
+            // Opt-out from future tracking
+            window['ga-disable-G-XDRYGHGCVL'] = true;
+            window.dispatchEvent(new Event('analytics-status-changed'));
+            alert('Google Analytics has been disabled.');
+        } else {
+            // Trigger consent banner to ask for permission
+            window.dispatchEvent(new Event('trigger-analytics-consent'));
+        }
+    };
+
     return (
         <Navbar bg="dark" variant="dark" expand="md" className="px-4 shadow-sm">
             <Container fluid className="p-0">
@@ -437,8 +478,8 @@ const TopMenuBar: React.FC = () => {
                                 Version
                             </NavDropdown.Item>
                             <NavDropdown.Divider />
-                            <NavDropdown.Item onClick={() => window.dispatchEvent(new Event('trigger-analytics-consent'))}>
-                                Enable/Disable Analytics
+                            <NavDropdown.Item onClick={handleToggleAnalytics}>
+                                {isAnalyticsEnabled ? 'Disable Analytics' : 'Enable Analytics'}
                             </NavDropdown.Item>
                             <NavDropdown.Item onClick={() => setShowBetaModal(true)}>
                                 Beta Mode
