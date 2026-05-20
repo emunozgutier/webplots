@@ -1,5 +1,5 @@
 {
-    "commit_title": "Remove unused setSpeedMultiplier and import",
-    "commit_message": "Clean up unused code: remove the unused setSpeedMultiplier destructure from AnimationControls and drop an unused useWorkspaceStore import in AnimationSideMenu. This eliminates lint warnings and unused references without changing runtime behavior.",
+    "commit_title": "Use analytics store for consent & refactor banner",
+    "commit_message": "Replace ad-hoc localStorage/event-based analytics consent handling with a centralized useAnalyticsStore. Analytics component now reads status/timestamp from the store, enforces weekly expiration via resetConsent, reacts to status changes to load/disable GA, and only shows the banner when status is null. UI markup for the consent banner was reorganized (close icon moved) for clarity. TopMenuBar now uses the analytics store (setConsent/resetConsent) instead of directly manipulating localStorage or dispatching events.",
     "version_string": "2026.21.2"
 }
