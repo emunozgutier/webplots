@@ -8,6 +8,7 @@ import { useWorkspaceStore } from './store/Workspace/useWorkspaceStore';
 import PopupMenu from './components/PopupMenu';
 import TutorialGDP from './components/InkyHelper/tutorialGDP/TutorialGDP';
 import SwimTest from './components/InkyHelper/SwimTest/SwimTest';
+import Analytics from './Analytics';
 import './App.css';
 
 function App() {
@@ -37,6 +38,7 @@ function App() {
         ))}
       </main>
       <TutorialGDP />
+      <Analytics />
     </div>
   );
 }

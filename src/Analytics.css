@@ -1,0 +1,193 @@
+/* Analytics Consent Banner Custom Premium Styles */
+
+/* Blurred Backdrop overlay */
+.analytics-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  z-index: 1070;
+  animation: analyticsFadeIn 0.35s ease forwards;
+  will-change: opacity;
+}
+
+@keyframes analyticsFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.analytics-consent-banner {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 440px;
+  max-width: calc(100vw - 32px);
+  z-index: 1080;
+  
+  /* Glassmorphism Design */
+  background: rgba(28, 31, 38, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 20px;
+  padding: 24px;
+  
+  /* Deep Premium Drop Shadow */
+  box-shadow: 
+    0 24px 60px rgba(0, 0, 0, 0.65), 
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  
+  /* Smooth Center-Scale Entrance */
+  animation: analyticsCenterFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+  color: #f1f3f5;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+@keyframes analyticsCenterFade {
+  from {
+    transform: translate(-50%, -42%) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Close Icon Styling */
+.analytics-close-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: transparent;
+  border: none;
+  padding: 4px;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.analytics-close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  transform: rotate(90deg);
+}
+
+.analytics-close-btn:focus {
+  outline: none;
+}
+
+/* Elegant Icon Wrapper with Glow */
+.analytics-icon-wrapper {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(100, 108, 255, 0.25), rgba(116, 123, 255, 0.25));
+  border: 1px solid rgba(100, 108, 255, 0.35);
+  color: #8389ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  box-shadow: 0 0 15px rgba(100, 108, 255, 0.2);
+  flex-shrink: 0;
+}
+
+.analytics-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  margin-bottom: 4px;
+  color: #ffffff;
+}
+
+.analytics-text {
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* Premium Buttons */
+.btn-analytics-primary {
+  background: linear-gradient(135deg, #646cff, #747bff);
+  color: #ffffff !important;
+  border: none;
+  font-weight: 600;
+  font-size: 0.88rem;
+  padding: 8px 16px;
+  border-radius: 10px;
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 14px rgba(100, 108, 255, 0.35);
+}
+
+.btn-analytics-primary:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 6px 20px rgba(100, 108, 255, 0.5);
+  background: linear-gradient(135deg, #747bff, #858cff);
+  border-color: transparent !important;
+}
+
+.btn-analytics-primary:active {
+  transform: translateY(0.5px);
+  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.4);
+}
+
+.btn-analytics-secondary {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-weight: 500;
+  font-size: 0.88rem;
+  padding: 8px 16px;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.btn-analytics-secondary:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Custom Scrollbar and Selection inside the Banner */
+.analytics-consent-banner ::selection {
+  background: rgba(100, 108, 255, 0.4);
+}
+
+/* Mobile Responsive Styling */
+@media (max-width: 576px) {
+  .analytics-consent-banner {
+    top: auto;
+    bottom: 24px;
+    left: 16px;
+    right: 16px;
+    width: auto;
+    max-width: none;
+    padding: 20px;
+    border-radius: 16px;
+    animation: analyticsMobileSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  
+  @keyframes analyticsMobileSlideUp {
+    from {
+      transform: translateY(60px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+}
