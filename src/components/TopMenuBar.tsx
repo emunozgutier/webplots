@@ -437,6 +437,9 @@ const TopMenuBar: React.FC = () => {
                                 Version
                             </NavDropdown.Item>
                             <NavDropdown.Divider />
+                            <NavDropdown.Item onClick={() => window.dispatchEvent(new Event('trigger-analytics-consent'))}>
+                                Enable/Disable Analytics
+                            </NavDropdown.Item>
                             <NavDropdown.Item onClick={() => setShowBetaModal(true)}>
                                 Beta Mode
                             </NavDropdown.Item>
