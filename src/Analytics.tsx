@@ -130,7 +130,8 @@ export const Analytics: React.FC = () => {
           Allow Analytics
         </button>
       </div>
-    </>
+    </div>
+  </>
   );
 };
 
