@@ -10,7 +10,7 @@ import HeaderSummary from './TableAreaComponents/HeaderSummary';
 import { useWorkspaceLocalStore } from '../../store/Workspace/useWorkspaceLocalStore';
 import { useTableStore } from '../../store/PlotTable/useTableStore';
 import Plot from 'react-plotly.js';
-import TableAreaControlButtons from './TableAreaComponents/TableAreaControlButtons';
+import ControlButtons from './ControlButtons';
 import BatchButtons from './TableAreaComponents/BatchButtons';
 import { calculateGaussianStats, formatNumber, parseToNumeric, sortData, inferColumnType, getAvailableColumnTypes } from '../../utils/TableMathLib';
 import { useStyleStore } from '../../store/useStyle';
@@ -425,7 +425,7 @@ const TableArea: React.FC<TableAreaProps> = ({ viewMode, setViewMode }) => {
                 }
             `}</style>
             <div className="mb-3 w-100">
-                <TableAreaControlButtons
+                <ControlButtons
                     summaryMode={summaryMode}
                     setSummaryMode={setSummaryMode}
                     viewMode={viewMode}

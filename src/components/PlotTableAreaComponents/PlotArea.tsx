@@ -17,7 +17,7 @@ import { generatePlotConfig } from '../../utils/PlotlyHelpers';
 import { runDataPipeline } from '../../utils/DataFrameLib';
 import { useCsvDataStore } from '../../store/useCsvDataStore';
 import { useFilterSideMenuStore } from '../../store/SideMenu/useFilterSideMenuStore';
-import PlotAreaControlButtons from './PlotAreaControlButtons';
+import ControlButtons from './ControlButtons';
 import AnimationControls from './AnimationControls';
 
 interface PlotAreaProps {
@@ -154,7 +154,7 @@ const PlotArea: React.FC<PlotAreaProps> = ({ viewMode, setViewMode }) => {
 
     return (
         <div className="d-flex flex-column h-100">
-            <PlotAreaControlButtons
+            <ControlButtons
                 onOpenSettings={handleOpenSettings}
                 onOpenDebug={handleOpenDebug}
                 viewMode={viewMode}

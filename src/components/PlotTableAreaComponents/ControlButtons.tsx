@@ -1,4 +1,11 @@
 import React, { useState, useMemo } from 'react';
+import { ButtonGroup, ToggleButton, Button } from 'react-bootstrap';
+import type { SummaryMode } from './TableAreaComponents/HeaderSummary';
+import { useWorkspaceLocalStore } from '../../store/Workspace/useWorkspaceLocalStore';
+import SettingsPopup from './TableAreaComponents/SettingsPopup';
+import { PlotTableButton } from './PlotTableButton';
+
+// Plot specific store imports
 import { usePlotLayoutStore } from '../../store/PlotTable/usePlotLayoutStore';
 import { useTraceConfigStore } from '../../store/PlotTable/useTraceConfigStore';
 import { generatePlotConfig } from '../../utils/PlotlyHelpers';
@@ -9,25 +16,42 @@ import { useStyleSideMenuStore } from '../../store/SideMenu/useStyleSideMenuStor
 import { useSubplotSideMenuStore } from '../../store/SideMenu/useSubplotSideMenuStore';
 import { useInkRatioStore } from '../../store/SideMenu/useInkRatioStore';
 import { useFilterSideMenuStore } from '../../store/SideMenu/useFilterSideMenuStore';
-import { runDataPipeline } from '../../utils/DataFrameLib';
 import { useWorkspaceStore } from '../../store/Workspace/useWorkspaceStore';
 import { useAnimationSideMenuStore } from '../../store/SideMenu/useAnimationSideMenuStore';
 import { VideoExportModal } from './VideoExportModal';
-import { PlotTableButton } from './PlotTableButton';
+import { runDataPipeline } from '../../utils/DataFrameLib';
 
-interface PlotAreaControlButtonsProps {
-    onOpenSettings: () => void;
-    onOpenDebug: () => void;
+interface ControlButtonsProps {
     viewMode: 'plot' | 'table';
     setViewMode: (mode: 'plot' | 'table') => void;
+    // Table specific
+    summaryMode?: SummaryMode;
+    setSummaryMode?: (mode: SummaryMode) => void;
+    // Plot specific
+    onOpenSettings?: () => void;
+    onOpenDebug?: () => void;
 }
 
-const PlotAreaControlButtons: React.FC<PlotAreaControlButtonsProps> = ({
-    onOpenSettings,
-    onOpenDebug,
+export const ControlButtons: React.FC<ControlButtonsProps> = ({
     viewMode,
-    setViewMode
+    setViewMode,
+    summaryMode,
+    setSummaryMode,
+    onOpenSettings,
+    onOpenDebug
 }) => {
+    // ----------------------------------------------------
+    // Shared & Table Logic
+    // ----------------------------------------------------
+    const { setPopupContent } = useWorkspaceLocalStore();
+
+    const handleOpenTableSettings = () => {
+        setPopupContent(<SettingsPopup />);
+    };
+
+    // ----------------------------------------------------
+    // Plot Logic Hooks (Always run unconditionally)
+    // ----------------------------------------------------
     const { plotLayout } = usePlotLayoutStore();
     const { traceConfig } = useTraceConfigStore();
     const { data } = useCsvDataStore();
@@ -112,12 +136,82 @@ const PlotAreaControlButtons: React.FC<PlotAreaControlButtonsProps> = ({
         URL.revokeObjectURL(url);
     };
 
+    // ----------------------------------------------------
+    // Layout Render
+    // ----------------------------------------------------
+    if (viewMode === 'table') {
+        return (
+            <div className="d-flex gap-4 align-items-center w-100">
+                {/* View Switcher Button */}
+                <PlotTableButton viewMode={viewMode} setViewMode={setViewMode} />
+
+                {/* Summary Controls */}
+                {summaryMode !== undefined && setSummaryMode !== undefined && (
+                    <div className="d-flex align-items-center gap-2 ms-auto">
+                        <span className="fw-bold small text-muted">Summary:</span>
+                        <ButtonGroup size="sm">
+                            <ToggleButton
+                                id="summary-none"
+                                type="radio"
+                                variant={summaryMode === 'none' ? 'secondary' : 'outline-secondary'}
+                                name="summaryMode"
+                                value="none"
+                                checked={summaryMode === 'none'}
+                                onChange={(e) => setSummaryMode(e.currentTarget.value as SummaryMode)}
+                            >
+                                None
+                            </ToggleButton>
+                            <ToggleButton
+                                id="summary-slim"
+                                type="radio"
+                                variant={summaryMode === 'slim' ? 'secondary' : 'outline-secondary'}
+                                name="summaryMode"
+                                value="slim"
+                                checked={summaryMode === 'slim'}
+                                onChange={(e) => setSummaryMode(e.currentTarget.value as SummaryMode)}
+                            >
+                                Slim
+                            </ToggleButton>
+                            <ToggleButton
+                                id="summary-detailed"
+                                type="radio"
+                                variant={summaryMode === 'detailed' ? 'secondary' : 'outline-secondary'}
+                                name="summaryMode"
+                                value="detailed"
+                                checked={summaryMode === 'detailed'}
+                                onChange={(e) => setSummaryMode(e.currentTarget.value as SummaryMode)}
+                            >
+                                Detailed
+                            </ToggleButton>
+                        </ButtonGroup>
+                    </div>
+                )}
+
+                {/* Settings Button */}
+                <div className={summaryMode === undefined ? "ms-auto" : ""}>
+                    <Button 
+                        variant="outline-secondary" 
+                        size="sm" 
+                        onClick={handleOpenTableSettings}
+                        title="Table Settings"
+                        className="rounded-circle"
+                        style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                        <i className="bi bi-gear-fill"></i>
+                    </Button>
+                </div>
+            </div>
+        );
+    }
+
+    // Otherwise, viewMode === 'plot'
     return (
         <div className="p-2 bg-light border-top d-flex justify-content-between align-items-center mt-auto shadow-sm" style={{ zIndex: 10 }}>
             {/* View Switcher Button */}
             <PlotTableButton viewMode={viewMode} setViewMode={setViewMode} />
+
             <div className="btn-group btn-group-sm">
-                {isDebugMode && (
+                {isDebugMode && onOpenDebug && (
                     <>
                         <span className={`btn btn-outline-secondary disabled fw-bold ${!animationColumn && data.length > 2048 ? 'text-warning' : ''}`} title={!animationColumn && data.length > 2048 ? `Dataset too large! Showing only the first 2,048 of ${data.length.toLocaleString()} points.` : "Total Points"}>
                             {!animationColumn && data.length > 2048 && <i className="bi bi-exclamation-triangle-fill me-1"></i>}
@@ -151,15 +245,17 @@ const PlotAreaControlButtons: React.FC<PlotAreaControlButtonsProps> = ({
                         Save as Video
                     </button>
                 )}
-                <button
-                    id="plot-settings-btn"
-                    className="btn btn-outline-secondary"
-                    onClick={onOpenSettings}
-                    title="Open Settings"
-                >
-                    <i className="bi bi-gear me-1"></i>
-                    Settings
-                </button>
+                {onOpenSettings && (
+                    <button
+                        id="plot-settings-btn"
+                        className="btn btn-outline-secondary"
+                        onClick={onOpenSettings}
+                        title="Open Settings"
+                    >
+                        <i className="bi bi-gear me-1"></i>
+                        Settings
+                    </button>
+                )}
             </div>
             {showExportModal && (
                 <VideoExportModal 
@@ -173,4 +269,4 @@ const PlotAreaControlButtons: React.FC<PlotAreaControlButtonsProps> = ({
     );
 };
 
-export default PlotAreaControlButtons;
+export default ControlButtons;
