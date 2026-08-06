@@ -108,11 +108,15 @@ export const ControlButtons: React.FC<ControlButtonsProps> = ({
             groupSideMenuData.groupAxis
         );
 
+        const layoutObj = layout as Record<string, unknown>;
+        const titleObj = layoutObj?.title as Record<string, unknown> | undefined;
+        const titleText = titleObj?.text as string | undefined;
+
         const htmlContent = `
 <!DOCTYPE html>
 <html>
 <head>
-    <title>${((layout as any).title?.text || 'Plot')}</title>
+    <title>${(titleText || 'Plot')}</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
