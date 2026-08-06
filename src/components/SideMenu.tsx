@@ -11,6 +11,7 @@ import CreateColumnSideMenu from './SideMenuComponents/CreateColumnSideMenu';
 import SubplotSideMenu from './SideMenuComponents/SubplotSideMenu';
 import AnimationSideMenu from './SideMenuComponents/AnimationSideMenu';
 import AnnotationSideMenu from './SideMenuComponents/AnnotationSideMenu';
+import IconTab from './SideMenuComponents/IconTab';
 
 type SideMenuTab = 'create' | 'axis' | 'filter' | 'group' | 'color' | 'ink' | 'subplots' | 'animation' | 'annotation';
 
@@ -89,28 +90,13 @@ const SideMenu: React.FC = () => {
         }
     };
 
-    const renderTabButton = (tab: SideMenuTab, label: string, iconClass: string) => {
-        return (
-            <button
-                id={`side-menu-btn-${tab}`}
-                className={`btn btn-sm w-100 mb-2 p-2 ${activeTab === tab ? 'btn-primary' : 'btn-light text-secondary'} border-0 rounded-0 rounded-start`}
-                onClick={() => {
-                    if (activeTab === tab) {
-                        toggleSideMenu();
-                    } else {
-                        if (!isSideMenuOpen) toggleSideMenu();
-                        setActiveTab(tab);
-                    }
-                }}
-                title={label}
-                style={{ borderRadius: '4px 0 0 4px', position: 'relative', right: '-1px' }}
-            >
-                <div className="d-flex flex-column align-items-center">
-                    <i className={`bi ${iconClass} fs-5`}></i>
-                    <span style={{ fontSize: '0.65rem', marginTop: '2px', textAlign: 'center', lineHeight: '1.1' }}>{label}</span>
-                </div>
-            </button>
-        );
+    const handleTabClick = (tab: SideMenuTab) => {
+        if (activeTab === tab) {
+            toggleSideMenu();
+        } else {
+            if (!isSideMenuOpen) toggleSideMenu();
+            setActiveTab(tab);
+        }
     };
 
     return (
@@ -167,15 +153,71 @@ const SideMenu: React.FC = () => {
             >
 
 
-                {renderTabButton('create', 'Create', 'bi-plus-square')}
-                {renderTabButton('axis', 'Axis', 'bi-bar-chart-steps')}
-                {renderTabButton('filter', 'Filter', 'bi-funnel')}
-                {renderTabButton('group', 'Group', 'bi-diagram-3')}
-                {renderTabButton('subplots', 'Subplots', 'bi-grid-1x2')}
-                {renderTabButton('color', 'Style', 'bi-palette')}
-                {plotType !== 'histogram' && renderTabButton('ink', 'Ink Ratio', 'bi-droplet')}
-                {renderTabButton('animation', 'Animation', 'bi-play-circle')}
-                {renderTabButton('annotation', 'Annotate', 'bi-chat-square-text')}
+                <IconTab
+                    tab="create"
+                    activeTab={activeTab}
+                    label="Create"
+                    iconClass="bi-plus-square"
+                    onClick={() => handleTabClick('create')}
+                />
+                <IconTab
+                    tab="axis"
+                    activeTab={activeTab}
+                    label="Axis"
+                    iconClass="bi-bar-chart-steps"
+                    onClick={() => handleTabClick('axis')}
+                />
+                <IconTab
+                    tab="filter"
+                    activeTab={activeTab}
+                    label="Filter"
+                    iconClass="bi-funnel"
+                    onClick={() => handleTabClick('filter')}
+                />
+                <IconTab
+                    tab="group"
+                    activeTab={activeTab}
+                    label="Group"
+                    iconClass="bi-diagram-3"
+                    onClick={() => handleTabClick('group')}
+                />
+                <IconTab
+                    tab="subplots"
+                    activeTab={activeTab}
+                    label="Subplots"
+                    iconClass="bi-grid-1x2"
+                    onClick={() => handleTabClick('subplots')}
+                />
+                <IconTab
+                    tab="color"
+                    activeTab={activeTab}
+                    label="Style"
+                    iconClass="bi-palette"
+                    onClick={() => handleTabClick('color')}
+                />
+                {plotType !== 'histogram' && (
+                    <IconTab
+                        tab="ink"
+                        activeTab={activeTab}
+                        label="Ink Ratio"
+                        iconClass="bi-droplet"
+                        onClick={() => handleTabClick('ink')}
+                    />
+                )}
+                <IconTab
+                    tab="animation"
+                    activeTab={activeTab}
+                    label="Animation"
+                    iconClass="bi-play-circle"
+                    onClick={() => handleTabClick('animation')}
+                />
+                <IconTab
+                    tab="annotation"
+                    activeTab={activeTab}
+                    label="Annotate"
+                    iconClass="bi-chat-square-text"
+                    onClick={() => handleTabClick('annotation')}
+                />
             </div>
 
             {/* Resize Handle - Only visible when open */}
