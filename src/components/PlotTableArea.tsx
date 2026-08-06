@@ -1,6 +1,5 @@
 import React from 'react';
 import { useWorkspaceLocalStore } from '../store/Workspace/useWorkspaceLocalStore';
-import { ViewToggleButtons } from './PlotTableAreaComponents/PlotTableTabs';
 import TableArea from './PlotTableAreaComponents/TableArea';
 import PlotArea from './PlotTableAreaComponents/PlotArea';
 import { useInkRatioStore } from '../store/SideMenu/useInkRatioStore';
@@ -44,19 +43,13 @@ const PlotTableArea: React.FC = () => {
     }, [setChartDimensions]);
 
     return (
-        <div className="flex-grow-1 p-4 d-flex flex-column position-relative" style={{ minWidth: 0 }}>
-            <div className="card shadow-sm flex-grow-1 mb-3">
-                <div className="card-header bg-white pt-2 pb-0 px-3" style={{ borderBottom: '3px solid var(--bs-primary)' }}>
-                    <ViewToggleButtons
-                        viewMode={viewMode}
-                        setViewMode={setViewMode}
-                    />
-                </div>
+        <div className="flex-grow-1 p-1 d-flex flex-column position-relative" style={{ minWidth: 0 }}>
+            <div className="p-1 card shadow-sm flex-grow-1 mb-3">
                 <div className="card-body p-0 position-relative" ref={containerRef}>
                     {viewMode === 'table' ? (
-                        <TableArea />
+                        <TableArea viewMode={viewMode} setViewMode={setViewMode} />
                     ) : (
-                        <PlotArea />
+                        <PlotArea viewMode={viewMode} setViewMode={setViewMode} />
                     )}
                 </div>
             </div>

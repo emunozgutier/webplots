@@ -13,13 +13,21 @@ import { runDataPipeline } from '../../utils/DataFrameLib';
 import { useWorkspaceStore } from '../../store/Workspace/useWorkspaceStore';
 import { useAnimationSideMenuStore } from '../../store/SideMenu/useAnimationSideMenuStore';
 import { VideoExportModal } from './VideoExportModal';
+import { PlotTableButton } from './PlotTableButton';
 
 interface PlotAreaControlButtonsProps {
     onOpenSettings: () => void;
     onOpenDebug: () => void;
+    viewMode: 'plot' | 'table';
+    setViewMode: (mode: 'plot' | 'table') => void;
 }
 
-const PlotAreaControlButtons: React.FC<PlotAreaControlButtonsProps> = ({ onOpenSettings, onOpenDebug }) => {
+const PlotAreaControlButtons: React.FC<PlotAreaControlButtonsProps> = ({
+    onOpenSettings,
+    onOpenDebug,
+    viewMode,
+    setViewMode
+}) => {
     const { plotLayout } = usePlotLayoutStore();
     const { traceConfig } = useTraceConfigStore();
     const { data } = useCsvDataStore();
@@ -105,7 +113,9 @@ const PlotAreaControlButtons: React.FC<PlotAreaControlButtonsProps> = ({ onOpenS
     };
 
     return (
-        <div className="p-2 bg-light border-top d-flex justify-content-end align-items-center mt-auto shadow-sm" style={{ zIndex: 10 }}>
+        <div className="p-2 bg-light border-top d-flex justify-content-between align-items-center mt-auto shadow-sm" style={{ zIndex: 10 }}>
+            {/* View Switcher Button */}
+            <PlotTableButton viewMode={viewMode} setViewMode={setViewMode} />
             <div className="btn-group btn-group-sm">
                 {isDebugMode && (
                     <>

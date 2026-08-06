@@ -20,7 +20,12 @@ import { useFilterSideMenuStore } from '../../store/SideMenu/useFilterSideMenuSt
 import PlotAreaControlButtons from './PlotAreaControlButtons';
 import AnimationControls from './AnimationControls';
 
-const PlotArea: React.FC = () => {
+interface PlotAreaProps {
+    viewMode: 'plot' | 'table';
+    setViewMode: (mode: 'plot' | 'table') => void;
+}
+
+const PlotArea: React.FC<PlotAreaProps> = ({ viewMode, setViewMode }) => {
     const { data: rawDataTable } = useCsvDataStore();
     const { filters } = useFilterSideMenuStore();
     const { animationData } = useAnimationSideMenuStore();
@@ -152,6 +157,8 @@ const PlotArea: React.FC = () => {
             <PlotAreaControlButtons
                 onOpenSettings={handleOpenSettings}
                 onOpenDebug={handleOpenDebug}
+                viewMode={viewMode}
+                setViewMode={setViewMode}
             />
             <div ref={containerRef} className="flex-grow-1 position-relative d-flex flex-column">
                 <div className="flex-grow-1" style={{ minHeight: 0 }}>

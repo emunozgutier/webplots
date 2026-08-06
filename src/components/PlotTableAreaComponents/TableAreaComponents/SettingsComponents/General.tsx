@@ -1,6 +1,7 @@
 import React from 'react';
 import { ButtonGroup, ToggleButton } from 'react-bootstrap';
 import { useTableStore } from '../../../../store/PlotTable/useTableStore';
+import { useAxisSideMenuStore } from '../../../../store/SideMenu/useAxisSideMenuStore';
 import type { SummaryMode } from '../HeaderSummary';
 
 const General: React.FC = () => {
@@ -8,8 +9,12 @@ const General: React.FC = () => {
         summaryMode, 
         setSummaryMode, 
         colorMode, 
-        setColorMode 
+        setColorMode,
+        datasetMode,
+        setDatasetMode
     } = useTableStore();
+    const { sideMenuData } = useAxisSideMenuStore();
+    const hasPlotData = sideMenuData.yAxis.length > 0;
 
     return (
         <div className="d-flex flex-column gap-4">
@@ -87,6 +92,39 @@ const General: React.FC = () => {
                 </ButtonGroup>
                 <div className="text-muted mt-1" style={{ fontSize: '0.8rem' }}>
                     Color numeric cells based on their value relative to the column's range.
+                </div>
+            </div>
+
+            {/* Display Rows Section */}
+            <div>
+                <label className="fw-bold text-primary mb-2 text-uppercase small tracking-wide d-block">Display Rows</label>
+                <ButtonGroup className="w-100" size="sm">
+                    <ToggleButton
+                        id="settings-rows-all"
+                        type="radio"
+                        variant={datasetMode === 'all' ? 'primary' : 'outline-primary'}
+                        name="settingsDatasetMode"
+                        value="all"
+                        checked={datasetMode === 'all'}
+                        onChange={(e) => setDatasetMode(e.currentTarget.value as 'all' | 'plot')}
+                    >
+                        All
+                    </ToggleButton>
+                    <ToggleButton
+                        id="settings-rows-plot"
+                        type="radio"
+                        variant={datasetMode === 'plot' ? 'primary' : 'outline-primary'}
+                        name="settingsDatasetMode"
+                        value="plot"
+                        checked={datasetMode === 'plot'}
+                        disabled={!hasPlotData}
+                        onChange={(e) => setDatasetMode(e.currentTarget.value as 'all' | 'plot')}
+                    >
+                        Plot
+                    </ToggleButton>
+                </ButtonGroup>
+                <div className="text-muted mt-1" style={{ fontSize: '0.8rem' }}>
+                    Choose whether to view all dataset rows or only rows that have active plot coordinates.
                 </div>
             </div>
         </div>

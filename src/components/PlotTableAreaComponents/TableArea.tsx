@@ -10,7 +10,7 @@ import HeaderSummary from './TableAreaComponents/HeaderSummary';
 import { useWorkspaceLocalStore } from '../../store/Workspace/useWorkspaceLocalStore';
 import { useTableStore } from '../../store/PlotTable/useTableStore';
 import Plot from 'react-plotly.js';
-import ControlButtons from './TableAreaComponents/ControlButtons';
+import TableAreaControlButtons from './TableAreaComponents/TableAreaControlButtons';
 import BatchButtons from './TableAreaComponents/BatchButtons';
 import { calculateGaussianStats, formatNumber, parseToNumeric, sortData, inferColumnType, getAvailableColumnTypes } from '../../utils/TableMathLib';
 import { useStyleStore } from '../../store/useStyle';
@@ -31,7 +31,12 @@ const BadgeToggle = React.forwardRef<HTMLSpanElement, any>(({ children, onClick,
     </span>
 ));
 
-const TableArea: React.FC = () => {
+interface TableAreaProps {
+    viewMode: 'plot' | 'table';
+    setViewMode: (mode: 'plot' | 'table') => void;
+}
+
+const TableArea: React.FC<TableAreaProps> = ({ viewMode, setViewMode }) => {
     const { typeColors } = useStyleStore();
     const { overrides, setOverride } = useColumnTypeStore();
     const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
@@ -44,7 +49,6 @@ const TableArea: React.FC = () => {
         datasetMode, 
         setDatasetMode, 
         colorMode, 
-        setColorMode,
         numberFormat,
         significantDigits,
         alignDecimal,
@@ -420,16 +424,12 @@ const TableArea: React.FC = () => {
                     white-space: pre !important;
                 }
             `}</style>
-            <div className="d-flex justify-content-between align-items-center mb-3">
-                <div></div>
-                <ControlButtons
+            <div className="mb-3 w-100">
+                <TableAreaControlButtons
                     summaryMode={summaryMode}
                     setSummaryMode={setSummaryMode}
-                    datasetMode={datasetMode}
-                    setDatasetMode={setDatasetMode}
-                    colorMode={colorMode}
-                    setColorMode={setColorMode}
-                    hasPlotData={sideMenuData.yAxis.length > 0}
+                    viewMode={viewMode}
+                    setViewMode={setViewMode}
                 />
             </div>
 
