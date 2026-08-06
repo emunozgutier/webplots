@@ -101,6 +101,9 @@ export const useWorkspaceStore = create<WorkspaceState>()(
     })
 );
 
-if (typeof window !== 'undefined' && (window as any).__registerZustandStore) {
-    (window as any).__registerZustandStore(useWorkspaceStore, 'WorkspaceStore');
+if (typeof window !== 'undefined') {
+    const win = window as unknown as { __registerZustandStore?: (store: unknown, name: string) => void };
+    if (win.__registerZustandStore) {
+        win.__registerZustandStore(useWorkspaceStore, 'WorkspaceStore');
+    }
 }

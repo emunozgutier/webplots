@@ -35,13 +35,6 @@ export const WorkspaceProvider: React.FC<{ workspaceId: string, children: React.
             annotationSideMenuStore: createAnnotationSideMenuStore()
         };
 
-        if (typeof window !== 'undefined' && (window as any).__registerZustandStore) {
-            const win = window as any;
-            Object.entries(storesRef.current).forEach(([key, store]) => {
-                win.__registerZustandStore(store, `${workspaceId}_${key}`);
-            });
-        }
-
         const cloneData = cloneStoreStates.get(workspaceId);
         if (cloneData) {
             storesRef.current.axisSideMenuStore.setState(cloneData.axis);
@@ -62,6 +55,15 @@ export const WorkspaceProvider: React.FC<{ workspaceId: string, children: React.
     }
 
     useEffect(() => {
+        if (typeof window !== 'undefined' && storesRef.current) {
+            const win = window as unknown as { __registerZustandStore?: (store: unknown, name: string) => void };
+            if (win.__registerZustandStore) {
+                const stores = storesRef.current;
+                Object.entries(stores).forEach(([key, store]) => {
+                    win.__registerZustandStore!(store, `${workspaceId}_${key}`);
+                });
+            }
+        }
         return () => {
             workspaceRegistry.delete(workspaceId);
         };

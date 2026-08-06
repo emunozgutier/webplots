@@ -14,6 +14,9 @@ export const useColumnTypeStore = create<ColumnTypeState>((set) => ({
     clearOverrides: () => set({ overrides: {} })
 }));
 
-if (typeof window !== 'undefined' && (window as any).__registerZustandStore) {
-    (window as any).__registerZustandStore(useColumnTypeStore, 'ColumnTypeStore');
+if (typeof window !== 'undefined') {
+    const win = window as unknown as { __registerZustandStore?: (store: unknown, name: string) => void };
+    if (win.__registerZustandStore) {
+        win.__registerZustandStore(useColumnTypeStore, 'ColumnTypeStore');
+    }
 }

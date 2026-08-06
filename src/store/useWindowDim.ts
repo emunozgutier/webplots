@@ -61,6 +61,9 @@ export const useWindowDim = create<WindowDimState>()((set) => ({
     })
 }));
 
-if (typeof window !== 'undefined' && (window as any).__registerZustandStore) {
-    (window as any).__registerZustandStore(useWindowDim, 'WindowDimStore');
+if (typeof window !== 'undefined') {
+    const win = window as unknown as { __registerZustandStore?: (store: unknown, name: string) => void };
+    if (win.__registerZustandStore) {
+        win.__registerZustandStore(useWindowDim, 'WindowDimStore');
+    }
 }

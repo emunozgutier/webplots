@@ -10,6 +10,7 @@ import TutorialGDP from './components/InkyHelper/tutorialGDP/TutorialGDP';
 import SwimTest from './components/InkyHelper/SwimTest/SwimTest';
 import Analytics from './Analytics';
 import { useWindowDim } from './store/useWindowDim';
+import debounce from 'lodash/debounce';
 import './App.css';
 
 function App() {
@@ -23,12 +24,22 @@ function App() {
     // Set initial size
     updateActualDimensions(window.innerWidth, window.innerHeight);
 
-    const handleResize = () => {
+    const handleResize = debounce(() => {
       updateActualDimensions(window.innerWidth, window.innerHeight);
-    };
+    }, 150);
+
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      handleResize.cancel();
+      window.removeEventListener('resize', handleResize);
+    };
   }, [updateActualDimensions]);
+
+  useEffect(() => {
+    if (preset !== 'actual') {
+      window.dispatchEvent(new Event('resize'));
+    }
+  }, [width, height, preset]);
 
   if (window.location.pathname.includes('/beta/swimtest')) {
     return <SwimTest />;
