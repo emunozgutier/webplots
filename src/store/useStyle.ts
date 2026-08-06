@@ -17,3 +17,7 @@ export const useStyleStore = create<StyleState>((set) => ({
         typeColors: { ...state.typeColors, [type]: color }
     }))
 }));
+
+if (typeof window !== 'undefined' && (window as any).__registerZustandStore) {
+    (window as any).__registerZustandStore(useStyleStore, 'StyleStore');
+}

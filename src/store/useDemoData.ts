@@ -164,3 +164,7 @@ export const useDemoData = create<DemoDataState>()((set) => ({
         }
     }
 }));
+
+if (typeof window !== 'undefined' && (window as any).__registerZustandStore) {
+    (window as any).__registerZustandStore(useDemoData, 'DemoDataStore');
+}

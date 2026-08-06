@@ -60,3 +60,7 @@ export const useWindowDim = create<WindowDimState>()((set) => ({
         return updates;
     })
 }));
+
+if (typeof window !== 'undefined' && (window as any).__registerZustandStore) {
+    (window as any).__registerZustandStore(useWindowDim, 'WindowDimStore');
+}

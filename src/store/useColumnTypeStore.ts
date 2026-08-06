@@ -13,3 +13,7 @@ export const useColumnTypeStore = create<ColumnTypeState>((set) => ({
     })),
     clearOverrides: () => set({ overrides: {} })
 }));
+
+if (typeof window !== 'undefined' && (window as any).__registerZustandStore) {
+    (window as any).__registerZustandStore(useColumnTypeStore, 'ColumnTypeStore');
+}

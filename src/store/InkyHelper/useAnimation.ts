@@ -17,3 +17,7 @@ export const useAnimation = create<AnimationState>()((set) => ({
   targetPosition: null,
   setTargetPosition: (targetPosition) => set({ targetPosition }),
 }));
+
+if (typeof window !== 'undefined' && (window as any).__registerZustandStore) {
+    (window as any).__registerZustandStore(useAnimation, 'AnimationStore');
+}

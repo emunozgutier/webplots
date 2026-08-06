@@ -35,6 +35,13 @@ export const WorkspaceProvider: React.FC<{ workspaceId: string, children: React.
             annotationSideMenuStore: createAnnotationSideMenuStore()
         };
 
+        if (typeof window !== 'undefined' && (window as any).__registerZustandStore) {
+            const win = window as any;
+            Object.entries(storesRef.current).forEach(([key, store]) => {
+                win.__registerZustandStore(store, `${workspaceId}_${key}`);
+            });
+        }
+
         const cloneData = cloneStoreStates.get(workspaceId);
         if (cloneData) {
             storesRef.current.axisSideMenuStore.setState(cloneData.axis);

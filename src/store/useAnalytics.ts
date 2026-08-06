@@ -23,3 +23,7 @@ export const useAnalyticsStore = create<AnalyticsState>()(
         }
     )
 );
+
+if (typeof window !== 'undefined' && (window as any).__registerZustandStore) {
+    (window as any).__registerZustandStore(useAnalyticsStore, 'AnalyticsStore');
+}

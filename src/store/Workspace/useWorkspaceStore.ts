@@ -100,3 +100,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         setIsTutorialActive: (isActive) => set({ isTutorialActive: isActive }),
     })
 );
+
+if (typeof window !== 'undefined' && (window as any).__registerZustandStore) {
+    (window as any).__registerZustandStore(useWorkspaceStore, 'WorkspaceStore');
+}

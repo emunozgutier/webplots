@@ -25,3 +25,7 @@ export const useCsvDataStore = create<CsvDataState>()(
         })
     })
 );
+
+if (typeof window !== 'undefined' && (window as any).__registerZustandStore) {
+    (window as any).__registerZustandStore(useCsvDataStore, 'CsvDataStore');
+}
