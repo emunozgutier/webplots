@@ -1,5 +1,6 @@
 import { useColumnTypeStore } from '../../../store/useColumnTypeStore';
 import type { CardinalDirection } from '../../../utils/DataClasses';
+import { useDemoData } from '../../../store/useDemoData';
 
 export interface TutorialChoice {
   label: string;
@@ -63,6 +64,21 @@ export const gdpTutorialSteps: TutorialStep[] = [
     },
     targetPosition: 'se',
     bubblePlacement: 'se',
+    choices: [
+      {
+        label: "Load Demo Data",
+        actionType: "next",
+        primary: true,
+        action: async () => {
+          try {
+            await useDemoData.getState().loadGapminderData();
+          } catch (e) {
+            console.error("Failed to load demo data:", e);
+            alert("Failed to load demo data.");
+          }
+        }
+      }
+    ]
   },
   {
     text: "Let's first set the year column to the year type. Click the 'Generic' badge under the 'year' column header and change it to 'Year'.",
