@@ -3,7 +3,6 @@ import React, { useRef, useState, useEffect } from 'react';
 import { NavDropdown, Navbar, Nav, Container, Modal, Button } from 'react-bootstrap';
 import { useCsvDataStore } from '../store/useCsvDataStore';
 import { useDemoData } from '../store/useDemoData';
-import { useWindowDim } from '../store/useWindowDim';
 import Papa from 'papaparse';
 import type { CsvDataStore } from '../store/useCsvDataStore';
 import { useWorkspaceStore, workspaceRegistry } from '../store/Workspace/useWorkspaceStore';
@@ -22,8 +21,6 @@ const TopMenuBar: React.FC = () => {
     const { data, columns, setPlotData, setColumns, loadProject: loadPlotDataProject } = useCsvDataStore();
     const isTutorialActive = useWorkspaceStore((state) => state.isTutorialActive);
     const { isWeatherLoading, isGapminderLoading } = useDemoData();
-    const activePreset = useWindowDim((state) => state.preset);
-    const setPreset = useWindowDim((state) => state.setPreset);
 
     const csvInputRef = useRef<HTMLInputElement>(null);
     const projectInputRef = useRef<HTMLInputElement>(null);
@@ -315,30 +312,6 @@ const TopMenuBar: React.FC = () => {
                                 if (activeStores) activeStores.axisSideMenuStore.getState().setXAxis("Time");
                             }}>
                                 1e6 Points Sine Wave
-                            </NavDropdown.Item>
-                        </NavDropdown>
-
-                        <NavDropdown title="View" id="view-nav-dropdown">
-                            <NavDropdown.Item onClick={() => setPreset('actual')} active={activePreset === 'actual'}>
-                                {activePreset === 'actual' ? <i className="bi bi-check-lg me-2"></i> : <span style={{ display: 'inline-block', width: '1.25rem' }}></span>}
-                                Actual Window
-                            </NavDropdown.Item>
-                            <NavDropdown.Divider />
-                            <NavDropdown.Item onClick={() => setPreset('iphone')} active={activePreset === 'iphone'}>
-                                {activePreset === 'iphone' ? <i className="bi bi-check-lg me-2"></i> : <span style={{ display: 'inline-block', width: '1.25rem' }}></span>}
-                                iPhone (390 x 844)
-                            </NavDropdown.Item>
-                            <NavDropdown.Item onClick={() => setPreset('ipad')} active={activePreset === 'ipad'}>
-                                {activePreset === 'ipad' ? <i className="bi bi-check-lg me-2"></i> : <span style={{ display: 'inline-block', width: '1.25rem' }}></span>}
-                                iPad (820 x 1180)
-                            </NavDropdown.Item>
-                            <NavDropdown.Item onClick={() => setPreset('small-monitor')} active={activePreset === 'small-monitor'}>
-                                {activePreset === 'small-monitor' ? <i className="bi bi-check-lg me-2"></i> : <span style={{ display: 'inline-block', width: '1.25rem' }}></span>}
-                                Small Monitor (1024 x 768)
-                            </NavDropdown.Item>
-                            <NavDropdown.Item onClick={() => setPreset('large-monitor')} active={activePreset === 'large-monitor'}>
-                                {activePreset === 'large-monitor' ? <i className="bi bi-check-lg me-2"></i> : <span style={{ display: 'inline-block', width: '1.25rem' }}></span>}
-                                Large Monitor (1920 x 1080)
                             </NavDropdown.Item>
                         </NavDropdown>
 
