@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTraceConfigStore } from '../../../store/PlotTable/useTraceConfigStore';
-import { useAxisSideMenuStore } from '../../../store/SideMenu/useAxisSideMenuStore';
+import { usePlotTypeSideMenuStore } from '../../../store/SideMenu/usePlotTypeSideMenuStore';
 import { useGroupSideMenuStore } from '../../../store/SideMenu/useGroupSideMenuStore';
 import { useWorkspaceLocalStore } from '../../../store/Workspace/useWorkspaceLocalStore';
 import { COLOR_PALETTES } from '../../../utils/ColorPalettes';
@@ -204,7 +204,8 @@ const HistogramBinSettings: React.FC<{ col: string; custom: any; data: any[]; se
 
 const TraceConfig: React.FC = () => {
     const { traceConfig, setTraceCustomization, setColorPalette, setPaletteColorOrder, updatePaletteColor } = useTraceConfigStore();
-    const { sideMenuData } = useAxisSideMenuStore();
+    const { plotTypeSideMenuData } = usePlotTypeSideMenuStore();
+    const { plotType } = plotTypeSideMenuData;
     const { groupSideMenuData } = useGroupSideMenuStore();
     const { closePopup } = useWorkspaceLocalStore();
     const { data } = useCsvDataStore();
@@ -406,7 +407,7 @@ const TraceConfig: React.FC = () => {
                                                         <span className="small text-muted">{effectiveColor}</span>
                                                     </div>
                                                 </div>
-                                                {sideMenuData.plotType !== 'histogram' && (
+                                                {plotType !== 'histogram' && (
                                                     <div className="col-6">
                                                         <label className="form-label small fw-bold">Trace Type</label>
                                                         <ButtonGroup size="sm" className="w-100">
@@ -438,7 +439,7 @@ const TraceConfig: React.FC = () => {
                                             </div>
 
                                             {/* Symbol Picker (Only for Scatter) */}
-                                            {sideMenuData.plotType !== 'histogram' && currentMode === 'markers' && (
+                                            {plotType !== 'histogram' && currentMode === 'markers' && (
                                                 <div className="mb-3">
                                                     <label className="form-label small fw-bold">Marker Symbol</label>
                                                     {isGroupSymbolManaged ? (
@@ -465,7 +466,7 @@ const TraceConfig: React.FC = () => {
                                             )}
 
                                             {/* Size Slider */}
-                                            {sideMenuData.plotType !== 'histogram' && (currentMode === 'markers' || exactCustomization.symbol || colCustomization.symbol) && (
+                                            {plotType !== 'histogram' && (currentMode === 'markers' || exactCustomization.symbol || colCustomization.symbol) && (
                                                 <div className="mb-3">
                                                     <label className="form-label small fw-bold d-flex justify-content-between">
                                                         <span>Marker Size</span>
@@ -484,7 +485,7 @@ const TraceConfig: React.FC = () => {
                                             )}
 
                                             {/* Histogram Bins (Only for Histogram plot type) */}
-                                            {sideMenuData.plotType === 'histogram' && (
+                                            {plotType === 'histogram' && (
                                                 <HistogramBinSettings
                                                     col={trace.yCol}
                                                     custom={colCustomization}

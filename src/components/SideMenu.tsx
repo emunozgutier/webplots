@@ -1,7 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import { useCsvDataStore } from '../store/useCsvDataStore';
 import { useAxisSideMenuStore, createAxisSideMenuConfig } from '../store/SideMenu/useAxisSideMenuStore';
+import { usePlotTypeSideMenuStore } from '../store/SideMenu/usePlotTypeSideMenuStore';
 import { useWorkspaceLocalStore } from '../store/Workspace/useWorkspaceLocalStore';
+import PlotTypeSideMenu from './SideMenuComponents/PlotTypeSideMenu';
 import AxisSideMenu from './SideMenuComponents/AxisSideMenu';
 import FilterSideMenu from './SideMenuComponents/FilterSideMenu';
 import InkRationSideMenu from './SideMenuComponents/InkRationSideMenu';
@@ -13,17 +15,18 @@ import AnimationSideMenu from './SideMenuComponents/AnimationSideMenu';
 import AnnotationSideMenu from './SideMenuComponents/AnnotationSideMenu';
 import IconTab from './SideMenuComponents/IconTab';
 
-type SideMenuTab = 'create' | 'axis' | 'filter' | 'group' | 'color' | 'ink' | 'subplots' | 'animation' | 'annotation';
+type SideMenuTab = 'create' | 'type' | 'axis' | 'filter' | 'group' | 'color' | 'ink' | 'subplots' | 'animation' | 'annotation';
 
 const SideMenu: React.FC = () => {
     const { columns: storeColumns } = useCsvDataStore();
     const { sideMenuData } = useAxisSideMenuStore();
+    const { plotTypeSideMenuData } = usePlotTypeSideMenuStore();
+    const { plotType } = plotTypeSideMenuData;
     const { isSideMenuOpen, toggleSideMenu, sideMenuWidth, setSideMenuWidth } = useWorkspaceLocalStore();
 
 
     const { hasColumns } = useMemo(() => createAxisSideMenuConfig(storeColumns, sideMenuData), [storeColumns, sideMenuData]);
-    const { plotType } = sideMenuData;
-    const [activeTab, setActiveTab] = useState<SideMenuTab>('axis');
+    const [activeTab, setActiveTab] = useState<SideMenuTab>('type');
     const [isResizing, setIsResizing] = useState(false);
 
     React.useEffect(() => {
@@ -69,6 +72,8 @@ const SideMenu: React.FC = () => {
         switch (activeTab) {
             case 'create':
                 return <CreateColumnSideMenu />;
+            case 'type':
+                return <PlotTypeSideMenu />;
             case 'axis':
                 return <AxisSideMenu hasColumns={hasColumns} />;
             case 'filter':
@@ -123,6 +128,7 @@ const SideMenu: React.FC = () => {
                 <div className="d-flex align-items-center p-2 justify-content-between border-bottom bg-white">
                     <span className="fw-bold text-nowrap ms-2">
                         {activeTab === 'create' && 'Create Column'}
+                        {activeTab === 'type' && 'Plot Type'}
                         {activeTab === 'axis' && 'Axes Configuration'}
                         {activeTab === 'filter' && 'Filters'}
                         {activeTab === 'group' && 'Group Settings'}
@@ -159,6 +165,13 @@ const SideMenu: React.FC = () => {
                     label="Create"
                     iconClass="bi-plus-square"
                     onClick={() => handleTabClick('create')}
+                />
+                <IconTab
+                    tab="type"
+                    activeTab={activeTab}
+                    label="Type"
+                    iconClass="bi-bar-chart-line"
+                    onClick={() => handleTabClick('type')}
                 />
                 <IconTab
                     tab="axis"

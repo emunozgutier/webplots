@@ -5,6 +5,7 @@ import Debug from './Debug';
 import Plot from 'react-plotly.js';
 
 import { useAxisSideMenuStore } from '../../store/SideMenu/useAxisSideMenuStore';
+import { usePlotTypeSideMenuStore } from '../../store/SideMenu/usePlotTypeSideMenuStore';
 import { useGroupSideMenuStore } from '../../store/SideMenu/useGroupSideMenuStore';
 import { usePlotLayoutStore } from '../../store/PlotTable/usePlotLayoutStore';
 import { useTraceConfigStore } from '../../store/PlotTable/useTraceConfigStore';
@@ -32,12 +33,19 @@ const PlotArea: React.FC<PlotAreaProps> = ({ viewMode, setViewMode }) => {
     const { annotations: annotationData } = useAnnotationSideMenuStore();
 
     const { sideMenuData } = useAxisSideMenuStore();
+    const { plotTypeSideMenuData } = usePlotTypeSideMenuStore();
+    const { plotType } = plotTypeSideMenuData;
     const { groupSideMenuData } = useGroupSideMenuStore();
     const { plotLayout } = usePlotLayoutStore();
     const { traceConfig, setActiveTraces } = useTraceConfigStore();
     const { inkRatio, absorptionMode, absorbedPoint, maxRadiusRatio, setFilteredStats, chartWidth, chartHeight, pointRadius, useCustomRadius, customRadius, setChartDimensions } = useInkRatioStore();
     const { colorData } = useStyleSideMenuStore();
     const subplotData = useSubplotSideMenuStore();
+
+    const effectiveSideMenuData = useMemo(() => ({
+        ...sideMenuData,
+        plotType
+    }), [sideMenuData, plotType]);
 
     const { setPopupContent } = useWorkspaceLocalStore();
     const containerRef = React.useRef<HTMLDivElement>(null);
@@ -63,7 +71,7 @@ const PlotArea: React.FC<PlotAreaProps> = ({ viewMode, setViewMode }) => {
     const { plotData, layout, hasData, receipt, stats, generatedTraces, pipelineFiltered } = useMemo(() => {
         const shouldLimit = !animationData.animationColumn && rawDataTable.length > 2048;
         const dataToProcess = shouldLimit ? rawDataTable.slice(0, 2048) : rawDataTable;
-        const { processedTraces, filtered: pipelineFiltered } = runDataPipeline(dataToProcess, filters, sideMenuData, groupSideMenuData, {
+        const { processedTraces, filtered: pipelineFiltered } = runDataPipeline(dataToProcess, filters, effectiveSideMenuData, groupSideMenuData, {
             inkRatio,
             absorbedPoint,
             chartWidth,
@@ -79,7 +87,7 @@ const PlotArea: React.FC<PlotAreaProps> = ({ viewMode, setViewMode }) => {
         const plotConfig = generatePlotConfig(
             pipelineFiltered,
             processedTraces,
-            sideMenuData,
+            effectiveSideMenuData,
             plotLayout,
             traceConfig,
             colorData,
@@ -92,7 +100,7 @@ const PlotArea: React.FC<PlotAreaProps> = ({ viewMode, setViewMode }) => {
         );
         return { ...plotConfig, pipelineFiltered };
     }, [
-        rawDataTable, filters, sideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData,
+        rawDataTable, filters, effectiveSideMenuData, groupSideMenuData, plotLayout, traceConfig, colorData,
         subplotData, absorptionMode, absorbedPoint, maxRadiusRatio, inkRatio, chartWidth,
         chartHeight, pointRadius, useCustomRadius, customRadius, animationData, annotationData
     ]);

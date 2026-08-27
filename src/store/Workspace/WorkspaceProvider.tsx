@@ -15,6 +15,7 @@ import { createSubplotSideMenuStore } from '../SideMenu/useSubplotSideMenuStore'
 import { createTableStore } from '../PlotTable/useTableStore';
 import { createAnimationSideMenuStore } from '../SideMenu/useAnimationSideMenuStore';
 import { createAnnotationSideMenuStore } from '../SideMenu/useAnnotationSideMenuStore';
+import { createPlotTypeSideMenuStore } from '../SideMenu/usePlotTypeSideMenuStore';
 
 export const WorkspaceProvider: React.FC<{ workspaceId: string, children: React.ReactNode }> = ({ workspaceId, children }) => {
     const storesRef = useRef<WorkspaceStores | null>(null);
@@ -22,6 +23,7 @@ export const WorkspaceProvider: React.FC<{ workspaceId: string, children: React.
     if (!storesRef.current) {
         storesRef.current = {
             axisSideMenuStore: createAxisSideMenuStore(),
+            plotTypeSideMenuStore: createPlotTypeSideMenuStore(),
             styleSideMenuStore: createStyleSideMenuStore(),
             filterSideMenuStore: createFilterSideMenuStore(),
             groupSideMenuStore: createGroupSideMenuStore(),
@@ -38,6 +40,7 @@ export const WorkspaceProvider: React.FC<{ workspaceId: string, children: React.
         const cloneData = cloneStoreStates.get(workspaceId);
         if (cloneData) {
             storesRef.current.axisSideMenuStore.setState(cloneData.axis);
+            if (cloneData.plotType) storesRef.current.plotTypeSideMenuStore.setState(cloneData.plotType);
             storesRef.current.styleSideMenuStore.setState(cloneData.color);
             storesRef.current.filterSideMenuStore.setState(cloneData.filter);
             storesRef.current.groupSideMenuStore.setState(cloneData.group);

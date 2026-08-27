@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 import { useAxisSideMenuStore } from '../../store/SideMenu/useAxisSideMenuStore';
-// Removed useAppStateStore
+import { usePlotTypeSideMenuStore } from '../../store/SideMenu/usePlotTypeSideMenuStore';
 
 import SearchColumn from './subcomponents/SearchColumn';
 import CloseButton from './subcomponents/CloseButton';
@@ -14,13 +14,14 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
 
     const {
         sideMenuData,
-        setPlotType,
         setXAxis,
         addYAxisColumn,
         removeYAxisColumn
     } = useAxisSideMenuStore();
 
-    const { plotType, xAxis, yAxis } = sideMenuData;
+    const { xAxis, yAxis } = sideMenuData;
+    const { plotTypeSideMenuData } = usePlotTypeSideMenuStore();
+    const { plotType } = plotTypeSideMenuData;
 
     const [dragOverX, setDragOverX] = useState(false);
     const [dragOverY, setDragOverY] = useState(false);
@@ -67,7 +68,9 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
                         {hasColumns ? (
                             <>
                                 <div className="mb-3">
-                                    <label id="y-axis-label" className="form-label fw-bold small mb-2">Y-Axis <small className="text-muted fw-normal">({yAxis.length}/8)</small></label>
+                                    <label id="y-axis-label" className="form-label fw-bold small mb-2">
+                                        {plotType === 'histogram' ? 'Value Columns' : 'Y-Axis'} <small className="text-muted fw-normal">({yAxis.length}/8)</small>
+                                    </label>
                                     <div
                                         id="y-axis-dropzone"
                                         className={`border rounded p-2 ${dragOverY ? 'bg-info bg-opacity-10 border-info' : 'bg-white'}`}
@@ -132,24 +135,6 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
                     </div>
                 </div>
             </div>
-            {hasColumns && (
-                <div className="p-3 bg-white border-top shadow-sm" style={{ flex: '0 0 auto' }}>
-                    <div className="d-flex justify-content-center align-items-center mb-2">
-                        <span className="badge bg-secondary-subtle text-secondary border small fw-bold px-3 py-1">PLOT TYPE</span>
-                    </div>
-                    <div className="btn-group w-100" role="group">
-                        <input type="radio" className="btn-check" name="plotType" id="plotScatter" autoComplete="off" checked={plotType === 'scatter'} onChange={() => setPlotType('scatter')} />
-                        <label className="btn btn-outline-primary btn-sm py-2" htmlFor="plotScatter">
-                            <i className="bi bi-graph-up me-1"></i> Scatter
-                        </label>
-
-                        <input type="radio" className="btn-check" name="plotType" id="plotHistogram" autoComplete="off" checked={plotType === 'histogram'} onChange={() => setPlotType('histogram')} />
-                        <label className="btn btn-outline-primary btn-sm py-2" htmlFor="plotHistogram">
-                            <i className="bi bi-bar-chart-fill me-1"></i> Histogram
-                        </label>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

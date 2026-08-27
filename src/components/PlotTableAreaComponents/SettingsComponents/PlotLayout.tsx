@@ -3,11 +3,14 @@ import { usePlotLayoutStore } from '../../../store/PlotTable/usePlotLayoutStore'
 
 import { useCsvDataStore } from '../../../store/useCsvDataStore';
 import { useAxisSideMenuStore } from '../../../store/SideMenu/useAxisSideMenuStore';
+import { usePlotTypeSideMenuStore } from '../../../store/SideMenu/usePlotTypeSideMenuStore';
 import { useWorkspaceLocalStore } from '../../../store/Workspace/useWorkspaceLocalStore';
 
 const PlotLayout: React.FC = () => {
     const { plotLayout, setPlotTitle, setXAxisTitle, setYAxisTitle, setXRange, setYRange, setHistogramBarmode, setLegendOrientation, setEnableLogXAxis, setEnableLogYAxis } = usePlotLayoutStore();
     const { sideMenuData } = useAxisSideMenuStore();
+    const { plotTypeSideMenuData } = usePlotTypeSideMenuStore();
+    const { plotType } = plotTypeSideMenuData;
     const { data } = useCsvDataStore();
     const { closePopup } = useWorkspaceLocalStore();
 
@@ -114,7 +117,7 @@ const PlotLayout: React.FC = () => {
             setYRange(null);
         }
 
-        if (sideMenuData.plotType === 'histogram') {
+        if (plotType === 'histogram') {
             setHistogramBarmode(localHistogramBarmode);
         }
 
@@ -138,7 +141,7 @@ const PlotLayout: React.FC = () => {
     return (
         <>
             <div className="card-body">
-                {sideMenuData.plotType === 'histogram' && (
+                {plotType === 'histogram' && (
                     <div className="mb-3 p-3 bg-light border rounded">
                         <label className="form-label small fw-bold">Histogram Layout</label>
                         <select
@@ -228,12 +231,12 @@ const PlotLayout: React.FC = () => {
                             className="btn btn-xs btn-outline-secondary py-0"
                             style={{ fontSize: '0.7rem' }}
                             onClick={handleAutoX}
-                            disabled={sideMenuData.plotType === 'histogram'}
+                            disabled={plotType === 'histogram'}
                         >
                             Auto
                         </button>
                     </div>
-                    {sideMenuData.plotType === 'histogram' ? (
+                    {plotType === 'histogram' ? (
                         <div className="text-muted small fst-italic">Range handles automatically via Trace Bins</div>
                     ) : (
                         <div className="input-group input-group-sm">
@@ -252,12 +255,12 @@ const PlotLayout: React.FC = () => {
                             className="btn btn-xs btn-outline-secondary py-0"
                             style={{ fontSize: '0.7rem' }}
                             onClick={handleAutoY}
-                            disabled={sideMenuData.plotType === 'histogram'}
+                            disabled={plotType === 'histogram'}
                         >
                             Auto
                         </button>
                     </div>
-                    {sideMenuData.plotType === 'histogram' ? (
+                    {plotType === 'histogram' ? (
                         <div className="text-muted small fst-italic">Range scales automatically based on data density</div>
                     ) : (
                         <div className="input-group input-group-sm">

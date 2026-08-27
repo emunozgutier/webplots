@@ -90,6 +90,7 @@ const TopMenuBar: React.FC = () => {
             data,
             columns,
             sideMenuData: activeStores.axisSideMenuStore.getState().sideMenuData,
+            plotTypeSideMenuData: activeStores.plotTypeSideMenuStore.getState().plotTypeSideMenuData,
             groupSideMenuData: activeStores.groupSideMenuStore.getState().groupSideMenuData,
             plotLayout: activeStores.plotLayoutStore.getState().plotLayout
         };
@@ -119,6 +120,12 @@ const TopMenuBar: React.FC = () => {
 
                     if (projectState.data && projectState.columns) {
                         loadPlotDataProject(projectState.data, projectState.columns);
+                    }
+
+                    if (projectState.plotTypeSideMenuData?.plotType) {
+                        activeStores.plotTypeSideMenuStore.getState().loadProject(projectState.plotTypeSideMenuData.plotType);
+                    } else if (projectState.sideMenuData?.plotType) {
+                        activeStores.plotTypeSideMenuStore.getState().loadProject(projectState.sideMenuData.plotType);
                     }
 
                     if (projectState.sideMenuData) {

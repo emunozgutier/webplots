@@ -56,6 +56,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
 
             // Clean up workspace-specific stores from localStorage
             localStorage.removeItem(`webplots-workspace-${id}-axisSideMenuStore`);
+            localStorage.removeItem(`webplots-workspace-${id}-plotTypeSideMenuStore`);
             localStorage.removeItem(`webplots-workspace-${id}-styleSideMenuStore`);
             localStorage.removeItem(`webplots-workspace-${id}-filterSideMenuStore`);
             localStorage.removeItem(`webplots-workspace-${id}-groupSideMenuStore`);

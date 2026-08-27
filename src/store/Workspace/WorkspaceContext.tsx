@@ -13,11 +13,13 @@ import type { SubplotSideMenuState } from '../SideMenu/useSubplotSideMenuStore';
 import type { TableState } from '../PlotTable/useTableStore';
 import type { AnimationSideMenuState } from '../SideMenu/useAnimationSideMenuStore';
 import type { AnnotationSideMenuState } from '../SideMenu/useAnnotationSideMenuStore';
+import type { PlotTypeSideMenuState } from '../SideMenu/usePlotTypeSideMenuStore';
 
 type StoreApi<T> = import('zustand/vanilla').StoreApi<T>;
 
 export interface WorkspaceStores {
     axisSideMenuStore: StoreApi<AxisSideMenuState>;
+    plotTypeSideMenuStore: StoreApi<PlotTypeSideMenuState>;
     styleSideMenuStore: StoreApi<StyleSideMenuState>;
     filterSideMenuStore: StoreApi<FilterState>;
     groupSideMenuStore: StoreApi<GroupSideMenuState>;
