@@ -507,8 +507,6 @@ export const calculateLogBase = (cx: number, cy: number, maxBase: number = 30): 
  */
 export const inferColumnType = (data: any[], column: string): string => {
     const lowerCol = column.toLowerCase();
-    if (lowerCol.includes('date')) return 'Date';
-    if (lowerCol.includes('time')) return 'Time';
 
     let numCount = 0;
     let strCount = 0;
@@ -531,11 +529,8 @@ export const inferColumnType = (data: any[], column: string): string => {
 
     if (totalProcessed === 0) return 'Generic';
 
-    if (numCount / totalProcessed > 0.8) {
-        // Mostly numeric
-        return 'Generic';
-    } else {
-        // Mostly strings
+    // If there are any non-numeric strings (like "A" in [5,6,7,"A"]), it cannot be pure numeric (Generic)
+    if (strCount > 0) {
         const datePattern = /^\d{4}-\d{2}-\d{2}/;
         const timePattern = /^\d{1,2}:\d{2}(:\d{2})?$/;
         
@@ -551,10 +546,17 @@ export const inferColumnType = (data: any[], column: string): string => {
         if (dateCount / uniqueValues.size > 0.8) return 'Date';
         if (timeCount / uniqueValues.size > 0.8) return 'Time';
         
-        if (uniqueValues.size < 50 || uniqueValues.size / totalProcessed < 0.5) return 'Category';
-        
-        return 'Generic';
+        return 'Category';
     }
+
+    // Purely numeric column (strCount === 0)
+    if (lowerCol.includes('year') || lowerCol === 'yr') {
+        return 'Year';
+    }
+    if (lowerCol.includes('date')) return 'Date';
+    if (lowerCol.includes('time')) return 'Time';
+
+    return 'Generic';
 };
 
 /**
@@ -581,7 +583,7 @@ export const getAvailableColumnTypes = (data: any[], column: string): string[] =
 
     if (totalProcessed === 0) return ['Generic', 'Category', 'Year', 'Date', 'Time'];
 
-    if (numCount / totalProcessed > 0.8) {
+    if (strCount === 0) {
         return ['Generic', 'Category', 'Year', 'Date', 'Time'];
     } else {
         const datePattern = /^\d{4}-\d{2}-\d{2}/;
@@ -596,8 +598,12 @@ export const getAvailableColumnTypes = (data: any[], column: string): string[] =
             if (timePattern.test(strV)) timeCount++;
         }
         
-        if (dateCount / uniqueValues.size > 0.8) return ['Date', 'Category'];
-        if (timeCount / uniqueValues.size > 0.8) return ['Time', 'Category'];
+        if (dateCount / uniqueValues.size > 0.8) return ['Date', 'Category', 'Generic'];
+        if (timeCount / uniqueValues.size > 0.8) return ['Time', 'Category', 'Generic'];
+        
+        if (numCount > 0) {
+            return ['Category', 'Generic'];
+        }
         
         // Pure strings that aren't dates or times can only be a category
         return ['Category'];

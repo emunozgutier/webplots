@@ -11,25 +11,42 @@ import type { AnnotationConfig } from '../store/SideMenu/useAnnotationSideMenuSt
 import { parseToNumeric, calculateLogBase } from './TableMathLib';
 import type { TraceData } from './DataFrameLib';
 
-const ensurePlotlyCompatibleData = (data: any[]): { processedData: any[], isDate: boolean } => {
-    if (!data || data.length === 0) return { processedData: data, isDate: false };
+const ensurePlotlyCompatibleData = (data: any[]): { processedData: any[], isDate: boolean, isCategory: boolean } => {
+    if (!data || data.length === 0) return { processedData: data, isDate: false, isCategory: false };
 
     let detectedDate = false;
+    let detectedNonNumeric = false;
     const datePattern = /^\d{4}-\d{2}-\d{2}/;
     const timePattern = /^\d{1,2}:\d{2}(:\d{2})?$/;
 
-    const processedData = data.map(v => {
+    for (let i = 0; i < data.length; i++) {
+        const v = data[i];
+        if (v === null || v === undefined || v === '') continue;
         const numV = parseToNumeric(v);
         if (numV !== null) {
             if (typeof v === 'string' && (datePattern.test(v.trim()) || timePattern.test(v.trim()))) {
                 detectedDate = true;
             }
+        } else {
+            detectedNonNumeric = true;
+        }
+    }
+
+    const isCategory = detectedNonNumeric;
+
+    const processedData = data.map(v => {
+        if (v === null || v === undefined || v === '') return null;
+        if (isCategory) {
+            return String(v);
+        }
+        const numV = parseToNumeric(v);
+        if (numV !== null) {
             return numV;
         }
         return v;
     });
 
-    return { processedData, isDate: detectedDate };
+    return { processedData, isDate: detectedDate && !isCategory, isCategory };
 };
 
 export const generatePlotConfig = (
@@ -70,6 +87,8 @@ export const generatePlotConfig = (
 
     let isXAxisDate = false;
     let isYAxisDate = false;
+    let isXAxisCategory = false;
+    let isYAxisCategory = false;
 
     const stats: Record<string, TraceStats> = {};
 
@@ -409,12 +428,13 @@ export const generatePlotConfig = (
             marker.size = customization.size || (useComputedSizes ? computedSizes : undefined);
 
             if (plotType === 'histogram') {
-                const { processedData: compatibleYData, isDate: yIsDate } = ensurePlotlyCompatibleData(yData);
+                const { processedData: compatibleYData, isDate: yIsDate, isCategory: yIsCategory } = ensurePlotlyCompatibleData(yData);
                 if (yIsDate) isXAxisDate = true; // For histograms, yData is on the X axis
+                if (yIsCategory) isXAxisCategory = true;
 
                 let processedYData = compatibleYData;
                 const traceBins = customization.histogramBins;
-                if (traceBins) {
+                if (traceBins && !yIsCategory) {
                     const { start, end, underflow, overflow } = traceBins;
                     const EPSILON = 1e-6; // Ensure values fall nicely into start/end bins
                     processedYData = compatibleYData.map(v => {
@@ -454,10 +474,12 @@ export const generatePlotConfig = (
                 return [histTrace];
             }
 
-            const { processedData: finalX, isDate: xIsDate } = ensurePlotlyCompatibleData(xData);
-            const { processedData: finalY, isDate: yIsDate } = ensurePlotlyCompatibleData(yData);
+            const { processedData: finalX, isDate: xIsDate, isCategory: xIsCategory } = ensurePlotlyCompatibleData(xData);
+            const { processedData: finalY, isDate: yIsDate, isCategory: yIsCategory } = ensurePlotlyCompatibleData(yData);
             if (xIsDate) isXAxisDate = true;
             if (yIsDate) isYAxisDate = true;
+            if (xIsCategory) isXAxisCategory = true;
+            if (yIsCategory) isYAxisCategory = true;
             
             const filteredCount = traceInfo.filteredCount || 0;
             // absorbedCounts already retrieved above
@@ -602,7 +624,7 @@ export const generatePlotConfig = (
                 xaxis: xAxisBase,
                 yaxis: yAxisBase,
                 mode: mode,
-                type: finalX.length > 50000 ? 'scattergl' : 'scatter',
+                type: (isXAxisCategory || isYAxisCategory || finalX.length <= 50000) ? 'scatter' : 'scattergl',
                 name: finalName,
                 ids: safeSurvivingIndices.map(survivingIdx => String(rowIndices[survivingIdx])),
                 legendgroup: finalName,
@@ -640,26 +662,26 @@ export const generatePlotConfig = (
         title: { text: finalPlotTitle },
         xaxis: {
             title: { text: xAxisTitle || (plotType === 'histogram' ? 'Value' : (xAxis || 'Row Number')) },
-            type: enableLogXAxis ? 'log' : (isXAxisDate ? 'date' : 'linear'),
-            range: plotType === 'histogram' ? undefined : (
+            type: enableLogXAxis ? 'log' : (isXAxisDate ? 'date' : (isXAxisCategory ? 'category' : 'linear')),
+            range: plotType === 'histogram' || isXAxisCategory ? undefined : (
                 xRange ? (enableLogXAxis ? [Math.log10(Math.max(xRange[0], 1e-15)), Math.log10(Math.max(xRange[1], 1e-15))] : xRange) :
                 (animationData && animationData.animationColumn && globalXMin !== Infinity ? 
                     (enableLogXAxis ? [Math.log10(Math.max(globalXMin, 1e-15)), Math.log10(Math.max(globalXMax, 1e-15))] : [globalXMin, globalXMax]) 
                 : undefined)
             ),
-            autorange: plotType === 'histogram' ? true : (!xRange && !(animationData && animationData.animationColumn && globalXMin !== Infinity)),
+            autorange: plotType === 'histogram' || isXAxisCategory ? true : (!xRange && !(animationData && animationData.animationColumn && globalXMin !== Infinity)),
             exponentformat: 'none'
         },
         yaxis: {
             title: { text: yAxisTitle || (yAxis.length === 1 ? yAxis[0] : 'Values') },
-            type: enableLogYAxis ? 'log' : (isYAxisDate ? 'date' : 'linear'),
-            range: plotType === 'histogram' ? undefined : (
+            type: enableLogYAxis ? 'log' : (isYAxisDate ? 'date' : (isYAxisCategory ? 'category' : 'linear')),
+            range: plotType === 'histogram' || isYAxisCategory ? undefined : (
                 yRange ? (enableLogYAxis ? [Math.log10(Math.max(yRange[0], 1e-15)), Math.log10(Math.max(yRange[1], 1e-15))] : yRange) :
                 (animationData && animationData.animationColumn && globalYMin !== Infinity ? 
                     (enableLogYAxis ? [Math.log10(Math.max(globalYMin, 1e-15)), Math.log10(Math.max(globalYMax, 1e-15))] : [globalYMin, globalYMax]) 
                 : undefined)
             ),
-            autorange: plotType === 'histogram' ? true : (!yRange && !(animationData && animationData.animationColumn && globalYMin !== Infinity)),
+            autorange: plotType === 'histogram' || isYAxisCategory ? true : (!yRange && !(animationData && animationData.animationColumn && globalYMin !== Infinity)),
             exponentformat: 'none'
         },
         autosize: true,
@@ -795,26 +817,26 @@ export const generatePlotConfig = (
         // Construct standard axis configs
         const baseTargetXAxis = {
             title: { text: xAxisTitle || (plotType === 'histogram' ? 'Value' : (xAxis || 'Row Number')) },
-            type: enableLogXAxis ? 'log' : (isXAxisDate ? 'date' : 'linear'),
-            range: plotType === 'histogram' ? undefined : (
+            type: enableLogXAxis ? 'log' : (isXAxisDate ? 'date' : (isXAxisCategory ? 'category' : 'linear')),
+            range: plotType === 'histogram' || isXAxisCategory ? undefined : (
                 xRange ? (enableLogXAxis ? [Math.log10(Math.max(xRange[0], 1e-15)), Math.log10(Math.max(xRange[1], 1e-15))] : xRange) :
                 (animationData && animationData.animationColumn && globalXMin !== Infinity ? 
                     (enableLogXAxis ? [Math.log10(Math.max(globalXMin, 1e-15)), Math.log10(Math.max(globalXMax, 1e-15))] : [globalXMin, globalXMax]) 
                 : undefined)
             ),
-            autorange: plotType === 'histogram' ? true : (!xRange && !(animationData && animationData.animationColumn && globalXMin !== Infinity)),
+            autorange: plotType === 'histogram' || isXAxisCategory ? true : (!xRange && !(animationData && animationData.animationColumn && globalXMin !== Infinity)),
             exponentformat: 'none'
         };
         const baseTargetYAxis = {
             title: { text: yAxisTitle || (yAxis.length === 1 ? yAxis[0] : 'Values') },
-            type: enableLogYAxis ? 'log' : (isYAxisDate ? 'date' : 'linear'),
-            range: plotType === 'histogram' ? undefined : (
+            type: enableLogYAxis ? 'log' : (isYAxisDate ? 'date' : (isYAxisCategory ? 'category' : 'linear')),
+            range: plotType === 'histogram' || isYAxisCategory ? undefined : (
                 yRange ? (enableLogYAxis ? [Math.log10(Math.max(yRange[0], 1e-15)), Math.log10(Math.max(yRange[1], 1e-15))] : yRange) :
                 (animationData && animationData.animationColumn && globalYMin !== Infinity ? 
                     (enableLogYAxis ? [Math.log10(Math.max(globalYMin, 1e-15)), Math.log10(Math.max(globalYMax, 1e-15))] : [globalYMin, globalYMax]) 
                 : undefined)
             ),
-            autorange: plotType === 'histogram' ? true : (!yRange && !(animationData && animationData.animationColumn && globalYMin !== Infinity)),
+            autorange: plotType === 'histogram' || isYAxisCategory ? true : (!yRange && !(animationData && animationData.animationColumn && globalYMin !== Infinity)),
             exponentformat: 'none'
         };
 
@@ -943,12 +965,12 @@ ${traceVar}.line = { color: '${finalColor}' };${markerParamsCode}`);
 
             receipt += `\n  ${xKey}: {
     title: { text: '${layout.xaxis?.title?.text}' },
-    type: '${enableLogXAxis ? 'log' : (isXAxisDate ? 'date' : 'linear')}',
+    type: '${enableLogXAxis ? 'log' : (isXAxisDate ? 'date' : (isXAxisCategory ? 'category' : 'linear'))}',
     ${xRange ? `range: [${enableLogXAxis ? Math.log10(Math.max(xRange[0], 1e-15)) : xRange[0]}, ${enableLogXAxis ? Math.log10(Math.max(xRange[1], 1e-15)) : xRange[1]}]` : '// autorange: true'}
   },`;
             receipt += `\n  ${yKey}: {
     title: { text: '${layout.yaxis?.title?.text}' },
-    type: '${enableLogYAxis ? 'log' : (isYAxisDate ? 'date' : 'linear')}',
+    type: '${enableLogYAxis ? 'log' : (isYAxisDate ? 'date' : (isYAxisCategory ? 'category' : 'linear'))}',
     ${yRange ? `range: [${enableLogYAxis ? Math.log10(Math.max(yRange[0], 1e-15)) : yRange[0]}, ${enableLogYAxis ? Math.log10(Math.max(yRange[1], 1e-15)) : yRange[1]}]` : '// autorange: true'}
   },`;
         }
@@ -957,12 +979,12 @@ ${traceVar}.line = { color: '${finalColor}' };${markerParamsCode}`);
         receipt += `
   xaxis: {
     title: { text: '${layout.xaxis?.title?.text}' },
-    type: '${enableLogXAxis ? 'log' : (isXAxisDate ? 'date' : 'linear')}',
+    type: '${enableLogXAxis ? 'log' : (isXAxisDate ? 'date' : (isXAxisCategory ? 'category' : 'linear'))}',
     ${xRange ? `range: [${enableLogXAxis ? Math.log10(Math.max(xRange[0], 1e-15)) : xRange[0]}, ${enableLogXAxis ? Math.log10(Math.max(xRange[1], 1e-15)) : xRange[1]}]` : '// autorange: true'}
   },
   yaxis: {
     title: { text: '${layout.yaxis?.title?.text}' },
-    type: '${enableLogYAxis ? 'log' : (isYAxisDate ? 'date' : 'linear')}',
+    type: '${enableLogYAxis ? 'log' : (isYAxisDate ? 'date' : (isYAxisCategory ? 'category' : 'linear'))}',
     ${yRange ? `range: [${enableLogYAxis ? Math.log10(Math.max(yRange[0], 1e-15)) : yRange[0]}, ${enableLogYAxis ? Math.log10(Math.max(yRange[1], 1e-15)) : yRange[1]}]` : '// autorange: true'}
   },`;
     }
