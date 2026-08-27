@@ -339,16 +339,6 @@ const TableArea: React.FC<TableAreaProps> = ({ viewMode, setViewMode }) => {
     // Virtualized slice
     const slicedData = batchedData.slice(startIndex, endIndex);
 
-    if (!displayData || displayData.length === 0) {
-        return (
-            <div className="d-flex flex-column justify-content-center align-items-center h-100 text-muted">
-                <div className="display-1 mb-3">📇</div>
-                <h4>No Data Loaded</h4>
-                <p>Please load a CSV file or Project from the <strong>File</strong> menu to view the data table.</p>
-            </div>
-        );
-    }
-
     const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
         if (!selectedCell) return;
 
@@ -433,7 +423,16 @@ const TableArea: React.FC<TableAreaProps> = ({ viewMode, setViewMode }) => {
                 />
             </div>
 
-            <div className="d-flex flex-row flex-grow-1 overflow-hidden border rounded">
+            {!displayData || displayData.length === 0 ? (
+                <div className="d-flex flex-column justify-content-center align-items-center flex-grow-1 text-muted border rounded">
+                    <div className="display-1 mb-3">📇</div>
+                    <h4>No Data Loaded</h4>
+                    <p className="text-center mb-0">
+                        Please drop a CSV file, or load a dataset / Project from the <strong>File</strong> or <strong>Test</strong> menu to view the data table.
+                    </p>
+                </div>
+            ) : (
+                <div className="d-flex flex-row flex-grow-1 overflow-hidden border rounded">
                 <div
                     className="flex-grow-1 overflow-auto table-scroll-container"
                     style={{ position: 'relative' }}
@@ -655,6 +654,7 @@ const TableArea: React.FC<TableAreaProps> = ({ viewMode, setViewMode }) => {
                     onBatchChange={setCurrentBatch}
                 />
             </div>
+            )}
         </div>
     );
 };

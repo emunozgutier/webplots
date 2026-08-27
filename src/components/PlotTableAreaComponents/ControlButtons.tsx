@@ -210,7 +210,7 @@ export const ControlButtons: React.FC<ControlButtonsProps> = ({
 
     // Otherwise, viewMode === 'plot'
     return (
-        <div className="p-2 bg-light border-top d-flex justify-content-between align-items-center mt-auto shadow-sm" style={{ zIndex: 10 }}>
+        <div className="d-flex justify-content-between align-items-center w-100">
             {/* View Switcher Button */}
             <PlotTableButton viewMode={viewMode} setViewMode={setViewMode} />
 

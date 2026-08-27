@@ -143,25 +143,30 @@ const PlotArea: React.FC<PlotAreaProps> = ({ viewMode, setViewMode }) => {
     };
 
     return (
-        <div className="d-flex flex-column h-100">
-            <ControlButtons
-                onOpenSettings={handleOpenSettings}
-                onOpenDebug={handleOpenDebug}
-                viewMode={viewMode}
-                setViewMode={setViewMode}
-            />
+        <div
+            className="d-flex flex-column p-3 bg-white"
+            style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }}
+        >
+            <div className="mb-3 w-100">
+                <ControlButtons
+                    onOpenSettings={handleOpenSettings}
+                    onOpenDebug={handleOpenDebug}
+                    viewMode={viewMode}
+                    setViewMode={setViewMode}
+                />
+            </div>
             {!hasData ? (
-                <div className="d-flex flex-column justify-content-center align-items-center flex-grow-1 text-muted">
+                <div className="d-flex flex-column justify-content-center align-items-center flex-grow-1 text-muted border rounded">
                     <div className="display-1 mb-3">📊</div>
                     <h4>No Data Loaded</h4>
-                    <p className="text-center">
+                    <p className="text-center mb-0">
                         {rawDataTable.length === 0
                             ? "Please drop or load a CSV file or Project from the File menu to generate a plot."
                             : "Please select at least one column for the Y-Axis in the side menu to generate a plot."}
                     </p>
                 </div>
             ) : (
-                <div ref={containerRef} className="flex-grow-1 position-relative d-flex flex-column">
+                <div ref={containerRef} className="flex-grow-1 position-relative d-flex flex-column border rounded overflow-hidden" style={{ minHeight: 0 }}>
                     <div className="flex-grow-1" style={{ minHeight: 0 }}>
                         <Plot
                             data={plotData}
