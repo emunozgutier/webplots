@@ -1,5 +1,5 @@
 {
-    "commit_title": "Avoid any cast in plot export title",
-    "commit_message": "Replace the `layout as any` access used for the exported HTML document title with typed `Record<string, unknown>` lookups. This keeps the existing fallback to `Plot` while improving type safety in `ControlButtons`.",
+    "commit_title": "Redesign plot type side menu",
+    "commit_message": "Reworks the plot type selector into a compact 2x8 tile grid, adds placeholders for upcoming chart types with \"Soon\" badges, and replaces the old card/radio layout with a more visual selection state and active plot summary.",
     "version_string": "2026.35.3"
 }
