@@ -55,13 +55,19 @@ export const Step_2_grouping = (
     groupConfig: GroupSideMenuData
 ): TraceData[] => {
     const { plotType, xAxis, yAxis } = axisConfig;
-    const { groupAxis, groupSettings } = groupConfig;
+    const { groupSettings } = groupConfig;
 
     let generatedTraces: TraceData[] = [];
 
     const x = data.map((row, i) => xAxis ? row[xAxis] : i);
 
-    if (groupAxis) {
+    const rawAxes = groupConfig.groupAxes && groupConfig.groupAxes.length > 0 
+        ? groupConfig.groupAxes 
+        : (groupConfig.groupAxis ? [groupConfig.groupAxis] : []);
+    const activeGroupAxes = rawAxes.filter(Boolean) as string[];
+
+    if (activeGroupAxes.length === 1) {
+        const groupAxis = activeGroupAxes[0];
         const settings = groupSettings[groupAxis];
         const isManual = settings && settings.mode === 'manual';
 
@@ -143,6 +149,43 @@ export const Step_2_grouping = (
                 });
             });
         }
+    } else if (activeGroupAxes.length > 1) {
+        // Multi-column grouping (Cartesian product of all group axes)
+        const combosMap = new Map<string, { label: string, indices: number[] }>();
+
+        data.forEach((row, idx) => {
+            const hasAll = activeGroupAxes.every(axis => row[axis] !== null && row[axis] !== undefined && row[axis] !== '');
+            if (!hasAll) return;
+
+            const comboKey = activeGroupAxes.map(axis => `${axis}=${String(row[axis])}`).join(', ');
+            if (!combosMap.has(comboKey)) {
+                combosMap.set(comboKey, {
+                    label: comboKey,
+                    indices: []
+                });
+            }
+            combosMap.get(comboKey)!.indices.push(idx);
+        });
+
+        const sortedCombos = Array.from(combosMap.values());
+        sortedCombos.sort((a, b) => a.label.localeCompare(b.label, undefined, { numeric: true }));
+
+        yAxis.forEach(yCol => {
+            sortedCombos.forEach((combo) => {
+                const { label, indices } = combo;
+                if (indices.length === 0) return;
+
+                generatedTraces.push({
+                    yCol,
+                    groupName: label,
+                    rawGroupName: label,
+                    fullTraceName: yAxis.length === 1 ? label : `${yCol} (${label})`,
+                    xData: indices.map(i => xAxis ? data[i][xAxis] : i),
+                    yData: indices.map(i => data[i][yCol]),
+                    rowIndices: indices,
+                });
+            });
+        });
     } else {
         yAxis.forEach(yCol => {
             generatedTraces.push({

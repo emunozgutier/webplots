@@ -7,8 +7,9 @@ import GroupElement from './subcomponents/GroupElement';
 import SearchColumn from './subcomponents/SearchColumn';
 
 const GroupSideMenu: React.FC = () => {
-    const { groupSideMenuData, setGroupAxis } = useGroupSideMenuStore();
-    const { groupAxis } = groupSideMenuData;
+    const { groupSideMenuData, addGroupAxis } = useGroupSideMenuStore();
+    const { groupAxes, groupAxis } = groupSideMenuData;
+    const activeAxes = (groupAxes && groupAxes.length > 0) ? groupAxes : (groupAxis ? [groupAxis] : []);
     const { columns } = useCsvDataStore();
 
     const [dragOverGroup, setDragOverGroup] = useState(false);
@@ -28,7 +29,7 @@ const GroupSideMenu: React.FC = () => {
         setDragOverGroup(false);
         const colName = e.dataTransfer.getData('text/plain');
         if (!colName) return;
-        setGroupAxis(colName);
+        addGroupAxis(colName);
     };
 
     return (
@@ -49,27 +50,34 @@ const GroupSideMenu: React.FC = () => {
                             <div className="mb-0 mt-3">
                                 <label className="form-label fw-bold small mb-2 d-flex align-items-center">
                                     Group Axis
-                                    <small className="text-muted fw-normal ms-1">(Optional)</small>
+                                    <small className="text-muted fw-normal ms-1">({activeAxes.length} selected)</small>
                                     <span
                                         className="ms-2 badge rounded-pill bg-light text-dark border cursor-help"
                                         style={{ cursor: 'help', fontSize: '0.7rem' }}
-                                        title="It creates subtraces (or groups) based on other columns. Like Temp (hot or cold) or Voltage (max or min) OR both for 4 subtraces/groups"
+                                        title="Create subtraces based on one or more columns (e.g. Speeds & Temperatures)."
                                     >
                                         ?
                                     </span>
                                 </label>
+
+                                {activeAxes.length > 0 && (
+                                    <div className="d-flex flex-column gap-2 mb-2">
+                                        {activeAxes.map((col) => (
+                                            <GroupElement key={col} column={col} />
+                                        ))}
+                                    </div>
+                                )}
+
                                 <div
-                                    className={`rounded ${!groupAxis ? 'border p-2' : ''} ${dragOverGroup ? 'bg-info bg-opacity-10 border-info border p-2' : (!groupAxis ? 'bg-white' : '')}`}
+                                    className={`rounded border border-dashed p-2 ${dragOverGroup ? 'bg-info bg-opacity-10 border-info' : 'bg-light'}`}
                                     onDragOver={handleDragOver}
                                     onDragLeave={handleDragLeave}
                                     onDrop={handleDropGroup}
-                                    style={{ minHeight: '35px', transition: 'all 0.2s' }}
+                                    style={{ minHeight: '38px', transition: 'all 0.2s', borderStyle: 'dashed' }}
                                 >
-                                    {groupAxis ? (
-                                        <GroupElement column={groupAxis} />
-                                    ) : (
-                                        <div className="text-muted small fst-italic text-center" style={{ fontSize: '0.8rem' }}>Drag column here</div>
-                                    )}
+                                    <div className="text-muted small fst-italic text-center" style={{ fontSize: '0.8rem' }}>
+                                        {activeAxes.length > 0 ? '+ Drag another column to multi-group' : 'Drag column here'}
+                                    </div>
                                 </div>
                             </div>
                         ) : (

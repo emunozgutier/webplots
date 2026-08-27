@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSubplotSideMenuStore } from '../../store/SideMenu/useSubplotSideMenuStore';
 import { useTraceConfigStore } from '../../store/PlotTable/useTraceConfigStore';
+import SubplotAutoSorting from './subcomponents/SubplotAutoSorting';
 
 const SubplotSideMenu: React.FC = () => {
     const { rows, cols, setGrid, traceToSubplots, assignTraceToSubplot } = useSubplotSideMenuStore();
@@ -9,8 +10,8 @@ const SubplotSideMenu: React.FC = () => {
 
     const [activeTab, setActiveTab] = useState(1);
 
-    const maxRows = 2;
-    const maxCols = 2;
+    const maxRows = 3;
+    const maxCols = 3;
 
     const totalSubplots = rows * cols;
     const isSinglePlot = totalSubplots === 1;
@@ -35,9 +36,13 @@ const SubplotSideMenu: React.FC = () => {
 
         // 1x2
         if (r === 1 && c === 2) return index === 1 ? 'Left' : 'Right';
+        // 1x3
+        if (r === 1 && c === 3) return index === 1 ? 'Left' : (index === 2 ? 'Center' : 'Right');
 
         // 2x1
         if (r === 2 && c === 1) return index === 1 ? 'Top' : 'Bottom';
+        // 3x1
+        if (r === 3 && c === 1) return index === 1 ? 'Top' : (index === 2 ? 'Middle' : 'Bottom');
 
         // 2x2
         if (r === 2 && c === 2) {
@@ -47,14 +52,35 @@ const SubplotSideMenu: React.FC = () => {
             if (index === 4) return 'Bottom Right';
         }
 
-        return `Subplot ${index}`;
+        // 2x3
+        if (r === 2 && c === 3) {
+            const names = ['R1 Left', 'R1 Center', 'R1 Right', 'R2 Left', 'R2 Center', 'R2 Right'];
+            return names[index - 1] || `Plot ${index}`;
+        }
+
+        // 3x2
+        if (r === 3 && c === 2) {
+            const names = ['Top Left', 'Top Right', 'Mid Left', 'Mid Right', 'Btm Left', 'Btm Right'];
+            return names[index - 1] || `Plot ${index}`;
+        }
+
+        // 3x3
+        if (r === 3 && c === 3) {
+            const row = Math.floor((index - 1) / 3) + 1;
+            const col = ((index - 1) % 3) + 1;
+            return `R${row} C${col}`;
+        }
+
+        const row = Math.floor((index - 1) / c) + 1;
+        const col = ((index - 1) % c) + 1;
+        return `R${row} C${col}`;
     };
 
     return (
         <div className="p-3">
             <h6 className="mb-3 text-secondary border-bottom pb-2">Grid Layout</h6>
 
-            <div className="row g-2 mb-4">
+            <div className="row g-2 mb-3">
                 <div className="col-6">
                     <label className="form-label small text-muted mb-1">Rows</label>
                     <select className="form-select form-select-sm" value={rows} onChange={handleRowsChange}>
@@ -72,6 +98,10 @@ const SubplotSideMenu: React.FC = () => {
                     </select>
                 </div>
             </div>
+
+            {!isSinglePlot && activeTraces.length > 0 && (
+                <SubplotAutoSorting />
+            )}
 
             <h6 className="mb-3 text-secondary border-bottom pb-2">Trace Assignment</h6>
 

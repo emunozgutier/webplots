@@ -216,7 +216,10 @@ const TableArea: React.FC<TableAreaProps> = ({ viewMode, setViewMode }) => {
         sideMenuData.yAxis.forEach(y => cols.add(y));
 
         // Grouping columns
-        if (groupSideMenuData.groupAxis) cols.add(groupSideMenuData.groupAxis);
+        const activeGroupAxes = (groupSideMenuData.groupAxes && groupSideMenuData.groupAxes.length > 0)
+            ? groupSideMenuData.groupAxes
+            : (groupSideMenuData.groupAxis ? [groupSideMenuData.groupAxis] : []);
+        activeGroupAxes.forEach(g => cols.add(g));
 
         // Filter columns
         filters.forEach(f => cols.add(f.column));

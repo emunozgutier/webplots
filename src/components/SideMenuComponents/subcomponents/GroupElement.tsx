@@ -9,7 +9,7 @@ interface GroupElementProps {
 }
 
 const GroupElement: React.FC<GroupElementProps> = ({ column }) => {
-    const { setGroupAxis } = useGroupSideMenuStore();
+    const { removeGroupAxis } = useGroupSideMenuStore();
     const { setPopupContent } = useWorkspaceLocalStore();
 
     return (
@@ -31,7 +31,7 @@ const GroupElement: React.FC<GroupElementProps> = ({ column }) => {
                             <i className="bi bi-gear-fill" style={{ fontSize: '0.8rem' }}></i>
                         </button>
                         <CloseButton 
-                            onClose={() => setGroupAxis(null)} 
+                            onClose={() => removeGroupAxis(column)} 
                             title="Hold 2s to Remove Group" 
                         />
                     </div>
