@@ -1,0 +1,339 @@
+/* DropFileOverlay.css */
+
+.drop-overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: radial-gradient(circle at center, rgba(15, 23, 42, 0.82) 0%, rgba(2, 6, 23, 0.94) 100%);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: dropFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  pointer-events: all;
+  user-select: none;
+}
+
+@keyframes dropFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.drop-overlay-card {
+  position: relative;
+  background: rgba(30, 41, 59, 0.85);
+  border: 2px dashed rgba(16, 185, 129, 0.6);
+  border-radius: 24px;
+  padding: 3rem 4rem;
+  max-width: 520px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7),
+              0 0 40px rgba(16, 185, 129, 0.2),
+              inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  animation: dropCardPulse 2s infinite ease-in-out;
+}
+
+@keyframes dropCardPulse {
+  0%, 100% {
+    border-color: rgba(16, 185, 129, 0.5);
+    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7),
+                0 0 35px rgba(16, 185, 129, 0.15),
+                inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  }
+  50% {
+    border-color: rgba(52, 211, 153, 0.9);
+    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7),
+                0 0 55px rgba(16, 185, 129, 0.35),
+                inset 0 1px 1px rgba(255, 255, 255, 0.25);
+  }
+}
+
+.drop-overlay-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 60%);
+  pointer-events: none;
+  animation: rotateGlow 10s linear infinite;
+}
+
+@keyframes rotateGlow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* CSV Animated Illustration */
+.csv-animation-container {
+  position: relative;
+  width: 120px;
+  height: 140px;
+  margin-bottom: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.csv-doc-wrapper {
+  position: relative;
+  width: 90px;
+  height: 115px;
+  background: linear-gradient(145deg, #1e293b, #0f172a);
+  border-radius: 12px;
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4),
+              0 0 20px rgba(16, 185, 129, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: docFloat 3s ease-in-out infinite;
+}
+
+@keyframes docFloat {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(1deg);
+  }
+}
+
+/* Folded top-right corner */
+.csv-doc-corner {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(135deg, transparent 50%, rgba(16, 185, 129, 0.6) 50%);
+  border-bottom-left-radius: 6px;
+  box-shadow: -2px 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+/* Top header of the CSV doc */
+.csv-doc-header {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  padding: 6px 8px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.csv-doc-body {
+  padding: 8px 10px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  justify-content: center;
+}
+
+/* Animated CSV Spreadsheet rows */
+.csv-doc-row {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.csv-cell {
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+.csv-cell::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  animation: cellShimmer 2s infinite;
+}
+
+.csv-doc-row:nth-child(1) .csv-cell::after {
+  animation-delay: 0s;
+}
+.csv-doc-row:nth-child(2) .csv-cell::after {
+  animation-delay: 0.3s;
+}
+.csv-doc-row:nth-child(3) .csv-cell::after {
+  animation-delay: 0.6s;
+}
+.csv-doc-row:nth-child(4) .csv-cell::after {
+  animation-delay: 0.9s;
+}
+
+@keyframes cellShimmer {
+  0% { left: -100%; }
+  50%, 100% { left: 150%; }
+}
+
+.cell-1 { width: 30%; background: rgba(52, 211, 153, 0.5); }
+.cell-2 { width: 45%; }
+.cell-3 { width: 25%; }
+
+/* Bouncing drop arrow indicator */
+.drop-arrow-indicator {
+  position: absolute;
+  top: -15px;
+  color: #34d399;
+  font-size: 1.75rem;
+  filter: drop-shadow(0 0 10px rgba(52, 211, 153, 0.8));
+  animation: arrowBounce 1.5s ease-in-out infinite;
+  z-index: 2;
+}
+
+@keyframes arrowBounce {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(8px);
+    opacity: 1;
+  }
+}
+
+/* Floating Particles */
+.particle-ring {
+  position: absolute;
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  border: 1px dashed rgba(52, 211, 153, 0.3);
+  animation: ringRotate 8s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes ringRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Typography & Subtitle */
+.drop-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.drop-subtitle {
+  color: #94a3b8;
+  font-size: 0.95rem;
+  margin-bottom: 1.25rem;
+  line-height: 1.4;
+}
+
+.drop-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #34d399;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.drop-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #34d399;
+  box-shadow: 0 0 6px #34d399;
+}
+
+/* Error Modal Styling */
+.drop-error-modal .modal-content {
+  background: #1e293b;
+  color: #f8fafc;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 16px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7),
+              0 0 30px rgba(239, 68, 68, 0.2);
+  overflow: hidden;
+}
+
+.drop-error-modal .modal-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1.25rem 1.5rem;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.drop-error-modal .modal-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fca5a5;
+}
+
+.drop-error-modal .btn-close {
+  filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+.drop-error-modal .modal-body {
+  padding: 1.5rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #cbd5e1;
+}
+
+.drop-error-modal .modal-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1rem 1.5rem;
+}
+
+.drop-error-filename {
+  display: inline-block;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 0.9rem;
+  word-break: break-all;
+}
+
+.drop-error-card-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 10px;
+  border-left: 4px solid #ef4444;
+  margin-top: 12px;
+}

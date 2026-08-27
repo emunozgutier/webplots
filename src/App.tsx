@@ -7,6 +7,7 @@ import { useWorkspaceStore } from './store/Workspace/useWorkspaceStore';
 import PopupMenu from './components/PopupMenu';
 import TutorialGDP from './components/InkyHelper/tutorialGDP/TutorialGDP';
 import SwimTest from './components/InkyHelper/SwimTest/SwimTest';
+import DropFileOverlay from './components/DropFileOverlay';
 import Analytics from './Analytics';
 import './App.css';
 
@@ -19,6 +20,7 @@ function App() {
 
   return (
     <div className="container-fluid vh-100 d-flex flex-column p-0 position-relative">
+      <DropFileOverlay />
       {isTopMenuBarOpen && <TopMenuBar />}
       <WorkspaceTabs />
 
