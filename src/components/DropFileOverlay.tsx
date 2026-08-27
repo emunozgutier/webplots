@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import Papa from 'papaparse';
 import { useCsvDataStore, type CsvDataStore } from '../store/useCsvDataStore';
-import { useWorkspaceStore, workspaceRegistry } from '../store/Workspace/useWorkspaceStore';
+import { resetActiveWorkspace } from '../utils/workspaceReset';
 import './DropFileOverlay.css';
 
 export interface DropFileOverlayProps {
@@ -61,16 +61,12 @@ export const DropFileOverlay: React.FC<DropFileOverlayProps> = ({
         complete: (results) => {
           const parsedData = results.data as CsvDataStore[];
           if (parsedData && parsedData.length > 0) {
+            // Reset old project state and create fresh project on new data
+            resetActiveWorkspace();
+
             setPlotData(parsedData);
             const cols = Object.keys(parsedData[0]).filter((c) => c !== '__idx');
             setColumns(cols);
-            if (cols.length > 0) {
-              const activeWorkspaceId = useWorkspaceStore.getState().activeWorkspaceId;
-              const activeStores = workspaceRegistry.get(activeWorkspaceId);
-              if (activeStores) {
-                activeStores.axisSideMenuStore.getState().setXAxis('');
-              }
-            }
             if (onFileLoaded) {
               onFileLoaded(parsedData, cols, file);
             }

@@ -6,6 +6,7 @@ import { useDemoData } from '../store/useDemoData';
 import Papa from 'papaparse';
 import type { CsvDataStore } from '../store/useCsvDataStore';
 import { useWorkspaceStore, workspaceRegistry } from '../store/Workspace/useWorkspaceStore';
+import { resetActiveWorkspace } from '../utils/workspaceReset';
 import { getSmallDataset, getLargeColumnDataset, getSimulationDataset, getBinningTestData } from '../utils/TestDatasets';
 import { generateTestGaussianData } from '../utils/TableMathLib';
 import BetaMode from './TopMenuBar/BetaMode';
@@ -58,14 +59,10 @@ const TopMenuBar: React.FC = () => {
                 complete: (results) => {
                     const parsedData = results.data as CsvDataStore[];
                     if (parsedData.length > 0) {
+                        resetActiveWorkspace();
                         setPlotData(parsedData);
                         const cols = Object.keys(parsedData[0]);
                         setColumns(cols);
-                        if (cols.length > 0) {
-                            const activeStores = workspaceRegistry.get(useWorkspaceStore.getState().activeWorkspaceId);
-                            if (activeStores) activeStores.axisSideMenuStore.getState().setXAxis('');
-                        }
-
                     }
                 },
                 error: (error) => {
@@ -183,13 +180,10 @@ const TopMenuBar: React.FC = () => {
         }
 
         if (testData.length > 0) {
+            resetActiveWorkspace();
             setPlotData(testData);
             const cols = Object.keys(testData[0]);
             setColumns(cols);
-            if (cols.length > 0) {
-                const activeStores = workspaceRegistry.get(useWorkspaceStore.getState().activeWorkspaceId);
-                if (activeStores) activeStores.axisSideMenuStore.getState().setXAxis('');
-            }
         }
     };
 
@@ -313,6 +307,7 @@ const TopMenuBar: React.FC = () => {
                                         "Sine": Math.sin(t)
                                     };
                                 }
+                                resetActiveWorkspace();
                                 setPlotData(data);
                                 setColumns(["Time", "Sine"]);
                                 const activeStores = workspaceRegistry.get(useWorkspaceStore.getState().activeWorkspaceId);

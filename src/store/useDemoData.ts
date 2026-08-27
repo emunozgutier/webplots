@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { useCsvDataStore } from './useCsvDataStore';
 import type { CsvDataStore } from './useCsvDataStore';
 import { useWorkspaceStore, workspaceRegistry } from './Workspace/useWorkspaceStore';
+import { resetActiveWorkspace } from '../utils/workspaceReset';
 
 interface DemoDataState {
     isWeatherLoading: boolean;
@@ -67,6 +68,7 @@ export const useDemoData = create<DemoDataState>()((set) => ({
             }
 
             if (flattenedData.length > 0) {
+                resetActiveWorkspace();
                 const csvStore = useCsvDataStore.getState();
                 csvStore.setPlotData(flattenedData);
                 const cols = Object.keys(flattenedData[0]);
@@ -127,6 +129,7 @@ export const useDemoData = create<DemoDataState>()((set) => ({
             }
 
             if (flattenedData.length > 0) {
+                resetActiveWorkspace();
                 const csvStore = useCsvDataStore.getState();
                 csvStore.setPlotData(flattenedData);
                 const cols = Object.keys(flattenedData[0]);
