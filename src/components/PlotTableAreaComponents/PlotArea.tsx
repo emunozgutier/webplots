@@ -117,9 +117,20 @@ const PlotArea: React.FC<PlotAreaProps> = ({ viewMode, setViewMode }) => {
         return values.size;
     }, [animationData.animationColumn, pipelineFiltered]);
 
-    const transitionDuration = uniqueAnimationValuesCount > 0 
+    const transitionDuration = (animationData.animationColumn && uniqueAnimationValuesCount > 0)
         ? Math.max(20, Math.floor((10000 / uniqueAnimationValuesCount) / (animationData.speedMultiplier || 1)))
-        : 500;
+        : 0;
+
+    const plotLayoutConfig = useMemo(() => {
+        const base = { ...layout };
+        if (animationData.animationColumn && transitionDuration > 0) {
+            base.transition = {
+                duration: transitionDuration,
+                easing: 'cubic-in-out'
+            };
+        }
+        return base;
+    }, [layout, animationData.animationColumn, transitionDuration]);
 
 
     // Update stats in store
@@ -177,14 +188,9 @@ const PlotArea: React.FC<PlotAreaProps> = ({ viewMode, setViewMode }) => {
                 <div ref={containerRef} className="flex-grow-1 position-relative d-flex flex-column border rounded overflow-hidden" style={{ minHeight: 0 }}>
                     <div className="flex-grow-1" style={{ minHeight: 0 }}>
                         <Plot
+                            key={`plot-${plotType}`}
                             data={plotData}
-                            layout={{
-                                ...layout,
-                                transition: {
-                                    duration: transitionDuration,
-                                    easing: 'cubic-in-out'
-                                }
-                            }}
+                            layout={plotLayoutConfig}
                             useResizeHandler={true}
                             style={{ width: '100%', height: '100%' }}
                             className="w-100 h-100"
