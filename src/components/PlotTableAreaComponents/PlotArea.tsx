@@ -142,16 +142,6 @@ const PlotArea: React.FC<PlotAreaProps> = ({ viewMode, setViewMode }) => {
         setPopupContent(<Debug receipt={receipt || ''} />);
     };
 
-    if (!hasData) {
-        return (
-            <div className="d-flex flex-column justify-content-center align-items-center h-100 text-muted">
-                <div className="display-1 mb-3">📊</div>
-                <h4>No Data Loaded</h4>
-                <p>Please load a CSV file or Project from the <strong>File</strong> menu to generate a plot.</p>
-            </div>
-        );
-    }
-
     return (
         <div className="d-flex flex-column h-100">
             <ControlButtons
@@ -160,28 +150,40 @@ const PlotArea: React.FC<PlotAreaProps> = ({ viewMode, setViewMode }) => {
                 viewMode={viewMode}
                 setViewMode={setViewMode}
             />
-            <div ref={containerRef} className="flex-grow-1 position-relative d-flex flex-column">
-                <div className="flex-grow-1" style={{ minHeight: 0 }}>
-                    <Plot
-                        data={plotData}
-                        layout={{
-                            ...layout,
-                            transition: {
-                                duration: transitionDuration,
-                                easing: 'cubic-in-out'
-                            }
-                        }}
-                        useResizeHandler={true}
-                        style={{ width: '100%', height: '100%' }}
-                        className="w-100 h-100"
-                    />
+            {!hasData ? (
+                <div className="d-flex flex-column justify-content-center align-items-center flex-grow-1 text-muted">
+                    <div className="display-1 mb-3">📊</div>
+                    <h4>No Data Loaded</h4>
+                    <p className="text-center">
+                        {rawDataTable.length === 0
+                            ? "Please drop or load a CSV file or Project from the File menu to generate a plot."
+                            : "Please select at least one column for the Y-Axis in the side menu to generate a plot."}
+                    </p>
                 </div>
-                {animationData.animationColumn && (
-                    <div style={{ flexShrink: 0 }}>
-                        <AnimationControls data={pipelineFiltered} />
+            ) : (
+                <div ref={containerRef} className="flex-grow-1 position-relative d-flex flex-column">
+                    <div className="flex-grow-1" style={{ minHeight: 0 }}>
+                        <Plot
+                            data={plotData}
+                            layout={{
+                                ...layout,
+                                transition: {
+                                    duration: transitionDuration,
+                                    easing: 'cubic-in-out'
+                                }
+                            }}
+                            useResizeHandler={true}
+                            style={{ width: '100%', height: '100%' }}
+                            className="w-100 h-100"
+                        />
                     </div>
-                )}
-            </div>
+                    {animationData.animationColumn && (
+                        <div style={{ flexShrink: 0 }}>
+                            <AnimationControls data={pipelineFiltered} />
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 };
