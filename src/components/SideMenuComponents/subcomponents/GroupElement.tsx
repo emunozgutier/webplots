@@ -1,6 +1,6 @@
 import React from 'react';
 import { useGroupSideMenuStore } from '../../../store/SideMenu/useGroupSideMenuStore';
-import { useWorkspaceLocalStore } from '../../../store/Workspace/useWorkspaceLocalStore';
+import { useAppLocalStore } from '../../../store/useAppLocalStore';
 import GroupElementSettings from './GroupElementSettings';
 import CloseButton from './CloseButton';
 
@@ -10,7 +10,7 @@ interface GroupElementProps {
 
 const GroupElement: React.FC<GroupElementProps> = ({ column }) => {
     const { removeGroupAxis } = useGroupSideMenuStore();
-    const { setPopupContent } = useWorkspaceLocalStore();
+    const { setPopupContent } = useAppLocalStore();
 
     return (
         <div className="card shadow-sm border-0 w-100 p-2">

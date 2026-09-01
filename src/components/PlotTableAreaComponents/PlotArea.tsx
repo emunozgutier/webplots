@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useWorkspaceLocalStore } from '../../store/Workspace/useWorkspaceLocalStore';
+import { useAppLocalStore } from '../../store/useAppLocalStore';
 import Settings from './Settings';
 import Debug from './Debug';
 import Plot from 'react-plotly.js';
@@ -20,6 +20,7 @@ import { useCsvDataStore } from '../../store/useCsvDataStore';
 import { useFilterSideMenuStore } from '../../store/SideMenu/useFilterSideMenuStore';
 import ControlButtons from './ControlButtons';
 import AnimationControls from './AnimationControls';
+
 
 interface PlotAreaProps {
     viewMode: 'plot' | 'table';
@@ -47,7 +48,9 @@ const PlotArea: React.FC<PlotAreaProps> = ({ viewMode, setViewMode }) => {
         plotType
     }), [sideMenuData, plotType]);
 
-    const { setPopupContent } = useWorkspaceLocalStore();
+    console.log('[PLOT_AREA] Render. xAxis:', sideMenuData.xAxis, 'yAxis:', sideMenuData.yAxis, 'dataLength:', rawDataTable.length, 'plotType:', plotType);
+
+    const { setPopupContent } = useAppLocalStore();
     const containerRef = React.useRef<HTMLDivElement>(null);
 
     // Synchronize dimensions

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useGroupSideMenuStore } from '../../../store/SideMenu/useGroupSideMenuStore';
 import type { GroupSettings } from '../../../store/SideMenu/useGroupSideMenuStore';
-import { useWorkspaceLocalStore } from '../../../store/Workspace/useWorkspaceLocalStore';
+import { useAppLocalStore } from '../../../store/useAppLocalStore';
 import { useCsvDataStore } from '../../../store/useCsvDataStore';
 import Plot from 'react-plotly.js';
 import { v4 as uuidv4 } from 'uuid';
@@ -29,7 +29,7 @@ interface GroupElementSettingsProps {
 
 const GroupElementSettings: React.FC<GroupElementSettingsProps> = ({ column }) => {
     const { groupSideMenuData, setGroupSettings } = useGroupSideMenuStore();
-    const { closePopup } = useWorkspaceLocalStore();
+    const { closePopup } = useAppLocalStore();
     const { data } = useCsvDataStore();
     const { traceConfig, setColorPalette, setPaletteColorOrder, updatePaletteColor } = useTraceConfigStore();
     const { colorData, setColorData } = useStyleSideMenuStore();

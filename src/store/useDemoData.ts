@@ -1,7 +1,22 @@
 import { create } from 'zustand';
 import { useCsvDataStore } from './useCsvDataStore';
 import type { CsvDataStore } from './useCsvDataStore';
-import { useWorkspaceStore, workspaceRegistry } from './Workspace/useWorkspaceStore';
+import { useWorkspaceStore } from './Workspace/useWorkspaceStore';
+
+import { useAxisSideMenuStore } from '../store/SideMenu/useAxisSideMenuStore';
+import { usePlotTypeSideMenuStore } from '../store/SideMenu/usePlotTypeSideMenuStore';
+import { useStyleSideMenuStore } from '../store/SideMenu/useStyleSideMenuStore';
+import { useFilterSideMenuStore } from '../store/SideMenu/useFilterSideMenuStore';
+import { useGroupSideMenuStore } from '../store/SideMenu/useGroupSideMenuStore';
+import { useInkRatioStore } from '../store/SideMenu/useInkRatioStore';
+import { usePlotLayoutStore } from '../store/PlotTable/usePlotLayoutStore';
+import { useTraceConfigStore } from '../store/PlotTable/useTraceConfigStore';
+import { useSubplotSideMenuStore } from '../store/SideMenu/useSubplotSideMenuStore';
+import { useTableStore } from '../store/PlotTable/useTableStore';
+import { useAnimationSideMenuStore } from '../store/SideMenu/useAnimationSideMenuStore';
+import { useAnnotationSideMenuStore } from '../store/SideMenu/useAnnotationSideMenuStore';
+import { useAppLocalStore } from '../store/useAppLocalStore';
+
 import { resetActiveWorkspace } from '../utils/workspaceReset';
 
 interface DemoDataState {
@@ -74,12 +89,11 @@ export const useDemoData = create<DemoDataState>()((set) => ({
                 const cols = Object.keys(flattenedData[0]);
                 csvStore.setColumns(cols);
                 
-                const activeStores = workspaceRegistry.get(useWorkspaceStore.getState().activeWorkspaceId);
-                if (activeStores) {
+                if (true) {
                     if (cols.length > 1) { // Assuming 'city' is index 0 and 'date' is index 1
-                        activeStores.axisSideMenuStore.getState().setXAxis(cols[1]);
+                        useAxisSideMenuStore.getState().setXAxis(cols[1]);
                     } else if (cols.length > 0) {
-                        activeStores.axisSideMenuStore.getState().setXAxis(cols[0]);
+                        useAxisSideMenuStore.getState().setXAxis(cols[0]);
                     }
                 }
             }
@@ -135,16 +149,15 @@ export const useDemoData = create<DemoDataState>()((set) => ({
                 const cols = Object.keys(flattenedData[0]);
                 csvStore.setColumns(cols);
                 
-                const activeStores = workspaceRegistry.get(useWorkspaceStore.getState().activeWorkspaceId);
-                if (activeStores) {
+                if (true) {
                     const isTutorialActive = useWorkspaceStore.getState().isTutorialActive;
                     if (!isTutorialActive) {
-                        activeStores.axisSideMenuStore.getState().setXAxis('gdp');
-                        activeStores.axisSideMenuStore.getState().addYAxisColumn('life_expectancy');
-                        activeStores.groupSideMenuStore.getState().setGroupAxis('country');
-                        activeStores.styleSideMenuStore.getState().setSize({ source: 'column', value: 'population', enabled: true, sizeMode: 'area', range: [5, 32600], mappingType: 'exponential', midPoint: [0.5, 0.66] });
-                        activeStores.styleSideMenuStore.getState().setHue({ source: 'column', value: 'region', enabled: true });
-                        activeStores.styleSideMenuStore.getState().setColorData({
+                        useAxisSideMenuStore.getState().setXAxis('gdp');
+                        useAxisSideMenuStore.getState().addYAxisColumn('life_expectancy');
+                        useGroupSideMenuStore.getState().setGroupAxis('country');
+                        useStyleSideMenuStore.getState().setSize({ source: 'column', value: 'population', enabled: true, sizeMode: 'area', range: [5, 32600], mappingType: 'exponential', midPoint: [0.5, 0.66] });
+                        useStyleSideMenuStore.getState().setHue({ source: 'column', value: 'region', enabled: true });
+                        useStyleSideMenuStore.getState().setColorData({
                             groupColorOverrides: {
                                 'americas': '#7feb00',
                                 'europe': '#ffe700',
@@ -152,10 +165,10 @@ export const useDemoData = create<DemoDataState>()((set) => ({
                                 'asia': '#ff5872'
                             }
                         });
-                        activeStores.plotLayoutStore.getState().setEnableLogXAxis(true);
-                        activeStores.animationSideMenuStore.getState().setAnimationColumn('year');
-                        activeStores.animationSideMenuStore.getState().setDisplayMode('background');
-                        activeStores.filterSideMenuStore.getState().addFilter('year', 'number', { min: 1900 });
+                        usePlotLayoutStore.getState().setEnableLogXAxis(true);
+                        useAnimationSideMenuStore.getState().setAnimationColumn('year');
+                        useAnimationSideMenuStore.getState().setDisplayMode('background');
+                        useFilterSideMenuStore.getState().addFilter('year', 'number', { min: 1900 });
                     }
                 }
             }

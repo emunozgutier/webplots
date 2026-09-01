@@ -3,7 +3,7 @@ import Plot from 'react-plotly.js';
 import { Card, Button } from 'react-bootstrap';
 import { useCsvDataStore } from '../../../store/useCsvDataStore';
 import { useFilterSideMenuStore, type Filter } from '../../../store/SideMenu/useFilterSideMenuStore';
-import { useWorkspaceLocalStore } from '../../../store/Workspace/useWorkspaceLocalStore';
+import { useAppLocalStore } from '../../../store/useAppLocalStore';
 
 interface FilterElementSettingsProps {
     filter: Filter;
@@ -13,7 +13,7 @@ const FilterElementSettings: React.FC<FilterElementSettingsProps> = ({ filter: i
     const { data } = useCsvDataStore();
     const filters = useFilterSideMenuStore(state => state.filters);
     const updateFilter = useFilterSideMenuStore(state => state.updateFilter);
-    const { closePopup } = useWorkspaceLocalStore();
+    const { closePopup } = useAppLocalStore();
 
     // Derive the reactive filter from the store so it updates when dragging sliders
     const filter = filters.find(f => f.id === initialFilter.id) || initialFilter;

@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useCsvDataStore } from '../store/useCsvDataStore';
 import { useAxisSideMenuStore, createAxisSideMenuConfig } from '../store/SideMenu/useAxisSideMenuStore';
 import { usePlotTypeSideMenuStore } from '../store/SideMenu/usePlotTypeSideMenuStore';
-import { useWorkspaceLocalStore } from '../store/Workspace/useWorkspaceLocalStore';
+import { useAppLocalStore } from '../store/useAppLocalStore';
 import PlotTypeSideMenu from './SideMenuComponents/PlotTypeSideMenu';
 import AxisSideMenu from './SideMenuComponents/AxisSideMenu';
 import FilterSideMenu from './SideMenuComponents/FilterSideMenu';
@@ -22,7 +22,7 @@ const SideMenu: React.FC = () => {
     const { sideMenuData } = useAxisSideMenuStore();
     const { plotTypeSideMenuData } = usePlotTypeSideMenuStore();
     const { plotType } = plotTypeSideMenuData;
-    const { isSideMenuOpen, toggleSideMenu, sideMenuWidth, setSideMenuWidth } = useWorkspaceLocalStore();
+    const { isSideMenuOpen, toggleSideMenu, sideMenuWidth, setSideMenuWidth } = useAppLocalStore();
 
 
     const { hasColumns } = useMemo(() => createAxisSideMenuConfig(storeColumns, sideMenuData), [storeColumns, sideMenuData]);

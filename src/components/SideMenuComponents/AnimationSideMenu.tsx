@@ -1,14 +1,14 @@
 import React from 'react';
 import { useAnimationSideMenuStore } from '../../store/SideMenu/useAnimationSideMenuStore';
 import { useCsvDataStore } from '../../store/useCsvDataStore';
-import { useWorkspaceLocalStore } from '../../store/Workspace/useWorkspaceLocalStore';
+import { useAppLocalStore } from '../../store/useAppLocalStore';
 import { Button } from 'react-bootstrap';
 import AnimationSettings from './subcomponents/AnimationSettings';
 
 const AnimationSideMenu: React.FC = () => {
     const { columns } = useCsvDataStore();
     const { animationData, setAnimationColumn } = useAnimationSideMenuStore();
-    const { setPopupContent } = useWorkspaceLocalStore();
+    const { setPopupContent } = useAppLocalStore();
     const { animationColumn } = animationData;
 
     return (

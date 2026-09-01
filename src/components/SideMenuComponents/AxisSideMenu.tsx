@@ -23,30 +23,39 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
     const { plotTypeSideMenuData } = usePlotTypeSideMenuStore();
     const { plotType } = plotTypeSideMenuData;
 
+    console.log('[AXIS_MENU] Rendered with xAxis:', xAxis, 'yAxis:', yAxis);
+
     const [dragOverX, setDragOverX] = useState(false);
     const [dragOverY, setDragOverY] = useState(false);
 
     const handleDragOver = (e: React.DragEvent<HTMLDivElement>, setDragOver: (val: boolean) => void) => {
+        console.log('[AXIS_MENU] DragOver triggered', e.target);
         e.preventDefault();
+        if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
         setDragOver(true);
     };
 
     const handleDragLeave = (e: React.DragEvent<HTMLDivElement>, setDragOver: (val: boolean) => void) => {
+        console.log('[AXIS_MENU] DragLeave triggered');
         e.preventDefault();
         setDragOver(false);
     };
 
     const handleDropX = (e: React.DragEvent<HTMLDivElement>) => {
+        console.log('[AXIS_MENU] Drop on X axis triggered');
         e.preventDefault();
         setDragOverX(false);
-        const colName = e.dataTransfer.getData('text/plain');
+        const colName = e.dataTransfer.getData('text/plain') || e.dataTransfer.getData('text');
+        console.log('[AXIS_MENU] Dropped colName on X:', colName);
         if (colName) setXAxis(colName);
     };
 
     const handleDropY = (e: React.DragEvent<HTMLDivElement>) => {
+        console.log('[AXIS_MENU] Drop on Y axis triggered');
         e.preventDefault();
         setDragOverY(false);
-        const colName = e.dataTransfer.getData('text/plain');
+        const colName = e.dataTransfer.getData('text/plain') || e.dataTransfer.getData('text');
+        console.log('[AXIS_MENU] Dropped colName on Y:', colName);
         if (colName) addYAxisColumn(colName);
     };
 
@@ -74,6 +83,7 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
                                     <div
                                         id="y-axis-dropzone"
                                         className={`border rounded p-2 ${dragOverY ? 'bg-info bg-opacity-10 border-info' : 'bg-white'}`}
+                                        onDragEnter={(e) => handleDragOver(e, setDragOverY)}
                                         onDragOver={(e) => handleDragOver(e, setDragOverY)}
                                         onDragLeave={(e) => handleDragLeave(e, setDragOverY)}
                                         onDrop={handleDropY}
@@ -105,6 +115,7 @@ const AxisSideMenu: React.FC<AxisSideMenuProps> = ({ hasColumns }) => {
                                         <div
                                             id="x-axis-dropzone"
                                             className={`border rounded p-2 ${dragOverX ? 'bg-info bg-opacity-10 border-info' : 'bg-white'}`}
+                                            onDragEnter={(e) => handleDragOver(e, setDragOverX)}
                                             onDragOver={(e) => handleDragOver(e, setDragOverX)}
                                             onDragLeave={(e) => handleDragLeave(e, setDragOverX)}
                                             onDrop={handleDropX}

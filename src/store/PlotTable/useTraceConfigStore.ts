@@ -1,7 +1,4 @@
-import { createStore } from 'zustand/vanilla';
-import { useStore } from 'zustand';
-import { useContext } from 'react';
-import { WorkspaceContext } from '../Workspace/WorkspaceContext';
+import { create } from 'zustand';
 import { COLOR_PALETTES } from '../../utils/ColorPalettes';
 
 export interface TraceConfig {
@@ -45,7 +42,7 @@ export type TraceConfigState = {
 
 const DEFAULT_PALETTE = 'Default';
 
-export const createTraceConfigStore = () => createStore<TraceConfigState>()(
+export const useTraceConfigStore = create<TraceConfigState>()(
     (set) => ({
         traceConfig: {
             traceCustomizations: {},
@@ -86,8 +83,3 @@ export const createTraceConfigStore = () => createStore<TraceConfigState>()(
     })
 );
 
-export const useTraceConfigStore = <T = TraceConfigState>(selector: (state: TraceConfigState) => T = (state) => state as unknown as T): T => {
-    const context = useContext(WorkspaceContext);
-    if (!context) throw new Error('useTraceConfigStore must be used within WorkspaceProvider');
-    return useStore(context.traceConfigStore, selector);
-};

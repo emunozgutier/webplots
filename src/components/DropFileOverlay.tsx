@@ -102,17 +102,20 @@ export const DropFileOverlay: React.FC<DropFileOverlayProps> = ({
     if (disabled) return;
 
     const handleDragEnter = (e: DragEvent) => {
+      console.log('[DROP_OVERLAY] DragEnter on window', e.target);
       e.preventDefault();
       e.stopPropagation();
       dragCounter.current += 1;
 
       // Check if drag contains files
       if (e.dataTransfer?.types && Array.from(e.dataTransfer.types).includes('Files')) {
+        console.log('[DROP_OVERLAY] File dragged, showing overlay');
         setIsDragging(true);
       }
     };
 
     const handleDragOver = (e: DragEvent) => {
+      // console.log('[DROP_OVERLAY] DragOver on window');
       e.preventDefault();
       e.stopPropagation();
       if (e.dataTransfer) {
@@ -131,14 +134,18 @@ export const DropFileOverlay: React.FC<DropFileOverlayProps> = ({
     };
 
     const handleDrop = (e: DragEvent) => {
+      console.log('[DROP_OVERLAY] Drop on window triggered');
       e.preventDefault();
       e.stopPropagation();
       dragCounter.current = 0;
       setIsDragging(false);
 
       if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+        console.log('[DROP_OVERLAY] Files dropped, processing...');
         const file = e.dataTransfer.files[0];
         processFile(file);
+      } else {
+        console.log('[DROP_OVERLAY] Drop on window did not contain files.');
       }
     };
 

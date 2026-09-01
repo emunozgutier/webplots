@@ -1,7 +1,4 @@
-import { createStore } from 'zustand/vanilla';
-import { useStore } from 'zustand';
-import { useContext } from 'react';
-import { WorkspaceContext } from '../Workspace/WorkspaceContext';
+import { create } from 'zustand';
 
 export interface GroupStyleConfig {
     color?: string;
@@ -38,7 +35,7 @@ export type GroupSideMenuState = {
     loadProject: (groupAxis?: string | null, groupSettings?: Record<string, GroupSettings>, groupAxes?: string[]) => void;
 }
 
-export const createGroupSideMenuStore = () => createStore<GroupSideMenuState>()(
+export const useGroupSideMenuStore = create<GroupSideMenuState>()(
     (set) => ({
         groupSideMenuData: {
             groupAxis: null,
@@ -104,8 +101,3 @@ export const createGroupSideMenuStore = () => createStore<GroupSideMenuState>()(
     })
 );
 
-export const useGroupSideMenuStore = <T = GroupSideMenuState>(selector: (state: GroupSideMenuState) => T = (state) => state as unknown as T): T => {
-    const context = useContext(WorkspaceContext);
-    if (!context) throw new Error('useGroupSideMenuStore must be used within WorkspaceProvider');
-    return useStore(context.groupSideMenuStore, selector);
-};

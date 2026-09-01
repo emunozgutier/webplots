@@ -1,7 +1,4 @@
-import { createStore } from 'zustand/vanilla';
-import { useStore } from 'zustand';
-import { useContext } from 'react';
-import { WorkspaceContext } from '../Workspace/WorkspaceContext';
+import { create } from 'zustand';
 
 export interface PlotLayout {
     enableLogXAxis: boolean;
@@ -38,7 +35,7 @@ export type PlotLayoutState = {
     loadProject: (plotLayout: PlotLayout) => void;
 }
 
-export const createPlotLayoutStore = () => createStore<PlotLayoutState>()(
+export const usePlotLayoutStore = create<PlotLayoutState>()(
     (set) => ({
         plotLayout: {
             enableLogXAxis: false,
@@ -95,8 +92,3 @@ export const createPlotLayoutStore = () => createStore<PlotLayoutState>()(
     })
 );
 
-export const usePlotLayoutStore = <T = PlotLayoutState>(selector: (state: PlotLayoutState) => T = (state) => state as unknown as T): T => {
-    const context = useContext(WorkspaceContext);
-    if (!context) throw new Error('usePlotLayoutStore must be used within WorkspaceProvider');
-    return useStore(context.plotLayoutStore, selector);
-};

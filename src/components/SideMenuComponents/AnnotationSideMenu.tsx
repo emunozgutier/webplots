@@ -19,6 +19,7 @@ const AnnotationSideMenu: React.FC = () => {
 
     const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
+        if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
         setDragOver(true);
     };
 
@@ -30,7 +31,7 @@ const AnnotationSideMenu: React.FC = () => {
     const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
         setDragOver(false);
-        const colName = e.dataTransfer.getData('text/plain');
+        const colName = e.dataTransfer.getData('text/plain') || e.dataTransfer.getData('text');
         if (colName) {
             const id = 'anno_' + Math.random().toString(36).substr(2, 9);
             addAnnotation({
@@ -72,6 +73,7 @@ const AnnotationSideMenu: React.FC = () => {
                 <div className="d-flex flex-column h-100 overflow-hidden">
                     <div
                         className={`overflow-auto h-100 p-2 ${dragOver ? 'bg-warning bg-opacity-10' : ''}`}
+                        onDragEnter={handleDragOver}
                         onDragOver={handleDragOver}
                         onDragLeave={handleDragLeave}
                         onDrop={handleDrop}

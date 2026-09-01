@@ -5,7 +5,7 @@ import { useCsvDataStore } from '../store/useCsvDataStore';
 import { useDemoData } from '../store/useDemoData';
 import Papa from 'papaparse';
 import type { CsvDataStore } from '../store/useCsvDataStore';
-import { useWorkspaceStore, workspaceRegistry } from '../store/Workspace/useWorkspaceStore';
+import { useWorkspaceStore } from '../store/Workspace/useWorkspaceStore';
 import { resetActiveWorkspace } from '../utils/workspaceReset';
 import { getSmallDataset, getLargeColumnDataset, getSimulationDataset, getBinningTestData } from '../utils/TestDatasets';
 import { generateTestGaussianData } from '../utils/TableMathLib';
@@ -76,8 +76,7 @@ const TopMenuBar: React.FC = () => {
 
     const handleSaveProject = () => {
         const activeWorkspaceId = useWorkspaceStore.getState().activeWorkspaceId;
-        const activeStores = workspaceRegistry.get(activeWorkspaceId);
-
+        
         if (!activeStores) {
             alert('No active workspace found to save.');
             return;
@@ -86,10 +85,10 @@ const TopMenuBar: React.FC = () => {
         const projectState = {
             data,
             columns,
-            sideMenuData: activeStores.axisSideMenuStore.getState().sideMenuData,
-            plotTypeSideMenuData: activeStores.plotTypeSideMenuStore.getState().plotTypeSideMenuData,
-            groupSideMenuData: activeStores.groupSideMenuStore.getState().groupSideMenuData,
-            plotLayout: activeStores.plotLayoutStore.getState().plotLayout
+            sideMenuData: useAxisSideMenuStore.getState().sideMenuData,
+            plotTypeSideMenuData: usePlotTypeSideMenuStore.getState().plotTypeSideMenuData,
+            groupSideMenuData: useGroupSideMenuStore.getState().groupSideMenuData,
+            plotLayout: usePlotLayoutStore.getState().plotLayout
         };
         const blob = new Blob([JSON.stringify(projectState, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -112,41 +111,40 @@ const TopMenuBar: React.FC = () => {
                     const projectState = JSON.parse(content);
 
                     const activeWorkspaceId = useWorkspaceStore.getState().activeWorkspaceId;
-                    const activeStores = workspaceRegistry.get(activeWorkspaceId);
-                    if (!activeStores) return;
+                    
 
                     if (projectState.data && projectState.columns) {
                         loadPlotDataProject(projectState.data, projectState.columns);
                     }
 
                     if (projectState.plotTypeSideMenuData?.plotType) {
-                        activeStores.plotTypeSideMenuStore.getState().loadProject(projectState.plotTypeSideMenuData.plotType);
+                        usePlotTypeSideMenuStore.getState().loadProject(projectState.plotTypeSideMenuData.plotType);
                     } else if (projectState.sideMenuData?.plotType) {
-                        activeStores.plotTypeSideMenuStore.getState().loadProject(projectState.sideMenuData.plotType);
+                        usePlotTypeSideMenuStore.getState().loadProject(projectState.sideMenuData.plotType);
                     }
 
                     if (projectState.sideMenuData) {
-                        activeStores.axisSideMenuStore.getState().loadProject(projectState.sideMenuData.xAxis, projectState.sideMenuData.yAxis, projectState.sideMenuData.plotType);
+                        useAxisSideMenuStore.getState().loadProject(projectState.sideMenuData.xAxis, projectState.sideMenuData.yAxis, projectState.sideMenuData.plotType);
 
                         // Handle backwards compatibility where group details were in sideMenuData
                         if (projectState.groupSideMenuData) {
-                            activeStores.groupSideMenuStore.getState().loadProject(projectState.groupSideMenuData.groupAxis, projectState.groupSideMenuData.groupSettings);
+                            useGroupSideMenuStore.getState().loadProject(projectState.groupSideMenuData.groupAxis, projectState.groupSideMenuData.groupSettings);
                         } else {
-                            activeStores.groupSideMenuStore.getState().loadProject(projectState.sideMenuData.groupAxis, projectState.sideMenuData.groupSettings);
+                            useGroupSideMenuStore.getState().loadProject(projectState.sideMenuData.groupAxis, projectState.sideMenuData.groupSettings);
                         }
                     } else if (projectState.plotArea && projectState.plotArea.axisMenuData) {
                         // Migration for old project files
-                        activeStores.axisSideMenuStore.getState().loadProject(projectState.plotArea.axisMenuData.xAxis, projectState.plotArea.axisMenuData.yAxis);
-                        activeStores.groupSideMenuStore.getState().loadProject(projectState.plotArea.axisMenuData.groupAxis, projectState.plotArea.axisMenuData.groupSettings);
+                        useAxisSideMenuStore.getState().loadProject(projectState.plotArea.axisMenuData.xAxis, projectState.plotArea.axisMenuData.yAxis);
+                        useGroupSideMenuStore.getState().loadProject(projectState.plotArea.axisMenuData.groupAxis, projectState.plotArea.axisMenuData.groupSettings);
                     }
 
                     if (projectState.plotLayout) {
-                        activeStores.plotLayoutStore.getState().loadProject(projectState.plotLayout);
+                        usePlotLayoutStore.getState().loadProject(projectState.plotLayout);
                     } else if (projectState.plotArea) {
                         // Clean up old axisMenuData if present in the loaded object before setting
                         const { axisMenuData, ...cleanPlotArea } = projectState.plotArea;
                         // Map old PlotArea to PlotLayout (typescript should be lenient with extra/missing optional props)
-                        activeStores.plotLayoutStore.getState().loadProject(cleanPlotArea as any); // Cast to avoid strict type issues with migration
+                        usePlotLayoutStore.getState().loadProject(cleanPlotArea as any); // Cast to avoid strict type issues with migration
                     }
                 } catch (error) {
                     console.error('Error loading project:', error);
@@ -310,8 +308,7 @@ const TopMenuBar: React.FC = () => {
                                 resetActiveWorkspace();
                                 setPlotData(data);
                                 setColumns(["Time", "Sine"]);
-                                const activeStores = workspaceRegistry.get(useWorkspaceStore.getState().activeWorkspaceId);
-                                if (activeStores) activeStores.axisSideMenuStore.getState().setXAxis("Time");
+                                useAxisSideMenuStore.getState().setXAxis("Time");
                             }}>
                                 1e6 Points Sine Wave
                             </NavDropdown.Item>

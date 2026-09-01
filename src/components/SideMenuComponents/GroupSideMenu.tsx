@@ -16,6 +16,7 @@ const GroupSideMenu: React.FC = () => {
 
     const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
+        if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
         setDragOverGroup(true);
     };
 
@@ -27,7 +28,7 @@ const GroupSideMenu: React.FC = () => {
     const handleDropGroup = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
         setDragOverGroup(false);
-        const colName = e.dataTransfer.getData('text/plain');
+        const colName = e.dataTransfer.getData('text/plain') || e.dataTransfer.getData('text');
         if (!colName) return;
         addGroupAxis(colName);
     };
@@ -70,6 +71,7 @@ const GroupSideMenu: React.FC = () => {
 
                                 <div
                                     className={`rounded border border-dashed p-2 ${dragOverGroup ? 'bg-info bg-opacity-10 border-info' : 'bg-light'}`}
+                                    onDragEnter={handleDragOver}
                                     onDragOver={handleDragOver}
                                     onDragLeave={handleDragLeave}
                                     onDrop={handleDropGroup}

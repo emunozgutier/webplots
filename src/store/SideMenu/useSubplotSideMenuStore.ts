@@ -1,7 +1,4 @@
-import { createStore } from 'zustand/vanilla';
-import { useStore } from 'zustand';
-import { useContext } from 'react';
-import { WorkspaceContext } from '../Workspace/WorkspaceContext';
+import { create } from 'zustand';
 
 export type SubplotSideMenuState = {
     rows: number;
@@ -12,7 +9,7 @@ export type SubplotSideMenuState = {
     setAllTraceSubplots: (mapping: Record<string, number[]>) => void;
 };
 
-export const createSubplotSideMenuStore = () => createStore<SubplotSideMenuState>()(
+export const useSubplotSideMenuStore = create<SubplotSideMenuState>()(
     (set) => ({
         rows: 1,
         cols: 1,
@@ -46,8 +43,3 @@ export const createSubplotSideMenuStore = () => createStore<SubplotSideMenuState
     })
 );
 
-export const useSubplotSideMenuStore = <T = SubplotSideMenuState>(selector: (state: SubplotSideMenuState) => T = (state) => state as unknown as T): T => {
-    const context = useContext(WorkspaceContext);
-    if (!context) throw new Error('useSubplotSideMenuStore must be used within WorkspaceProvider');
-    return useStore(context.subplotSideMenuStore, selector);
-};

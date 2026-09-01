@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useFilterSideMenuStore, type Filter } from '../../../store/SideMenu/useFilterSideMenuStore';
-import { useWorkspaceLocalStore } from '../../../store/Workspace/useWorkspaceLocalStore';
+import { useAppLocalStore } from '../../../store/useAppLocalStore';
 import FilterElementSettings from './FilterElementSettings';
 import CloseButton from './CloseButton';
 
@@ -17,7 +17,7 @@ interface FilterElementProps {
 
 const FilterElement: React.FC<FilterElementProps> = ({ filter, stats, getMinMax, getUniqueValues }) => {
     const { removeFilter, updateFilter } = useFilterSideMenuStore();
-    const { setPopupContent } = useWorkspaceLocalStore();
+    const { setPopupContent } = useAppLocalStore();
     const [isShrunk, setIsShrunk] = useState(false);
 
     const configMin = (filter.config as any).min;

@@ -4,7 +4,7 @@ import { usePlotLayoutStore } from '../../../store/PlotTable/usePlotLayoutStore'
 import { useCsvDataStore } from '../../../store/useCsvDataStore';
 import { useAxisSideMenuStore } from '../../../store/SideMenu/useAxisSideMenuStore';
 import { usePlotTypeSideMenuStore } from '../../../store/SideMenu/usePlotTypeSideMenuStore';
-import { useWorkspaceLocalStore } from '../../../store/Workspace/useWorkspaceLocalStore';
+import { useAppLocalStore } from '../../../store/useAppLocalStore';
 
 const PlotLayout: React.FC = () => {
     const { plotLayout, setPlotTitle, setXAxisTitle, setYAxisTitle, setXRange, setYRange, setHistogramBarmode, setLegendOrientation, setEnableLogXAxis, setEnableLogYAxis } = usePlotLayoutStore();
@@ -12,7 +12,7 @@ const PlotLayout: React.FC = () => {
     const { plotTypeSideMenuData } = usePlotTypeSideMenuStore();
     const { plotType } = plotTypeSideMenuData;
     const { data } = useCsvDataStore();
-    const { closePopup } = useWorkspaceLocalStore();
+    const { closePopup } = useAppLocalStore();
 
     // Calculate default titles based on selection
     const defaultPlotTitle = sideMenuData.yAxis.length > 0 && sideMenuData.xAxis

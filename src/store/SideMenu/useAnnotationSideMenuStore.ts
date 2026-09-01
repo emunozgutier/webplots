@@ -1,7 +1,4 @@
-import { createStore } from 'zustand/vanilla';
-import { useStore } from 'zustand';
-import { useContext } from 'react';
-import { WorkspaceContext } from '../Workspace/WorkspaceContext';
+import { create } from 'zustand';
 
 export interface AnnotationConfig {
     id: string;
@@ -28,7 +25,7 @@ export type AnnotationSideMenuState = {
     removeAnnotation: (id: string) => void;
 }
 
-export const createAnnotationSideMenuStore = () => createStore<AnnotationSideMenuState>()(
+export const useAnnotationSideMenuStore = create<AnnotationSideMenuState>()(
     (set) => ({
         annotations: [],
         addAnnotation: (annotation) =>
@@ -48,8 +45,3 @@ export const createAnnotationSideMenuStore = () => createStore<AnnotationSideMen
     })
 );
 
-export const useAnnotationSideMenuStore = <T = AnnotationSideMenuState>(selector: (state: AnnotationSideMenuState) => T = (state) => state as unknown as T): T => {
-    const context = useContext(WorkspaceContext);
-    if (!context) throw new Error('useAnnotationSideMenuStore must be used within WorkspaceProvider');
-    return useStore(context.annotationSideMenuStore, selector);
-};

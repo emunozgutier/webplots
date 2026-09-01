@@ -3,7 +3,7 @@ import { type AestheticMapping, type MappingSource } from '../../../store/SideMe
 import { useCsvDataStore } from '../../../store/useCsvDataStore';
 import { useInkRatioStore } from '../../../store/SideMenu/useInkRatioStore';
 import { useGroupSideMenuStore } from '../../../store/SideMenu/useGroupSideMenuStore';
-import { useWorkspaceLocalStore } from '../../../store/Workspace/useWorkspaceLocalStore';
+import { useAppLocalStore } from '../../../store/useAppLocalStore';
 import { Button } from 'react-bootstrap';
 import StyleElementSettings from './StyleElementSettings';
 
@@ -25,7 +25,7 @@ const StyleElement: React.FC<StyleElementProps> = ({ title, mapping, updateFn, t
     const { columns } = useCsvDataStore();
     const { absorptionMode } = useInkRatioStore();
     const { groupSideMenuData } = useGroupSideMenuStore();
-    const { setPopupContent } = useWorkspaceLocalStore();
+    const { setPopupContent } = useAppLocalStore();
     const { groupAxis, groupSettings } = groupSideMenuData;
 
     const isEnabled = mapping.enabled !== false;

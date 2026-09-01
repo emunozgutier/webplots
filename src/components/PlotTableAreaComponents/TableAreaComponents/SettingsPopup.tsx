@@ -1,12 +1,12 @@
 import React from 'react';
 import { Card, Button, Tabs, Tab } from 'react-bootstrap';
-import { useWorkspaceLocalStore } from '../../../store/Workspace/useWorkspaceLocalStore';
+import { useAppLocalStore } from '../../../store/useAppLocalStore';
 import General from './SettingsComponents/General';
 import NumberFormat from './SettingsComponents/NumberFormat';
 import Gaussian from './SettingsComponents/Gaussian';
 
 const SettingsPopup: React.FC = () => {
-    const { closePopup } = useWorkspaceLocalStore();
+    const { closePopup } = useAppLocalStore();
 
     return (
         <Card className="shadow-lg border-0 h-100" style={{ backgroundColor: '#fff', borderRadius: '16px', overflow: 'hidden' }}>

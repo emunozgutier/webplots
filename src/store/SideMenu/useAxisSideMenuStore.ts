@@ -1,7 +1,4 @@
-import { createStore } from 'zustand/vanilla';
-import { useStore } from 'zustand';
-import { useContext } from 'react';
-import { WorkspaceContext } from '../Workspace/WorkspaceContext';
+import { create } from 'zustand';
 
 export interface AxisSideMenuData {
     plotType: 'scatter' | 'histogram';
@@ -18,7 +15,7 @@ export type AxisSideMenuState = {
     loadProject: (xAxis: string, yAxis: string[], plotType?: 'scatter' | 'histogram') => void;
 }
 
-export const createAxisSideMenuStore = () => createStore<AxisSideMenuState>()(
+export const useAxisSideMenuStore = create<AxisSideMenuState>()(
     (set) => ({
         sideMenuData: {
             plotType: 'scatter',
@@ -28,9 +25,12 @@ export const createAxisSideMenuStore = () => createStore<AxisSideMenuState>()(
         setPlotType: (plotType) => set((state) => ({
             sideMenuData: { ...state.sideMenuData, plotType }
         })),
-        setXAxis: (xAxis) => set((state) => ({
-            sideMenuData: { ...state.sideMenuData, xAxis }
-        })),
+        setXAxis: (xAxis) => set((state) => {
+            console.log('[STORE] setXAxis called with:', xAxis, 'previous:', state.sideMenuData.xAxis);
+            return {
+                sideMenuData: { ...state.sideMenuData, xAxis }
+            };
+        }),
         addYAxisColumn: (column) => set((state) => {
             if (state.sideMenuData.yAxis.includes(column)) return state;
             return {
@@ -62,8 +62,3 @@ export const createAxisSideMenuConfig = (columns: string[], sideMenuData: AxisSi
     };
 };
 
-export const useAxisSideMenuStore = <T = AxisSideMenuState>(selector: (state: AxisSideMenuState) => T = (state) => state as unknown as T): T => {
-    const context = useContext(WorkspaceContext);
-    if (!context) throw new Error('useAxisSideMenuStore must be used within WorkspaceProvider');
-    return useStore(context.axisSideMenuStore, selector);
-};

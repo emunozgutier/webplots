@@ -1,7 +1,4 @@
-import { createStore } from 'zustand/vanilla';
-import { useStore } from 'zustand';
-import { useContext } from 'react';
-import { WorkspaceContext } from '../Workspace/WorkspaceContext';
+import { create } from 'zustand';
 import type { SummaryMode } from '../../components/PlotTableAreaComponents/TableAreaComponents/HeaderSummary';
 
 export interface TableState {
@@ -27,8 +24,8 @@ export interface TableState {
     setSortConfig: (config: { key: string; direction: 'asc' | 'desc' } | null) => void;
 }
 
-export const createTableStore = () => {
-    return createStore<TableState>()(
+
+export const useTableStore = create<TableState>()(
         (set) => ({
             summaryMode: 'detailed',
             datasetMode: 'all',
@@ -51,10 +48,4 @@ export const createTableStore = () => {
             setSortConfig: (sortConfig) => set({ sortConfig })
         })
     );
-};
 
-export const useTableStore = <T = TableState>(selector: (state: TableState) => T = (state) => state as unknown as T): T => {
-    const context = useContext(WorkspaceContext);
-    if (!context) throw new Error('useTableStore must be used within WorkspaceProvider');
-    return useStore(context.tableStore, selector);
-};

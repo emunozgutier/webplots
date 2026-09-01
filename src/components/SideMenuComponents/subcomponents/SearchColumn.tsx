@@ -17,7 +17,9 @@ const SearchColumn: React.FC = () => {
     }, [columns, searchTerm]);
 
     const handleDragStart = (e: React.DragEvent<HTMLDivElement>, colName: string) => {
+        console.log('[DRAG_START] Dragging column:', colName);
         e.dataTransfer.setData('text/plain', colName);
+        e.dataTransfer.setData('text', colName);
         e.dataTransfer.effectAllowed = 'copy';
     };
 

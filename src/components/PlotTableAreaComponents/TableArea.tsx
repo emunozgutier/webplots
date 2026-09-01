@@ -7,7 +7,7 @@ import { useGroupSideMenuStore } from '../../store/SideMenu/useGroupSideMenuStor
 import { useFilterSideMenuStore } from '../../store/SideMenu/useFilterSideMenuStore';
 import { useStyleSideMenuStore } from '../../store/SideMenu/useStyleSideMenuStore';
 import HeaderSummary from './TableAreaComponents/HeaderSummary';
-import { useWorkspaceLocalStore } from '../../store/Workspace/useWorkspaceLocalStore';
+import { useAppLocalStore } from '../../store/useAppLocalStore';
 import { useTableStore } from '../../store/PlotTable/useTableStore';
 import Plot from 'react-plotly.js';
 import ControlButtons from './ControlButtons';
@@ -42,7 +42,7 @@ const TableArea: React.FC<TableAreaProps> = ({ viewMode, setViewMode }) => {
     const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
     const [currentBatch, setCurrentBatch] = useState(0);
     const BATCH_SIZE = 100;
-    const { setPopupContent, closePopup } = useWorkspaceLocalStore();
+    const { setPopupContent, closePopup } = useAppLocalStore();
     const { 
         summaryMode, 
         setSummaryMode, 

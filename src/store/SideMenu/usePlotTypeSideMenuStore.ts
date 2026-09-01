@@ -1,7 +1,4 @@
-import { createStore } from 'zustand/vanilla';
-import { useStore } from 'zustand';
-import { useContext } from 'react';
-import { WorkspaceContext } from '../Workspace/WorkspaceContext';
+import { create } from 'zustand';
 
 export type PlotType = 'scatter' | 'histogram';
 
@@ -15,7 +12,7 @@ export type PlotTypeSideMenuState = {
     loadProject: (plotType?: PlotType) => void;
 };
 
-export const createPlotTypeSideMenuStore = () => createStore<PlotTypeSideMenuState>()(
+export const usePlotTypeSideMenuStore = create<PlotTypeSideMenuState>()(
     (set) => ({
         plotTypeSideMenuData: {
             plotType: 'scatter',
@@ -29,8 +26,3 @@ export const createPlotTypeSideMenuStore = () => createStore<PlotTypeSideMenuSta
     })
 );
 
-export const usePlotTypeSideMenuStore = <T = PlotTypeSideMenuState>(selector: (state: PlotTypeSideMenuState) => T = (state) => state as unknown as T): T => {
-    const context = useContext(WorkspaceContext);
-    if (!context) throw new Error('usePlotTypeSideMenuStore must be used within WorkspaceProvider');
-    return useStore(context.plotTypeSideMenuStore, selector);
-};

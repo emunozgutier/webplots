@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { usePlotLayoutStore } from '../../../store/PlotTable/usePlotLayoutStore';
-import { useWorkspaceLocalStore } from '../../../store/Workspace/useWorkspaceLocalStore';
+import { useAppLocalStore } from '../../../store/useAppLocalStore';
 import { useCsvDataStore } from '../../../store/useCsvDataStore';
 
 const PointTip: React.FC = () => {
     const { plotLayout, setPointTip, setCustomHoverConfig } = usePlotLayoutStore();
-    const { closePopup } = useWorkspaceLocalStore();
+    const { closePopup } = useAppLocalStore();
     const { columns } = useCsvDataStore();
 
     const [localPointTip, setLocalPointTip] = useState<'default' | 'xy' | 'xy_absorbed' | 'xy_trace' | 'custom'>(plotLayout.pointTip || 'default');

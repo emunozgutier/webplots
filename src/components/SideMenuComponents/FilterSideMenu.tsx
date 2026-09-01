@@ -86,6 +86,7 @@ const FilterSideMenu: React.FC = () => {
 
     const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
+        if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
         setDragOver(true);
     };
 
@@ -97,7 +98,7 @@ const FilterSideMenu: React.FC = () => {
     const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
         setDragOver(false);
-        const colName = e.dataTransfer.getData('text/plain');
+        const colName = e.dataTransfer.getData('text/plain') || e.dataTransfer.getData('text');
         if (colName) {
             const type = getColumnType(colName);
             let initialConfig = {};
@@ -134,6 +135,7 @@ const FilterSideMenu: React.FC = () => {
                 <div className="d-flex flex-column h-100 overflow-hidden">
                     <div
                         className={`overflow-auto h-100 p-2 ${dragOver ? 'bg-info bg-opacity-10' : ''}`}
+                        onDragEnter={handleDragOver}
                         onDragOver={handleDragOver}
                         onDragLeave={handleDragLeave}
                         onDrop={handleDrop}

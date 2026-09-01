@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTraceConfigStore } from '../../../store/PlotTable/useTraceConfigStore';
 import { usePlotTypeSideMenuStore } from '../../../store/SideMenu/usePlotTypeSideMenuStore';
 import { useGroupSideMenuStore } from '../../../store/SideMenu/useGroupSideMenuStore';
-import { useWorkspaceLocalStore } from '../../../store/Workspace/useWorkspaceLocalStore';
+import { useAppLocalStore } from '../../../store/useAppLocalStore';
 import { COLOR_PALETTES } from '../../../utils/ColorPalettes';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { HexColorPicker } from 'react-colorful';
@@ -207,7 +207,7 @@ const TraceConfig: React.FC = () => {
     const { plotTypeSideMenuData } = usePlotTypeSideMenuStore();
     const { plotType } = plotTypeSideMenuData;
     const { groupSideMenuData } = useGroupSideMenuStore();
-    const { closePopup } = useWorkspaceLocalStore();
+    const { closePopup } = useAppLocalStore();
     const { data } = useCsvDataStore();
 
     const isGroupColorManaged = groupSideMenuData.groupAxis && (!groupSideMenuData.groupSettings[groupSideMenuData.groupAxis]?.styleMode || groupSideMenuData.groupSettings[groupSideMenuData.groupAxis]?.styleMode === 'color');

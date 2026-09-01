@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { ButtonGroup, ToggleButton, Button } from 'react-bootstrap';
 import type { SummaryMode } from './TableAreaComponents/HeaderSummary';
-import { useWorkspaceLocalStore } from '../../store/Workspace/useWorkspaceLocalStore';
+import { useAppLocalStore } from '../../store/useAppLocalStore';
 import SettingsPopup from './TableAreaComponents/SettingsPopup';
 import { PlotTableButton } from './PlotTableButton';
 
@@ -43,7 +43,7 @@ export const ControlButtons: React.FC<ControlButtonsProps> = ({
     // ----------------------------------------------------
     // Shared & Table Logic
     // ----------------------------------------------------
-    const { setPopupContent } = useWorkspaceLocalStore();
+    const { setPopupContent } = useAppLocalStore();
 
     const handleOpenTableSettings = () => {
         setPopupContent(<SettingsPopup />);

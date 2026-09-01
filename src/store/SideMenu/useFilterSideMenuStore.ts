@@ -1,7 +1,4 @@
-import { createStore } from 'zustand/vanilla';
-import { useStore } from 'zustand';
-import { useContext } from 'react';
-import { WorkspaceContext } from '../Workspace/WorkspaceContext';
+import { create } from 'zustand';
 
 export type FilterType = 'number' | 'category';
 
@@ -34,7 +31,7 @@ export type FilterState = {
     clearFilters: () => void;
 }
 
-export const createFilterSideMenuStore = () => createStore<FilterState>()(
+export const useFilterSideMenuStore = create<FilterState>()(
     (set) => ({
         filters: [],
         addFilter: (column, type, initialConfig) => set((state) => {
@@ -64,8 +61,3 @@ export const createFilterSideMenuStore = () => createStore<FilterState>()(
     })
 );
 
-export const useFilterSideMenuStore = <T = FilterState>(selector: (state: FilterState) => T = (state) => state as unknown as T): T => {
-    const context = useContext(WorkspaceContext);
-    if (!context) throw new Error('useFilterSideMenuStore must be used within WorkspaceProvider');
-    return useStore(context.filterSideMenuStore, selector);
-};

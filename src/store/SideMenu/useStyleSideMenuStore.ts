@@ -1,7 +1,4 @@
-import { createStore } from 'zustand/vanilla';
-import { useStore } from 'zustand';
-import { useContext } from 'react';
-import { WorkspaceContext } from '../Workspace/WorkspaceContext';
+import { create } from 'zustand';
 
 export type MappingSource = 'manual' | 'group' | 'column';
 
@@ -39,7 +36,7 @@ export type StyleSideMenuState = {
     setSize: (size: Partial<AestheticMapping>) => void;
 }
 
-export const createStyleSideMenuStore = () => createStore<StyleSideMenuState>()(
+export const useStyleSideMenuStore = create<StyleSideMenuState>()(
     (set) => ({
         colorData: {
             hue: { source: 'group', value: '', enabled: false }, // Default to grouping behavior 
@@ -92,8 +89,3 @@ export const createStyleSideMenuStore = () => createStore<StyleSideMenuState>()(
     })
 );
 
-export const useStyleSideMenuStore = <T = StyleSideMenuState>(selector: (state: StyleSideMenuState) => T = (state) => state as unknown as T): T => {
-    const context = useContext(WorkspaceContext);
-    if (!context) throw new Error('useStyleSideMenuStore must be used within WorkspaceProvider');
-    return useStore(context.styleSideMenuStore, selector);
-};

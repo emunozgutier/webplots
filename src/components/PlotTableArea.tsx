@@ -1,12 +1,12 @@
 import React from 'react';
-import { useWorkspaceLocalStore } from '../store/Workspace/useWorkspaceLocalStore';
+import { useAppLocalStore } from '../store/useAppLocalStore';
 import TableArea from './PlotTableAreaComponents/TableArea';
 import PlotArea from './PlotTableAreaComponents/PlotArea';
 import { useInkRatioStore } from '../store/SideMenu/useInkRatioStore';
 
 const PlotTableArea: React.FC = () => {
     const [viewMode, setViewMode] = React.useState<'plot' | 'table'>('table');
-    const { isSideMenuOpen } = useWorkspaceLocalStore();
+    const { isSideMenuOpen } = useAppLocalStore();
     const { setChartDimensions } = useInkRatioStore();
     const containerRef = React.useRef<HTMLDivElement>(null);
 

@@ -1,7 +1,4 @@
-import { createStore } from 'zustand/vanilla';
-import { useStore } from 'zustand';
-import { useContext } from 'react';
-import { WorkspaceContext } from './WorkspaceContext';
+import { create } from 'zustand';
 
 
 export interface WorkspaceLocalState {
@@ -17,8 +14,8 @@ export interface WorkspaceLocalState {
     setSideMenuWidth: (width: number) => void;
 }
 
-export const createWorkspaceLocalStore = () => {
-    return createStore<WorkspaceLocalState>()(
+
+export const useAppLocalStore = create<WorkspaceLocalState>()(
         (set) => ({
             isSideMenuOpen: true,
             isDebugMode: false,
@@ -33,10 +30,4 @@ export const createWorkspaceLocalStore = () => {
             setSideMenuWidth: (width) => set({ sideMenuWidth: width })
         })
     );
-};
 
-export const useWorkspaceLocalStore = <T = WorkspaceLocalState>(selector: (state: WorkspaceLocalState) => T = (state) => state as unknown as T): T => {
-    const context = useContext(WorkspaceContext);
-    if (!context) throw new Error('useWorkspaceLocalStore must be used within WorkspaceProvider');
-    return useStore(context.workspaceLocalStore, selector);
-};

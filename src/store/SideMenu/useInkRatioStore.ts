@@ -1,7 +1,4 @@
-import { createStore } from 'zustand/vanilla';
-import { useStore } from 'zustand';
-import { useContext } from 'react';
-import { WorkspaceContext } from '../Workspace/WorkspaceContext';
+import { create } from 'zustand';
 
 export type TraceStats = {
     filtered: number;
@@ -38,7 +35,7 @@ export type InkRatioState = {
     setChartDimensions: (width: number, height: number) => void;
 }
 
-export const createInkRatioStore = () => createStore<InkRatioState>()(
+export const useInkRatioStore = create<InkRatioState>()(
     (set) => ({
         inkRatio: 0, // Default to 0% overlap (max filtering)
         absorptionMode: 'none',
@@ -61,8 +58,3 @@ export const createInkRatioStore = () => createStore<InkRatioState>()(
     })
 );
 
-export const useInkRatioStore = <T = InkRatioState>(selector: (state: InkRatioState) => T = (state) => state as unknown as T): T => {
-    const context = useContext(WorkspaceContext);
-    if (!context) throw new Error('useInkRatioStore must be used within WorkspaceProvider');
-    return useStore(context.inkRatioStore, selector);
-};

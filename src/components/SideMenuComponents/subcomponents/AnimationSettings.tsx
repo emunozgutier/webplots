@@ -1,10 +1,10 @@
 import React from 'react';
 import { useAnimationSideMenuStore } from '../../../store/SideMenu/useAnimationSideMenuStore';
-import { useWorkspaceLocalStore } from '../../../store/Workspace/useWorkspaceLocalStore';
+import { useAppLocalStore } from '../../../store/useAppLocalStore';
 
 const AnimationSettings: React.FC = () => {
     const { animationData, setDisplayMode } = useAnimationSideMenuStore();
-    const { closePopup } = useWorkspaceLocalStore();
+    const { closePopup } = useAppLocalStore();
 
     return (
         <div className="card shadow-lg mx-auto" style={{ minWidth: '350px', maxWidth: '500px' }}>

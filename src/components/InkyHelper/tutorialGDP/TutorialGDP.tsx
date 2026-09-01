@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './TutorialGDP.css';
-import { useWorkspaceStore, workspaceRegistry } from '../../../store/Workspace/useWorkspaceStore';
+import { useWorkspaceStore } from '../../../store/Workspace/useWorkspaceStore';
 import { useCsvDataStore } from '../../../store/useCsvDataStore';
 import InkyHelper from '../InkyHelper';
 import SpeechBubble from '../animation/components/SpeechBubble';
@@ -146,8 +146,7 @@ const TutorialGDP: React.FC = () => {
       
       const nextStep = gdpTutorialSteps[nextIndex];
       if (nextStep.action) {
-        const stores = workspaceRegistry.get(activeWorkspaceId);
-        if (stores) {
+        if (true) {
           nextStep.action(stores);
         }
       }
@@ -172,8 +171,7 @@ const TutorialGDP: React.FC = () => {
         setCurrentStepIndex(nextIndex);
         const nextStep = gdpTutorialSteps[nextIndex];
         if (nextStep.action) {
-          const stores = workspaceRegistry.get(activeWorkspaceId);
-          if (stores) {
+          if (true) {
             nextStep.action(stores);
           }
         }

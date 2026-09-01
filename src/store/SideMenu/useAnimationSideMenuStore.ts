@@ -1,7 +1,4 @@
-import { createStore } from 'zustand/vanilla';
-import { useStore } from 'zustand';
-import { useContext } from 'react';
-import { WorkspaceContext } from '../Workspace/WorkspaceContext';
+import { create } from 'zustand';
 
 export type DisplayMode = 'none' | 'subtitle' | 'background';
 
@@ -23,7 +20,7 @@ export type AnimationSideMenuState = {
     setSpeedMultiplier: (speedMultiplier: number) => void;
 }
 
-export const createAnimationSideMenuStore = () => createStore<AnimationSideMenuState>()(
+export const useAnimationSideMenuStore = create<AnimationSideMenuState>()(
     (set) => ({
         animationData: {
             animationColumn: '',
@@ -59,8 +56,3 @@ export const createAnimationSideMenuStore = () => createStore<AnimationSideMenuS
     })
 );
 
-export const useAnimationSideMenuStore = <T = AnimationSideMenuState>(selector: (state: AnimationSideMenuState) => T = (state) => state as unknown as T): T => {
-    const context = useContext(WorkspaceContext);
-    if (!context) throw new Error('useAnimationSideMenuStore must be used within WorkspaceProvider');
-    return useStore(context.animationSideMenuStore, selector);
-};

@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useRef } from 'react';
 import Plot from 'react-plotly.js';
-import { useWorkspaceLocalStore } from '../../../store/Workspace/useWorkspaceLocalStore';
+import { useAppLocalStore } from '../../../store/useAppLocalStore';
 import { useWorkspaceStore } from '../../../store/Workspace/useWorkspaceStore';
 import { useCsvDataStore } from '../../../store/useCsvDataStore';
 import { useStyleSideMenuStore, type StyleSideMenuData } from '../../../store/SideMenu/useStyleSideMenuStore';
@@ -12,7 +12,7 @@ import { HslStringColorPicker } from 'react-colorful';
 const clamp = (val: number, min: number, max: number) => Math.max(min, Math.min(max, val));
 
 const StyleElementSettings: React.FC<StyleElementProps> = ({ title, updateFn }) => {
-    const { closePopup } = useWorkspaceLocalStore();
+    const { closePopup } = useAppLocalStore();
     const { isDebugMode } = useWorkspaceStore();
     const { data } = useCsvDataStore();
 

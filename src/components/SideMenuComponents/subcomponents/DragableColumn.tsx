@@ -9,10 +9,10 @@ const DragableColumn: React.FC<DragableColumnProps> = ({ columnName, onDragStart
     return (
         <div
             id={`draggable-column-${columnName}`}
-            draggable
+            draggable={true}
             onDragStart={(e) => onDragStart(e, columnName)}
             className="list-group-item list-group-item-action cursor-grab p-2"
-            style={{ cursor: 'grab' }}
+            style={{ cursor: 'grab', WebkitUserDrag: 'element', userSelect: 'none', WebkitUserSelect: 'none' } as React.CSSProperties}
             title={columnName}
         >
             <div className="d-flex align-items-center">
