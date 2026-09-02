@@ -124,6 +124,11 @@ const TopMenuBar: React.FC = () => {
         setShowStateModal(true);
     };
 
+    const handleCopyState = () => {
+        navigator.clipboard.writeText(currentStateJson)
+            .catch(err => console.error("Failed to copy state: ", err));
+    };
+
     const handleLoadProject = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
@@ -451,6 +456,9 @@ const TopMenuBar: React.FC = () => {
                     </pre>
                 </Modal.Body>
                 <Modal.Footer>
+                    <Button variant="primary" onClick={handleCopyState}>
+                        <i className="bi bi-clipboard me-1"></i> Copy to Clipboard
+                    </Button>
                     <Button variant="secondary" onClick={() => setShowStateModal(false)}>
                         Close
                     </Button>
