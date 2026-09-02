@@ -15,7 +15,7 @@ import { useWorkspaceStore } from '../store/Workspace/useWorkspaceStore';
 import { useLastActiveStore } from '../store/InkyHelper/useLastActiveStore';
 
 import { resetActiveWorkspace } from '../utils/workspaceReset';
-import { getSmallDataset, getLargeColumnDataset, getSimulationDataset, getBinningTestData } from '../utils/TestDatasets';
+import { getSmallDataset, getLargeColumnDataset, getSimulationDataset, getBinningTestData, getVoltageRegulatorData } from '../utils/TestDatasets';
 import { generateTestGaussianData } from '../utils/TableMathLib';
 import BetaMode from './TopMenuBar/BetaMode';
 import { useAnalyticsStore } from '../store/useAnalytics';
@@ -36,6 +36,8 @@ const TopMenuBar: React.FC = () => {
 
     const [showVersionModal, setShowVersionModal] = useState(false);
     const [showBetaModal, setShowBetaModal] = useState(false);
+    const [showStateModal, setShowStateModal] = useState(false);
+    const [currentStateJson, setCurrentStateJson] = useState("");
     const [versionData, setVersionData] = useState<VersionData | null>(null);
     const status = useAnalyticsStore((state) => state.status);
     const setConsent = useAnalyticsStore((state) => state.setConsent);
@@ -108,6 +110,20 @@ const TopMenuBar: React.FC = () => {
         URL.revokeObjectURL(url);
     };
 
+    const handleShowState = () => {
+        const projectState = {
+            columns,
+            sideMenuData: useAxisSideMenuStore.getState().sideMenuData,
+            plotTypeSideMenuData: usePlotTypeSideMenuStore.getState().plotTypeSideMenuData,
+            groupSideMenuData: useGroupSideMenuStore.getState().groupSideMenuData,
+            plotLayout: usePlotLayoutStore.getState().plotLayout,
+            dataLength: data.length,
+            sampleData: data.slice(0, 5)
+        };
+        setCurrentStateJson(JSON.stringify(projectState, null, 2));
+        setShowStateModal(true);
+    };
+
     const handleLoadProject = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
@@ -163,7 +179,7 @@ const TopMenuBar: React.FC = () => {
         if (event.target) event.target.value = '';
     };
 
-    const handleLoadTestData = (datasetType: 'small' | 'large' | 'simulation' | 'binning' | 'gaussian') => {
+    const handleLoadTestData = (datasetType: 'small' | 'large' | 'simulation' | 'binning' | 'gaussian' | 'vr') => {
         let testData: CsvDataStore[] = [];
         switch (datasetType) {
             case 'small':
@@ -180,6 +196,9 @@ const TopMenuBar: React.FC = () => {
                 break;
             case 'gaussian':
                 testData = generateTestGaussianData().data as CsvDataStore[];
+                break;
+            case 'vr':
+                testData = getVoltageRegulatorData();
                 break;
         }
 
@@ -292,6 +311,9 @@ const TopMenuBar: React.FC = () => {
                             <NavDropdown.Item onClick={() => handleLoadTestData('gaussian')}>
                                 Gaussian Mixture Dataset
                             </NavDropdown.Item>
+                            <NavDropdown.Item onClick={() => handleLoadTestData('vr')}>
+                                Voltage Regulator Data
+                            </NavDropdown.Item>
                             <NavDropdown.Divider />
                             <NavDropdown.Item onClick={handleLoadWeatherData} disabled={isWeatherLoading}>
                                 {isWeatherLoading ? "Loading Weather Data..." : "Sample Weather Data"}
@@ -332,6 +354,9 @@ const TopMenuBar: React.FC = () => {
                                     <NavDropdown.Divider />
                                 </>
                             )}
+                            <NavDropdown.Item onClick={handleShowState}>
+                                See State
+                            </NavDropdown.Item>
                             <NavDropdown.Item onClick={() => alert('WebPlots v1.0\n\n- Load CSV to visualize data.\n- Save/Load Project to persist your work.')}>
                                 About
                             </NavDropdown.Item>
@@ -410,6 +435,23 @@ const TopMenuBar: React.FC = () => {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={() => setShowVersionModal(false)}>
+                        Close
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            {/* State Modal */}
+            <Modal show={showStateModal} onHide={() => setShowStateModal(false)} size="lg">
+                <Modal.Header closeButton>
+                    <Modal.Title>Application State Debug</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', background: '#f8f9fa', padding: '10px', borderRadius: '5px', maxHeight: '60vh', overflowY: 'auto' }}>
+                        {currentStateJson}
+                    </pre>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowStateModal(false)}>
                         Close
                     </Button>
                 </Modal.Footer>
