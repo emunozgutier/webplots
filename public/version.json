@@ -1,5 +1,5 @@
 {
-    "commit_title": "Redesign plot type side menu",
-    "commit_message": "Reworks the plot type selector into a compact 2x8 tile grid, adds placeholders for upcoming chart types with \"Soon\" badges, and replaces the old card/radio layout with a more visual selection state and active plot summary.",
-    "version_string": "2026.35.3"
+    "commit_title": "Add subplot axis sync controls and matching",
+    "commit_message": "Introduces `syncXAxis` and `syncYAxis` state in the subplot side menu store, exposes new toggle switches in `SubplotSideMenu`, and wires those settings into `generatePlotConfig`. When enabled, secondary subplots now set Plotly `matches` (`x`/`y`) to synchronize axis scales across the grid, while preserving existing title behavior and disabling sync controls for a single-plot layout.",
+    "version_string": "2026.36.2"
 }
