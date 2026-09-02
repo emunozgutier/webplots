@@ -100,59 +100,68 @@ const SubplotSideMenu: React.FC = () => {
                 </div>
             </div>
 
-            <h6 className="mb-3 text-secondary border-bottom pb-2">Trace Assignment</h6>
+            {!isAutoSortEnabled ? (
+                <>
+                    <h6 className="mb-3 text-secondary border-bottom pb-2">Trace Assignment</h6>
 
-            {activeTraces.length === 0 ? (
-                <div className="text-muted small px-2">No active traces. Create a plot first using the Axis menu.</div>
-            ) : isSinglePlot ? (
-                <div className="text-muted small px-2">Grid is 1x1. All traces are rendered on the Main Plot.</div>
-            ) : (
-                <div className="d-flex flex-column">
-                    <div
-                        className="mb-3 d-grid gap-1 bg-light p-2 rounded border"
-                        style={{
-                            gridTemplateColumns: `repeat(${cols}, 1fr)`,
-                            gridTemplateRows: `repeat(${rows}, 1fr)`
-                        }}
-                    >
-                        {Array.from({ length: totalSubplots }, (_, i) => i + 1).map(subplotIndex => (
-                            <button
-                                key={subplotIndex}
-                                className={`btn btn-sm ${activeTab === subplotIndex ? 'btn-primary' : 'btn-outline-secondary bg-white'}`}
-                                onClick={() => setActiveTab(subplotIndex)}
-                                style={{ fontSize: '0.8rem', padding: '4px' }}
+                    {activeTraces.length === 0 ? (
+                        <div className="text-muted small px-2">No active traces. Create a plot first using the Axis menu.</div>
+                    ) : isSinglePlot ? (
+                        <div className="text-muted small px-2">Grid is 1x1. All traces are rendered on the Main Plot.</div>
+                    ) : (
+                        <div className="d-flex flex-column">
+                            <div
+                                className="mb-3 d-grid gap-1 bg-light p-2 rounded border"
+                                style={{
+                                    gridTemplateColumns: `repeat(${cols}, 1fr)`,
+                                    gridTemplateRows: `repeat(${rows}, 1fr)`
+                                }}
                             >
-                                {getSubplotName(subplotIndex, rows, cols)}
-                            </button>
-                        ))}
-                    </div>
+                                {Array.from({ length: totalSubplots }, (_, i) => i + 1).map(subplotIndex => (
+                                    <button
+                                        key={subplotIndex}
+                                        className={`btn btn-sm ${activeTab === subplotIndex ? 'btn-primary' : 'btn-outline-secondary bg-white'}`}
+                                        onClick={() => setActiveTab(subplotIndex)}
+                                        style={{ fontSize: '0.8rem', padding: '4px' }}
+                                    >
+                                        {getSubplotName(subplotIndex, rows, cols)}
+                                    </button>
+                                ))}
+                            </div>
 
-                    <div className="d-flex flex-column gap-2 px-1">
-                        {activeTraces.map((trace, index) => {
-                            const traceName = trace.fullTraceName;
-                            const traceDisplayName = traceConfig.traceCustomizations[traceName]?.displayName || traceName;
-                            const assignedSubplots = traceToSubplots[traceName];
-                            const isAssigned = assignedSubplots === undefined ? activeTab === 1 : assignedSubplots.includes(activeTab);
+                            <div className="d-flex flex-column gap-2 px-1">
+                                {activeTraces.map((trace, index) => {
+                                    const traceName = trace.fullTraceName;
+                                    const traceDisplayName = traceConfig.traceCustomizations[traceName]?.displayName || traceName;
+                                    const assignedSubplots = traceToSubplots[traceName];
+                                    const isAssigned = assignedSubplots === undefined ? activeTab === 1 : assignedSubplots.includes(activeTab);
 
-                            return (
-                                <div key={traceName} className="d-flex align-items-center justify-content-between p-2 rounded bg-light">
-                                    <span className="small text-truncate me-2" title={traceDisplayName}>
-                                        {traceDisplayName}
-                                    </span>
-                                    <div className="form-check form-switch m-0">
-                                        <input
-                                            className="form-check-input"
-                                            type="checkbox"
-                                            role="switch"
-                                            id={`trace-${index}-switch`}
-                                            checked={isAssigned}
-                                            onChange={(e) => assignTraceToSubplot(traceName, activeTab, e.target.checked)}
-                                        />
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
+                                    return (
+                                        <div key={traceName} className="d-flex align-items-center justify-content-between p-2 rounded bg-light">
+                                            <span className="small text-truncate me-2" title={traceDisplayName}>
+                                                {traceDisplayName}
+                                            </span>
+                                            <div className="form-check form-switch m-0">
+                                                <input
+                                                    className="form-check-input"
+                                                    type="checkbox"
+                                                    role="switch"
+                                                    id={`trace-${index}-switch`}
+                                                    checked={isAssigned}
+                                                    onChange={(e) => assignTraceToSubplot(traceName, activeTab, e.target.checked)}
+                                                />
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+                </>
+            ) : (
+                <div className="text-muted small px-2 mt-4 bg-light p-2 rounded border border-light">
+                    <i className="bi bi-magic me-2 text-primary"></i>
+                    Auto Sort is handling trace assignments. Disable it to manually assign traces to subplots.
                 </div>
             )}
 

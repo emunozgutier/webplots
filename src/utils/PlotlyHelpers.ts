@@ -671,10 +671,14 @@ export const generatePlotConfig = (
         finalPlotTitle += `<br><sub>${animationData.animationColumn}: ${animationData.animationValue}</sub>`;
     }
 
+    let topMargin = 50;
+    if (plotTitle) topMargin += 30;
+    if (rows * cols > 1) topMargin += 30;
+
     const layout: Partial<Layout> = {
         width: undefined,
         height: undefined,
-        title: { text: finalPlotTitle },
+        title: finalPlotTitle ? { text: finalPlotTitle } : undefined,
         xaxis: {
             title: { text: xAxisTitle || (plotType === 'histogram' ? 'Value' : (xAxis || 'Row Number')) },
             type: enableLogXAxis ? 'log' : (isXAxisDate ? 'date' : (isXAxisCategory ? 'category' : 'linear')),
@@ -700,7 +704,7 @@ export const generatePlotConfig = (
             exponentformat: 'none'
         },
         autosize: true,
-        margin: { l: 50, r: 50, b: 50, t: 50 },
+        margin: { l: 50, r: 50, b: 50, t: topMargin },
         showlegend: legendOrientation === 'hidden' ? false : (legendOrientation === 'auto' ? processedTraces.length > 1 : true),
         legend: {
             itemsizing: 'constant',
@@ -855,12 +859,51 @@ export const generatePlotConfig = (
             exponentformat: 'none'
         };
 
+        // Find titles for subplots based on assigned traces
+        const subplotTitles = new Map<number, string>();
+        processedTraces.forEach(traceInfo => {
+            const assignedSubplots = traceToSubplots[traceInfo.fullTraceName];
+            if (assignedSubplots && traceInfo.groupName) {
+                assignedSubplots.forEach(idx => {
+                    if (!subplotTitles.has(idx)) {
+                        subplotTitles.set(idx, traceInfo.groupName as string);
+                    }
+                });
+            }
+        });
+
+        if (!layout.annotations) layout.annotations = [];
+
         // Assign axes dynamically to Layout
         for (let i = 1; i <= totalSubplots; i++) {
             const xKey = i === 1 ? 'xaxis' : `xaxis${i}`;
             const yKey = i === 1 ? 'yaxis' : `yaxis${i}`;
-            (layout as any)[xKey] = { ...baseTargetXAxis };
+            const xId = i === 1 ? 'x' : `x${i}`;
+            const yId = i === 1 ? 'y' : `y${i}`;
+            const isBottomPlot = Math.floor((i - 1) / cols) === rows - 1;
+            
+            (layout as any)[xKey] = { 
+                ...baseTargetXAxis,
+                title: isBottomPlot ? baseTargetXAxis.title : { text: '' }
+            };
             (layout as any)[yKey] = { ...baseTargetYAxis };
+
+            // Add subplot title annotation
+            const title = subplotTitles.get(i);
+            if (title) {
+                layout.annotations.push({
+                    text: `<b>${title.replace(/ \| /g, '<br>')}</b>`,
+                    xref: `${xId} domain`,
+                    yref: `${yId} domain`,
+                    x: 0.5,
+                    y: 1.0,
+                    xanchor: 'center',
+                    yanchor: 'bottom',
+                    yshift: 15,
+                    showarrow: false,
+                    font: { size: 11, color: '#6c757d' }
+                } as any);
+            }
         }
     }
 
