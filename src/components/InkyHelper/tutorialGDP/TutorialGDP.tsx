@@ -1,6 +1,9 @@
+
+
 import React, { useState } from 'react';
 import './TutorialGDP.css';
 import { useWorkspaceStore } from '../../../store/Workspace/useWorkspaceStore';
+
 import { useCsvDataStore } from '../../../store/useCsvDataStore';
 import InkyHelper from '../InkyHelper';
 import SpeechBubble from '../animation/components/SpeechBubble';
@@ -8,7 +11,7 @@ import { gdpTutorialSteps } from './tutorialScript';
 import type { CardinalDirection } from '../../../utils/DataClasses';
 
 const TutorialGDP: React.FC = () => {
-  const { isDebugMode, activeWorkspaceId, isTutorialActive, setIsTutorialActive } = useWorkspaceStore();
+  const { isDebugMode,  isTutorialActive, setIsTutorialActive } = useWorkspaceStore();
   const hasData = useCsvDataStore((state) => state.data.length > 0);
 
   const [position, setPosition] = useState({ x: window.innerWidth - 240, y: window.innerHeight - 140 });
@@ -136,8 +139,7 @@ const TutorialGDP: React.FC = () => {
     const currentStep = gdpTutorialSteps[currentStepIndex];
     if (currentStep.requireDataLoaded && !hasData) return;
     if (currentStep.requirementCheck) {
-      const stores = workspaceRegistry.get(activeWorkspaceId);
-      if (stores && !currentStep.requirementCheck(stores)) return;
+            if (!currentStep.requirementCheck(null as any)) return;
     }
 
     if (currentStepIndex < gdpTutorialSteps.length - 1) {
@@ -147,7 +149,7 @@ const TutorialGDP: React.FC = () => {
       const nextStep = gdpTutorialSteps[nextIndex];
       if (nextStep.action) {
         if (true) {
-          nextStep.action(stores);
+          nextStep.action();
         }
       }
     } else {
@@ -172,26 +174,25 @@ const TutorialGDP: React.FC = () => {
         const nextStep = gdpTutorialSteps[nextIndex];
         if (nextStep.action) {
           if (true) {
-            nextStep.action(stores);
+            nextStep.action();
           }
         }
       }
     }
-  }, [hasData, currentStepIndex, activeWorkspaceId]);
+  }, [hasData, currentStepIndex, ]);
 
   // Auto-advance for requirement checks
   React.useEffect(() => {
     const currentStep = gdpTutorialSteps[currentStepIndex];
     if (currentStep.requirementCheck && (currentStep as any).autoAdvance !== false) {
       const interval = setInterval(() => {
-        const stores = workspaceRegistry.get(activeWorkspaceId);
-        if (stores && currentStep.requirementCheck!(stores)) {
+                if (currentStep.requirementCheck!(null as any)) {
           handleNext(new Event('autoNext'));
         }
       }, 300);
       return () => clearInterval(interval);
     }
-  }, [currentStepIndex, activeWorkspaceId]);
+  }, [currentStepIndex, ]);
 
   React.useEffect(() => {
     const currentStep = gdpTutorialSteps[currentStepIndex];
@@ -525,8 +526,7 @@ const TutorialGDP: React.FC = () => {
             const isDataMissing = currentStep.requireDataLoaded && !hasData;
             let isCustomCheckMissing = false;
             if (currentStep.requirementCheck) {
-              const stores = workspaceRegistry.get(activeWorkspaceId);
-              if (stores) isCustomCheckMissing = !currentStep.requirementCheck(stores);
+                            isCustomCheckMissing = !currentStep.requirementCheck(null as any);
             }
             return !isDataMissing && !isCustomCheckMissing;
           })()}
@@ -538,8 +538,7 @@ const TutorialGDP: React.FC = () => {
                   className={`inky-speech-btn ${choice.primary ? '' : 'inky-speech-btn-skip'}`}
                   onClick={(e) => {
                     if (choice.action) {
-                      const stores = workspaceRegistry.get(activeWorkspaceId);
-                      if (stores) choice.action(stores);
+                                            choice.action();
                     }
                     if (choice.actionType === 'next') handleNext(e);
                     else if (choice.actionType === 'skip') handleSkip(e);

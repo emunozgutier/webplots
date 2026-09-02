@@ -3,19 +3,19 @@ import { useCsvDataStore } from './useCsvDataStore';
 import type { CsvDataStore } from './useCsvDataStore';
 import { useWorkspaceStore } from './Workspace/useWorkspaceStore';
 
-import { useAxisSideMenuStore } from '../store/SideMenu/useAxisSideMenuStore';
-import { usePlotTypeSideMenuStore } from '../store/SideMenu/usePlotTypeSideMenuStore';
-import { useStyleSideMenuStore } from '../store/SideMenu/useStyleSideMenuStore';
-import { useFilterSideMenuStore } from '../store/SideMenu/useFilterSideMenuStore';
-import { useGroupSideMenuStore } from '../store/SideMenu/useGroupSideMenuStore';
-import { useInkRatioStore } from '../store/SideMenu/useInkRatioStore';
-import { usePlotLayoutStore } from '../store/PlotTable/usePlotLayoutStore';
-import { useTraceConfigStore } from '../store/PlotTable/useTraceConfigStore';
-import { useSubplotSideMenuStore } from '../store/SideMenu/useSubplotSideMenuStore';
-import { useTableStore } from '../store/PlotTable/useTableStore';
-import { useAnimationSideMenuStore } from '../store/SideMenu/useAnimationSideMenuStore';
-import { useAnnotationSideMenuStore } from '../store/SideMenu/useAnnotationSideMenuStore';
-import { useAppLocalStore } from '../store/useAppLocalStore';
+import { useStyleSideMenuStore } from './SideMenu/useStyleSideMenuStore';
+import { useAnimationSideMenuStore } from './SideMenu/useAnimationSideMenuStore';
+import { useFilterSideMenuStore } from './SideMenu/useFilterSideMenuStore';
+
+
+import { useAxisSideMenuStore } from './SideMenu/useAxisSideMenuStore';
+import { useGroupSideMenuStore } from './SideMenu/useGroupSideMenuStore';
+import { usePlotLayoutStore } from './PlotTable/usePlotLayoutStore';
+
+
+
+
+
 
 import { resetActiveWorkspace } from '../utils/workspaceReset';
 

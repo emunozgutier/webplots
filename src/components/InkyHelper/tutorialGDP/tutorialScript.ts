@@ -1,3 +1,9 @@
+
+import { useAxisSideMenuStore } from '../../../store/SideMenu/useAxisSideMenuStore';
+import { usePlotLayoutStore } from '../../../store/PlotTable/usePlotLayoutStore';
+import { useStyleSideMenuStore } from '../../../store/SideMenu/useStyleSideMenuStore';
+import { useAnimationSideMenuStore } from '../../../store/SideMenu/useAnimationSideMenuStore';
+import { useAppLocalStore } from '../../../store/useAppLocalStore';
 import { useColumnTypeStore } from '../../../store/useColumnTypeStore';
 import type { CardinalDirection } from '../../../utils/DataClasses';
 import { useDemoData } from '../../../store/useDemoData';
@@ -6,14 +12,14 @@ export interface TutorialChoice {
   label: string;
   actionType: 'next' | 'skip';
   primary?: boolean;
-  action?: (stores: any) => void;
+  action?: () => void;
 }
 
 export interface TutorialStep {
   text: string;
   
   // Optional action to perform when navigating TO this step
-  action?: (stores: any) => void;
+  action?: () => void;
   
   // Where the squid should point its tentacle
   targetSelector?: string;
@@ -118,8 +124,8 @@ export const gdpTutorialSteps: TutorialStep[] = [
     targetSelector: "#zoom-btn-life_expectancy",
     targetPosition: "n",
     bubblePlacement: "w",
-    requirementCheck: (stores) => {
-        return stores.workspaceLocalStore.getState().popupContent !== null;
+    requirementCheck: () => {
+        return useAppLocalStore.getState().popupContent !== null;
     }
   },
   {
@@ -128,8 +134,8 @@ export const gdpTutorialSteps: TutorialStep[] = [
     targetPosition: "w",
     bubblePlacement: "e",
     noPointing: true,
-    requirementCheck: (stores) => {
-        return stores.workspaceLocalStore.getState().popupContent === null;
+    requirementCheck: () => {
+        return useAppLocalStore.getState().popupContent === null;
     }
   },
   {
@@ -149,8 +155,8 @@ export const gdpTutorialSteps: TutorialStep[] = [
             sourcePosition: 'e'
         };
     },
-    requirementCheck: (stores) => {
-      const axisData = stores.axisSideMenuStore.getState().sideMenuData;
+    requirementCheck: () => {
+      const axisData = useAxisSideMenuStore.getState().sideMenuData;
       return axisData.xAxis === 'gdp';
     },
     choices: [
@@ -158,8 +164,8 @@ export const gdpTutorialSteps: TutorialStep[] = [
         label: "Auto-Assign (For Bot)",
         actionType: "next",
         primary: true,
-        action: (stores) => {
-            stores.axisSideMenuStore.getState().setXAxis('gdp');
+        action: () => {
+            useAxisSideMenuStore.getState().setXAxis('gdp');
         }
       }
     ]
@@ -181,8 +187,8 @@ export const gdpTutorialSteps: TutorialStep[] = [
             sourcePosition: 'e'
         };
     },
-    requirementCheck: (stores) => {
-      const axisData = stores.axisSideMenuStore.getState().sideMenuData;
+    requirementCheck: () => {
+      const axisData = useAxisSideMenuStore.getState().sideMenuData;
       return axisData.yAxis.includes('life_expectancy');
     },
     choices: [
@@ -190,8 +196,8 @@ export const gdpTutorialSteps: TutorialStep[] = [
         label: "Auto-Assign (For Bot)",
         actionType: "next",
         primary: true,
-        action: (stores) => {
-            stores.axisSideMenuStore.getState().addYAxisColumn('life_expectancy');
+        action: () => {
+            useAxisSideMenuStore.getState().addYAxisColumn('life_expectancy');
         }
       }
     ]
@@ -208,8 +214,8 @@ export const gdpTutorialSteps: TutorialStep[] = [
     text: "Let's fix the X-axis scale! Click the 'Settings' button on the bottom right.",
     targetSelector: "#plot-settings-btn",
     targetPosition: "n",
-    requirementCheck: (stores) => {
-        return stores.workspaceLocalStore.getState().popupContent !== null;
+    requirementCheck: () => {
+        return useAppLocalStore.getState().popupContent !== null;
     }
   },
   {
@@ -225,8 +231,8 @@ export const gdpTutorialSteps: TutorialStep[] = [
     text: "Now click 'Save Layout' to apply the changes and close the popup.",
     targetSelector: "#save-layout-btn",
     targetPosition: "n",
-    requirementCheck: (stores) => {
-        return stores.plotLayoutStore.getState().plotLayout.enableLogXAxis === true && stores.workspaceLocalStore.getState().popupContent === null;
+    requirementCheck: () => {
+        return usePlotLayoutStore.getState().plotLayout.enableLogXAxis === true && useAppLocalStore.getState().popupContent === null;
     }
   },
   {
@@ -245,8 +251,8 @@ export const gdpTutorialSteps: TutorialStep[] = [
         if (el && el.getBoundingClientRect().width > 0) return '#style-element-huecolor-toggle';
         return '#side-menu-btn-color';
     },
-    requirementCheck: (stores) => {
-        return stores.styleSideMenuStore.getState().colorData.hue.enabled === true;
+    requirementCheck: () => {
+        return useStyleSideMenuStore.getState().colorData.hue.enabled === true;
     }
   },
   {
@@ -257,8 +263,8 @@ export const gdpTutorialSteps: TutorialStep[] = [
         if (el && el.getBoundingClientRect().width > 0) return '#style-element-huecolor-source';
         return '#side-menu-btn-color';
     },
-    requirementCheck: (stores) => {
-        return stores.styleSideMenuStore.getState().colorData.hue.source === 'column';
+    requirementCheck: () => {
+        return useStyleSideMenuStore.getState().colorData.hue.source === 'column';
     }
   },
   {
@@ -269,8 +275,8 @@ export const gdpTutorialSteps: TutorialStep[] = [
         if (el && el.getBoundingClientRect().width > 0) return '#style-element-huecolor-column';
         return '#side-menu-btn-color';
     },
-    requirementCheck: (stores) => {
-        return stores.styleSideMenuStore.getState().colorData.hue.value === 'region';
+    requirementCheck: () => {
+        return useStyleSideMenuStore.getState().colorData.hue.value === 'region';
     }
   },
   {
@@ -281,8 +287,8 @@ export const gdpTutorialSteps: TutorialStep[] = [
         if (el && el.getBoundingClientRect().width > 0) return '#style-element-nodesize-toggle';
         return '#side-menu-btn-color';
     },
-    requirementCheck: (stores) => {
-        return stores.styleSideMenuStore.getState().colorData.size.enabled === true;
+    requirementCheck: () => {
+        return useStyleSideMenuStore.getState().colorData.size.enabled === true;
     }
   },
   {
@@ -293,8 +299,8 @@ export const gdpTutorialSteps: TutorialStep[] = [
         if (el && el.getBoundingClientRect().width > 0) return '#style-element-nodesize-source';
         return '#side-menu-btn-color';
     },
-    requirementCheck: (stores) => {
-        return stores.styleSideMenuStore.getState().colorData.size.source === 'column';
+    requirementCheck: () => {
+        return useStyleSideMenuStore.getState().colorData.size.source === 'column';
     }
   },
   {
@@ -305,8 +311,8 @@ export const gdpTutorialSteps: TutorialStep[] = [
         if (el && el.getBoundingClientRect().width > 0) return '#style-element-nodesize-column';
         return '#side-menu-btn-color';
     },
-    requirementCheck: (stores) => {
-        return stores.styleSideMenuStore.getState().colorData.size.value === 'population';
+    requirementCheck: () => {
+        return useStyleSideMenuStore.getState().colorData.size.value === 'population';
     }
   },
   {
@@ -325,8 +331,8 @@ export const gdpTutorialSteps: TutorialStep[] = [
         if (el && el.getBoundingClientRect().width > 0) return '#animation-column-select';
         return '#side-menu-btn-animation';
     },
-    requirementCheck: (stores) => {
-        return stores.animationSideMenuStore.getState().animationData.animationColumn === 'year';
+    requirementCheck: () => {
+        return useAnimationSideMenuStore.getState().animationData.animationColumn === 'year';
     }
   },
   {

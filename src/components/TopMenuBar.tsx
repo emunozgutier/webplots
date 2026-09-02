@@ -1,4 +1,10 @@
 
+
+import { useAxisSideMenuStore } from '../store/SideMenu/useAxisSideMenuStore';
+import { usePlotTypeSideMenuStore } from '../store/SideMenu/usePlotTypeSideMenuStore';
+import { useGroupSideMenuStore } from '../store/SideMenu/useGroupSideMenuStore';
+import { usePlotLayoutStore } from '../store/PlotTable/usePlotLayoutStore';
+
 import React, { useRef, useState, useEffect } from 'react';
 import { NavDropdown, Navbar, Nav, Container, Modal, Button } from 'react-bootstrap';
 import { useCsvDataStore } from '../store/useCsvDataStore';
@@ -6,6 +12,7 @@ import { useDemoData } from '../store/useDemoData';
 import Papa from 'papaparse';
 import type { CsvDataStore } from '../store/useCsvDataStore';
 import { useWorkspaceStore } from '../store/Workspace/useWorkspaceStore';
+
 import { resetActiveWorkspace } from '../utils/workspaceReset';
 import { getSmallDataset, getLargeColumnDataset, getSimulationDataset, getBinningTestData } from '../utils/TestDatasets';
 import { generateTestGaussianData } from '../utils/TableMathLib';
@@ -75,9 +82,8 @@ const TopMenuBar: React.FC = () => {
     };
 
     const handleSaveProject = () => {
-        const activeWorkspaceId = useWorkspaceStore.getState().activeWorkspaceId;
-        
-        if (!activeStores) {
+                
+        if (false) {
             alert('No active workspace found to save.');
             return;
         }
@@ -110,8 +116,7 @@ const TopMenuBar: React.FC = () => {
                     const content = e.target?.result as string;
                     const projectState = JSON.parse(content);
 
-                    const activeWorkspaceId = useWorkspaceStore.getState().activeWorkspaceId;
-                    
+                                        
 
                     if (projectState.data && projectState.columns) {
                         loadPlotDataProject(projectState.data, projectState.columns);
