@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import { Modal } from 'react-bootstrap';
 import { useSubplotSideMenuStore } from '../../store/SideMenu/useSubplotSideMenuStore';
 import { useTraceConfigStore } from '../../store/PlotTable/useTraceConfigStore';
 import SubplotAutoSorting from './subcomponents/SubplotAutoSorting';
 
 const SubplotSideMenu: React.FC = () => {
-    const { rows, cols, setGrid, traceToSubplots, assignTraceToSubplot } = useSubplotSideMenuStore();
+    const { rows, cols, setGrid, traceToSubplots, assignTraceToSubplot, isAutoSortEnabled, setIsAutoSortEnabled } = useSubplotSideMenuStore();
     const { traceConfig } = useTraceConfigStore();
     const { activeTraces } = traceConfig;
 
     const [activeTab, setActiveTab] = useState(1);
+    const [showSettings, setShowSettings] = useState(false);
 
     const maxRows = 3;
     const maxCols = 3;
@@ -78,24 +80,24 @@ const SubplotSideMenu: React.FC = () => {
 
     return (
         <div className="p-3">
-            <h6 className="mb-3 text-secondary border-bottom pb-2">Grid Layout</h6>
+            <div className="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                <h6 className="text-secondary mb-0">Grid Layout</h6>
+                <button className="btn btn-sm btn-link text-secondary p-0" onClick={() => setShowSettings(true)} title="Grid Settings">
+                    <i className="bi bi-gear-fill"></i>
+                </button>
+            </div>
 
-            <div className="row g-2 mb-3">
-                <div className="col-6">
-                    <label className="form-label small text-muted mb-1">Rows</label>
-                    <select className="form-select form-select-sm" value={rows} onChange={handleRowsChange}>
-                        {Array.from({ length: maxRows }, (_, i) => i + 1).map(num => (
-                            <option key={num} value={num}>{num}</option>
-                        ))}
-                    </select>
-                </div>
-                <div className="col-6">
-                    <label className="form-label small text-muted mb-1">Columns</label>
-                    <select className="form-select form-select-sm" value={cols} onChange={handleColsChange}>
-                        {Array.from({ length: maxCols }, (_, i) => i + 1).map(num => (
-                            <option key={num} value={num}>{num}</option>
-                        ))}
-                    </select>
+            <div className="d-flex align-items-center justify-content-between mb-3 bg-light p-2 rounded border">
+                <span className="small fw-bold text-secondary">Auto Sort</span>
+                <div className="form-check form-switch m-0">
+                    <input
+                        className="form-check-input"
+                        type="checkbox"
+                        role="switch"
+                        id="auto-sort-switch"
+                        checked={isAutoSortEnabled}
+                        onChange={(e) => setIsAutoSortEnabled(e.target.checked)}
+                    />
                 </div>
             </div>
 
@@ -158,6 +160,39 @@ const SubplotSideMenu: React.FC = () => {
                     </div>
                 </div>
             )}
+
+            {/* Grid Settings Modal */}
+            <Modal show={showSettings} onHide={() => setShowSettings(false)} centered size="sm">
+                <Modal.Header closeButton>
+                    <Modal.Title className="h6">Grid Dimensions</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <div className="row g-2">
+                        <div className="col-6">
+                            <label className="form-label small text-muted mb-1">Rows</label>
+                            <select className="form-select form-select-sm" value={rows} onChange={handleRowsChange} disabled={isAutoSortEnabled}>
+                                {Array.from({ length: maxRows }, (_, i) => i + 1).map(num => (
+                                    <option key={num} value={num}>{num}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="col-6">
+                            <label className="form-label small text-muted mb-1">Columns</label>
+                            <select className="form-select form-select-sm" value={cols} onChange={handleColsChange} disabled={isAutoSortEnabled}>
+                                {Array.from({ length: maxCols }, (_, i) => i + 1).map(num => (
+                                    <option key={num} value={num}>{num}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                    {isAutoSortEnabled && (
+                        <div className="text-muted small mt-2">
+                            <i className="bi bi-info-circle me-1"></i>
+                            Disable Auto Sort to manually adjust grid dimensions.
+                        </div>
+                    )}
+                </Modal.Body>
+            </Modal>
         </div>
     );
 };
