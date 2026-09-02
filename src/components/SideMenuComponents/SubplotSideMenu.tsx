@@ -4,7 +4,11 @@ import { useSubplotSideMenuStore } from '../../store/SideMenu/useSubplotSideMenu
 import { useTraceConfigStore } from '../../store/PlotTable/useTraceConfigStore';
 
 const SubplotSideMenu: React.FC = () => {
-    const { rows, cols, setGrid, traceToSubplots, assignTraceToSubplot, isAutoSortEnabled, setIsAutoSortEnabled } = useSubplotSideMenuStore();
+    const { 
+        rows, cols, setGrid, traceToSubplots, assignTraceToSubplot, 
+        isAutoSortEnabled, setIsAutoSortEnabled,
+        syncXAxis, setSyncXAxis, syncYAxis, setSyncYAxis
+    } = useSubplotSideMenuStore();
     const { traceConfig } = useTraceConfigStore();
     const { activeTraces } = traceConfig;
 
@@ -86,7 +90,7 @@ const SubplotSideMenu: React.FC = () => {
                 </button>
             </div>
 
-            <div className="d-flex align-items-center justify-content-between mb-3 bg-light p-2 rounded border">
+            <div className="d-flex align-items-center justify-content-between mb-2 bg-light p-2 rounded border">
                 <span className="small fw-bold text-secondary">Auto Sort</span>
                 <div className="form-check form-switch m-0">
                     <input
@@ -97,6 +101,37 @@ const SubplotSideMenu: React.FC = () => {
                         checked={isAutoSortEnabled}
                         onChange={(e) => setIsAutoSortEnabled(e.target.checked)}
                     />
+                </div>
+            </div>
+
+            <div className="bg-light p-2 rounded border mb-3">
+                <div className="d-flex align-items-center justify-content-between mb-2">
+                    <span className="small fw-bold text-secondary">Sync X Axes</span>
+                    <div className="form-check form-switch m-0">
+                        <input
+                            className="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id="sync-x-switch"
+                            checked={syncXAxis}
+                            onChange={(e) => setSyncXAxis(e.target.checked)}
+                            disabled={isSinglePlot}
+                        />
+                    </div>
+                </div>
+                <div className="d-flex align-items-center justify-content-between">
+                    <span className="small fw-bold text-secondary">Sync Y Axes</span>
+                    <div className="form-check form-switch m-0">
+                        <input
+                            className="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id="sync-y-switch"
+                            checked={syncYAxis}
+                            onChange={(e) => setSyncYAxis(e.target.checked)}
+                            disabled={isSinglePlot}
+                        />
+                    </div>
                 </div>
             </div>
 

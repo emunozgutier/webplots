@@ -71,7 +71,7 @@ export const generatePlotConfig = (
         if (!currentPaletteColors || currentPaletteColors.length === 0) return '#000000';
         return currentPaletteColors[idx % currentPaletteColors.length];
     };
-    const { rows, cols, traceToSubplots } = subplotSideMenuData;
+    const { rows, cols, traceToSubplots, syncXAxis, syncYAxis } = subplotSideMenuData;
 
     const hasData = data.length > 0 && yAxis.length > 0;
 
@@ -884,9 +884,13 @@ export const generatePlotConfig = (
             
             (layout as any)[xKey] = { 
                 ...baseTargetXAxis,
-                title: isBottomPlot ? baseTargetXAxis.title : { text: '' }
+                title: isBottomPlot ? baseTargetXAxis.title : { text: '' },
+                matches: syncXAxis && i > 1 ? 'x' : undefined
             };
-            (layout as any)[yKey] = { ...baseTargetYAxis };
+            (layout as any)[yKey] = { 
+                ...baseTargetYAxis,
+                matches: syncYAxis && i > 1 ? 'y' : undefined
+            };
 
             // Add subplot title annotation
             const title = subplotTitles.get(i);
