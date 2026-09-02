@@ -125,6 +125,8 @@ export const generatePlotConfig = (
         }
     }
 
+    const seenLegendGroups = new Set<string>();
+
     // Create Plotly traces
     const plotData: Data[] = processedTraces.flatMap((origTraceInfo, index) => {
         let traceInfo = origTraceInfo;
@@ -395,8 +397,18 @@ export const generatePlotConfig = (
 
             // Resolve final display name
             let finalName = exactCustomization.displayName || fullTraceName;
-            if (!exactCustomization.displayName && colCustomization.displayName && groupName) {
-                finalName = `${colCustomization.displayName} (${groupName})`;
+            if (!exactCustomization.displayName) {
+                if (!isSinglePlot) {
+                    finalName = colCustomization.displayName || yCol;
+                } else if (colCustomization.displayName && groupName) {
+                    finalName = `${colCustomization.displayName} (${groupName})`;
+                }
+            }
+
+            let showTraceLegend = false;
+            if (!seenLegendGroups.has(finalName)) {
+                seenLegendGroups.add(finalName);
+                showTraceLegend = true;
             }
 
             // Trace level overrides (if a user explicitly forces a color/symbol from TraceConfig Menu, it kills dynamic behavior)
@@ -452,6 +464,8 @@ export const generatePlotConfig = (
                     x: processedYData,
                     type: 'histogram',
                     name: finalName,
+                    legendgroup: finalName,
+                    showlegend: showTraceLegend,
                     opacity: processedTraces.length > 1 ? 0.7 : 1,
                     marker: {
                         color: marker.color,
@@ -628,6 +642,7 @@ export const generatePlotConfig = (
                 name: finalName,
                 ids: safeSurvivingIndices.map(survivingIdx => String(rowIndices[survivingIdx])),
                 legendgroup: finalName,
+                showlegend: showTraceLegend,
                 hovertext: computedHoverTexts,
                 customdata: absorbedCounts, // inject it into Plotly for the hover template
                 hovertemplate: hoverTemplateToUse === '%{x}, %{y}' ? undefined : hoverTemplateToUse,
@@ -686,7 +701,7 @@ export const generatePlotConfig = (
         },
         autosize: true,
         margin: { l: 50, r: 50, b: 50, t: 50 },
-        showlegend: processedTraces.length > 8 ? false : (legendOrientation === 'hidden' ? false : (legendOrientation === 'auto' ? processedTraces.length > 1 : true)),
+        showlegend: legendOrientation === 'hidden' ? false : (legendOrientation === 'auto' ? processedTraces.length > 1 : true),
         legend: {
             itemsizing: 'constant',
             ...(legendOrientation === 'bottom' ? { orientation: 'h', yanchor: 'bottom', y: -0.2, xanchor: 'center', x: 0.5 } : {})
@@ -989,7 +1004,7 @@ ${traceVar}.line = { color: '${finalColor}' };${markerParamsCode}`);
   },`;
     }
 
-    receipt += `\n  showlegend: ${processedTraces.length > 8 ? 'false' : (legendOrientation === 'hidden' ? 'false' : (legendOrientation === 'auto' ? (processedTraces.length > 1 ? 'true' : 'false') : 'true'))}${legendOrientation === 'bottom' ? `,\n  legend: { orientation: 'h', yanchor: 'bottom', y: -0.2, xanchor: 'center', x: 0.5 }` : ''}
+    receipt += `\n  showlegend: ${legendOrientation === 'hidden' ? 'false' : (legendOrientation === 'auto' ? (processedTraces.length > 1 ? 'true' : 'false') : 'true')}${legendOrientation === 'bottom' ? `,\n  legend: { orientation: 'h', yanchor: 'bottom', y: -0.2, xanchor: 'center', x: 0.5 }` : ''}
 };\n\n`;
 
     receipt += `Plotly.newPlot('myDiv', plt.data, plt.layout);`;

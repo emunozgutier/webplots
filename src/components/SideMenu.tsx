@@ -11,6 +11,7 @@ import GroupSideMenu from './SideMenuComponents/GroupSideMenu';
 import StyleSideMenu from './SideMenuComponents/StyleSideMenu';
 import CreateColumnSideMenu from './SideMenuComponents/CreateColumnSideMenu';
 import SubplotSideMenu from './SideMenuComponents/SubplotSideMenu';
+import SubplotAutoSorting from './SideMenuComponents/subcomponents/SubplotAutoSorting';
 import AnimationSideMenu from './SideMenuComponents/AnimationSideMenu';
 import AnnotationSideMenu from './SideMenuComponents/AnnotationSideMenu';
 import IconTab from './SideMenuComponents/IconTab';
@@ -142,6 +143,7 @@ const SideMenu: React.FC = () => {
                 </div>
 
                 <div className="flex-grow-1 overflow-hidden position-relative">
+                    <SubplotAutoSorting />
                     {renderContent()}
                 </div>
             </div>

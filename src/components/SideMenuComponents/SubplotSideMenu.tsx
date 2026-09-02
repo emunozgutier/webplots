@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from 'react-bootstrap';
 import { useSubplotSideMenuStore } from '../../store/SideMenu/useSubplotSideMenuStore';
 import { useTraceConfigStore } from '../../store/PlotTable/useTraceConfigStore';
-import SubplotAutoSorting from './subcomponents/SubplotAutoSorting';
 
 const SubplotSideMenu: React.FC = () => {
     const { rows, cols, setGrid, traceToSubplots, assignTraceToSubplot, isAutoSortEnabled, setIsAutoSortEnabled } = useSubplotSideMenuStore();
@@ -100,8 +99,6 @@ const SubplotSideMenu: React.FC = () => {
                     />
                 </div>
             </div>
-
-            <SubplotAutoSorting />
 
             <h6 className="mb-3 text-secondary border-bottom pb-2">Trace Assignment</h6>
 
