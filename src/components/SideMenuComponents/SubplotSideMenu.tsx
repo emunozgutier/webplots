@@ -101,9 +101,7 @@ const SubplotSideMenu: React.FC = () => {
                 </div>
             </div>
 
-            {!isSinglePlot && activeTraces.length > 0 && (
-                <SubplotAutoSorting />
-            )}
+            <SubplotAutoSorting />
 
             <h6 className="mb-3 text-secondary border-bottom pb-2">Trace Assignment</h6>
 

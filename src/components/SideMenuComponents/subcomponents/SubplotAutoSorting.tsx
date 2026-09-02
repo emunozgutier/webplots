@@ -46,24 +46,11 @@ const SubplotAutoSorting: React.FC = () => {
         let newCols = 1;
 
         if (activeGroupAxes.length === 2) {
-            // Two groups -> map to row/col
-            const dim1 = activeGroupAxes[0];
-            const dim2 = activeGroupAxes[1];
-            const count1 = dimensionValues[dim1]?.length || 1;
-            const count2 = dimensionValues[dim2]?.length || 1;
-            
-            // Map larger group to cols, smaller to rows
-            if (count1 >= count2) {
-                colDim = dim1;
-                newCols = count1;
-                rowDim = dim2;
-                newRows = count2;
-            } else {
-                colDim = dim2;
-                newCols = count2;
-                rowDim = dim1;
-                newRows = count1;
-            }
+            // Two groups -> map first to rows, second to cols based on selection order
+            rowDim = activeGroupAxes[0];
+            newRows = dimensionValues[rowDim]?.length || 1;
+            colDim = activeGroupAxes[1];
+            newCols = dimensionValues[colDim]?.length || 1;
         } else if (activeGroupAxes.length === 1) {
             // One group
             colDim = activeGroupAxes[0];
@@ -100,7 +87,7 @@ const SubplotAutoSorting: React.FC = () => {
                     const yIdx = yAxis.indexOf(trace.yCol);
                     if (yIdx !== -1) targetRow = yIdx % newRows;
                 } else {
-                    const rowMatch = rowValues.findIndex(val => traceName.includes(`${rowDim}=${val}`) || traceName.includes(val));
+                    const rowMatch = rowValues.findIndex(val => traceName.includes(`${rowDim}=${val}`));
                     if (rowMatch !== -1) targetRow = rowMatch % newRows;
                 }
             }
@@ -110,7 +97,7 @@ const SubplotAutoSorting: React.FC = () => {
                     const yIdx = yAxis.indexOf(trace.yCol);
                     if (yIdx !== -1) targetCol = yIdx % newCols;
                 } else {
-                    const colMatch = colValues.findIndex(val => traceName.includes(`${colDim}=${val}`) || traceName.includes(val));
+                    const colMatch = colValues.findIndex(val => traceName.includes(`${colDim}=${val}`));
                     if (colMatch !== -1) targetCol = colMatch % newCols;
                 }
             }
