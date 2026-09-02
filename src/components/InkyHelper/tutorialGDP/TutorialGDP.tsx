@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import './TutorialGDP.css';
 import { useWorkspaceStore } from '../../../store/Workspace/useWorkspaceStore';
+import { useLastActiveStore } from '../../../store/InkyHelper/useLastActiveStore';
 
 import { useCsvDataStore } from '../../../store/useCsvDataStore';
 import InkyHelper from '../InkyHelper';
@@ -154,6 +155,7 @@ const TutorialGDP: React.FC = () => {
       }
     } else {
       setIsTutorialActive(false);
+      useLastActiveStore.getState().setStillOpen(false);
       setCurrentStepIndex(0); // reset for next time
     }
   };
@@ -161,6 +163,7 @@ const TutorialGDP: React.FC = () => {
   const handleSkip = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsTutorialActive(false);
+    useLastActiveStore.getState().setStillOpen(false);
     setCurrentStepIndex(0); // reset for next time
   };
 
@@ -510,7 +513,7 @@ const TutorialGDP: React.FC = () => {
               ? gdpTutorialSteps[currentStepIndex].dynamicBubblePlacement!()
               : gdpTutorialSteps[currentStepIndex].bubblePlacement
           }
-          onClose={(e) => { e.stopPropagation(); setIsTutorialActive(false); }}
+          onClose={(e) => { e.stopPropagation(); setIsTutorialActive(false); useLastActiveStore.getState().setStillOpen(false); }}
           text={currentText}
           stepInfo={(!isMoving && !currentStep.choices) ? `Step ${currentStepIndex + 1} of ${gdpTutorialSteps.length}` : undefined}
           type="persistent"

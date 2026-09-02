@@ -12,6 +12,7 @@ import { useDemoData } from '../store/useDemoData';
 import Papa from 'papaparse';
 import type { CsvDataStore } from '../store/useCsvDataStore';
 import { useWorkspaceStore } from '../store/Workspace/useWorkspaceStore';
+import { useLastActiveStore } from '../store/InkyHelper/useLastActiveStore';
 
 import { resetActiveWorkspace } from '../utils/workspaceReset';
 import { getSmallDataset, getLargeColumnDataset, getSimulationDataset, getBinningTestData } from '../utils/TestDatasets';
@@ -322,7 +323,10 @@ const TopMenuBar: React.FC = () => {
                         <NavDropdown title="Help" id="help-nav-dropdown">
                             {!isTutorialActive && (
                                 <>
-                                    <NavDropdown.Item onClick={() => useWorkspaceStore.getState().setIsTutorialActive(true)}>
+                                    <NavDropdown.Item onClick={() => {
+                                        useWorkspaceStore.getState().setIsTutorialActive(true);
+                                        useLastActiveStore.getState().setStillOpen(true);
+                                    }}>
                                         Talk to Inky
                                     </NavDropdown.Item>
                                     <NavDropdown.Divider />

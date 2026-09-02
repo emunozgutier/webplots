@@ -1,5 +1,28 @@
 import { create } from 'zustand';
 
+const getInitialTutorialActive = () => {
+    if (typeof window !== 'undefined') {
+        try {
+            const stored = localStorage.getItem('inky-last-active-storage');
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                const state = parsed.state;
+                if (state && typeof state.still_open === 'boolean') {
+                    if (!state.still_open) {
+                        const oneMonth = 30 * 24 * 60 * 60 * 1000;
+                        if (Date.now() - (state.last_time_seen || 0) < oneMonth) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        } catch (e) {
+            console.error("Failed to parse inky-last-active-storage", e);
+        }
+    }
+    return true;
+};
+
 interface WorkspaceState {
     isTopMenuBarOpen: boolean;
     isDebugMode: boolean;
@@ -16,7 +39,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
     (set) => ({
         isTopMenuBarOpen: true,
         isDebugMode: typeof window !== 'undefined' && (window.location.pathname.endsWith('/beta') || window.location.hash.includes('/beta') || window.location.search.includes('beta')),
-        isTutorialActive: true,
+        isTutorialActive: getInitialTutorialActive(),
 
         toggleTopMenuBar: () => set((state) => ({ isTopMenuBarOpen: !state.isTopMenuBarOpen })),
         toggleDebugMode: () => set((state) => {
