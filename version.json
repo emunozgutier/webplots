@@ -1,5 +1,5 @@
 {
-    "commit_title": "Add subplot axis sync controls and matching",
-    "commit_message": "Introduces `syncXAxis` and `syncYAxis` state in the subplot side menu store, exposes new toggle switches in `SubplotSideMenu`, and wires those settings into `generatePlotConfig`. When enabled, secondary subplots now set Plotly `matches` (`x`/`y`) to synchronize axis scales across the grid, while preserving existing title behavior and disabling sync controls for a single-plot layout.",
+    "commit_title": "Adjust navbar logo sizing and clipping",
+    "commit_message": "Wrap the TopMenuBar brand image in a fixed-height container and increase the logo image height to 120px with auto width. This keeps the navbar height stable while showing a zoomed/cropped logo for improved visual presentation.",
     "version_string": "2026.36.2"
 }
